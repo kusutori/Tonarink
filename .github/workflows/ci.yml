@@ -43,3 +43,61 @@ jobs:
       - run: >-
           dotnet publish src/Tonarink.WidgetProvider/Tonarink.WidgetProvider.csproj
           --no-restore --configuration Release -r win-x64 -p:Platform=x64
+
+  blazor-web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+      - run: dotnet restore src/Tonarink.Web/Tonarink.Web.csproj
+      - run: dotnet restore tests/Tonarink.Application.Tests/Tonarink.Application.Tests.csproj
+      - run: dotnet format src/Tonarink.Web/Tonarink.Web.csproj --no-restore --verify-no-changes
+      - run: dotnet format tests/Tonarink.Application.Tests/Tonarink.Application.Tests.csproj --no-restore --verify-no-changes
+      - run: dotnet build src/Tonarink.Web/Tonarink.Web.csproj --no-restore --configuration Release
+      - run: dotnet test tests/Tonarink.Application.Tests/Tonarink.Application.Tests.csproj --no-restore --configuration Release
+      - name: Smoke-test authenticated Web host
+        env:
+          TONARINK_WEB_PASSWORD: ci-secret
+        run: |
+          dotnet run --project src/Tonarink.Web/Tonarink.Web.csproj --no-build --configuration Release --urls http://127.0.0.1:5199 > /tmp/tonarink-web.log 2>&1 &
+          pid=$!
+          trap 'kill $pid || true' EXIT
+          for i in {1..30}; do curl -s http://127.0.0.1:5199/ >/dev/null && break || sleep 1; done
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:5199/)" = "401"
+          test "$(curl -s -u user:ci-secret -o /dev/null -w '%{http_code}' http://127.0.0.1:5199/)" = "200"
+          test "$(curl -s -u user:ci-secret -o /dev/null -w '%{http_code}' http://127.0.0.1:5199/manifest.webmanifest)" = "200"
+
+  hybrid-android:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+      - run: dotnet workload install maui
+      - run: dotnet restore src/Tonarink.Hybrid/Tonarink.Hybrid.csproj
+      - run: dotnet restore tests/LocalSendDotNet.Core.Mobile.Tests/LocalSendDotNet.Core.Mobile.Tests.csproj
+      - run: dotnet format src/Tonarink.Hybrid/Tonarink.Hybrid.csproj --no-restore --verify-no-changes
+      - run: dotnet format tests/LocalSendDotNet.Core.Mobile.Tests/LocalSendDotNet.Core.Mobile.Tests.csproj --no-restore --verify-no-changes
+      - run: >-
+          dotnet publish src/Tonarink.Hybrid/Tonarink.Hybrid.csproj
+          --no-restore --configuration Release --framework net10.0-android
+          -p:AndroidPackageFormats=apk
+      - run: dotnet test tests/LocalSendDotNet.Core.Mobile.Tests/LocalSendDotNet.Core.Mobile.Tests.csproj --no-restore --configuration Debug
+
+  hybrid-ios:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+      - run: dotnet workload install maui
+      - run: dotnet restore src/Tonarink.Hybrid/Tonarink.Hybrid.csproj
+      - run: dotnet format src/Tonarink.Hybrid/Tonarink.Hybrid.csproj --no-restore --verify-no-changes
+      - run: >-
+          dotnet build src/Tonarink.Hybrid/Tonarink.Hybrid.csproj
+          --no-restore --configuration Debug --framework net10.0-ios
+          -p:RuntimeIdentifier=iossimulator-arm64

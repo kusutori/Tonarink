@@ -1,0 +1,28 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0d8f88" />
+    <meta name="description" content="Tonarink — an unofficial LocalSend-compatible file sharing client." />
+    <base href="/" />
+    <ResourcePreloader />
+    <link rel="stylesheet" href="@Assets["app.css"]" />
+    <link rel="stylesheet" href="@Assets["_content/Tonarink.Blazor.Shared/app.css"]" />
+    <link rel="stylesheet" href="@Assets["Tonarink.Web.styles.css"]" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" href="icons/tonarink.svg" type="image/svg+xml" />
+    <ImportMap />
+    <HeadOutlet />
+</head>
+
+<body>
+    <Tonarink.Blazor.Shared.Routes @rendermode="InteractiveServer" />
+    <ReconnectModal />
+    <script src="@Assets["_framework/blazor.web.js"]"></script>
+    <script src="tonarink.js"></script>
+    <script>navigator.serviceWorker?.register('/service-worker.js');</script>
+</body>
+
+</html>

@@ -1,0 +1,62 @@
+@inherits StatefulComponentBase
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+
+<div class="app-shell @ThemeClass" lang="@(IsChinese ? "zh-CN" : "en")">
+    <aside class="sidebar">
+        <a class="brand" href="/" aria-label="Tonarink">
+            <span class="brand-mark">T</span><span>Tonarink</span>
+        </a>
+        <nav aria-label="@(L("主导航", "Main navigation"))">
+            <NavLink href="/" Match="NavLinkMatch.All"><span>◉</span><span>@L("接收", "Receive")</span></NavLink>
+            <NavLink href="/send"><span>➤</span><span>@L("发送", "Send")</span></NavLink>
+            <NavLink href="/history"><span>◷</span><span>@L("历史", "History")</span></NavLink>
+            <NavLink href="/settings"><span>⚙</span><span>@L("设置", "Settings")</span></NavLink>
+        </nav>
+        <div class="platform-badge">@AppState.Platform.Capabilities.PlatformName</div>
+    </aside>
+    <main class="content">@Body</main>
+    <nav class="bottom-nav" aria-label="@(L("移动端主导航", "Mobile navigation"))">
+        <NavLink href="/" Match="NavLinkMatch.All"><span>◉</span><small>@L("接收", "Receive")</small></NavLink>
+        <NavLink href="/send"><span>➤</span><small>@L("发送", "Send")</small></NavLink>
+        <NavLink href="/history"><span>◷</span><small>@L("历史", "History")</small></NavLink>
+        <NavLink href="/settings"><span>⚙</span><small>@L("设置", "Settings")</small></NavLink>
+    </nav>
+</div>
+
+@code {
+    [Parameter]
+    public RenderFragment? Body { get; set; }
+
+    private readonly HashSet<string> _notifiedOffers = [];
+    private readonly HashSet<string> _notifiedTransfers = [];
+
+    private string ThemeClass => AppState.Settings.Theme switch
+    {
+        TonarinkTheme.Light => "theme-light",
+        TonarinkTheme.Dark => "theme-dark",
+        _ => "theme-system",
+    };
+
+    protected override void OnAppStateChanged()
+    {
+        if (AppState.TakeRequestedRoute() is { } route)
+            Navigation.NavigateTo(route);
+        if (!AppState.Platform.Capabilities.IsNative)
+            _ = NotifyBrowserAsync();
+    }
+
+    private async Task NotifyBrowserAsync()
+    {
+        try
+        {
+            foreach (var offer in AppState.IncomingOffers.Where(offer => _notifiedOffers.Add(offer.Id)))
+                await JS.InvokeVoidAsync("tonarink.notify", L("收到发送请求", "Incoming transfer"),
+                    L($"{offer.SenderAlias} 想要发送 {offer.Items.Count} 项内容", $"{offer.SenderAlias} wants to send {offer.Items.Count} items"));
+            foreach (var transfer in AppState.Transfers.Where(transfer => transfer.Status == TransferStatus.Completed && _notifiedTransfers.Add(transfer.Id)))
+                await JS.InvokeVoidAsync("tonarink.notify", L("传输完成", "Transfer completed"), transfer.Summary);
+        }
+        catch (InvalidOperationException) { }
+        catch (JSDisconnectedException) { }
+    }
+}

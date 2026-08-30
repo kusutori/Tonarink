@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework />
+    <TargetFrameworks>net10.0;net10.0-android</TargetFrameworks>
+    <TargetFrameworks Condition="!$([MSBuild]::IsOSPlatform('linux'))">$(TargetFrameworks);net10.0-ios;net10.0-maccatalyst</TargetFrameworks>
+    <AssemblyName>LocalSendDotNet.Core</AssemblyName>
+    <RootNamespace>LocalSendDotNet</RootNamespace>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\LocalSendDotNet.Core\**\*.cs"
+             Exclude="..\LocalSendDotNet.Core\bin\**;..\LocalSendDotNet.Core\obj\**;..\LocalSendDotNet.Core\Transport\V2Server.cs;..\LocalSendDotNet.Core\Properties\AssemblyInfo.cs" />
+    <Compile Include="Transport\V2Server.cs" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+  </ItemGroup>
+
+</Project>

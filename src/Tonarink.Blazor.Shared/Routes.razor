@@ -1,0 +1,15 @@
+<Router AppAssembly="typeof(Routes).Assembly">
+    <Found Context="routeData">
+        <RouteView RouteData="routeData" DefaultLayout="typeof(MainLayout)" />
+        <FocusOnNavigate RouteData="routeData" Selector="h1" />
+    </Found>
+    <NotFound>
+        <LayoutView Layout="typeof(MainLayout)">
+            <section class="empty-state">
+                <span class="empty-icon">?</span>
+                <h1>@(System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "zh" ? "找不到页面" : "Page not found")</h1>
+                <a class="button primary" href="/">@(System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "zh" ? "返回接收页" : "Back to receive")</a>
+            </section>
+        </LayoutView>
+    </NotFound>
+</Router>

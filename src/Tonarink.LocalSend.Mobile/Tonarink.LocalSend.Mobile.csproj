@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework />
+    <TargetFrameworks>net10.0-android</TargetFrameworks>
+    <TargetFrameworks Condition="!$([MSBuild]::IsOSPlatform('linux'))">$(TargetFrameworks);net10.0-ios;net10.0-maccatalyst</TargetFrameworks>
+    <AssemblyName>Tonarink.LocalSend</AssemblyName>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Tonarink.LocalSend\LocalSendRuntime.cs" Link="LocalSendRuntime.cs" />
+    <ProjectReference Include="..\LocalSendDotNet.Core.Mobile\LocalSendDotNet.Core.Mobile.csproj" />
+    <ProjectReference Include="..\Tonarink.Application\Tonarink.Application.csproj" />
+  </ItemGroup>
+
+</Project>

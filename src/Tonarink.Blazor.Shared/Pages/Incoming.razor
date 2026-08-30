@@ -1,0 +1,104 @@
+@page "/receive/{Id}"
+@inherits StatefulComponentBase
+@inject ITonarinkRuntime Runtime
+@inject NavigationManager Navigation
+@inject IPlatformServices Platform
+@inject IJSRuntime JS
+
+<PageTitle>@L("接收请求", "Incoming request") · Tonarink</PageTitle>
+@if (Offer is null)
+{
+    <section class="empty-state"><span class="empty-icon">!</span><h1>@L("请求已失效", "Request expired")</h1><p>@L("发送方可能已经取消了请求。", "The sender may have cancelled this request.")</p><a class="button primary" href="/">@L("返回", "Back")</a></section>
+}
+else
+{
+    <header class="incoming-header">
+        <div class="large-device-icon">@DeviceInitial(Offer.SenderAlias)</div>
+        <h1>@Offer.SenderAlias</h1><p>@L($"{Offer.SenderModel} 想要发送给你 {Offer.Items.Count} 项内容", $"{Offer.SenderModel} wants to send you {Offer.Items.Count} items")</p>
+    </header>
+    @if (_error is not null) { <div class="error-banner">@_error</div> }
+    <section class="panel-card incoming-panel">
+        <div class="section-title"><h2>@L("选择要接收的内容", "Choose what to receive")</h2><button class="text-button" @onclick="ToggleAll">@(_selected.Count == Offer.Items.Count ? L("取消全选", "Select none") : L("全选", "Select all"))</button></div>
+        <div class="card-list scroll-list">
+            @foreach (var item in Offer.Items)
+            {
+                <label class="list-card selectable-card">
+                    <input type="checkbox" checked="@_selected.Contains(item.Id)" @onchange="args => Toggle(item.Id, args)" />
+                    <div><strong>@item.Name</strong><small>@item.ContentType · @FormatBytes(item.Size)</small></div>
+                    <span>@(item.TextContent is null ? "▱" : "T")</span>
+                </label>
+                @if (item.TextContent is { } text)
+                {
+                    <div class="text-preview-wrap"><pre class="text-preview">@text</pre><button class="button" @onclick="() => CopyTextAsync(text)">@L("复制", "Copy")</button></div>
+                }
+            }
+        </div>
+    </section>
+    <footer class="decision-bar">
+        @if (_receiveCancellation is not null)
+        {
+            <button class="button danger" @onclick="CancelReceive">@L("取消接收", "Cancel receive")</button>
+        }
+        <button class="button danger" @onclick="DeclineAsync" disabled="@_busy">@L("拒绝", "Decline")</button>
+        <button class="button primary" @onclick="AcceptAsync" disabled="@(_busy || _selected.Count == 0)">@L($"接收 {_selected.Count} 项", $"Receive {_selected.Count} items")</button>
+    </footer>
+}
+
+@code {
+    [Parameter] public string Id { get; set; } = string.Empty;
+    private readonly HashSet<Guid> _selected = [];
+    private bool _initialized;
+    private bool _busy;
+    private string? _error;
+    private CancellationTokenSource? _receiveCancellation;
+    private IncomingOffer? Offer => AppState.IncomingOffers.FirstOrDefault(item => StringComparer.Ordinal.Equals(item.Id, Id));
+
+    protected override void OnParametersSet()
+    {
+        if (!_initialized && Offer is { } offer)
+        {
+            _selected.UnionWith(offer.Items.Select(static item => item.Id));
+            _initialized = true;
+        }
+    }
+
+    private void Toggle(Guid id, ChangeEventArgs args)
+    {
+        var selected = args.Value is true || string.Equals(args.Value?.ToString(), "true", StringComparison.OrdinalIgnoreCase);
+        if (selected) _selected.Add(id); else _selected.Remove(id);
+    }
+
+    private void ToggleAll()
+    {
+        if (Offer is not { } offer) return;
+        if (_selected.Count == offer.Items.Count) _selected.Clear(); else _selected.UnionWith(offer.Items.Select(static item => item.Id));
+    }
+
+    private async Task AcceptAsync()
+    {
+        _receiveCancellation = new CancellationTokenSource();
+        await DecideAsync(offer => Runtime.AcceptAsync(offer, _selected, _receiveCancellation.Token));
+        _receiveCancellation.Dispose();
+        _receiveCancellation = null;
+    }
+    private async Task DeclineAsync() => await DecideAsync(offer => Runtime.DeclineAsync(offer));
+    private void CancelReceive() => _receiveCancellation?.Cancel();
+    private async Task DecideAsync(Func<IncomingOffer, Task> action)
+    {
+        if (Offer is not { } offer) return;
+        _busy = true; _error = null;
+        try { await action(offer); Navigation.NavigateTo("/"); }
+        catch (Exception exception) { _error = exception.Message; }
+        finally { _busy = false; }
+    }
+
+    private static string DeviceInitial(string alias) => string.IsNullOrWhiteSpace(alias) ? "?" : alias[..1].ToUpperInvariant();
+
+    private async Task CopyTextAsync(string text)
+    {
+        if (Platform.Capabilities.IsNative)
+            await Platform.WriteClipboardTextAsync(text);
+        else
+            await JS.InvokeVoidAsync("tonarink.writeClipboard", text);
+    }
+}

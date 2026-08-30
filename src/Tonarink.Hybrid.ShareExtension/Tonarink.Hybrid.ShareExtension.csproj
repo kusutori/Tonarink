@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0-ios</TargetFramework>
+    <OutputType>Library</OutputType>
+    <ApplicationId>dev.tonarink.app.share</ApplicationId>
+    <ApplicationDisplayVersion>0.1.10</ApplicationDisplayVersion>
+    <ApplicationVersion>1</ApplicationVersion>
+    <SupportedOSPlatformVersion>15.0</SupportedOSPlatformVersion>
+    <IsAppExtension>true</IsAppExtension>
+    <IsWatchExtension>false</IsWatchExtension>
+    <Registrar>static</Registrar>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <CodesignEntitlements>Entitlements.plist</CodesignEntitlements>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Tonarink.Application\Tonarink.Application.csproj" />
+  </ItemGroup>
+</Project>

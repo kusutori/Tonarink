@@ -3,10 +3,20 @@
     <Project Path="src/Tonarink.App/Tonarink.App.csproj" />
     <Project Path="src/Tonarink.ExplorerCommand/Tonarink.ExplorerCommand.csproj" />
     <Project Path="src/Tonarink.WidgetProvider/Tonarink.WidgetProvider.csproj" />
+    <Project Path="src/Tonarink.Application/Tonarink.Application.csproj" />
+    <Project Path="src/Tonarink.Blazor.Shared/Tonarink.Blazor.Shared.csproj" />
+    <Project Path="src/Tonarink.Web/Tonarink.Web.csproj" />
+    <Project Path="src/Tonarink.Hybrid/Tonarink.Hybrid.csproj" />
+    <Project Path="src/Tonarink.Hybrid.ShareExtension/Tonarink.Hybrid.ShareExtension.csproj" />
+    <Project Path="src/Tonarink.LocalSend/Tonarink.LocalSend.csproj" />
+    <Project Path="src/Tonarink.LocalSend.Mobile/Tonarink.LocalSend.Mobile.csproj" />
     <Project Path="src/LocalSendDotNet.Core/LocalSendDotNet.Core.csproj" />
+    <Project Path="src/LocalSendDotNet.Core.Mobile/LocalSendDotNet.Core.Mobile.csproj" />
     <Project Path="src/LocalSendDotNet.Cli/LocalSendDotNet.Cli.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/Tonarink.Application.Tests/Tonarink.Application.Tests.csproj" />
+    <Project Path="tests/LocalSendDotNet.Core.Mobile.Tests/LocalSendDotNet.Core.Mobile.Tests.csproj" />
     <Project Path="tests/LocalSendDotNet.Core.Tests/LocalSendDotNet.Core.Tests.csproj" />
     <Project Path="tests/LocalSendDotNet.InteropTests/LocalSendDotNet.InteropTests.csproj" />
   </Folder>

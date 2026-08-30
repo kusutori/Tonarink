@@ -1,0 +1,136 @@
+@page "/send"
+@inherits StatefulComponentBase
+@inject IPlatformServices Platform
+@inject ITonarinkRuntime Runtime
+@inject IJSRuntime JS
+
+<PageTitle>@L("发送", "Send") · Tonarink</PageTitle>
+<header class="page-header">
+    <div><span class="eyebrow">@L("分享内容", "Share content")</span><h1>@L("发送", "Send")</h1><p>@L("选择文件或文本，然后选择附近设备。", "Choose files or text, then select a nearby device.")</p></div>
+    <button class="icon-button" title="@L("刷新设备", "Refresh devices")" @onclick="RefreshAsync" disabled="@_busy">↻</button>
+</header>
+
+<section class="action-grid">
+    @if (Platform.Capabilities.IsNative)
+    {
+        <button class="action-card" @onclick="PickFilesAsync" disabled="@(!Platform.Capabilities.CanPickFiles || _busy)"><span>▱</span><strong>@L("文件", "Files")</strong><small>@L("选择一个或多个文件", "Choose one or more files")</small></button>
+    }
+    else
+    {
+        <label class="action-card file-picker"><InputFile OnChange="BrowserFilesSelected" multiple /><span>▱</span><strong>@L("文件", "Files")</strong><small>@L("选择一个或多个文件", "Choose one or more files")</small></label>
+    }
+    <button class="action-card" @onclick="ToggleText"><span>✎</span><strong>@L("文本", "Text")</strong><small>@L("输入一段消息", "Enter a message")</small></button>
+    <button class="action-card" @onclick="PasteAsync" disabled="@(!Platform.Capabilities.CanUseClipboard || _busy)"><span>▣</span><strong>@L("剪贴板", "Clipboard")</strong><small>@L("读取当前文本", "Read clipboard text")</small></button>
+</section>
+
+@if (_showText)
+{
+    <section class="composer-card"><textarea @bind="_text" placeholder="@L("输入要发送的文本…", "Enter text to send…")"></textarea><button class="button primary" @onclick="AddText" disabled="@(string.IsNullOrWhiteSpace(_text))">@L("添加文本", "Add text")</button></section>
+}
+@if (_pinRequested)
+{
+    <section class="composer-card"><input type="password" inputmode="numeric" autocomplete="one-time-code" @bind="_pin" placeholder="@L("输入接收设备的 PIN", "Enter the receiving device PIN")" /><button class="button" @onclick="() => _pinRequested = false">@L("隐藏", "Hide")</button></section>
+}
+@if (_error is not null) { <div class="error-banner">@_error</div> }
+@if (_sendCancellation is not null) { <button class="button danger" @onclick="CancelSend">@L("取消发送", "Cancel transfer")</button> }
+
+<div class="split-grid">
+    <section class="panel-card">
+        <div class="section-title"><h2>@L("待发送", "Ready to send")</h2><button class="text-button" @onclick="AppState.ClearSendItems" disabled="@(AppState.SendItems.Count == 0)">@L("清空", "Clear")</button></div>
+        @if (AppState.SendItems.Count == 0)
+        {
+            <div class="empty-card compact"><span>＋</span><p>@L("尚未选择内容", "No content selected")</p></div>
+        }
+        else
+        {
+            <div class="card-list scroll-list">
+                @foreach (var item in AppState.SendItems)
+                {
+                    <article class="list-card"><div class="file-icon">@FileGlyph(item.ContentType)</div><div><strong>@item.Name</strong><small>@item.ContentType · @FormatBytes(item.Size)</small></div><button class="icon-button subtle" title="@L("移除", "Remove")" @onclick="() => AppState.RemoveSendItem(item.Id)">×</button></article>
+                }
+            </div>
+        }
+    </section>
+    <section class="panel-card">
+        <div class="section-title"><h2>@L("附近设备", "Nearby devices")</h2><span>@AppState.Devices.Count</span></div>
+        @if (AppState.Devices.Count == 0)
+        {
+            <div class="empty-card searching"><span>⌕</span><p>@L("正在寻找附近设备", "Looking for nearby devices")</p><small>@L("确保设备位于同一局域网", "Make sure devices are on the same local network")</small></div>
+        }
+        else
+        {
+            <div class="card-list scroll-list">
+                @foreach (var device in AppState.Devices)
+                {
+                    <button class="list-card device-button" @onclick="() => SendAsync(device)" disabled="@(AppState.SendItems.Count == 0 || _busy)"><div class="device-icon">@DeviceInitial(device.Alias)</div><div><strong>@device.Alias</strong><small>@device.Model · @device.Address:@device.Port</small></div><span>→</span></button>
+                }
+            </div>
+        }
+    </section>
+</div>
+
+@code {
+    private bool _busy;
+    private bool _showText;
+    private string _text = string.Empty;
+    private string _pin = string.Empty;
+    private string? _error;
+    private bool _pinRequested;
+    private CancellationTokenSource? _sendCancellation;
+    private void ToggleText() => _showText = !_showText;
+    private async Task PickFilesAsync() => await RunAsync(async () => AppState.AddSendItems(await Platform.PickFilesAsync()));
+    private void BrowserFilesSelected(InputFileChangeEventArgs args)
+    {
+        var items = args.GetMultipleFiles(100).Select(static file => new ShareItem(
+            Guid.NewGuid(), file.Name, file.Size, file.ContentType,
+            OpenRead: _ => ValueTask.FromResult<Stream>(file.OpenReadStream(file.Size))));
+        AppState.AddSendItems(items);
+    }
+    private async Task PasteAsync() => await RunAsync(async () =>
+    {
+        _text = Platform.Capabilities.IsNative
+            ? await Platform.ReadClipboardTextAsync() ?? string.Empty
+            : await JS.InvokeAsync<string?>("tonarink.readClipboard") ?? string.Empty;
+        _showText = true;
+    });
+    private void AddText()
+    {
+        var value = _text.Trim();
+        if (value.Length == 0) return;
+        AppState.AddSendItems([new ShareItem(Guid.NewGuid(), "message.txt", System.Text.Encoding.UTF8.GetByteCount(value), "text/plain", TextContent: value)]);
+        _text = string.Empty; _showText = false;
+    }
+    private async Task RefreshAsync() => await RunAsync(() => Runtime.RefreshAsync());
+    private async Task SendAsync(NearbyDevice device)
+    {
+        _sendCancellation = new CancellationTokenSource();
+        await RunAsync(async () =>
+        {
+            try
+            {
+                await Runtime.SendAsync(device, AppState.SendItems, string.IsNullOrWhiteSpace(_pin) ? null : _pin, cancellationToken: _sendCancellation.Token);
+            }
+            catch (TransferPinRequiredException exception)
+            {
+                _pinRequested = true;
+                throw new InvalidOperationException(exception.InvalidPin
+                    ? L("PIN 不正确，请重试。", "Incorrect PIN. Please try again.")
+                    : L("接收设备需要 PIN。", "The receiving device requires a PIN."), exception);
+            }
+            catch (TransferPinRateLimitedException exception)
+            {
+                throw new InvalidOperationException(L("PIN 尝试次数过多，请稍后重试。", "Too many PIN attempts. Try again later."), exception);
+            }
+        });
+        _sendCancellation.Dispose();
+        _sendCancellation = null;
+    }
+    private void CancelSend() => _sendCancellation?.Cancel();
+    private async Task RunAsync(Func<Task> action)
+    {
+        _busy = true; _error = null;
+        try { await action(); } catch (Exception exception) { _error = exception.Message; } finally { _busy = false; }
+    }
+    private static string DeviceInitial(string alias) => string.IsNullOrWhiteSpace(alias) ? "?" : alias[..1].ToUpperInvariant();
+    private static string FileGlyph(string contentType) => contentType.StartsWith("text/", StringComparison.OrdinalIgnoreCase) ? "T" : "▱";
+}

@@ -1,0 +1,13 @@
+{
+  "name": "Tonarink",
+  "short_name": "Tonarink",
+  "description": "An unofficial LocalSend-compatible file sharing client.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f5f8f7",
+  "theme_color": "#0d8f88",
+  "icons": [
+    { "src": "/icons/tonarink.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

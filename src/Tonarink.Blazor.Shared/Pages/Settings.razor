@@ -1,0 +1,63 @@
+@page "/settings"
+@inherits StatefulComponentBase
+@inject ITonarinkRuntime Runtime
+@inject IJSRuntime JS
+
+<PageTitle>@L("设置", "Settings") · Tonarink</PageTitle>
+<header class="page-header"><div><span class="eyebrow">@L("偏好设置", "Preferences")</span><h1>@L("设置", "Settings")</h1><p>@L("在这台设备上保存 Tonarink 的偏好设置。", "Tonarink preferences saved on this device.")</p></div></header>
+@if (_error is not null) { <div class="error-banner">@_error</div> }
+<section class="settings-card">
+    <label><span><strong>@L("设备名称", "Device name")</strong><small>@L("附近设备会看到这个名称", "Visible to nearby devices")</small></span><input value="@AppState.Settings.Alias" @onchange="ChangeAlias" /></label>
+    <label><span><strong>@L("下载目录", "Download directory")</strong><small>@L("接收的文件保存到这里", "Received files are saved here")</small></span><input value="@AppState.Settings.DownloadDirectory" disabled /></label>
+    <label><span><strong>@L("主题", "Theme")</strong><small>@L("跟随系统或固定外观", "Follow the system or use a fixed appearance")</small></span><select value="@AppState.Settings.Theme" @onchange="ChangeTheme"><option value="System">@L("跟随系统", "System")</option><option value="Light">@L("浅色", "Light")</option><option value="Dark">@L("深色", "Dark")</option></select></label>
+    <label><span><strong>@L("语言", "Language")</strong><small>@L("共享界面的显示语言", "Language used by the shared interface")</small></span><select value="@AppState.Settings.Language" @onchange="ChangeLanguage"><option value="System">@L("跟随系统", "System")</option><option value="SimplifiedChinese">简体中文</option><option value="English">English</option></select></label>
+    @if (!AppState.Platform.Capabilities.IsNative)
+    {
+        <label><span><strong>@L("浏览器通知", "Browser notifications")</strong><small>@L("在收到请求和完成传输时显示系统通知", "Show system notifications for requests and completed transfers")</small></span><button class="button" @onclick="EnableBrowserNotificationsAsync">@L("启用通知", "Enable notifications")</button></label>
+    }
+</section>
+<section class="section-block">
+    <div class="section-title"><h2>@L("平台能力", "Platform capabilities")</h2></div>
+    <div class="capability-grid">
+        <div class="capability @(AppState.Platform.Capabilities.CanRunLocalSendNode ? "available" : "unavailable")"><span>@Mark(AppState.Platform.Capabilities.CanRunLocalSendNode)</span>@L("完整节点", "Full node")</div>
+        <div class="capability @(AppState.Platform.Capabilities.CanReceiveInBackground ? "available" : "unavailable")"><span>@Mark(AppState.Platform.Capabilities.CanReceiveInBackground)</span>@L("后台接收", "Background receive")</div>
+        <div class="capability @(AppState.Platform.Capabilities.CanPickFiles ? "available" : "unavailable")"><span>@Mark(AppState.Platform.Capabilities.CanPickFiles)</span>@L("文件选择", "File picker")</div>
+        <div class="capability @(AppState.Platform.Capabilities.CanUseSystemShare ? "available" : "unavailable")"><span>@Mark(AppState.Platform.Capabilities.CanUseSystemShare)</span>@L("系统分享", "System share")</div>
+    </div>
+</section>
+
+@code {
+    private string? _error;
+
+    private async Task ChangeAlias(ChangeEventArgs args)
+    {
+        var alias = args.Value?.ToString()?.Trim();
+        if (string.IsNullOrWhiteSpace(alias) || string.Equals(alias, AppState.Settings.Alias, StringComparison.Ordinal))
+            return;
+        await AppState.UpdateSettingsAsync(settings => settings with { Alias = alias });
+        if (!Runtime.IsRunning)
+            return;
+        try
+        {
+            await Runtime.StopAsync();
+            await Runtime.StartAsync();
+            AppState.SetRuntimeStatus(running: true);
+        }
+        catch (Exception exception)
+        {
+            _error = exception.GetBaseException().Message;
+            AppState.SetRuntimeStatus(running: false, _error);
+        }
+    }
+    private Task ChangeTheme(ChangeEventArgs args) => AppState.UpdateSettingsAsync(settings => settings with { Theme = Enum.TryParse<TonarinkTheme>(args.Value?.ToString(), out var value) ? value : TonarinkTheme.System });
+    private Task ChangeLanguage(ChangeEventArgs args) => AppState.UpdateSettingsAsync(settings => settings with { Language = Enum.TryParse<TonarinkLanguage>(args.Value?.ToString(), out var value) ? value : TonarinkLanguage.System });
+    private async Task EnableBrowserNotificationsAsync()
+    {
+        var permission = await JS.InvokeAsync<string>("tonarink.requestNotifications");
+        if (!string.Equals(permission, "granted", StringComparison.OrdinalIgnoreCase))
+            _error = L("浏览器没有授予通知权限。", "The browser did not grant notification permission.");
+        else
+            _error = null;
+    }
+    private static string Mark(bool available) => available ? "✓" : "—";
+}

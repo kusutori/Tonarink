@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Tonarink.Application\Tonarink.Application.csproj" />
+    <ProjectReference Include="..\Tonarink.Blazor.Shared\Tonarink.Blazor.Shared.csproj" />
+    <ProjectReference Include="..\Tonarink.LocalSend\Tonarink.LocalSend.csproj" />
+  </ItemGroup>
+
+</Project>

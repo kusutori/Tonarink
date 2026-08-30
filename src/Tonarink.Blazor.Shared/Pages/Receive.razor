@@ -1,0 +1,61 @@
+@page "/"
+@inherits StatefulComponentBase
+
+<PageTitle>@L("接收", "Receive") · Tonarink</PageTitle>
+
+<header class="page-header">
+    <div><span class="eyebrow">@L("本机设备", "This device")</span><h1>@AppState.Settings.Alias</h1><p>@L("安全、快速的局域网传输", "Fast, secure local network transfers")</p></div>
+    <span class="status-pill @(AppState.RuntimeRunning ? "online" : "limited")">
+        @(AppState.RuntimeRunning ? L("可以接收", "Ready to receive") : L("尚未连接", "Not connected"))
+    </span>
+</header>
+
+@if (!AppState.Platform.Capabilities.CanRunLocalSendNode)
+{
+    <section class="notice-card"><strong>@L("浏览器能力受限", "Browser limitations")</strong><p>@L("浏览器页面控制服务器上运行的 Tonarink 节点。", "This browser controls the Tonarink node running on the server.")</p></section>
+}
+else if (AppState.RuntimeError is { } runtimeError)
+{
+    <section class="notice-card"><strong>@L("节点启动失败", "Node failed to start")</strong><p>@runtimeError</p></section>
+}
+
+<section class="hero-card">
+    <div class="pulse-logo"><span>T</span></div>
+    <h2>@L("等待附近设备", "Waiting for nearby devices")</h2>
+    <p>@L($"其他 LocalSend 兼容设备可以发现“{AppState.Settings.Alias}”并向这里发送内容。", $"Other LocalSend-compatible devices can discover “{AppState.Settings.Alias}” and send content here.")</p>
+    <label class="toggle-row">
+        <input type="checkbox" checked="@AppState.Settings.AutoAccept" @onchange="ToggleAutoAccept" />
+        <span><strong>@L("自动接收", "Auto accept")</strong><small>@L("收到请求后直接保存到下载目录", "Save incoming requests directly to the download directory")</small></span>
+    </label>
+</section>
+
+<section class="section-block">
+    <div class="section-title"><h2>@L("接收请求", "Incoming requests")</h2><span>@AppState.IncomingOffers.Count</span></div>
+    @if (AppState.IncomingOffers.Count == 0)
+    {
+        <div class="empty-card"><span>↓</span><p>@L("暂无待处理请求", "No pending requests")</p></div>
+    }
+    else
+    {
+        <div class="card-list">
+            @foreach (var offer in AppState.IncomingOffers)
+            {
+                <article class="list-card">
+                    <div class="device-icon">@DeviceInitial(offer.SenderAlias)</div>
+                    <div><strong>@offer.SenderAlias</strong><small>@offer.SenderModel · @offer.Items.Count @L("项", "items")</small></div>
+                    <a class="button" href="@($"/receive/{offer.Id}")">@L("查看", "View")</a>
+                </article>
+            }
+        </div>
+    }
+</section>
+
+@code {
+    private Task ToggleAutoAccept(ChangeEventArgs args)
+    {
+        var enabled = args.Value is true || string.Equals(args.Value?.ToString(), "true", StringComparison.OrdinalIgnoreCase);
+        return AppState.UpdateSettingsAsync(settings => settings with { AutoAccept = enabled });
+    }
+
+    private static string DeviceInitial(string alias) => string.IsNullOrWhiteSpace(alias) ? "?" : alias[..1].ToUpperInvariant();
+}

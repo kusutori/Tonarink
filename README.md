@@ -1,8 +1,10 @@
 # Tonarink
 
-Tonarink is an independent Windows app for fast, private file and text transfer
-over a local network. It is an unofficial implementation of the LocalSend
-protocol and interoperates with LocalSend-compatible devices.
+Tonarink is an independent app for fast, private file and text transfer over a
+local network. The released Windows 11 client uses Reactor; Web, Android, and
+iOS clients are being built on a shared Blazor UI. Tonarink is an unofficial
+implementation of the LocalSend protocol and interoperates with
+LocalSend-compatible devices.
 
 Tonarink is not affiliated with, endorsed by, or distributed by the official
 LocalSend project. The product name and user experience are independent; protocol
@@ -19,6 +21,8 @@ ecosystem.
 - Run from the system tray and choose Chinese or English at runtime
 - Use light, dark, or system appearance with Windows 11 materials
 - Install with MSIX or run the Native AOT portable build
+- Run a password-protected, installable Web control surface for a host node
+- Build full Android and iOS nodes with native file pickers, share targets, and notifications
 
 ## Download
 
@@ -46,8 +50,12 @@ dotnet build LocalSendDotNet.slnx
 dotnet test LocalSendDotNet.slnx
 ```
 
-The Windows app project is `src/Tonarink.App/Tonarink.App.csproj`. Packaging and
-release details are documented in [docs/packaging.md](docs/packaging.md) and
+The released Windows app project is `src/Tonarink.App/Tonarink.App.csproj`.
+The cross-platform shared Blazor UI is under `src/Tonarink.Blazor.Shared`, with
+`src/Tonarink.Web` and `src/Tonarink.Hybrid` as its Web and .NET MAUI hosts.
+Their architecture and current platform boundary are documented in
+[docs/blazor-hybrid.md](docs/blazor-hybrid.md). Packaging and release details
+for the Windows app are documented in [docs/packaging.md](docs/packaging.md) and
 [docs/app-release-ci.md](docs/app-release-ci.md).
 
 ## Relationship to LocalSend

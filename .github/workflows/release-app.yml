@@ -478,6 +478,212 @@ jobs:
           Remove-Item "${{ steps.certificate.outputs.pfx }}" -Force -ErrorAction SilentlyContinue
           Remove-Item "${{ steps.certificate.outputs.cer }}" -Force -ErrorAction SilentlyContinue
 
+  web:
+    # Experimental Blazor/Hybrid publishing is intentionally paused while the
+    # Reactor application remains the active product release target.
+    if: ${{ false }}
+    name: Build Web host ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: windows-x64
+            os: windows-latest
+            rid: win-x64
+          - name: linux-x64
+            os: ubuntu-latest
+            rid: linux-x64
+          - name: linux-arm64
+            os: ubuntu-latest
+            rid: linux-arm64
+          - name: macos-x64
+            os: macos-latest
+            rid: osx-x64
+          - name: macos-arm64
+            os: macos-latest
+            rid: osx-arm64
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Resolve release version
+        id: release
+        shell: pwsh
+        env:
+          RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.version || github.ref_name }}
+        run: |
+          $version = $env:RELEASE_TAG.Trim() -replace '^app-', '' -replace '^v', ''
+          if ($version -notmatch '^\d+\.\d+\.\d+(?:\.\d+)?$') {
+            throw "Version '$version' must be numeric."
+          }
+          "version=$version" >> $env:GITHUB_OUTPUT
+
+      - name: Publish self-contained Web host
+        shell: pwsh
+        run: |
+          $publishDir = Join-Path $env:RUNNER_TEMP 'tonarink-web'
+          dotnet publish src/Tonarink.Web/Tonarink.Web.csproj -c Release `
+            -r ${{ matrix.rid }} `
+            --self-contained true `
+            -p:Version=${{ steps.release.outputs.version }} `
+            -o $publishDir
+          if ($LASTEXITCODE -ne 0) {
+            throw 'Publishing the Web host failed.'
+          }
+          Copy-Item README.md, LICENSE, NOTICE -Destination $publishDir
+          $archive = Join-Path $env:RUNNER_TEMP 'Tonarink-${{ steps.release.outputs.version }}-web-${{ matrix.name }}.zip'
+          Compress-Archive -Path (Join-Path $publishDir '*') -DestinationPath $archive -CompressionLevel Optimal
+
+      - name: Upload Web host
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-${{ matrix.name }}
+          path: ${{ runner.temp }}/Tonarink-${{ steps.release.outputs.version }}-web-${{ matrix.name }}.zip
+          if-no-files-found: error
+
+  android:
+    # Keep the signed packaging recipe ready for the next development phase,
+    # but do not attach experimental mobile builds to Reactor releases yet.
+    if: ${{ false }}
+    name: Build signed Android app
+    runs-on: ubuntu-latest
+    outputs:
+      published: ${{ steps.signing.outputs.configured }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Detect Android signing configuration
+        id: signing
+        shell: pwsh
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          $configured = @(
+            $env:KEYSTORE_BASE64,
+            $env:KEY_ALIAS,
+            $env:KEYSTORE_PASSWORD,
+            $env:KEY_PASSWORD
+          ) | Where-Object { [string]::IsNullOrWhiteSpace($_) }
+          if ($configured.Count -gt 0) {
+            "configured=false" >> $env:GITHUB_OUTPUT
+            Write-Warning 'Android signing secrets are incomplete; Android release assets will be skipped.'
+          } else {
+            "configured=true" >> $env:GITHUB_OUTPUT
+          }
+
+      - name: Install MAUI workload
+        if: steps.signing.outputs.configured == 'true'
+        run: dotnet workload install maui
+
+      - name: Resolve Android version
+        if: steps.signing.outputs.configured == 'true'
+        id: release
+        shell: pwsh
+        env:
+          RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.version || github.ref_name }}
+        run: |
+          $version = $env:RELEASE_TAG.Trim() -replace '^app-', '' -replace '^v', ''
+          if ($version -notmatch '^(\d+)\.(\d+)\.(\d+)(?:\.(\d+))?$') {
+            throw "Version '$version' must be numeric."
+          }
+          $major = [int]$Matches[1]
+          $minor = [int]$Matches[2]
+          $patch = [int]$Matches[3]
+          $revision = [int]($Matches[4] ?? 0)
+          if ($major -gt 20 -or $minor -gt 999 -or $patch -gt 999 -or $revision -gt 99) {
+            throw "Version '$version' is too large for the Android version-code mapping."
+          }
+          $code = ($major * 100000000) + ($minor * 100000) + ($patch * 100) + $revision
+          if ($code -lt 1 -or $code -gt [int]::MaxValue) {
+            throw "Version '$version' cannot be represented as an Android version code."
+          }
+          "version=$version" >> $env:GITHUB_OUTPUT
+          "code=$code" >> $env:GITHUB_OUTPUT
+
+      - name: Import Android signing key
+        if: steps.signing.outputs.configured == 'true'
+        id: keystore
+        shell: pwsh
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          $path = Join-Path $env:RUNNER_TEMP 'tonarink-release.keystore'
+          [IO.File]::WriteAllBytes($path, [Convert]::FromBase64String($env:KEYSTORE_BASE64))
+          "path=$path" >> $env:GITHUB_OUTPUT
+
+      - name: Publish signed APK and app bundle
+        if: steps.signing.outputs.configured == 'true'
+        shell: pwsh
+        env:
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          $project = 'src/Tonarink.Hybrid/Tonarink.Hybrid.csproj'
+          foreach ($format in @('apk', 'aab')) {
+            $publishDir = Join-Path $env:RUNNER_TEMP "android-$format"
+            dotnet publish $project `
+              -f net10.0-android `
+              -c Release `
+              -p:ApplicationDisplayVersion=${{ steps.release.outputs.version }} `
+              -p:ApplicationVersion=${{ steps.release.outputs.code }} `
+              -p:AndroidPackageFormats=$format `
+              -p:AndroidKeyStore=true `
+              -p:AndroidSigningKeyStore='${{ steps.keystore.outputs.path }}' `
+              -p:AndroidSigningKeyAlias="$env:KEY_ALIAS" `
+              -p:AndroidSigningStorePass="$env:KEYSTORE_PASSWORD" `
+              -p:AndroidSigningKeyPass="$env:KEY_PASSWORD" `
+              -o $publishDir
+            if ($LASTEXITCODE -ne 0) {
+              throw "Publishing the signed Android $format failed."
+            }
+          }
+
+          $apk = Get-ChildItem (Join-Path $env:RUNNER_TEMP 'android-apk') -Recurse -File -Filter '*-Signed.apk' | Select-Object -First 1
+          $aab = Get-ChildItem (Join-Path $env:RUNNER_TEMP 'android-aab') -Recurse -File -Filter '*-Signed.aab' | Select-Object -First 1
+          if ($null -eq $apk -or $null -eq $aab) {
+            throw 'Android publish did not produce both a signed APK and AAB.'
+          }
+          Copy-Item $apk.FullName (Join-Path $env:RUNNER_TEMP 'Tonarink-${{ steps.release.outputs.version }}-android.apk')
+          Copy-Item $aab.FullName (Join-Path $env:RUNNER_TEMP 'Tonarink-${{ steps.release.outputs.version }}-android.aab')
+
+      - name: Upload Android packages
+        if: steps.signing.outputs.configured == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-signed
+          path: |
+            ${{ runner.temp }}/Tonarink-${{ steps.release.outputs.version }}-android.apk
+            ${{ runner.temp }}/Tonarink-${{ steps.release.outputs.version }}-android.aab
+          if-no-files-found: error
+
+      - name: Remove Android signing key
+        if: always() && steps.keystore.outputs.path != ''
+        shell: pwsh
+        run: Remove-Item '${{ steps.keystore.outputs.path }}' -Force -ErrorAction SilentlyContinue
+
   release:
     name: Create GitHub Release
     needs:
@@ -532,4 +738,5 @@ jobs:
             Extract an MSIX ZIP and run `Install.ps1`. The included self-signed certificate is installed for sideloading. Files ending in `-symbols.zip` contain PDBs for debugging and are not application downloads.
 
             解压 MSIX ZIP 后运行 `Install.ps1`；安装脚本会导入随附的自签名证书。`-symbols.zip` 仅包含调试符号，普通用户无需下载。
+
           files: packages/*
