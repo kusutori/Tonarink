@@ -1,6 +1,5 @@
 using LocalSendDotNet;
 using Microsoft.UI.Reactor;
-using Microsoft.UI.Reactor.Animation;
 using Microsoft.UI.Reactor.Core;
 using Microsoft.UI.Reactor.Layout;
 using Microsoft.UI.Reactor.Localization;
@@ -51,8 +50,7 @@ sealed class OutgoingTransferOverlay : Component<OutgoingTransferOverlayProps>
                     transfer.Receiver.DeviceModel,
                     transfer.Receiver.DeviceType,
                     RemoteDeviceNumber(transfer.Receiver),
-                    t)
-                    .ConnectedAnimation(DeviceConnectedKey(transfer.Receiver.Fingerprint)))
+                    t))
             .MaxWidth(720)
             .HAlign(HorizontalAlignment.Stretch);
 
@@ -243,7 +241,6 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                     .Size(88, 88)
                     .CornerRadius(44)
                     .Background(Theme.SubtleFill)
-                    .ConnectedAnimation("incoming-sender")
                     .HAlign(HorizontalAlignment.Center),
                 Title(request.Sender.Alias)
                     .TextAlignment(TextAlignment.Center)
@@ -301,8 +298,7 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                     .Padding(horizontal: 40, vertical: 24)
                     .Grid(row: 1))
             .Background(Theme.SolidBackground)
-            .Landmark(AutomationLandmarkType.Main)
-            .Transition(Transition.Slide() + Transition.Scale());
+            .Landmark(AutomationLandmarkType.Main);
 
         Element RenderActions()
         {

@@ -369,17 +369,22 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
                     settings.DownloadDirectory,
                     DismissIncoming))
                 .WithKey(pendingIncoming.RequestId.ToString("N"))
+                .ConnectedAnimation("incoming-sender")
             : outgoingTransfer is not null
                 ? Component<OutgoingTransferOverlay, OutgoingTransferOverlayProps>(new(
                     outgoingTransfer,
                     () => setOutgoingTransfer(null)))
+                    .WithKey(outgoingTransfer.Receiver.Fingerprint)
+                    .ConnectedAnimation(TransferOverlayVisuals.DeviceConnectedKey(outgoingTransfer.Receiver.Fingerprint))
                 : null;
 
         var contentLayer = Grid(
                 columns: [GridSize.Star()],
                 rows: [GridSize.Star()],
                 navigationView.Grid(row: 0, column: 0),
-                transferOverlay?.Grid(row: 0, column: 0))
+                Border(transferOverlay)
+                    .IsHitTestVisible(transferOverlay is not null)
+                    .Grid(row: 0, column: 0))
             .Flex(grow: 1, basis: 0);
 
         var root = FlexColumn(titleBar, contentLayer)
