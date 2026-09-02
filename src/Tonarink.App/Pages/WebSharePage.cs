@@ -15,7 +15,8 @@ sealed record WebSharePageProps(
     LocalSendNode? Node,
     AppRuntimeState Runtime,
     AppSettings Settings,
-    Action<bool?> SetHttpsOverride);
+    Action<bool?> SetHttpsOverride,
+    WebShareMode Mode);
 
 sealed class WebSharePage : Component<WebSharePageProps>
 {
@@ -29,7 +30,7 @@ sealed class WebSharePage : Component<WebSharePageProps>
         var (pinDraft, setPinDraft) = UseState(RandomPin());
         var (pinDialogOpen, setPinDialogOpen) = UseState(false);
         var (encrypted, setEncrypted) = UseState(
-            Props.Runtime.Identity?.Protocol == LocalSendProtocol.Https);
+            Props.Mode == WebShareMode.Send && Props.Runtime.Identity?.Protocol == LocalSendProtocol.Https);
         var (qrPath, setQrPath) = UseState<string?>(null);
         var (qrUrl, setQrUrl) = UseState<string?>(null);
         var (zoomUrl, setZoomUrl) = UseState<string?>(null);
@@ -44,18 +45,27 @@ sealed class WebSharePage : Component<WebSharePageProps>
             copyFeedbackVersion.Current++;
         });
 
-        UseNavigationLifecycle(onNavigatedFrom: _ =>
-        {
-            node?.StopWebShare();
-            Props.SetHttpsOverride(null);
-        });
+        UseNavigationLifecycle(
+            onNavigatedTo: _ =>
+            {
+                if (Props.Mode == WebShareMode.Receive)
+                    Props.SetHttpsOverride(encrypted);
+            },
+            onNavigatedFrom: _ =>
+            {
+                node?.StopWebShare();
+                Props.SetHttpsOverride(null);
+            });
 
         UseEffect(() =>
         {
-            if (node is null || Props.Runtime.NodeState != LocalSendNodeState.Running || items.Count == 0)
+            if (node is null || Props.Runtime.NodeState != LocalSendNodeState.Running ||
+                (Props.Mode == WebShareMode.Send && items.Count == 0))
                 return () => { };
 
-            _ = node.StartWebShareAsync(items, new WebShareOptions { AutoAccept = autoAccept, Pin = pin });
+            _ = Props.Mode == WebShareMode.Send
+                ? node.StartWebShareAsync(items, new WebShareOptions { AutoAccept = autoAccept, Pin = pin })
+                : node.StartWebReceiveAsync(new WebShareOptions { AutoAccept = autoAccept, Pin = pin });
             var watch = new CancellationTokenSource();
             _ = WatchAsync(watch.Token);
             return () =>
@@ -77,7 +87,7 @@ sealed class WebSharePage : Component<WebSharePageProps>
                 {
                 }
             }
-        }, node, Props.Runtime.NodeState);
+        }, node, Props.Runtime.NodeState, Props.Mode);
 
         var https = encrypted;
         var port = Props.Runtime.Identity?.Port ?? Props.Settings.Port;
@@ -95,7 +105,7 @@ sealed class WebSharePage : Component<WebSharePageProps>
 
         return ScrollView(
             VStack(24,
-                Heading(t.Message(new("App", "WebShareTitle")))
+                Heading(t.Message(new("App", Props.Mode == WebShareMode.Receive ? "WebReceiveTitle" : "WebShareTitle")))
                     .HeadingLevel(AutomationHeadingLevel.Level1),
                 TextBlock(t.Message(new("App", "WebShareOpenLink")))
                     .SemiBold(),

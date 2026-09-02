@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Security;
 using System.Net.Sockets;
 using System.Security.Authentication;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.Json;
@@ -21,7 +22,7 @@ internal sealed class V2Server(
     DeviceIdentity identity,
     Func<DeviceInfoDto> localInfo,
     Func<DeviceInfoDto, IPAddress, string?, Task> onRegister,
-    Func<PrepareUploadRequestDto, IPAddress, string?, CancellationToken, Task<PrepareOutcome>> onPrepare,
+    Func<PrepareUploadRequestDto, IPAddress, string?, bool, CancellationToken, Task<PrepareOutcome>> onPrepare,
     Func<string, string, string, IPAddress, Stream, long?, CancellationToken, Task<HttpStatusCode>> onUpload,
     Func<string, IPAddress, CancellationToken, Task<bool>> onCancel,
     ILogger logger,
@@ -136,6 +137,7 @@ internal sealed class V2Server(
         ("GET", "/") => WebIndexAsync(request, response),
         ("POST", V2Constants.BasePath + "/prepare-download") => PrepareDownloadAsync(request, response),
         ("GET", V2Constants.BasePath + "/download") => DownloadAsync(request, response),
+        ("POST", V2Constants.BasePath + "/prepare-web-upload") => PrepareWebUploadAsync(request, response),
         _ => PortableResponse.WriteStatusAsync(response, HttpStatusCode.NotFound, request.CancellationToken),
     };
 
@@ -213,7 +215,7 @@ internal sealed class V2Server(
             return;
         }
 
-        var outcome = await onPrepare(payload, request.RemoteAddress, fingerprint, request.CancellationToken).ConfigureAwait(false);
+        var outcome = await onPrepare(payload, request.RemoteAddress, fingerprint, false, request.CancellationToken).ConfigureAwait(false);
         if (outcome.Response is not null)
             await WriteJsonAsync(response, request, outcome.StatusCode, outcome.Response).ConfigureAwait(false);
         else if (outcome.Message is not null)
@@ -252,7 +254,7 @@ internal sealed class V2Server(
             await PortableResponse.WriteStatusAsync(response, HttpStatusCode.NotFound, request.CancellationToken).ConfigureAwait(false);
             return;
         }
-        var body = Encoding.UTF8.GetBytes(WebShareHtml.Render(localInfo().Alias, state.Pin is not null));
+        var body = Encoding.UTF8.GetBytes(WebShareHtml.Render(localInfo().Alias, state.Pin is not null, state.Mode));
         await PortableResponse.WriteAsync(response, HttpStatusCode.OK, "text/html; charset=utf-8", body, null, request.CancellationToken).ConfigureAwait(false);
     }
 
@@ -269,6 +271,59 @@ internal sealed class V2Server(
         catch (WebSharePinException) { await PortableResponse.WriteStatusAsync(response, HttpStatusCode.Unauthorized, request.CancellationToken).ConfigureAwait(false); }
         catch (WebSharePinRateLimitedException) { await PortableResponse.WriteStatusAsync(response, HttpStatusCode.TooManyRequests, request.CancellationToken).ConfigureAwait(false); }
         catch (TimeoutException) { await PortableResponse.WriteStatusAsync(response, HttpStatusCode.RequestTimeout, request.CancellationToken).ConfigureAwait(false); }
+    }
+
+    private async Task PrepareWebUploadAsync(PortableRequest request, Stream response)
+    {
+        var payload = await ReadJsonAsync(request, response, options.MaxPrepareRequestBytes, V2JsonContext.Default.WebUploadPrepareRequestDto).ConfigureAwait(false);
+        if (payload is null)
+            return;
+        if (payload.Files.Length == 0 || payload.Files.GroupBy(static file => file.Id, StringComparer.Ordinal).Any(static group => group.Count() != 1) ||
+            payload.Files.Any(static file => file.Size < 0 || string.IsNullOrWhiteSpace(file.Id) || string.IsNullOrWhiteSpace(file.FileName) || string.IsNullOrWhiteSpace(file.FileType)))
+        {
+            await WriteErrorAsync(response, request, HttpStatusCode.BadRequest, "Invalid file metadata").ConfigureAwait(false);
+            return;
+        }
+        if (payload.Files.Length > options.MaxIncomingItemsPerTransfer || ExceedsTransferLimit(payload.Files, options.MaxIncomingTransferBytes))
+        {
+            await WriteErrorAsync(response, request, HttpStatusCode.RequestEntityTooLarge, "Incoming transfer exceeds configured limits").ConfigureAwait(false);
+            return;
+        }
+
+        try
+        {
+            if (!webShare.TryAuthorizeReceive(request.RemoteAddress, request.QueryValue("pin"), out var autoAccept))
+            {
+                await PortableResponse.WriteStatusAsync(response, HttpStatusCode.NotFound, request.CancellationToken).ConfigureAwait(false);
+                return;
+            }
+            var userAgent = request.Header("User-Agent") ?? string.Empty;
+            var fingerprint = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes($"{request.RemoteAddress}|{userAgent}")));
+            var preparedRequest = new PrepareUploadRequestDto
+            {
+                Info = new DeviceInfoDto
+                {
+                    Alias = "Web browser",
+                    Version = V2Constants.Version,
+                    DeviceModel = WebShareUserAgent.Describe(userAgent),
+                    DeviceType = "web",
+                    Fingerprint = fingerprint,
+                    Port = 1,
+                    Protocol = "http",
+                    Download = false
+                },
+                Files = payload.Files.ToDictionary(static file => file.Id, StringComparer.Ordinal)
+            };
+            var outcome = await onPrepare(preparedRequest, request.RemoteAddress, fingerprint, autoAccept, request.CancellationToken).ConfigureAwait(false);
+            if (outcome.Response is not null)
+                await WriteJsonAsync(response, request, outcome.StatusCode, outcome.Response).ConfigureAwait(false);
+            else if (outcome.Message is not null)
+                await WriteErrorAsync(response, request, outcome.StatusCode, outcome.Message).ConfigureAwait(false);
+            else
+                await PortableResponse.WriteStatusAsync(response, outcome.StatusCode, request.CancellationToken).ConfigureAwait(false);
+        }
+        catch (WebSharePinException) { await PortableResponse.WriteStatusAsync(response, HttpStatusCode.Unauthorized, request.CancellationToken).ConfigureAwait(false); }
+        catch (WebSharePinRateLimitedException) { await PortableResponse.WriteStatusAsync(response, HttpStatusCode.TooManyRequests, request.CancellationToken).ConfigureAwait(false); }
     }
 
     private async Task DownloadAsync(PortableRequest request, Stream response)

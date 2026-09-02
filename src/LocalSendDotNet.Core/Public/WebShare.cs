@@ -14,6 +14,15 @@ public sealed record WebShareFile(string Id, string FileName, long Size, string 
 /// <param name="Pending">Whether the host still needs to accept the request.</param>
 public sealed record WebShareRequest(string SessionId, string DeviceInfo, string Ip, bool Pending);
 
+/// <summary>Identifies whether the browser link sends files from or to this node.</summary>
+public enum WebShareMode
+{
+    /// <summary>The browser downloads files offered by this node.</summary>
+    Send,
+    /// <summary>The browser uploads files to this node.</summary>
+    Receive
+}
+
 /// <summary>A snapshot of the current web share session.</summary>
 /// <param name="Active">Whether a share link is currently being served.</param>
 /// <param name="Files">Files offered to browsers.</param>
@@ -27,6 +36,9 @@ public sealed record WebShareState(
     bool AutoAccept,
     string? Pin)
 {
+    /// <summary>Gets the direction of the active browser link.</summary>
+    public WebShareMode Mode { get; init; } = WebShareMode.Send;
+
     /// <summary>Gets an inactive share snapshot.</summary>
     public static readonly WebShareState Inactive = new(false, [], [], false, null);
 }

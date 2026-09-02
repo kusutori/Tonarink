@@ -77,7 +77,17 @@ sealed class ReceivePage : Component<ReceivePageProps>
                         new("App", "Fingerprint"),
                         ("fingerprint", fingerprintPreview!)))
                     .Foreground(Theme.TertiaryText)
-                    .HAlign(HorizontalAlignment.Center)) with
+                    .HAlign(HorizontalAlignment.Center),
+            Button(
+                    HStack(8,
+                        Icon("\uE774"),
+                        TextBlock(t.Message(new("App", "WebReceiveTitle")))),
+                    () => navigation.Navigate(AppRoute.WebReceive))
+                .HAlign(HorizontalAlignment.Center)
+                .Margin(top: 12)
+                .IsEnabled(Props.Runtime.NodeState == LocalSendNodeState.Running)
+                .AutomationName(t.Message(new("App", "WebReceiveTitle")))
+                .ToolTip(t.Message(new("App", "WebReceiveTitle")))) with
         {
             RowGap = 12,
             AlignItems = FlexAlign.Center,

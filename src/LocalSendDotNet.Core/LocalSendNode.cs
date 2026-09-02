@@ -234,6 +234,17 @@ public sealed class LocalSendNode : IAsyncDisposable
         return Task.CompletedTask;
     }
 
+    /// <summary>Serves a browser page that uploads files to this node.</summary>
+    /// <param name="options">PIN and auto-accept behavior.</param>
+    /// <param name="cancellationToken">Cancels the start wait.</param>
+    public Task StartWebReceiveAsync(WebShareOptions? options = null, CancellationToken cancellationToken = default)
+    {
+        EnsureStarted();
+        cancellationToken.ThrowIfCancellationRequested();
+        _webShare!.StartReceive(options);
+        return Task.CompletedTask;
+    }
+
     /// <summary>Stops serving browser downloads.</summary>
     public void StopWebShare() => _webShare?.Stop();
 
@@ -577,7 +588,12 @@ public sealed class LocalSendNode : IAsyncDisposable
         return Task.CompletedTask;
     }
 
-    private async Task<PrepareOutcome> OnPrepareAsync(PrepareUploadRequestDto request, IPAddress remote, string? certificateFingerprint, CancellationToken requestCancellation)
+    private async Task<PrepareOutcome> OnPrepareAsync(
+        PrepareUploadRequestDto request,
+        IPAddress remote,
+        string? certificateFingerprint,
+        bool autoAccept,
+        CancellationToken requestCancellation)
     {
         if (!await _transferSlots.WaitAsync(0, requestCancellation).ConfigureAwait(false))
             return new(HttpStatusCode.TooManyRequests, Message: "The receiver is handling the maximum number of transfers");
@@ -600,20 +616,26 @@ public sealed class LocalSendNode : IAsyncDisposable
             Decision = new(TaskCreationOptions.RunContinuationsAsynchronously),
             Completion = new(TaskCreationOptions.RunContinuationsAsynchronously)
         };
-        _pending[requestId] = session;
-        await _incomingTransfers.PublishAsync(publicRequest, requestCancellation).ConfigureAwait(false);
-
         IncomingDecision decision;
-        using var timeout = new CancellationTokenSource(_options.IncomingDecisionTimeout);
-        using var linked = CancellationTokenSource.CreateLinkedTokenSource(requestCancellation, timeout.Token, _lifetime.Token);
-        try { decision = await session.Decision.Task.WaitAsync(linked.Token).ConfigureAwait(false); }
-        catch (OperationCanceledException)
+        if (autoAccept)
         {
-            _pending.TryRemove(requestId, out _);
-            _transferSlots.Release();
-            return new(HttpStatusCode.RequestTimeout, Message: "Incoming transfer decision timed out");
+            decision = new(true, new AcceptTransferOptions());
         }
-        _pending.TryRemove(requestId, out _);
+        else
+        {
+            _pending[requestId] = session;
+            await _incomingTransfers.PublishAsync(publicRequest, requestCancellation).ConfigureAwait(false);
+            using var timeout = new CancellationTokenSource(_options.IncomingDecisionTimeout);
+            using var linked = CancellationTokenSource.CreateLinkedTokenSource(requestCancellation, timeout.Token, _lifetime.Token);
+            try { decision = await session.Decision.Task.WaitAsync(linked.Token).ConfigureAwait(false); }
+            catch (OperationCanceledException)
+            {
+                _pending.TryRemove(requestId, out _);
+                _transferSlots.Release();
+                return new(HttpStatusCode.RequestTimeout, Message: "Incoming transfer decision timed out");
+            }
+            _pending.TryRemove(requestId, out _);
+        }
         if (!decision.Accepted)
         {
             _transferSlots.Release();

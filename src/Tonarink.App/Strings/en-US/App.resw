@@ -261,6 +261,7 @@
   <data name="WebShareRequests" xml:space="preserve"><value>Requests</value></data>
   <data name="WebShareRequirePin" xml:space="preserve"><value>Require a PIN</value></data>
   <data name="WebShareTitle" xml:space="preserve"><value>Share via link</value></data>
+  <data name="WebReceiveTitle" xml:space="preserve"><value>Receive via link</value></data>
   <data name="WebShareZoom" xml:space="preserve"><value>Show large link</value></data>
   <data name="WebShareZoomTitle" xml:space="preserve"><value>Link</value></data>
   <data name="WantsToSendMessage" xml:space="preserve"><value>Wants to send you a message:</value></data>

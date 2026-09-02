@@ -1,6 +1,8 @@
 using System.Collections.Concurrent;
 using System.Net;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using System.Text.Json.Serialization.Metadata;
 using LocalSendDotNet.Protocol.V2;
 using Microsoft.AspNetCore.Builder;
@@ -23,7 +25,7 @@ internal sealed class V2Server(
     DeviceIdentity identity,
     Func<DeviceInfoDto> localInfo,
     Func<DeviceInfoDto, IPAddress, string?, Task> onRegister,
-    Func<PrepareUploadRequestDto, IPAddress, string?, CancellationToken, Task<PrepareOutcome>> onPrepare,
+    Func<PrepareUploadRequestDto, IPAddress, string?, bool, CancellationToken, Task<PrepareOutcome>> onPrepare,
     Func<string, string, string, IPAddress, Stream, long?, CancellationToken, Task<HttpStatusCode>> onUpload,
     Func<string, IPAddress, CancellationToken, Task<bool>> onCancel,
     ILogger logger,
@@ -67,6 +69,7 @@ internal sealed class V2Server(
         app.MapGet("/", WebIndexAsync);
         app.MapPost(V2Constants.BasePath + "/prepare-download", PrepareDownloadAsync);
         app.MapGet(V2Constants.BasePath + "/download", DownloadAsync);
+        app.MapPost(V2Constants.BasePath + "/prepare-web-upload", PrepareWebUploadAsync);
         _application = app;
         try { await app.StartAsync(cancellationToken).ConfigureAwait(false); }
         catch (Exception exception) when (ContainsAddressInUse(exception))
@@ -116,7 +119,7 @@ internal sealed class V2Server(
             return;
         }
 
-        var html = WebShareHtml.Render(localInfo().Alias, state.Pin is not null);
+        var html = WebShareHtml.Render(localInfo().Alias, state.Pin is not null, state.Mode);
         context.Response.ContentType = "text/html; charset=utf-8";
         await context.Response.WriteAsync(html, context.RequestAborted).ConfigureAwait(false);
     }
@@ -196,6 +199,67 @@ internal sealed class V2Server(
         }
     }
 
+    private async Task PrepareWebUploadAsync(HttpContext context)
+    {
+        var remote = RemoteAddress(context);
+        if (!ConfigureRequestLimit(context, options.MaxPrepareRequestBytes))
+            return;
+        var payload = await ReadJsonAsync(context, V2JsonContext.Default.WebUploadPrepareRequestDto).ConfigureAwait(false);
+        if (payload is null)
+            return;
+        if (payload.Files.Length == 0 || payload.Files.GroupBy(static file => file.Id, StringComparer.Ordinal).Any(static group => group.Count() != 1) ||
+            payload.Files.Any(static file => file.Size < 0 || string.IsNullOrWhiteSpace(file.Id) || string.IsNullOrWhiteSpace(file.FileName) || string.IsNullOrWhiteSpace(file.FileType)))
+        {
+            await WriteErrorAsync(context, HttpStatusCode.BadRequest, "Invalid file metadata").ConfigureAwait(false);
+            return;
+        }
+        if (payload.Files.Length > options.MaxIncomingItemsPerTransfer || ExceedsTransferLimit(payload.Files, options.MaxIncomingTransferBytes))
+        {
+            await WriteErrorAsync(context, HttpStatusCode.RequestEntityTooLarge, "Incoming transfer exceeds configured limits").ConfigureAwait(false);
+            return;
+        }
+
+        try
+        {
+            if (!webShare.TryAuthorizeReceive(remote, context.Request.Query["pin"].ToString(), out var autoAccept))
+            {
+                context.Response.StatusCode = StatusCodes.Status404NotFound;
+                return;
+            }
+            var userAgent = context.Request.Headers.UserAgent.ToString();
+            var fingerprint = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes($"{remote}|{userAgent}")));
+            var request = new PrepareUploadRequestDto
+            {
+                Info = new DeviceInfoDto
+                {
+                    Alias = "Web browser",
+                    Version = V2Constants.Version,
+                    DeviceModel = WebShareUserAgent.Describe(userAgent),
+                    DeviceType = "web",
+                    Fingerprint = fingerprint,
+                    Port = 1,
+                    Protocol = "http",
+                    Download = false
+                },
+                Files = payload.Files.ToDictionary(static file => file.Id, StringComparer.Ordinal)
+            };
+            var outcome = await onPrepare(request, remote, fingerprint, autoAccept, context.RequestAborted).ConfigureAwait(false);
+            context.Response.StatusCode = (int)outcome.StatusCode;
+            if (outcome.Response is not null)
+                await context.Response.WriteAsJsonAsync(outcome.Response, V2JsonContext.Default.PrepareUploadResponseDto, contentType: null, context.RequestAborted).ConfigureAwait(false);
+            else if (outcome.Message is not null)
+                await context.Response.WriteAsJsonAsync(new ErrorResponseDto { Message = outcome.Message }, V2JsonContext.Default.ErrorResponseDto, contentType: null, context.RequestAborted).ConfigureAwait(false);
+        }
+        catch (WebSharePinException)
+        {
+            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+        }
+        catch (WebSharePinRateLimitedException)
+        {
+            context.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+        }
+    }
+
     private Task InfoAsync(HttpContext context)
     {
         var info = localInfo();
@@ -252,7 +316,7 @@ internal sealed class V2Server(
         if (!CheckPin(context, remote))
             return;
 
-        var outcome = await onPrepare(payload, remote, certFingerprint, context.RequestAborted).ConfigureAwait(false);
+        var outcome = await onPrepare(payload, remote, certFingerprint, false, context.RequestAborted).ConfigureAwait(false);
         context.Response.StatusCode = (int)outcome.StatusCode;
         if (outcome.Response is not null)
             await context.Response.WriteAsJsonAsync(outcome.Response, V2JsonContext.Default.PrepareUploadResponseDto, contentType: null, context.RequestAborted).ConfigureAwait(false);

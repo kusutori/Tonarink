@@ -10,6 +10,7 @@ enum AppRoute
     Settings,
     NetworkInterfaces,
     WebShare,
+    WebReceive,
 }
 
 enum AutoSaveMode

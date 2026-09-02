@@ -113,6 +113,58 @@ public sealed class WebShareTests
         finally { Directory.Delete(root, recursive: true); }
     }
 
+    [Fact(Timeout = 20_000)]
+    public async Task BrowserUploadUsesTheNormalIncomingTransferFlow()
+    {
+        var root = TestDirectory.Create();
+        var port = GetFreePort();
+        await using var node = CreateNode(root, port);
+        try
+        {
+            await node.StartAsync();
+            await node.StartWebReceiveAsync();
+            using var client = CreateClient();
+
+            var page = await client.GetStringAsync($"http://127.0.0.1:{port}/");
+            Assert.Contains("prepare-web-upload", page, StringComparison.Ordinal);
+            Assert.Contains("function createFileId()", page, StringComparison.Ordinal);
+            Assert.DoesNotContain("id: crypto.randomUUID()", page, StringComparison.Ordinal);
+
+            await using var incoming = node.WatchIncomingTransfersAsync().GetAsyncEnumerator();
+            var incomingMove = incoming.MoveNextAsync().AsTask();
+            var prepareTask = client.PostAsJsonAsync(
+                $"http://127.0.0.1:{port}/api/localsend/v2/prepare-web-upload",
+                new
+                {
+                    files = new[]
+                    {
+                        new { id = "browser-file", fileName = "from-browser.txt", size = 12, fileType = "text/plain" }
+                    }
+                });
+
+            Assert.True(await incomingMove);
+            var request = incoming.Current;
+            Assert.Equal("Web browser", request.Sender.Alias);
+            var acceptTask = node.AcceptAsync(request.RequestId);
+
+            using var preparedResponse = await prepareTask;
+            preparedResponse.EnsureSuccessStatusCode();
+            using var prepared = JsonDocument.Parse(await preparedResponse.Content.ReadAsStringAsync());
+            var sessionId = prepared.RootElement.GetProperty("sessionId").GetString();
+            var token = prepared.RootElement.GetProperty("files").GetProperty("browser-file").GetString();
+            using var content = new ByteArrayContent("browser-body"u8.ToArray());
+            using var upload = await client.PostAsync(
+                $"http://127.0.0.1:{port}/api/localsend/v2/upload?sessionId={sessionId}&fileId=browser-file&token={token}",
+                content);
+            upload.EnsureSuccessStatusCode();
+
+            var result = await acceptTask;
+            Assert.Equal(TransferState.Completed, result.State);
+            Assert.Equal("browser-body", await File.ReadAllTextAsync(Path.Combine(root, "downloads", "from-browser.txt")));
+        }
+        finally { Directory.Delete(root, recursive: true); }
+    }
+
     private static LocalSendNode CreateNode(string root, int port) => new(new LocalSendOptions
     {
         Alias = "Tonarink",

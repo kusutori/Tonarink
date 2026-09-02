@@ -15,6 +15,7 @@ internal sealed class WebShareService(LocalSendOptions options, ILogger logger)
     private bool _active;
     private bool _autoAccept;
     private string? _pin;
+    private WebShareMode _mode;
 
     public event Action? Changed;
 
@@ -24,7 +25,7 @@ internal sealed class WebShareService(LocalSendOptions options, ILogger logger)
         {
             if (!_active)
                 return WebShareState.Inactive;
-            return new(
+            return new WebShareState(
                 true,
                 _offered.Select(static item => item.File).ToArray(),
                 _sessions.Values
@@ -32,7 +33,10 @@ internal sealed class WebShareService(LocalSendOptions options, ILogger logger)
                     .Select(static session => session.ToRequest())
                     .ToArray(),
                 _autoAccept,
-                _pin);
+                _pin)
+            {
+                Mode = _mode
+            };
         }
     }
 
@@ -52,10 +56,45 @@ internal sealed class WebShareService(LocalSendOptions options, ILogger logger)
                 item.ContentType), item)).ToArray();
             _autoAccept = shareOptions.AutoAccept;
             _pin = string.IsNullOrWhiteSpace(shareOptions.Pin) ? null : shareOptions.Pin.Trim();
+            _mode = WebShareMode.Send;
             _active = true;
             _pinAttempts.Clear();
         }
         Notify();
+    }
+
+    public void StartReceive(WebShareOptions? shareOptions)
+    {
+        shareOptions ??= new WebShareOptions();
+        lock (_gate)
+        {
+            CancelPendingLocked();
+            _offered = [];
+            _autoAccept = shareOptions.AutoAccept;
+            _pin = string.IsNullOrWhiteSpace(shareOptions.Pin) ? null : shareOptions.Pin.Trim();
+            _mode = WebShareMode.Receive;
+            _active = true;
+            _pinAttempts.Clear();
+        }
+        Notify();
+    }
+
+    public bool TryAuthorizeReceive(IPAddress address, string? pin, out bool autoAccept)
+    {
+        lock (_gate)
+        {
+            autoAccept = false;
+            if (!_active || _mode != WebShareMode.Receive)
+                return false;
+            if (!PinAllowedLocked(address, pin, out var unauthorized))
+            {
+                if (unauthorized)
+                    throw new WebSharePinException();
+                throw new WebSharePinRateLimitedException();
+            }
+            autoAccept = _autoAccept;
+            return true;
+        }
     }
 
     public void Stop()
@@ -68,6 +107,7 @@ internal sealed class WebShareService(LocalSendOptions options, ILogger logger)
             _offered = [];
             _autoAccept = false;
             _pin = null;
+            _mode = WebShareMode.Send;
             _active = false;
             _pinAttempts.Clear();
         }

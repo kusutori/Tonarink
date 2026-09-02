@@ -54,6 +54,11 @@ internal sealed class PrepareUploadRequestDto
     public required Dictionary<string, FileDto> Files { get; init; }
 }
 
+internal sealed class WebUploadPrepareRequestDto
+{
+    public required FileDto[] Files { get; init; }
+}
+
 internal sealed class PrepareUploadResponseDto
 {
     public required string SessionId { get; init; }

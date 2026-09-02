@@ -321,7 +321,14 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
                 nodeRef.Current,
                 runtime,
                 settings,
-                SetHttpsOverride)),
+                SetHttpsOverride,
+                WebShareMode.Send)),
+            AppRoute.WebReceive => Component<WebSharePage, WebSharePageProps>(new(
+                nodeRef.Current,
+                runtime,
+                settings,
+                SetHttpsOverride,
+                WebShareMode.Receive)),
             _ => TextBlock(t.Message(new("App", "PageNotFound"))),
         }) with
         {
@@ -772,6 +779,7 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
         AppRoute.Settings => "settings",
         AppRoute.NetworkInterfaces => "settings",
         AppRoute.WebShare => "send",
+        AppRoute.WebReceive => "receive",
         _ => "receive",
     };
 

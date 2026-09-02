@@ -18,6 +18,7 @@ internal static class V2Json
 [JsonSerializable(typeof(RegisterResponseDto))]
 [JsonSerializable(typeof(FileDto))]
 [JsonSerializable(typeof(PrepareUploadRequestDto))]
+[JsonSerializable(typeof(WebUploadPrepareRequestDto))]
 [JsonSerializable(typeof(PrepareUploadResponseDto))]
 [JsonSerializable(typeof(ErrorResponseDto))]
 [JsonSerializable(typeof(PrepareDownloadResponseDto))]

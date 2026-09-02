@@ -18,6 +18,8 @@ Discovery listens for operating-system address changes and rebinds its IPv4 mult
 
 `StartWebShareAsync` serves a browser download page at the node root (`/`). Browsers call `POST /api/localsend/v2/prepare-download` (optional `pin` query) and then `GET /api/localsend/v2/download`. Pending browser sessions appear in `WatchWebShareAsync` until `AcceptWebShareRequest` or `DeclineWebShareRequest`. `WebShareOptions.AutoAccept` skips that confirmation.
 
+`StartWebReceiveAsync` serves the reverse browser flow. The page posts file metadata to `POST /api/localsend/v2/prepare-web-upload`, which produces the same `IncomingTransferRequest` used by LocalSend peers, and streams accepted files through the regular upload route. PIN, partial acceptance, automatic acceptance, destination safety, progress, and cancellation therefore follow the normal receive pipeline.
+
 For a manually entered address, call `ProbeDeviceAsync(endpoint)` first. HTTPS probes validate that the certificate is current, self-signed consistently, and agrees with the fingerprint returned by `/info`; the returned fingerprint is still trust-on-first-use and should be shown for user confirmation. After confirmation, call `AddKnownDeviceAsync(endpoint, fingerprint)`. Manually trusted devices remain in the in-memory list until `RemoveDevice` or node disposal instead of expiring with multicast peers. HTTP probes cannot cryptographically verify identity and return `IdentityVerified == false`.
 
 ## Sending
