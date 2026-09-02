@@ -47,10 +47,13 @@ sealed class ReceivePage : Component<ReceivePageProps>
             : $"#{Convert.ToInt32(fingerprint[..4], 16) % 1000:D3}  #1";
 
         var identityPanel = FlexColumn(
-            (AnimatedVisualPlayer() with { AutoPlay = false })
+            Props.Runtime.IncomingTransfers.Count > 0
+                ? null
+                : (AnimatedVisualPlayer() with { AutoPlay = false })
                 .Size(144, 144)
                 .HAlign(HorizontalAlignment.Center)
                 .AccessibilityHidden()
+                .ConnectedAnimation("incoming-sender")
                 .OnMountAdd(element =>
                 {
                     if (element is not AnimatedVisualPlayer player)
@@ -82,7 +85,7 @@ sealed class ReceivePage : Component<ReceivePageProps>
                     HStack(8,
                         Icon("\uE774"),
                         TextBlock(t.Message(new("App", "WebReceiveTitle")))),
-                    () => navigation.Navigate(AppRoute.WebReceive))
+                    () => navigation.Navigate(AppRoute.WebReceive, AppNavigation.DrillIn))
                 .HAlign(HorizontalAlignment.Center)
                 .Margin(top: 12)
                 .IsEnabled(Props.Runtime.NodeState == LocalSendNodeState.Running)
@@ -130,7 +133,7 @@ sealed class ReceivePage : Component<ReceivePageProps>
                         Heading(t.Message(new("App", "ReceiveTitle")))
                             .HeadingLevel(AutomationHeadingLevel.Level1)
                             .Flex(grow: 1, basis: 0),
-                        Button(Icon(FontIcon("\uE121")), () => navigation.Navigate(AppRoute.History))
+                        Button(Icon(FontIcon("\uE121")), () => navigation.Navigate(AppRoute.History, AppNavigation.DrillIn))
                             .SubtleButton()
                             .AutomationName(t.Message(new("App", "HistoryOpenReceiveHistory")))
                             .MinWidth(40)

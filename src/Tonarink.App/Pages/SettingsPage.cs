@@ -243,7 +243,7 @@ sealed class SettingsPage : Component<SettingsPageProps>
                         isClickEnabled: false,
                         isActionIconVisible: false,
                         content:
-                        Button(t.Message(new("App", "Change")), () => navigation.Navigate(AppRoute.NetworkInterfaces))
+                        Button(t.Message(new("App", "Change")), () => navigation.Navigate(AppRoute.NetworkInterfaces, AppNavigation.DrillIn))
                             .AutomationName(t.Message(new("App", "SettingsNetworkInterfaces")))),
                     SettingsCard(
                         header: t.Message(new("App", "SettingsDiscoveryTimeout")),

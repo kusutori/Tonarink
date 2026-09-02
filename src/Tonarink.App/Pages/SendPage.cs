@@ -22,7 +22,8 @@ sealed record SendPageProps(
     Func<Task> RefreshAsync,
     Action<OutgoingTransferViewState?> SetTransferOverlay,
     ShareTargetPayload? ShareTargetPayload,
-    Action<Guid> ConsumeShareTargetPayload);
+    Action<Guid> ConsumeShareTargetPayload,
+    string? ConnectedDeviceFingerprint);
 
 sealed record SelectedSendItem(
     Guid Id,
@@ -132,10 +133,10 @@ sealed class SendPage : Component<SendPageProps>
         var selectionGrid = Grid(
             columns:
             [
-                GridSize.Star(),
-                GridSize.Star(),
-                GridSize.Star(),
-                GridSize.Star(),
+                GridSize.Star().MinSize(88),
+                GridSize.Star().MinSize(88),
+                GridSize.Star().MinSize(88),
+                GridSize.Star().MinSize(88),
             ],
             rows: [GridSize.Auto],
             SelectionTile(t.Message(new("App", "File")), "Document", () => _ = PickFileAsync(), t)
@@ -198,7 +199,11 @@ sealed class SendPage : Component<SendPageProps>
             .VAlign(VerticalAlignment.Stretch)
             .Flex(grow: 1, shrink: 1, basis: 320);
 
-        var devices = Props.Runtime.Devices;
+        var devices = Props.ConnectedDeviceFingerprint is { } hiddenFingerprint
+            ? Props.Runtime.Devices
+                .Where(device => !string.Equals(device.Fingerprint, hiddenFingerprint, StringComparison.Ordinal))
+                .ToArray()
+            : Props.Runtime.Devices;
         Element deviceBody = devices.Count == 0
             ? EmptyDevices(
                     t,
@@ -224,6 +229,7 @@ sealed class SendPage : Component<SendPageProps>
                         },
                         onFavorite: () => OpenFavoriteDialog(device),
                         t)
+                        .ConnectedAnimation(TransferOverlayVisuals.DeviceConnectedKey(device.Fingerprint))
                         .PositionInSet(index + 1, devices.Count)
                         .WithKey(device.Fingerprint))
                 .ToArray<Element?>());
@@ -252,7 +258,7 @@ sealed class SendPage : Component<SendPageProps>
                             if (Props.Node?.State != LocalSendNodeState.Running)
                                 return;
                             WebShareLaunch.Items = selectedItems.Select(static item => item.Item).ToArray();
-                            navigation.Navigate(AppRoute.WebShare);
+                            navigation.Navigate(AppRoute.WebShare, AppNavigation.DrillIn);
                         })
                             .AutomationName(t.Message(new("App", "WebShareTitle")))
                             .ToolTip(t.Message(new("App", "WebShareTitle")))

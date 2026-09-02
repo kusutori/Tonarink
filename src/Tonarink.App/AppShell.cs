@@ -306,7 +306,8 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
                 RefreshAsync,
                 setOutgoingTransfer,
                 shareTargetPayload,
-                ConsumeShareTargetPayload)),
+                ConsumeShareTargetPayload,
+                outgoingTransfer?.Receiver.Fingerprint)),
             AppRoute.Settings => Component<SettingsPage, SettingsPageProps>(new(
                 settings,
                 runtime,
@@ -333,7 +334,9 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
         {
             CacheMode = NavigationCacheMode.Enabled,
             CacheSize = 3,
-            Transition = NavigationTransition.Fade(TimeSpan.FromMilliseconds(160)),
+            Transition = AppNavigation.IsDetail(navigation.CurrentRoute)
+                ? NavigationTransition.DrillIn()
+                : NavigationTransition.Slide(),
         };
 
         var navigationView = (NavigationView(
