@@ -290,7 +290,6 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
         })
         .WithNavigation(navigation)
         .Tall()
-        .Icon(ImageIcon(new Uri(Path.Combine(AppContext.BaseDirectory, "Assets", "AppIcon.ico"), UriKind.Absolute)))
         .Flex(shrink: 0);
 
         var content = NavigationHost(navigation, route => route switch
