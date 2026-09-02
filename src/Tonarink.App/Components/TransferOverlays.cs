@@ -104,7 +104,6 @@ sealed class OutgoingTransferOverlay : Component<OutgoingTransferOverlayProps>
                 Border(status)
                     .Padding(horizontal: 40, vertical: 24)
                     .Grid(row: 1))
-            .Background(Theme.SolidBackground)
             .Landmark(AutomationLandmarkType.Main);
     }
 
@@ -297,7 +296,6 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                 Border(actions)
                     .Padding(horizontal: 40, vertical: 24)
                     .Grid(row: 1))
-            .Background(Theme.SolidBackground)
             .Landmark(AutomationLandmarkType.Main);
 
         Element RenderActions()

@@ -378,12 +378,16 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
                     .ConnectedAnimation(TransferOverlayVisuals.DeviceConnectedKey(outgoingTransfer.Receiver.Fingerprint))
                 : null;
 
+        var overlayVisible = transferOverlay is not null;
         var contentLayer = Grid(
                 columns: [GridSize.Star()],
                 rows: [GridSize.Star()],
-                navigationView.Grid(row: 0, column: 0),
+                navigationView
+                    .Opacity(overlayVisible ? 0 : 1)
+                    .IsHitTestVisible(!overlayVisible)
+                    .Grid(row: 0, column: 0),
                 Border(transferOverlay)
-                    .IsHitTestVisible(transferOverlay is not null)
+                    .IsHitTestVisible(overlayVisible)
                     .Grid(row: 0, column: 0))
             .Flex(grow: 1, basis: 0);
 
