@@ -284,44 +284,48 @@ sealed class WebSharePage : Component<WebSharePageProps>
 
     private static ButtonElement CopyButton(int successVersion, string name, Action copy)
     {
-        var copyIcon = Icon(FontIcon("\uE8C8", fontSize: 16));
-        var successIcon = Icon(FontIcon("\uE73E", fontSize: 16))
-            .Opacity(0);
-
-        if (successVersion > 0)
-        {
-            copyIcon = copyIcon.Keyframes("copy-feedback-out", successVersion, keyframes => keyframes
-                .Duration(1433)
-                .At(0.000f, opacity: 1, scale: new(1, 1, 1))
-                .At(0.093f, opacity: 0, scale: new(0.273f, 0.273f, 1),
-                    easing: Easing.CubicBezier(0.13f, 0, 0, 1))
-                .At(0.814f, opacity: 0, scale: new(0.273f, 0.273f, 1))
-                .At(0.837f, opacity: 0, scale: new(1, 1, 1))
-                .At(0.907f, opacity: 0, scale: new(1, 1, 1))
-                .At(1.000f, opacity: 1, scale: new(1, 1, 1), easing: Easing.EaseOut));
-
-            successIcon = successIcon.Keyframes("copy-feedback-in", successVersion, keyframes => keyframes
-                .Duration(1433)
-                .At(0.000f, opacity: 0, scale: new(0.385f, 0.385f, 1))
-                .At(0.093f, opacity: 0, scale: new(0.385f, 0.385f, 1))
-                .At(0.186f, opacity: 1, scale: new(1.146f, 1.146f, 1),
-                    easing: Easing.CubicBezier(0.39f, 0, 0.63f, 1))
-                .At(0.232f, opacity: 1, scale: new(1, 1, 1),
-                    easing: Easing.CubicBezier(0.55f, 0, 0.02f, 1))
-                .At(0.814f, opacity: 1, scale: new(1, 1, 1))
-                .At(0.907f, opacity: 0, scale: new(0.385f, 0.385f, 1),
-                    easing: Easing.EaseIn)
-                .At(1.000f, opacity: 0, scale: new(0.385f, 0.385f, 1)));
-        }
+        var playing = successVersion > 0;
+        var copyIcon = Icon("\uE8C8")
+            .Keyframes("copy-feedback-out", successVersion, keyframes => playing
+                ? keyframes
+                    .Duration(1433)
+                    .At(0.000f, opacity: 1, scale: new(1, 1, 1))
+                    .At(0.093f, opacity: 0, scale: new(0.273f, 0.273f, 1),
+                        easing: Easing.CubicBezier(0.13f, 0, 0, 1))
+                    .At(0.814f, opacity: 0, scale: new(0.273f, 0.273f, 1))
+                    .At(0.837f, opacity: 0, scale: new(1, 1, 1))
+                    .At(0.907f, opacity: 0, scale: new(1, 1, 1))
+                    .At(1.000f, opacity: 1, scale: new(1, 1, 1), easing: Easing.EaseOut)
+                : keyframes
+                    .Duration(1)
+                    .At(0f, opacity: 1, scale: new(1, 1, 1))
+                    .At(1f, opacity: 1, scale: new(1, 1, 1)));
+        var successIcon = Icon("\uE73E")
+            .Opacity(0)
+            .Keyframes("copy-feedback-in", successVersion, keyframes => playing
+                ? keyframes
+                    .Duration(1433)
+                    .At(0.000f, opacity: 0, scale: new(0.385f, 0.385f, 1))
+                    .At(0.093f, opacity: 0, scale: new(0.385f, 0.385f, 1))
+                    .At(0.186f, opacity: 1, scale: new(1.146f, 1.146f, 1),
+                        easing: Easing.CubicBezier(0.39f, 0, 0.63f, 1))
+                    .At(0.232f, opacity: 1, scale: new(1, 1, 1),
+                        easing: Easing.CubicBezier(0.55f, 0, 0.02f, 1))
+                    .At(0.814f, opacity: 1, scale: new(1, 1, 1))
+                    .At(0.907f, opacity: 0, scale: new(0.385f, 0.385f, 1),
+                        easing: Easing.EaseIn)
+                    .At(1.000f, opacity: 0, scale: new(0.385f, 0.385f, 1))
+                : keyframes
+                    .Duration(1)
+                    .At(0f, opacity: 0, scale: new(0.385f, 0.385f, 1))
+                    .At(1f, opacity: 0, scale: new(0.385f, 0.385f, 1)));
 
         return Button(
                 Grid(
-                        columns: [GridSize.Auto],
-                        rows: [GridSize.Auto],
-                        copyIcon,
-                        successIcon)
-                    .Width(16)
-                    .Height(16),
+                    columns: [GridSize.Auto],
+                    rows: [GridSize.Auto],
+                    copyIcon,
+                    successIcon),
                 copy)
             .SubtleButton()
             .AutomationName(name);
