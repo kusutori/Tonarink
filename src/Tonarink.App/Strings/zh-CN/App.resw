@@ -127,7 +127,7 @@
   <data name="Port" xml:space="preserve"><value>端口</value></data>
   <data name="PortInUseHint" xml:space="preserve"><value>请检查 53317 端口是否被 Tonarink 或其他兼容 LocalSend 的应用占用。</value></data>
   <data name="PreparingForDevice" xml:space="preserve"><value>正在准备发送给 {device}…</value></data>
-  <data name="ReceiveCancelled" xml:space="preserve"><value>接收已取消。</value></data>
+  <data name="ReceiveCancelled" xml:space="preserve"><value>接收已取消</value></data>
   <data name="ReceivedMessage" xml:space="preserve"><value>发送给你了一条消息：</value></data>
   <data name="ReceivedTextContent" xml:space="preserve"><value>收到的文本内容</value></data>
   <data name="ReceiveFailed" xml:space="preserve"><value>接收失败。</value></data>
@@ -240,7 +240,7 @@
   <data name="ThemeDark" xml:space="preserve"><value>深色</value></data>
   <data name="ThemeLight" xml:space="preserve"><value>浅色</value></data>
   <data name="ThisDevice" xml:space="preserve"><value>本机</value></data>
-  <data name="TransferCancelled" xml:space="preserve"><value>传输已取消。</value></data>
+  <data name="TransferCancelled" xml:space="preserve"><value>传输已取消</value></data>
   <data name="TransferComplete" xml:space="preserve"><value>发送完成</value></data>
   <data name="TransferFailed" xml:space="preserve"><value>传输失败。</value></data>
   <data name="TransferPreparing" xml:space="preserve"><value>正在准备</value></data>

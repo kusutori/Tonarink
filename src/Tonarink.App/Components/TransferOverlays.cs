@@ -1,5 +1,6 @@
 using LocalSendDotNet;
 using Microsoft.UI.Reactor;
+using Microsoft.UI.Reactor.Animation;
 using Microsoft.UI.Reactor.Core;
 using Microsoft.UI.Reactor.Layout;
 using Microsoft.UI.Reactor.Localization;
@@ -41,7 +42,8 @@ sealed class OutgoingTransferOverlay : Component<OutgoingTransferOverlayProps>
                     transfer.Sender?.Alias ?? t.Message(new("App", "ThisDevice")),
                     transfer.Sender?.DeviceModel,
                     transfer.Sender?.DeviceType ?? LocalSendDeviceType.Desktop,
-                    LocalDeviceNumber(transfer.Sender))),
+                    LocalDeviceNumber(transfer.Sender)))
+                    .Transition(Transition.Enter(Transition.Slide(Edge.Top))),
                 Icon(FontIcon("\uE74B", fontSize: 28)).AccessibilityHidden()
                     .HAlign(HorizontalAlignment.Center),
                 Component<DeviceIdentityCard, DeviceIdentityCardProps>(new(
@@ -103,6 +105,7 @@ sealed class OutgoingTransferOverlay : Component<OutgoingTransferOverlayProps>
                 Border(status)
                     .Padding(horizontal: 40, vertical: 24)
                     .Grid(row: 1))
+            .Transition(new FadeTransition())
             .Landmark(AutomationLandmarkType.Main);
     }
 
@@ -296,6 +299,7 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                 Border(actions)
                     .Padding(horizontal: 40, vertical: 24)
                     .Grid(row: 1))
+            .Transition(new FadeTransition())
             .Landmark(AutomationLandmarkType.Main);
 
         Element RenderActions()

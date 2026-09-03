@@ -380,8 +380,12 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
         var contentLayer = Grid(
                 columns: [GridSize.Star()],
                 rows: [GridSize.Star()],
-                navigationView
+                Grid(
+                        columns: [GridSize.Star()],
+                        rows: [GridSize.Star()],
+                        navigationView.Grid(row: 0, column: 0))
                     .Opacity(overlayVisible ? 0 : 1)
+                    .OpacityTransition(TimeSpan.FromMilliseconds(300))
                     .IsHitTestVisible(!overlayVisible)
                     .Grid(row: 0, column: 0),
                 Border(transferOverlay)

@@ -127,7 +127,7 @@
   <data name="Port" xml:space="preserve"><value>Port</value></data>
   <data name="PortInUseHint" xml:space="preserve"><value>Check whether port 53317 is in use by Tonarink or another LocalSend-compatible app.</value></data>
   <data name="PreparingForDevice" xml:space="preserve"><value>Preparing to send to {device}…</value></data>
-  <data name="ReceiveCancelled" xml:space="preserve"><value>Receive cancelled.</value></data>
+  <data name="ReceiveCancelled" xml:space="preserve"><value>Receive cancelled</value></data>
   <data name="ReceivedMessage" xml:space="preserve"><value>Sent you a message:</value></data>
   <data name="ReceivedTextContent" xml:space="preserve"><value>Received text content</value></data>
   <data name="ReceiveFailed" xml:space="preserve"><value>Receive failed.</value></data>
@@ -240,7 +240,7 @@
   <data name="ThemeDark" xml:space="preserve"><value>Dark</value></data>
   <data name="ThemeLight" xml:space="preserve"><value>Light</value></data>
   <data name="ThisDevice" xml:space="preserve"><value>This device</value></data>
-  <data name="TransferCancelled" xml:space="preserve"><value>Transfer cancelled.</value></data>
+  <data name="TransferCancelled" xml:space="preserve"><value>Transfer cancelled</value></data>
   <data name="TransferComplete" xml:space="preserve"><value>Transfer complete</value></data>
   <data name="TransferFailed" xml:space="preserve"><value>Transfer failed.</value></data>
   <data name="TransferPreparing" xml:space="preserve"><value>Preparing</value></data>
