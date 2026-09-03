@@ -1,4 +1,5 @@
 using LocalSendDotNet;
+using System.Numerics;
 using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Core;
 using Microsoft.UI.Reactor.Controls.Validation;
@@ -78,6 +79,7 @@ sealed class SendPage : Component<SendPageProps>
             },
             static () => FavoriteDeviceStore.Entries);
         var (favoriteTarget, setFavoriteTarget) = UseState<LocalSendDevice?>(null);
+        var (refreshSpin, setRefreshSpin) = UseState(0);
         var (favoriteName, setFavoriteName) = UseState(string.Empty);
         var (favoriteAddress, setFavoriteAddress) = UseState(string.Empty);
         var (favoritePort, setFavoritePort) = UseState(string.Empty);
@@ -243,7 +245,26 @@ sealed class SendPage : Component<SendPageProps>
                     FlexRow(
                         BodyStrong(t.Message(new("App", "NearbyDevices")))
                             .Flex(grow: 1, basis: 0),
-                        Button(Icon("Refresh"), () => _ = Props.RefreshAsync())
+                        Button(
+                            Icon("Refresh")
+                                .RotationTransition(TimeSpan.FromMilliseconds(500))
+                                .Rotation(refreshSpin * 360f)
+                                .OnSizeChanged(static (s, e) =>
+                                {
+                                    if (s is not UIElement element
+                                        || e.NewSize.Width <= 0
+                                        || e.NewSize.Height <= 0)
+                                        return;
+                                    element.CenterPoint = new Vector3(
+                                        (float)(e.NewSize.Width / 2),
+                                        (float)(e.NewSize.Height / 2),
+                                        0);
+                                }),
+                            () =>
+                            {
+                                setRefreshSpin(refreshSpin + 1);
+                                _ = Props.RefreshAsync();
+                            })
                             .AutomationName(t.Message(new("App", "RefreshDevices")))
                             .ToolTip(t.Message(new("App", "RefreshDevices")))
                             .IsEnabled(!sendMutation.IsPending),
