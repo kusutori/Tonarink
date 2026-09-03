@@ -377,16 +377,22 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
                 : null;
 
         var overlayVisible = transferOverlay is not null;
+        var navigationLayer = Grid(
+                columns: [GridSize.Star()],
+                rows: [GridSize.Star()],
+                navigationView.Grid(row: 0, column: 0))
+            .Opacity(overlayVisible ? 0 : 1)
+            .IsVisible(pendingIncoming is null)
+            .IsHitTestVisible(!overlayVisible);
+        // Sending still needs this fade: instant Opacity(0) on the ancestor
+        // crashes WinUI connected animation. Incoming has no connected animation.
+        if (pendingIncoming is null)
+            navigationLayer = navigationLayer.OpacityTransition(TimeSpan.FromMilliseconds(300));
+
         var contentLayer = Grid(
                 columns: [GridSize.Star()],
                 rows: [GridSize.Star()],
-                Grid(
-                        columns: [GridSize.Star()],
-                        rows: [GridSize.Star()],
-                        navigationView.Grid(row: 0, column: 0))
-                    .Opacity(overlayVisible ? 0 : 1)
-                    .IsHitTestVisible(!overlayVisible)
-                    .Grid(row: 0, column: 0),
+                navigationLayer.Grid(row: 0, column: 0),
                 Border(transferOverlay)
                     .IsHitTestVisible(overlayVisible)
                     .Grid(row: 0, column: 0))
