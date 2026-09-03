@@ -6,7 +6,6 @@ using Microsoft.UI.Reactor.Layout;
 using Microsoft.UI.Reactor.Localization;
 using Microsoft.UI.Reactor.Navigation;
 using System.Net;
-using System.Net.Sockets;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
@@ -15,6 +14,7 @@ using Windows.Storage;
 using Windows.Storage.Pickers;
 using static Microsoft.UI.Reactor.Factories;
 using static Microsoft.UI.Reactor.Controls.Validation.FormFieldDsl;
+using static TransferOverlayVisuals;
 
 sealed record SendPageProps(
     AppRuntimeState Runtime,
@@ -229,7 +229,6 @@ sealed class SendPage : Component<SendPageProps>
                         },
                         onFavorite: () => OpenFavoriteDialog(device),
                         t)
-                        .ConnectedAnimation(TransferOverlayVisuals.DeviceConnectedKey(device.Fingerprint))
                         .PositionInSet(index + 1, devices.Count)
                         .WithKey(device.Fingerprint))
                 .ToArray<Element?>());
@@ -861,44 +860,18 @@ sealed class SendPage : Component<SendPageProps>
         IntlAccessor t)
     {
         var displayName = favorite?.Name ?? device.Alias;
-        var model = string.IsNullOrWhiteSpace(device.DeviceModel)
-            ? DeviceTypeLabel(t, device.DeviceType)
-            : device.DeviceModel;
 
-        return Grid(
-            columns: [GridSize.Star(), GridSize.Auto],
-            rows: [GridSize.Auto],
-            Button(
-                Grid(
-                    columns: [GridSize.Auto, GridSize.Star()],
-                    rows: [GridSize.Auto],
-                    Border(Icon(DeviceIcon(device.DeviceType)).AccessibilityHidden())
-                        .Size(56, 56)
-                        .CornerRadius(28)
-                        .Background(Theme.SubtleFill)
-                        .Grid(column: 0),
-                    VStack(8,
-                        BodyLarge(displayName)
-                            .TextTrimming(TextTrimming.CharacterEllipsis)
-                            .ToolTip(displayName),
-                        HStack(8,
-                            DeviceTag(DeviceNumber(device)),
-                            DeviceTag(model!)))
-                        .Margin(horizontal: 16, vertical: 0)
-                        .VAlign(VerticalAlignment.Center)
-                        .Grid(column: 1)),
-                onClick)
-                .MinHeight(96)
-                .HAlign(HorizontalAlignment.Stretch)
-                .HorizontalContentAlignment(HorizontalAlignment.Stretch)
-                .AutomationName(t.Message(new("App", "SendToDevice"), ("device", displayName)))
-                .IsEnabled(isEnabled)
-                .Resources(static resources => resources
-                    .Set("ButtonBackground", Theme.Ref("SubtleFillColorTransparentBrush"))
-                    .Set("ButtonBackgroundPointerOver", Theme.Ref("SubtleFillColorSecondaryBrush"))
-                    .Set("ButtonBackgroundPressed", Theme.Ref("SubtleFillColorTertiaryBrush"))
-                    .Set("ButtonBorderBrush", Theme.Ref("SubtleFillColorTransparentBrush")))
-                .Grid(column: 0),
+        return FlexRow(
+            Component<DeviceIdentityCard, DeviceIdentityCardProps>(new(
+                    displayName,
+                    device.DeviceModel,
+                    device.DeviceType,
+                    RemoteDeviceNumber(device),
+                    DeviceConnectedKey(device.Fingerprint),
+                    onClick,
+                    t.Message(new("App", "SendToDevice"), ("device", displayName)),
+                    isEnabled))
+                .Flex(grow: 1, basis: 0),
             Button(Icon(favorite is null ? "\uEB51" : "\uEB52"), onFavorite)
                 .AutomationName(favorite is null
                     ? t.Message(new("App", "FavoriteDevice"), ("device", displayName))
@@ -908,24 +881,17 @@ sealed class SendPage : Component<SendPageProps>
                     : t.Message(new("App", "EditFavorite")))
                 .MinWidth(64)
                 .MinHeight(64)
-                .VAlign(VerticalAlignment.Center)
                 .Resources(static resources => resources
                     .Set("ButtonBackground", Theme.Ref("SubtleFillColorTransparentBrush"))
                     .Set("ButtonBackgroundPointerOver", Theme.Ref("SubtleFillColorSecondaryBrush"))
                     .Set("ButtonBackgroundPressed", Theme.Ref("SubtleFillColorTertiaryBrush"))
                     .Set("ButtonBorderBrush", Theme.Ref("SubtleFillColorTransparentBrush")))
-                .Grid(column: 1))
-            .MinHeight(96)
-            .CornerRadius(8)
-            .Background(Theme.CardBackground)
-            .WithBorder(Theme.CardStroke, 1);
+                .Flex(shrink: 0)) with
+        {
+            AlignItems = FlexAlign.Center,
+            ColumnGap = 4,
+        };
     }
-
-    private static Element DeviceTag(string text) =>
-        Border(Caption(text))
-            .Padding(horizontal: 8, vertical: 4)
-            .CornerRadius(4)
-            .Background(Theme.SubtleFill);
 
     private static Element EmptyDevices(
         IntlAccessor t,
@@ -1076,35 +1042,6 @@ sealed class SendPage : Component<SendPageProps>
         TransferState.Cancelled => t.Message(new("App", "TransferCancelled")),
         _ => t.Message(new("App", "TransferFailed")),
     };
-
-    private static string DeviceIcon(LocalSendDeviceType type) => type switch
-    {
-        LocalSendDeviceType.Mobile => "Phone",
-        LocalSendDeviceType.Web => "World",
-        LocalSendDeviceType.Server => "World",
-        _ => "Remote",
-    };
-
-    private static string DeviceTypeLabel(IntlAccessor t, LocalSendDeviceType type) => type switch
-    {
-        LocalSendDeviceType.Mobile => t.Message(new("App", "DeviceMobile")),
-        LocalSendDeviceType.Web => t.Message(new("App", "DeviceWeb")),
-        LocalSendDeviceType.Headless => t.Message(new("App", "DeviceHeadless")),
-        LocalSendDeviceType.Server => t.Message(new("App", "DeviceServer")),
-        _ => t.Message(new("App", "DeviceDesktop")),
-    };
-
-    private static string DeviceNumber(LocalSendDevice device)
-    {
-        var address = device.PreferredEndpoint?.Address;
-        if (address is null)
-            return "#—";
-        if (address.IsIPv4MappedToIPv6)
-            address = address.MapToIPv4();
-        return address.AddressFamily == AddressFamily.InterNetwork
-            ? $"#{address.GetAddressBytes()[^1]}"
-            : "#—";
-    }
 
     private static string ItemIcon(SelectedSendItem item) => item.Kind switch
     {

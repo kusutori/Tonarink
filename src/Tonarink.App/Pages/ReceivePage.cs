@@ -53,7 +53,7 @@ sealed class ReceivePage : Component<ReceivePageProps>
                 .Size(144, 144)
                 .HAlign(HorizontalAlignment.Center)
                 .AccessibilityHidden()
-                .ConnectedAnimation("incoming-sender")
+                .ConnectedAnimation(IncomingConnectedKey)
                 .OnMountAdd(element =>
                 {
                     if (element is not AnimatedVisualPlayer player)

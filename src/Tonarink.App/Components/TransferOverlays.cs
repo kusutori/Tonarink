@@ -37,20 +37,19 @@ sealed class OutgoingTransferOverlay : Component<OutgoingTransferOverlayProps>
         var progressText = $"{FormatBytes(transfer.BytesTransferred)} / {FormatBytes(transfer.TotalBytes)}";
 
         var devices = VStack(20,
-                TransferDeviceCard(
+                Component<DeviceIdentityCard, DeviceIdentityCardProps>(new(
                     transfer.Sender?.Alias ?? t.Message(new("App", "ThisDevice")),
                     transfer.Sender?.DeviceModel,
                     transfer.Sender?.DeviceType ?? LocalSendDeviceType.Desktop,
-                    LocalDeviceNumber(transfer.Sender),
-                    t),
+                    LocalDeviceNumber(transfer.Sender))),
                 Icon(FontIcon("\uE74B", fontSize: 28)).AccessibilityHidden()
                     .HAlign(HorizontalAlignment.Center),
-                TransferDeviceCard(
+                Component<DeviceIdentityCard, DeviceIdentityCardProps>(new(
                     transfer.Receiver.Alias,
                     transfer.Receiver.DeviceModel,
                     transfer.Receiver.DeviceType,
                     RemoteDeviceNumber(transfer.Receiver),
-                    t))
+                    DeviceConnectedKey(transfer.Receiver.Fingerprint))))
             .MaxWidth(720)
             .HAlign(HorizontalAlignment.Stretch);
 
@@ -240,7 +239,8 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                     .Size(88, 88)
                     .CornerRadius(44)
                     .Background(Theme.SubtleFill)
-                    .HAlign(HorizontalAlignment.Center),
+                    .HAlign(HorizontalAlignment.Center)
+                    .ConnectedAnimation(IncomingConnectedKey),
                 Title(request.Sender.Alias)
                     .TextAlignment(TextAlignment.Center)
                     .HAlign(HorizontalAlignment.Center),
@@ -462,6 +462,8 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
 
 static class TransferOverlayVisuals
 {
+    public const string IncomingConnectedKey = "incoming-sender";
+
     public static string DeviceConnectedKey(string fingerprint) => $"device:{fingerprint}";
 
     public static void UpdateTaskbarProgress(
@@ -509,34 +511,6 @@ static class TransferOverlayVisuals
         window.TaskbarItem.Progress.Clear();
         window.TaskbarItem.Description = null;
     }
-
-    public static Element TransferDeviceCard(
-        string alias,
-        string? model,
-        LocalSendDeviceType type,
-        string number,
-        IntlAccessor t) =>
-        Card(
-            Grid(
-                columns: [GridSize.Auto, GridSize.Star()],
-                rows: [GridSize.Auto],
-                Border(Icon(DeviceIcon(type)).AccessibilityHidden())
-                    .Size(64, 64)
-                    .CornerRadius(32)
-                    .Background(Theme.SubtleFill)
-                    .Grid(column: 0),
-                VStack(8,
-                    BodyLarge(alias)
-                        .TextTrimming(TextTrimming.CharacterEllipsis)
-                        .ToolTip(alias),
-                    HStack(8,
-                        DeviceTag(number),
-                        DeviceTag(DeviceModel(t, model, type))))
-                    .Margin(horizontal: 16, vertical: 0)
-                    .VAlign(VerticalAlignment.Center)
-                    .Grid(column: 1)))
-            .MinHeight(104)
-            .HAlign(HorizontalAlignment.Stretch);
 
     public static Element DeviceTag(string text) =>
         Border(Caption(text))

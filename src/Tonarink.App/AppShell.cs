@@ -369,13 +369,11 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
                     settings.DownloadDirectory,
                     DismissIncoming))
                 .WithKey(pendingIncoming.RequestId.ToString("N"))
-                .ConnectedAnimation("incoming-sender")
             : outgoingTransfer is not null
                 ? Component<OutgoingTransferOverlay, OutgoingTransferOverlayProps>(new(
                     outgoingTransfer,
                     () => setOutgoingTransfer(null)))
                     .WithKey(outgoingTransfer.Receiver.Fingerprint)
-                    .ConnectedAnimation(TransferOverlayVisuals.DeviceConnectedKey(outgoingTransfer.Receiver.Fingerprint))
                 : null;
 
         var overlayVisible = transferOverlay is not null;
