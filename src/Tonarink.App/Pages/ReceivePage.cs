@@ -11,7 +11,6 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using static Microsoft.UI.Reactor.Factories;
 using static Tonarink.Controls.Toolkit.SegmentedElement;
-using static TransferOverlayVisuals;
 
 sealed record ReceivePageProps(
     AppRuntimeState Runtime,
@@ -53,7 +52,6 @@ sealed class ReceivePage : Component<ReceivePageProps>
                 .Size(144, 144)
                 .HAlign(HorizontalAlignment.Center)
                 .AccessibilityHidden()
-                .ConnectedAnimation(IncomingConnectedKey)
                 .OnMountAdd(element =>
                 {
                     if (element is not AnimatedVisualPlayer player)

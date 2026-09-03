@@ -242,8 +242,7 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                     .Size(88, 88)
                     .CornerRadius(44)
                     .Background(Theme.SubtleFill)
-                    .HAlign(HorizontalAlignment.Center)
-                    .ConnectedAnimation(IncomingConnectedKey),
+                    .HAlign(HorizontalAlignment.Center),
                 Title(request.Sender.Alias)
                     .TextAlignment(TextAlignment.Center)
                     .HAlign(HorizontalAlignment.Center),
@@ -299,7 +298,7 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                 Border(actions)
                     .Padding(horizontal: 40, vertical: 24)
                     .Grid(row: 1))
-            .Transition(new FadeTransition())
+            .Transition(Transition.Enter(new FadeTransition()))
             .Landmark(AutomationLandmarkType.Main);
 
         Element RenderActions()
@@ -466,8 +465,6 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
 
 static class TransferOverlayVisuals
 {
-    public const string IncomingConnectedKey = "incoming-sender";
-
     public static string DeviceConnectedKey(string fingerprint) => $"device:{fingerprint}";
 
     public static void UpdateTaskbarProgress(
