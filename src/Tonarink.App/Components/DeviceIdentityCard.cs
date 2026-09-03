@@ -15,7 +15,8 @@ sealed record DeviceIdentityCardProps(
     string? ConnectedAnimationKey = null,
     Action? OnClick = null,
     string? AutomationName = null,
-    bool IsEnabled = true);
+    bool IsEnabled = true,
+    double TrailingReserve = 0);
 
 sealed class DeviceIdentityCard : Component<DeviceIdentityCardProps>
 {
@@ -40,6 +41,8 @@ sealed class DeviceIdentityCard : Component<DeviceIdentityCardProps>
                 .Margin(horizontal: 16, vertical: 0)
                 .VAlign(VerticalAlignment.Center)
                 .Grid(column: 1));
+        if (Props.TrailingReserve > 0)
+            identity = identity.Padding(right: Props.TrailingReserve);
 
         Element body = Props.OnClick is null
             ? identity

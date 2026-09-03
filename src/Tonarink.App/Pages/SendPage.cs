@@ -881,22 +881,26 @@ sealed class SendPage : Component<SendPageProps>
         IntlAccessor t)
     {
         var displayName = favorite?.Name ?? device.Alias;
+        var favoriteName = favorite is null
+            ? t.Message(new("App", "FavoriteDevice"), ("device", displayName))
+            : t.Message(new("App", "EditFavoriteDevice"), ("device", displayName));
 
-        return FlexRow(
+        return Grid(
+            columns: [GridSize.Star()],
+            rows: [GridSize.Auto],
             Component<DeviceIdentityCard, DeviceIdentityCardProps>(new(
-                    displayName,
-                    device.DeviceModel,
-                    device.DeviceType,
-                    RemoteDeviceNumber(device),
-                    DeviceConnectedKey(device.Fingerprint),
-                    onClick,
-                    t.Message(new("App", "SendToDevice"), ("device", displayName)),
-                    isEnabled))
-                .Flex(grow: 1, basis: 0),
+                displayName,
+                device.DeviceModel,
+                device.DeviceType,
+                RemoteDeviceNumber(device),
+                DeviceConnectedKey(device.Fingerprint),
+                onClick,
+                t.Message(new("App", "SendToDevice"), ("device", displayName)),
+                isEnabled,
+                TrailingReserve: 56))
+                .Grid(0, 0),
             Button(Icon(favorite is null ? "\uEB51" : "\uEB52"), onFavorite)
-                .AutomationName(favorite is null
-                    ? t.Message(new("App", "FavoriteDevice"), ("device", displayName))
-                    : t.Message(new("App", "EditFavoriteDevice"), ("device", displayName)))
+                .AutomationName(favoriteName)
                 .ToolTip(favorite is null
                     ? t.Message(new("App", "AddFavoriteTitle"))
                     : t.Message(new("App", "EditFavorite")))
@@ -907,11 +911,12 @@ sealed class SendPage : Component<SendPageProps>
                     .Set("ButtonBackgroundPointerOver", Theme.Ref("SubtleFillColorSecondaryBrush"))
                     .Set("ButtonBackgroundPressed", Theme.Ref("SubtleFillColorTertiaryBrush"))
                     .Set("ButtonBorderBrush", Theme.Ref("SubtleFillColorTransparentBrush")))
-                .Flex(shrink: 0)) with
-        {
-            AlignItems = FlexAlign.Center,
-            ColumnGap = 4,
-        };
+                .HAlign(HorizontalAlignment.Right)
+                .VAlign(VerticalAlignment.Center)
+                .Margin(right: 8)
+                .Grid(0, 0))
+            .MinHeight(104)
+            .HAlign(HorizontalAlignment.Stretch);
     }
 
     private static Element EmptyDevices(
