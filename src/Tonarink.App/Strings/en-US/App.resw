@@ -107,6 +107,7 @@
   <data name="NetworkStartFailed" xml:space="preserve"><value>Could not start the network service</value></data>
   <data name="DiscoveryScanHint" xml:space="preserve"><value>Multicast discovery is unavailable. Nearby devices are found by scanning this network.</value></data>
   <data name="NodeDisconnected" xml:space="preserve"><value>Disconnected</value></data>
+  <data name="NetworkStatus" xml:space="preserve"><value>Network status</value></data>
   <data name="NodeDiscoveryLimited" xml:space="preserve"><value>Connected; nearby search is using a network scan</value></data>
   <data name="NodeFaulted" xml:space="preserve"><value>Network service unavailable</value></data>
   <data name="NodeRunning" xml:space="preserve"><value>Connected to the local network</value></data>

@@ -107,6 +107,7 @@
   <data name="NetworkStartFailed" xml:space="preserve"><value>无法启动网络服务</value></data>
   <data name="DiscoveryScanHint" xml:space="preserve"><value>多播发现不可用。正在通过扫描局域网查找附近设备。</value></data>
   <data name="NodeDisconnected" xml:space="preserve"><value>未连接</value></data>
+  <data name="NetworkStatus" xml:space="preserve"><value>网络状态</value></data>
   <data name="NodeDiscoveryLimited" xml:space="preserve"><value>已连接；附近设备通过网络扫描查找</value></data>
   <data name="NodeFaulted" xml:space="preserve"><value>网络服务不可用</value></data>
   <data name="NodeRunning" xml:space="preserve"><value>已连接到本地网络</value></data>

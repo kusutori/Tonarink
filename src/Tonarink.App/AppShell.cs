@@ -6,6 +6,7 @@ using Microsoft.UI.Reactor.Localization;
 using Microsoft.UI.Reactor.Navigation;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using static Microsoft.UI.Reactor.Factories;
@@ -116,6 +117,7 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
         var updateSettings = Props.UpdateSettings;
         var navigation = UseNavigation(AppRoute.Receive);
         var navigationViewRef = UseRef<NavigationView?>(null);
+        var (isNavigationPaneOpen, setNavigationPaneOpen) = UseState(false);
         var (runtime, updateRuntime) = UseReducer(AppRuntimeState.Initial);
         var (outgoingTransfer, setOutgoingTransfer) = UseState<OutgoingTransferViewState?>(null);
         var (shareTargetPayload, setShareTargetPayload) = UseState<ShareTargetPayload?>(null);
@@ -280,15 +282,69 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
             }
         };
 
+        var nodeStatusText = NodeStatusText(t, runtime.NodeState, runtime.DiscoveryWarning);
+        var nodeStatusColor = runtime.Error is not null || runtime.NodeState == LocalSendNodeState.Faulted
+            ? Theme.SystemCritical
+            : runtime.DiscoveryWarning is not null
+                ? Theme.SystemCaution
+                : runtime.NodeState == LocalSendNodeState.Running
+                    ? Theme.SystemSuccess
+                    : runtime.NodeState is LocalSendNodeState.Starting or LocalSendNodeState.Stopping
+                        ? Theme.SystemAttention
+                        : Theme.SecondaryText;
+        Element paneStatus = isNavigationPaneOpen
+            ? VStack(0,
+                Border(null)
+                    .Height(1)
+                    .Margin(horizontal: 12, vertical: 0)
+                    .Background(Theme.DividerStroke)
+                    .AccessibilityHidden(),
+                Grid(
+                        columns: [GridSize.Auto, GridSize.Star(), GridSize.Auto],
+                        rows: [GridSize.Auto],
+                        Icon("\uE701")
+                            .VAlign(VerticalAlignment.Center)
+                            .AccessibilityHidden()
+                            .Grid(column: 0),
+                        VStack(2,
+                                Caption(t.Message(new("App", "NetworkStatus")))
+                                    .SemiBold(),
+                                Caption(nodeStatusText)
+                                    .Foreground(Theme.SecondaryText)
+                                    .TextWrapping(TextWrapping.WrapWholeWords)
+                                    .LiveRegion(AutomationLiveSetting.Polite))
+                            .Margin(horizontal: 12, vertical: 0)
+                            .Grid(column: 1),
+                        Border(null)
+                            .Size(8, 8)
+                            .CornerRadius(4)
+                            .Background(nodeStatusColor)
+                            .VAlign(VerticalAlignment.Center)
+                            .AccessibilityHidden()
+                            .Grid(column: 2))
+                    .Padding(horizontal: 16, vertical: 14)
+                    .AutomationName(nodeStatusText)
+                    .ToolTip(nodeStatusText))
+            : VStack(0,
+                Border(null)
+                    .Height(1)
+                    .Margin(horizontal: 12, vertical: 0)
+                    .Background(Theme.DividerStroke)
+                    .AccessibilityHidden(),
+                Border(
+                        Border(null)
+                            .Size(8, 8)
+                            .CornerRadius(4)
+                            .Background(nodeStatusColor)
+                            .AccessibilityHidden())
+                    .Size(56, 44)
+                    .HAlign(HorizontalAlignment.Center)
+                    .AutomationName(nodeStatusText)
+                    .ToolTip(nodeStatusText));
+
         var titleBar = (TitleBar("Tonarink") with
         {
             Subtitle = t.Message(new("App", "Tagline")),
-            RightHeader = Caption(NodeStatusText(t, runtime.NodeState, runtime.DiscoveryWarning))
-                .Foreground(runtime.Error is not null
-                    ? Theme.SystemCritical
-                    : runtime.DiscoveryWarning is not null
-                        ? Theme.SystemCaution
-                        : Theme.SecondaryText),
         })
         .WithNavigation(navigation)
         .PaneToggleButtonVisible(useTitleBarPaneToggle)
@@ -359,11 +415,20 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
             .ExpandedModeThresholdWidth(1008)
             .OpenPaneLength(248)
             .CompactPaneLength(56)
+            .PaneFooter(paneStatus)
+            .PaneOpenChanged(setNavigationPaneOpen)
             .PaneToggleButtonVisible(!useTitleBarPaneToggle)
             .AlwaysShowHeader(false)
             .BackButtonVisible(false)
             .TitleBarAutoPadding(false)
-            .OnMountAdd(element => navigationViewRef.Current = element as NavigationView)
+            .OnMountAdd(element =>
+            {
+                if (element is not NavigationView navigationView)
+                    return;
+
+                navigationViewRef.Current = navigationView;
+                setNavigationPaneOpen(navigationView.IsPaneOpen);
+            })
             .OnUnmountAdd(element =>
             {
                 if (ReferenceEquals(navigationViewRef.Current, element))
