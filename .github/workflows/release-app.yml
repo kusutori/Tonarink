@@ -88,10 +88,8 @@ jobs:
           }
 
           Copy-Item README.md, LICENSE, NOTICE -Destination $publishDir
-          $symbols = Get-Item (Join-Path $publishDir 'Tonarink.pdb')
-          $symbolsArchive = Join-Path $env:RUNNER_TEMP "Tonarink-${{ steps.release.outputs.version }}-${{ matrix.platform }}-symbols.zip"
-          Compress-Archive -Path $symbols.FullName -DestinationPath $symbolsArchive -CompressionLevel Optimal
-          Remove-Item $symbols.FullName -Force
+          Get-ChildItem -LiteralPath $publishDir -Recurse -Filter '*.pdb' -File |
+            Remove-Item -Force -ErrorAction SilentlyContinue
 
           $archive = Join-Path $env:RUNNER_TEMP "Tonarink-${{ steps.release.outputs.version }}-${{ matrix.platform }}-portable.zip"
           Compress-Archive -Path (Join-Path $publishDir '*') -DestinationPath $archive -CompressionLevel Optimal
@@ -100,7 +98,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: portable-${{ matrix.platform }}
-          path: ${{ runner.temp }}/Tonarink-${{ steps.release.outputs.version }}-${{ matrix.platform }}-*.zip
+          path: ${{ runner.temp }}/Tonarink-${{ steps.release.outputs.version }}-${{ matrix.platform }}-portable.zip
           if-no-files-found: error
 
   signed-msix:
@@ -208,6 +206,8 @@ jobs:
             -p:TonarinkWidgets=$widgets `
             -p:GenerateAppxPackageOnBuild=true `
             -p:GenerateTestArtifacts=true `
+            -p:AppxSymbolPackageEnabled=false `
+            -p:AppxPackageIncludePrivateSymbols=false `
             -p:AppxPackageSigningEnabled=true `
             -p:PackageCertificateThumbprint=$env:THUMBPRINT `
             -p:AppxPackageDir=$packageDir
@@ -713,30 +713,58 @@ jobs:
           path: packages
           merge-multiple: true
 
+      - name: Resolve release metadata
+        id: release
+        shell: pwsh
+        env:
+          RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.version || github.ref_name }}
+        run: |
+          $tag = $env:RELEASE_TAG.Trim()
+          $version = $tag -replace '^app-', '' -replace '^v', ''
+          if ($version -notmatch '^\d+\.\d+\.\d+(?:\.\d+)?$') {
+            throw "Version '$version' must use app-vMAJOR.MINOR.PATCH or app-vMAJOR.MINOR.PATCH.REVISION."
+          }
+          "tag=$tag" >> $env:GITHUB_OUTPUT
+          "version=$version" >> $env:GITHUB_OUTPUT
+
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.event_name == 'workflow_dispatch' && inputs.version || github.ref_name }}
           generate_release_notes: true
-          prerelease: true
+          prerelease: false
           body: |
             ## Choose a download / 下载选择
 
+            > [!IMPORTANT]
+            > **Strongly prefer an installed MSIX build.** Windows Share and File Explorer context-menu integration require a packaged app. For most x64 PCs, choose the [Native AOT MSIX](https://github.com/${{ github.repository }}/releases/download/${{ steps.release.outputs.tag }}/Tonarink-${{ steps.release.outputs.version }}-x64-aot-msix.zip) or the [standard MSIX](https://github.com/${{ github.repository }}/releases/download/${{ steps.release.outputs.tag }}/Tonarink-${{ steps.release.outputs.version }}-x64-msix.zip).
+            >
+            > **强烈建议安装 MSIX 打包版本。** Windows 分享菜单和文件资源管理器右键菜单集成都依赖打包应用。大多数 x64 电脑请选择 [Native AOT MSIX](https://github.com/${{ github.repository }}/releases/download/${{ steps.release.outputs.tag }}/Tonarink-${{ steps.release.outputs.version }}-x64-aot-msix.zip) 或 [普通 MSIX](https://github.com/${{ github.repository }}/releases/download/${{ steps.release.outputs.tag }}/Tonarink-${{ steps.release.outputs.version }}-x64-msix.zip)。
+
+            Native AOT builds start faster and normally use less memory. However, a known issue can cause noticeable lag on some devices; if that happens, install the standard MSIX instead.
+
+            Native AOT 版本启动更快、资源占用通常更低，但目前存在一个已知问题，可能在部分设备上出现明显卡顿；如果遇到这种情况，请改用普通 MSIX 版本。
+
+            > [!WARNING]
+            > Widgets builds are provided for testing only. The Windows 11 widget feature is still incomplete and these builds are not recommended for normal use.
+            >
+            > Widgets 版本仅供测试。当前 Windows 11 小组件功能仍处于半成品阶段，不建议日常使用该版本。
+
             | Asset / 产物 | Architecture / 架构 | Recommended for / 适合场景 |
             | --- | --- | --- |
-            | `Tonarink-<version>-x64-msix.zip` | x64 | **Recommended for most Intel/AMD Windows PCs.** Signed MSIX with the standard managed build. / 推荐大多数 Intel/AMD Windows 电脑使用。 |
-            | `Tonarink-<version>-ARM64-msix.zip` | ARM64 | **Recommended for Windows on Arm.** Signed MSIX with the standard managed build. / 推荐骁龙等 ARM64 Windows 设备使用。 |
-            | `Tonarink-<version>-x64-widgets-msix.zip` | x64 | Optional build that registers a Windows 11 widget (Native AOT host). Same package identity as the standard MSIX. / 可选的带小组件版本。 |
-            | `Tonarink-<version>-ARM64-widgets-msix.zip` | ARM64 | Optional Widgets MSIX for Windows on Arm. / ARM64 带小组件的可选安装包。 |
-            | `Tonarink-<version>-x64-aot-msix.zip` | x64 | Installed Native AOT build with faster startup and no separate .NET runtime requirement. / 安装版 Native AOT。 |
-            | `Tonarink-<version>-ARM64-aot-msix.zip` | ARM64 | Native AOT MSIX for Windows on Arm. / ARM64 安装版 Native AOT。 |
-            | `Tonarink-<version>-x64-aot-widgets-msix.zip` | x64 | Native AOT MSIX with the Windows 11 widget host. / 带小组件的 Native AOT 安装包。 |
-            | `Tonarink-<version>-ARM64-aot-widgets-msix.zip` | ARM64 | Native AOT Widgets MSIX for Windows on Arm. / ARM64 带小组件的 Native AOT 安装包。 |
-            | `Tonarink-<version>-x64-portable.zip` | x64 | Native AOT build that runs without installation. / 无需安装的 x64 便携版。 |
-            | `Tonarink-<version>-ARM64-portable.zip` | ARM64 | Native AOT build that runs without installation. / 无需安装的 ARM64 便携版。 |
+            | [Standard MSIX · 普通安装版](https://github.com/${{ github.repository }}/releases/download/${{ steps.release.outputs.tag }}/Tonarink-${{ steps.release.outputs.version }}-x64-msix.zip) | x64 | Stable fallback when Native AOT is not smooth. / Native AOT 运行不流畅时的稳定选择。 |
+            | [Standard MSIX · 普通安装版](https://github.com/${{ github.repository }}/releases/download/${{ steps.release.outputs.tag }}/Tonarink-${{ steps.release.outputs.version }}-ARM64-msix.zip) | ARM64 | Standard managed build for Windows on Arm. / Windows on Arm 普通安装版。 |
+            | [Native AOT MSIX · AOT 安装版](https://github.com/${{ github.repository }}/releases/download/${{ steps.release.outputs.tag }}/Tonarink-${{ steps.release.outputs.version }}-x64-aot-msix.zip) | x64 | **Recommended when it runs smoothly.** Faster startup and lower usage. / 运行正常时推荐，启动更快且占用更低。 |
+            | [Native AOT MSIX · AOT 安装版](https://github.com/${{ github.repository }}/releases/download/${{ steps.release.outputs.tag }}/Tonarink-${{ steps.release.outputs.version }}-ARM64-aot-msix.zip) | ARM64 | Native AOT installation for Windows on Arm. / Windows on Arm 的 AOT 安装版。 |
+            | [Portable · 便携版](https://github.com/${{ github.repository }}/releases/download/${{ steps.release.outputs.tag }}/Tonarink-${{ steps.release.outputs.version }}-x64-portable.zip) | x64 | Native AOT, no installation; packaged integrations are unavailable. / 无需安装，但不支持打包应用集成功能。 |
+            | [Portable · 便携版](https://github.com/${{ github.repository }}/releases/download/${{ steps.release.outputs.tag }}/Tonarink-${{ steps.release.outputs.version }}-ARM64-portable.zip) | ARM64 | Native AOT portable build for Windows on Arm. / Windows on Arm 便携版。 |
+            | [Widgets MSIX · 小组件测试版](https://github.com/${{ github.repository }}/releases/download/${{ steps.release.outputs.tag }}/Tonarink-${{ steps.release.outputs.version }}-x64-widgets-msix.zip) | x64 | Experimental, not recommended. / 实验性版本，不建议日常使用。 |
+            | [Widgets MSIX · 小组件测试版](https://github.com/${{ github.repository }}/releases/download/${{ steps.release.outputs.tag }}/Tonarink-${{ steps.release.outputs.version }}-ARM64-widgets-msix.zip) | ARM64 | Experimental, not recommended. / 实验性版本，不建议日常使用。 |
+            | [AOT + Widgets MSIX · AOT 小组件测试版](https://github.com/${{ github.repository }}/releases/download/${{ steps.release.outputs.tag }}/Tonarink-${{ steps.release.outputs.version }}-x64-aot-widgets-msix.zip) | x64 | Experimental Native AOT Widgets build. / 实验性 AOT 小组件版本。 |
+            | [AOT + Widgets MSIX · AOT 小组件测试版](https://github.com/${{ github.repository }}/releases/download/${{ steps.release.outputs.tag }}/Tonarink-${{ steps.release.outputs.version }}-ARM64-aot-widgets-msix.zip) | ARM64 | Experimental Native AOT Widgets build. / 实验性 AOT 小组件版本。 |
 
-            Extract an MSIX ZIP and run `Install.ps1`. The included self-signed certificate is installed for sideloading. Files ending in `-symbols.zip` contain PDBs for debugging and are not application downloads.
+            Extract an MSIX ZIP and run `Install.ps1`. The included self-signed certificate is installed for sideloading.
 
-            解压 MSIX ZIP 后运行 `Install.ps1`；安装脚本会导入随附的自签名证书。`-symbols.zip` 仅包含调试符号，普通用户无需下载。
+            解压 MSIX ZIP 后运行 `Install.ps1`；安装脚本会导入随附的自签名证书。
 
           files: packages/*

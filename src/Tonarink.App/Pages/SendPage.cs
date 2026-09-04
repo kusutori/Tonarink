@@ -882,7 +882,7 @@ sealed class SendPage : Component<SendPageProps>
                 onClick,
                 t.Message(new("App", "SendToDevice"), ("device", displayName)),
                 isEnabled,
-                TrailingReserve: 56,
+                TrailingReserve: 64,
                 AnimationRole: DeviceIdentityCardAnimationRole.Source))
                 .Grid(0, 0),
             Button(Icon(favorite is null ? "\uEB51" : "\uEB52"), onFavorite)
@@ -890,16 +890,19 @@ sealed class SendPage : Component<SendPageProps>
                 .ToolTip(favorite is null
                     ? t.Message(new("App", "AddFavoriteTitle"))
                     : t.Message(new("App", "EditFavorite")))
-                .MinWidth(64)
-                .MinHeight(64)
+                .MinWidth(48)
+                .MinHeight(48)
                 .Resources(static resources => resources
                     .Set("ButtonBackground", Theme.Ref("SubtleFillColorTransparentBrush"))
                     .Set("ButtonBackgroundPointerOver", Theme.Ref("SubtleFillColorSecondaryBrush"))
                     .Set("ButtonBackgroundPressed", Theme.Ref("SubtleFillColorTertiaryBrush"))
-                    .Set("ButtonBorderBrush", Theme.Ref("SubtleFillColorTransparentBrush")))
+                    .Set("ButtonBorderBrush", Theme.Ref("SubtleFillColorTransparentBrush"))
+                    .Set("ButtonBorderBrushPointerOver", Theme.Ref("SubtleFillColorTransparentBrush"))
+                    .Set("ButtonBorderBrushPressed", Theme.Ref("SubtleFillColorTransparentBrush"))
+                    .Set("ButtonBorderBrushDisabled", Theme.Ref("SubtleFillColorTransparentBrush")))
                 .HAlign(HorizontalAlignment.Right)
                 .VAlign(VerticalAlignment.Center)
-                .Margin(right: 8)
+                .Margin(right: 16)
                 .Grid(0, 0))
             .MinHeight(104)
             .HAlign(HorizontalAlignment.Stretch);

@@ -45,9 +45,9 @@ publishing documentation live with the project under
 ## Build from source
 
 ```powershell
-dotnet restore LocalSendDotNet.slnx
-dotnet build LocalSendDotNet.slnx
-dotnet test LocalSendDotNet.slnx
+dotnet restore Tonarink.slnx
+dotnet build Tonarink.slnx
+dotnet test Tonarink.slnx
 ```
 
 The released Windows app project is `src/Tonarink.App/Tonarink.App.csproj`.

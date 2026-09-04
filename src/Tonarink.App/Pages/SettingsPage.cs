@@ -117,7 +117,7 @@ sealed class SettingsPage : Component<SettingsPageProps>
             SettingsCard(
                 header: t.Message(new("App", "SettingsExplorerContextMenu")),
                 description: t.Message(new("App", "SettingsExplorerContextMenuDescription")),
-                headerIcon: HeaderGlyph("\uE8A5"),
+                headerIcon: HeaderGlyph("\uE7AC"),
                 isClickEnabled: false,
                 isActionIconVisible: false,
                 content:
