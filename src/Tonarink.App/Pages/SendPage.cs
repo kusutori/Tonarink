@@ -61,6 +61,7 @@ sealed class SendPage : Component<SendPageProps>
     {
         var t = UseIntl();
         var window = UseWindow();
+        var isWideLayout = UseBreakpoint(800);
         var navigation = UseNavigation<AppRoute>();
         var (selectedItems, updateSelectedItems) = UseReducer<IReadOnlyList<SelectedSendItem>>(
             Array.Empty<SelectedSendItem>());
@@ -172,10 +173,12 @@ sealed class SendPage : Component<SendPageProps>
                     .WithKey(item.Id.ToString("N")))
                 .ToArray<Element?>());
 
-        var selectedItemsContent = ScrollView(selectedItemsBody)
-            .HorizontalContentAlignment(HorizontalAlignment.Stretch)
-            .VerticalContentAlignment(VerticalAlignment.Stretch)
-            .Flex(grow: 1, basis: 0);
+        Element selectedItemsContent = isWideLayout
+            ? ScrollView(selectedItemsBody)
+                .HorizontalContentAlignment(HorizontalAlignment.Stretch)
+                .VerticalContentAlignment(VerticalAlignment.Stretch)
+                .Flex(grow: 1, basis: 0)
+            : selectedItemsBody;
 
         var selectedItemsCard = Card(
                 (FlexColumn(
@@ -196,8 +199,9 @@ sealed class SendPage : Component<SendPageProps>
                 {
                     RowGap = 12,
                 }))
-            .VAlign(VerticalAlignment.Stretch)
-            .Flex(grow: 1, shrink: 1, basis: 320);
+            .VAlign(VerticalAlignment.Stretch);
+        if (isWideLayout)
+            selectedItemsCard = selectedItemsCard.Flex(grow: 1, shrink: 1, basis: 320);
 
         var devices = Props.Runtime.Devices;
         Element deviceBody = devices.Count == 0
@@ -239,10 +243,12 @@ sealed class SendPage : Component<SendPageProps>
                         .WithKey(device.Fingerprint))
                 .ToArray<Element?>());
 
-        var deviceContent = ScrollView(deviceBody)
-            .HorizontalContentAlignment(HorizontalAlignment.Stretch)
-            .VerticalContentAlignment(VerticalAlignment.Stretch)
-            .Flex(grow: 1, basis: 0);
+        Element deviceContent = isWideLayout
+            ? ScrollView(deviceBody)
+                .HorizontalContentAlignment(HorizontalAlignment.Stretch)
+                .VerticalContentAlignment(VerticalAlignment.Stretch)
+                .Flex(grow: 1, basis: 0)
+            : deviceBody;
 
         var nearbyDevicesCard = Card(
                 (FlexColumn(
@@ -277,19 +283,24 @@ sealed class SendPage : Component<SendPageProps>
                 {
                     RowGap = 12,
                 }))
-            .VAlign(VerticalAlignment.Stretch)
-            .Flex(grow: 1, shrink: 1, basis: 320);
+            .VAlign(VerticalAlignment.Stretch);
+        if (isWideLayout)
+            nearbyDevicesCard = nearbyDevicesCard.Flex(grow: 1, shrink: 1, basis: 320);
 
-        var contentCards = (FlexRow(selectedItemsCard, nearbyDevicesCard) with
-        {
-            AlignItems = FlexAlign.Stretch,
-            AlignContent = FlexAlign.Stretch,
-            ColumnGap = 16,
-            RowGap = 16,
-            Wrap = FlexWrap.Wrap,
-        })
-            .VAlign(VerticalAlignment.Stretch)
-            .Flex(grow: 1, basis: 0);
+        Element contentCards = isWideLayout
+            ? (FlexRow(selectedItemsCard, nearbyDevicesCard) with
+                {
+                    AlignItems = FlexAlign.Stretch,
+                    AlignContent = FlexAlign.Stretch,
+                    ColumnGap = 16,
+                })
+                .VAlign(VerticalAlignment.Stretch)
+                .Flex(grow: 1, basis: 0)
+            : (FlexColumn(selectedItemsCard, nearbyDevicesCard) with
+                {
+                    RowGap = 16,
+                })
+                .HAlign(HorizontalAlignment.Stretch);
 
         var page = (FlexColumn(
             Heading(t.Message(new("App", "SendTitle")))
@@ -306,12 +317,18 @@ sealed class SendPage : Component<SendPageProps>
             RowGap = 20,
         });
 
-        return Border(page)
+        var pageContainer = Border(page)
             .Padding(36)
             .MaxWidth(1120)
             .HAlign(HorizontalAlignment.Stretch)
-            .VAlign(VerticalAlignment.Stretch)
+            .VAlign(isWideLayout ? VerticalAlignment.Stretch : VerticalAlignment.Top)
             .Landmark(AutomationLandmarkType.Main);
+
+        return isWideLayout
+            ? pageContainer
+            : ScrollView(pageContainer)
+                .HorizontalContentAlignment(HorizontalAlignment.Stretch)
+                .VerticalContentAlignment(VerticalAlignment.Top);
 
         Element SearchingDevicesAnimation() =>
             (AnimatedVisualPlayer() with { AutoPlay = false })
