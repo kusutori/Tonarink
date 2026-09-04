@@ -302,7 +302,7 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
                 Grid(
                         columns: [GridSize.Auto, GridSize.Star(), GridSize.Auto],
                         rows: [GridSize.Auto],
-                        Icon("\uE701")
+                        Icon("\uE704")
                             .VAlign(VerticalAlignment.Center)
                             .AccessibilityHidden()
                             .Grid(column: 0),
