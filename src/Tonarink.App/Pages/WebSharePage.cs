@@ -1,5 +1,4 @@
 using LocalSendDotNet;
-using Microsoft.UI.Reactor.Animation;
 using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Core;
 using Microsoft.UI.Reactor.Layout;
@@ -8,6 +7,7 @@ using Microsoft.UI.Reactor.Navigation;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
+using Tonarink.Components.Animations;
 using Windows.ApplicationModel.DataTransfer;
 using static Microsoft.UI.Reactor.Factories;
 
@@ -262,12 +262,10 @@ sealed class WebSharePage : Component<WebSharePageProps>
                     .VAlign(VerticalAlignment.Center)
                     .ToolTip(url)
                     .Grid(column: 0),
-                CopyButton(
+                AnimatedButtons.CopyFeedback(
                         copySuccessVersion,
                         t.Message(new("App", "WebShareCopy")),
                         copy)
-                    .AutomationName(t.Message(new("App", "WebShareCopy")))
-                    .ToolTip(t.Message(new("App", "WebShareCopy")))
                     .MinWidth(40)
                     .MinHeight(40)
                     .Grid(column: 1),
@@ -281,55 +279,6 @@ sealed class WebSharePage : Component<WebSharePageProps>
             .Padding(horizontal: 16, vertical: 8)
             .CornerRadius(8)
             .Background(Theme.SubtleFill);
-
-    private static ButtonElement CopyButton(int successVersion, string name, Action copy)
-    {
-        var playing = successVersion > 0;
-        var copyIcon = Icon("\uE8C8")
-            .Keyframes("copy-feedback-out", successVersion, keyframes => playing
-                ? keyframes
-                    .Duration(1433)
-                    .At(0.000f, opacity: 1, scale: new(1, 1, 1))
-                    .At(0.093f, opacity: 0, scale: new(0.273f, 0.273f, 1),
-                        easing: Easing.CubicBezier(0.13f, 0, 0, 1))
-                    .At(0.814f, opacity: 0, scale: new(0.273f, 0.273f, 1))
-                    .At(0.837f, opacity: 0, scale: new(1, 1, 1))
-                    .At(0.907f, opacity: 0, scale: new(1, 1, 1))
-                    .At(1.000f, opacity: 1, scale: new(1, 1, 1), easing: Easing.EaseOut)
-                : keyframes
-                    .Duration(1)
-                    .At(0f, opacity: 1, scale: new(1, 1, 1))
-                    .At(1f, opacity: 1, scale: new(1, 1, 1)));
-        var successIcon = Icon("\uE73E")
-            .Opacity(0)
-            .Keyframes("copy-feedback-in", successVersion, keyframes => playing
-                ? keyframes
-                    .Duration(1433)
-                    .At(0.000f, opacity: 0, scale: new(0.385f, 0.385f, 1))
-                    .At(0.093f, opacity: 0, scale: new(0.385f, 0.385f, 1))
-                    .At(0.186f, opacity: 1, scale: new(1.146f, 1.146f, 1),
-                        easing: Easing.CubicBezier(0.39f, 0, 0.63f, 1))
-                    .At(0.232f, opacity: 1, scale: new(1, 1, 1),
-                        easing: Easing.CubicBezier(0.55f, 0, 0.02f, 1))
-                    .At(0.814f, opacity: 1, scale: new(1, 1, 1))
-                    .At(0.907f, opacity: 0, scale: new(0.385f, 0.385f, 1),
-                        easing: Easing.EaseIn)
-                    .At(1.000f, opacity: 0, scale: new(0.385f, 0.385f, 1))
-                : keyframes
-                    .Duration(1)
-                    .At(0f, opacity: 0, scale: new(0.385f, 0.385f, 1))
-                    .At(1f, opacity: 0, scale: new(0.385f, 0.385f, 1)));
-
-        return Button(
-                Grid(
-                    columns: [GridSize.Auto],
-                    rows: [GridSize.Auto],
-                    copyIcon,
-                    successIcon),
-                copy)
-            .SubtleButton()
-            .AutomationName(name);
-    }
 
     private static Element RequestCard(IntlAccessor t, WebShareRequest request, LocalSendNode? node) =>
         Border(

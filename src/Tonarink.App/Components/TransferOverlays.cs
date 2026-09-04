@@ -325,7 +325,11 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                 return HStack(12,
                         Button(t.Message(new("App", "Decline")), () => _ = DeclineAsync())
                             .AutomationName(t.Message(new("App", "Decline")))
-                            .Foreground(Theme.SystemCritical)
+                            .Resources(static resources => resources
+                                .Set("ButtonForeground", Theme.SystemCritical)
+                                .Set("ButtonForegroundPointerOver", Theme.SystemCritical)
+                                .Set("ButtonForegroundPressed", Theme.SystemCritical)
+                                .Set("ButtonForegroundDisabled", Theme.DisabledText))
                             .IsEnabled(!isPending)
                             .MinWidth(120),
                         Button(t.Message(new("App", "Accept")), () => _ = AcceptAsync())
