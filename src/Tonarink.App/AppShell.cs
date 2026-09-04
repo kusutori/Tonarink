@@ -111,9 +111,11 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
     {
         var t = UseIntl();
         var window = UseWindow();
+        var useTitleBarPaneToggle = !UseBreakpoint(640);
         var settings = Props.Settings;
         var updateSettings = Props.UpdateSettings;
         var navigation = UseNavigation(AppRoute.Receive);
+        var navigationViewRef = UseRef<NavigationView?>(null);
         var (runtime, updateRuntime) = UseReducer(AppRuntimeState.Initial);
         var (outgoingTransfer, setOutgoingTransfer) = UseState<OutgoingTransferViewState?>(null);
         var (shareTargetPayload, setShareTargetPayload) = UseState<ShareTargetPayload?>(null);
@@ -289,6 +291,12 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
                         : Theme.SecondaryText),
         })
         .WithNavigation(navigation)
+        .PaneToggleButtonVisible(useTitleBarPaneToggle)
+        .PaneToggleRequested(() =>
+        {
+            if (navigationViewRef.Current is { } navigationView)
+                navigationView.IsPaneOpen = !navigationView.IsPaneOpen;
+        })
         .Tall()
         .Flex(shrink: 0);
 
@@ -351,10 +359,16 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
             .ExpandedModeThresholdWidth(1008)
             .OpenPaneLength(248)
             .CompactPaneLength(56)
-            .PaneToggleButtonVisible(true)
+            .PaneToggleButtonVisible(!useTitleBarPaneToggle)
             .AlwaysShowHeader(false)
             .BackButtonVisible(false)
             .TitleBarAutoPadding(false)
+            .OnMountAdd(element => navigationViewRef.Current = element as NavigationView)
+            .OnUnmountAdd(element =>
+            {
+                if (ReferenceEquals(navigationViewRef.Current, element))
+                    navigationViewRef.Current = null;
+            })
             .Flex(grow: 1, basis: 0)) with
         {
             IsSettingsVisible = false,
