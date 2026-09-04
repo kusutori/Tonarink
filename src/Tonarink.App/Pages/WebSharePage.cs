@@ -1,4 +1,5 @@
 using LocalSendDotNet;
+using System.Collections.Immutable;
 using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Core;
 using Microsoft.UI.Reactor.Layout;
@@ -34,15 +35,16 @@ sealed class WebSharePage : Component<WebSharePageProps>
         var (qrPath, setQrPath) = UseState<string?>(null);
         var (qrUrl, setQrUrl) = UseState<string?>(null);
         var (zoomUrl, setZoomUrl) = UseState<string?>(null);
-        var (copyFeedback, setCopyFeedback) = UseState<(string Url, int Version)?>(null);
-        var copyFeedbackVersion = UseRef(0);
+        var (copyFeedbackVersions, updateCopyFeedbackVersions) =
+            UseReducer(ImmutableDictionary<string, int>.Empty);
+        var nextCopyFeedbackVersion = UseRef(0);
         var alive = UseRef(true);
         var node = Props.Node;
 
         UseEffect(() => () =>
         {
             alive.Current = false;
-            copyFeedbackVersion.Current++;
+            nextCopyFeedbackVersion.Current++;
         });
 
         UseNavigationLifecycle(
@@ -113,7 +115,7 @@ sealed class WebSharePage : Component<WebSharePageProps>
                     LinkBar(
                         t,
                         url,
-                        copyFeedback?.Url == url ? copyFeedback.Value.Version : 0,
+                        copyFeedbackVersions.TryGetValue(url, out var version) ? version : 0,
                         () => _ = CopyWithFeedbackAsync(url),
                         ShowQr,
                         setZoomUrl).WithKey(url)).ToArray<Element?>()),
@@ -240,8 +242,8 @@ sealed class WebSharePage : Component<WebSharePageProps>
             if (!await CopyAsync(url).ConfigureAwait(true) || !alive.Current)
                 return;
 
-            var version = ++copyFeedbackVersion.Current;
-            setCopyFeedback((url, version));
+            var version = ++nextCopyFeedbackVersion.Current;
+            updateCopyFeedbackVersions(current => current.SetItem(url, version));
         }
     }
 
