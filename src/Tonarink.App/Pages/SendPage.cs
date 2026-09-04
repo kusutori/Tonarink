@@ -23,8 +23,7 @@ sealed record SendPageProps(
     Func<Task> RefreshAsync,
     Action<OutgoingTransferViewState?> SetTransferOverlay,
     ShareTargetPayload? ShareTargetPayload,
-    Action<Guid> ConsumeShareTargetPayload,
-    string? ConnectedDeviceFingerprint);
+    Action<Guid> ConsumeShareTargetPayload);
 
 sealed record SelectedSendItem(
     Guid Id,
@@ -201,11 +200,7 @@ sealed class SendPage : Component<SendPageProps>
             .VAlign(VerticalAlignment.Stretch)
             .Flex(grow: 1, shrink: 1, basis: 320);
 
-        var devices = Props.ConnectedDeviceFingerprint is { } hiddenFingerprint
-            ? Props.Runtime.Devices
-                .Where(device => !string.Equals(device.Fingerprint, hiddenFingerprint, StringComparison.Ordinal))
-                .ToArray()
-            : Props.Runtime.Devices;
+        var devices = Props.Runtime.Devices;
         Element deviceBody = devices.Count == 0
             ? EmptyDevices(
                     t,
@@ -220,14 +215,24 @@ sealed class SendPage : Component<SendPageProps>
                         favorites.GetValueOrDefault(device.Fingerprint),
                         isEnabled: Props.Node?.State == LocalSendNodeState.Running
                             && !sendMutation.IsPending,
-                        onClick: () =>
+                        onClick: source =>
                         {
                             if (selectedItems.Count == 0)
                             {
                                 setPickerMessage(t.Message(new("App", "SelectContentFirst")));
                                 return;
                             }
-                            _ = StartSendAsync(device, pin: null);
+
+                            if (source is null)
+                            {
+                                _ = StartSendAsync(device, pin: null);
+                                return;
+                            }
+
+                            DeviceConnectedAnimation.NavigateToDestination(
+                                DeviceConnectedKey(device.Fingerprint),
+                                source,
+                                () => _ = StartSendAsync(device, pin: null));
                         },
                         onFavorite: () => OpenFavoriteDialog(device),
                         t)
@@ -876,7 +881,7 @@ sealed class SendPage : Component<SendPageProps>
         LocalSendDevice device,
         FavoriteDevice? favorite,
         bool isEnabled,
-        Action onClick,
+        Action<FrameworkElement?> onClick,
         Action onFavorite,
         IntlAccessor t)
     {
@@ -897,7 +902,8 @@ sealed class SendPage : Component<SendPageProps>
                 onClick,
                 t.Message(new("App", "SendToDevice"), ("device", displayName)),
                 isEnabled,
-                TrailingReserve: 56))
+                TrailingReserve: 56,
+                AnimationRole: DeviceIdentityCardAnimationRole.Source))
                 .Grid(0, 0),
             Button(Icon(favorite is null ? "\uEB51" : "\uEB52"), onFavorite)
                 .AutomationName(favoriteName)

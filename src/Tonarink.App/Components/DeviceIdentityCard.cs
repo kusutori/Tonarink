@@ -13,16 +13,26 @@ sealed record DeviceIdentityCardProps(
     LocalSendDeviceType Type,
     string Number,
     string? ConnectedAnimationKey = null,
-    Action? OnClick = null,
+    Action<FrameworkElement?>? OnClick = null,
     string? AutomationName = null,
     bool IsEnabled = true,
-    double TrailingReserve = 0);
+    double TrailingReserve = 0,
+    DeviceIdentityCardAnimationRole AnimationRole = DeviceIdentityCardAnimationRole.None,
+    Action<FrameworkElement?>? ElementChanged = null);
+
+enum DeviceIdentityCardAnimationRole
+{
+    None,
+    Source,
+    Destination,
+}
 
 sealed class DeviceIdentityCard : Component<DeviceIdentityCardProps>
 {
     public override Element Render()
     {
         var t = UseIntl();
+        var cardRef = UseRef<FrameworkElement?>(null);
         var identity = Grid(
             columns: [GridSize.Auto, GridSize.Star()],
             rows: [GridSize.Auto],
@@ -46,7 +56,7 @@ sealed class DeviceIdentityCard : Component<DeviceIdentityCardProps>
 
         Element body = Props.OnClick is null
             ? identity
-            : Button(identity, Props.OnClick)
+            : Button(identity, () => Props.OnClick(cardRef.Current))
                 .MinHeight(104)
                 .Padding(16)
                 .HAlign(HorizontalAlignment.Stretch)
@@ -62,10 +72,32 @@ sealed class DeviceIdentityCard : Component<DeviceIdentityCardProps>
         var card = Card(body)
             .Padding(Props.OnClick is null ? 16 : 0)
             .MinHeight(104)
-            .HAlign(HorizontalAlignment.Stretch);
+            .HAlign(HorizontalAlignment.Stretch)
+            .OnMountAdd(element =>
+            {
+                cardRef.Current = element;
+                Props.ElementChanged?.Invoke(element);
 
-        return Props.ConnectedAnimationKey is null
-            ? card
-            : card.ConnectedAnimation(Props.ConnectedAnimationKey);
+                if (Props.ConnectedAnimationKey is not { } key)
+                    return;
+
+                if (Props.AnimationRole == DeviceIdentityCardAnimationRole.Source)
+                    DeviceConnectedAnimation.RegisterSource(key, element);
+                else if (Props.AnimationRole == DeviceIdentityCardAnimationRole.Destination)
+                    DeviceConnectedAnimation.StartDestinationWhenReady(key, element);
+            })
+            .OnUnmountAdd(element =>
+            {
+                if (Props.ConnectedAnimationKey is { } key
+                    && Props.AnimationRole == DeviceIdentityCardAnimationRole.Source)
+                {
+                    DeviceConnectedAnimation.UnregisterSource(key, element);
+                }
+
+                Props.ElementChanged?.Invoke(null);
+                cardRef.Current = null;
+            });
+
+        return card;
     }
 }

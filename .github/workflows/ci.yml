@@ -88,6 +88,10 @@ jobs:
       - run: dotnet test tests/LocalSendDotNet.Core.Mobile.Tests/LocalSendDotNet.Core.Mobile.Tests.csproj --no-restore --configuration Debug
 
   hybrid-ios:
+    # The iOS Share Extension requires an Apple signing identity and provisioning
+    # profile even for the current simulator build. Keep the recipe ready, but do
+    # not make Reactor releases depend on mobile signing infrastructure yet.
+    if: ${{ false }}
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4

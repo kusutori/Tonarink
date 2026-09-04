@@ -306,8 +306,7 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
                 RefreshAsync,
                 setOutgoingTransfer,
                 shareTargetPayload,
-                ConsumeShareTargetPayload,
-                outgoingTransfer?.Receiver.Fingerprint)),
+                ConsumeShareTargetPayload)),
             AppRoute.Settings => Component<SettingsPage, SettingsPageProps>(new(
                 settings,
                 runtime,

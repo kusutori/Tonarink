@@ -23,6 +23,8 @@ sealed class OutgoingTransferOverlay : Component<OutgoingTransferOverlayProps>
         var t = UseIntl();
         var window = UseWindow();
         var transfer = Props.Transfer;
+        var receiverCardRef = UseRef<FrameworkElement?>(null);
+        var connectedAnimationKey = DeviceConnectedKey(transfer.Receiver.Fingerprint);
         var taskbarProgress = new TaskbarTransferProgress(
             transfer.State,
             transfer.BytesTransferred,
@@ -51,7 +53,9 @@ sealed class OutgoingTransferOverlay : Component<OutgoingTransferOverlayProps>
                     transfer.Receiver.DeviceModel,
                     transfer.Receiver.DeviceType,
                     RemoteDeviceNumber(transfer.Receiver),
-                    DeviceConnectedKey(transfer.Receiver.Fingerprint))))
+                    connectedAnimationKey,
+                    AnimationRole: DeviceIdentityCardAnimationRole.Destination,
+                    ElementChanged: element => receiverCardRef.Current = element)))
             .MaxWidth(720)
             .HAlign(HorizontalAlignment.Stretch);
 
@@ -80,7 +84,20 @@ sealed class OutgoingTransferOverlay : Component<OutgoingTransferOverlayProps>
                         .AutomationName(t.Message(new("App", "CancelCurrentSend")))
                         .MinWidth(120)
                         .HAlign(HorizontalAlignment.Center)
-                    : Button(t.Message(new("App", "Close")), Props.Close)
+                    : Button(t.Message(new("App", "Close")), () =>
+                        {
+                            if (receiverCardRef.Current is { } receiverCard)
+                            {
+                                DeviceConnectedAnimation.ReturnToSource(
+                                    connectedAnimationKey,
+                                    receiverCard,
+                                    Props.Close);
+                            }
+                            else
+                            {
+                                Props.Close();
+                            }
+                        })
                         .AutomationName(t.Message(new("App", "Close")))
                         .MinWidth(120)
                         .HAlign(HorizontalAlignment.Center))
