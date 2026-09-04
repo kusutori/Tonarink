@@ -234,6 +234,9 @@
               CopyToPublishDirectory="PreserveNewest"
               Link="Strings\%(RecursiveDir)%(Filename)%(Extension)" />
         <Content Include="Assets\AppIcon.svg" CopyToOutputDirectory="PreserveNewest" />
+        <Content Include="Assets\FileDrop.svg"
+                 CopyToOutputDirectory="PreserveNewest"
+                 CopyToPublishDirectory="PreserveNewest" />
         <Content Include="Assets\AppIcon.ico" CopyToOutputDirectory="PreserveNewest" />
     </ItemGroup>
 

@@ -22,6 +22,11 @@
   <data name="ChangeSaveLocation" xml:space="preserve"><value>更改接收文件保存位置</value></data>
   <data name="ChooseContent" xml:space="preserve"><value>选择内容</value></data>
   <data name="ChooseItem" xml:space="preserve"><value>选择{item}</value></data>
+  <data name="DropFilesCaption" xml:space="preserve"><value>添加到待发送列表</value></data>
+  <data name="DropFilesOrFolders" xml:space="preserve"><value>拖放文件或文件夹到此处</value></data>
+  <data name="DropItemsFailed" xml:space="preserve"><value>无法添加拖放的项目：{error}</value></data>
+  <data name="DroppedItemsEmpty" xml:space="preserve"><value>拖放的项目中没有可访问的文件。</value></data>
+  <data name="ReleaseFilesToAdd" xml:space="preserve"><value>释放以添加</value></data>
   <data name="Clear" xml:space="preserve"><value>清空</value></data>
   <data name="Clipboard" xml:space="preserve"><value>剪贴板</value></data>
   <data name="ClipboardEmpty" xml:space="preserve"><value>剪贴板中没有可发送的文本、文件或文件夹。</value></data>

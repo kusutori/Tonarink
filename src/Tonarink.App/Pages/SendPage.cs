@@ -5,6 +5,7 @@ using Microsoft.UI.Reactor.Controls.Validation;
 using Microsoft.UI.Reactor.Layout;
 using Microsoft.UI.Reactor.Localization;
 using Microsoft.UI.Reactor.Navigation;
+using Microsoft.UI.Reactor.Input;
 using System.Net;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
@@ -66,6 +67,7 @@ sealed class SendPage : Component<SendPageProps>
         var (selectedItems, updateSelectedItems) = UseReducer<IReadOnlyList<SelectedSendItem>>(
             Array.Empty<SelectedSendItem>());
         var (pickerMessage, setPickerMessage) = UseState(t.Message(new("App", "NothingSelected")));
+        var (isFileDropActive, setFileDropActive) = UseState(false);
         var (text, setText) = UseState(string.Empty);
         var (showTextDialog, setShowTextDialog) = UseState(false);
         var (pinTarget, setPinTarget) = UseState<LocalSendDevice?>(null);
@@ -160,10 +162,10 @@ sealed class SendPage : Component<SendPageProps>
                 ("size", FormatBytes(selectedItems.Sum(static item => item.Length))));
 
         Element selectedItemsBody = selectedItems.Count == 0
-            ? Caption(pickerMessage)
-                .Foreground(Theme.SecondaryText)
-                .HAlign(HorizontalAlignment.Center)
-                .VAlign(VerticalAlignment.Center)
+            ? EmptySelection(
+                isFileDropActive,
+                pickerMessage,
+                t)
             : VStack(8,
                 selectedItems.Select(item => SelectedItemRow(
                     item,
@@ -202,6 +204,40 @@ sealed class SendPage : Component<SendPageProps>
             .VAlign(VerticalAlignment.Stretch);
         if (isWideLayout)
             selectedItemsCard = selectedItemsCard.Flex(grow: 1, shrink: 1, basis: 320);
+
+        selectedItemsCard = selectedItemsCard
+            .OnDragEnter(args =>
+            {
+                if (!args.Data.HasFormat(StandardDataFormats.StorageItems))
+                    return;
+
+                args.AcceptedOperation = DragOperations.Copy;
+                setFileDropActive(true);
+            })
+            .OnDragOver(args =>
+            {
+                if (!args.Data.HasFormat(StandardDataFormats.StorageItems))
+                    return;
+
+                args.AcceptedOperation = DragOperations.Copy;
+                args.UIOverride.Caption = t.Message(new("App", "DropFilesCaption"));
+                args.UIOverride.IsCaptionVisible = true;
+                args.UIOverride.IsGlyphVisible = true;
+            })
+            .OnDragLeave(_ => setFileDropActive(false))
+            .OnDrop<BorderElement>(args =>
+            {
+                setFileDropActive(false);
+                args.AcceptedOperation = DragOperations.Copy;
+                _ = AddDroppedItemsAsync(args.Data);
+            }, acceptedOps: DragOperations.Copy);
+
+        if (isFileDropActive)
+        {
+            selectedItemsCard = selectedItemsCard
+                .Background(Theme.SystemAttentionBackground)
+                .WithBorder(Theme.SystemAttention, 1);
+        }
 
         var devices = Props.Runtime.Devices;
         Element deviceBody = devices.Count == 0
@@ -289,17 +325,17 @@ sealed class SendPage : Component<SendPageProps>
 
         Element contentCards = isWideLayout
             ? (FlexRow(selectedItemsCard, nearbyDevicesCard) with
-                {
-                    AlignItems = FlexAlign.Stretch,
-                    AlignContent = FlexAlign.Stretch,
-                    ColumnGap = 16,
-                })
+            {
+                AlignItems = FlexAlign.Stretch,
+                AlignContent = FlexAlign.Stretch,
+                ColumnGap = 16,
+            })
                 .VAlign(VerticalAlignment.Stretch)
                 .Flex(grow: 1, basis: 0)
             : (FlexColumn(selectedItemsCard, nearbyDevicesCard) with
-                {
-                    RowGap = 16,
-                })
+            {
+                RowGap = 16,
+            })
                 .HAlign(HorizontalAlignment.Stretch);
 
         var page = (FlexColumn(
@@ -801,6 +837,44 @@ sealed class SendPage : Component<SendPageProps>
             }
         }
 
+        async Task AddDroppedItemsAsync(DragData dragData)
+        {
+            try
+            {
+                var storageItems = await dragData.GetFilesAsync();
+                var selected = new List<SelectedSendItem>();
+                foreach (var storageItem in storageItems)
+                {
+                    if (!IsSafeLocalStorageItem(storageItem))
+                        continue;
+
+                    switch (storageItem)
+                    {
+                        case StorageFile file:
+                            selected.Add(await FromStorageFileAsync(file, file.Name, CancellationToken.None));
+                            break;
+                        case StorageFolder folder:
+                            selected.AddRange(await FromFolderAsync(folder, CancellationToken.None));
+                            break;
+                    }
+                }
+
+                if (selected.Count == 0)
+                {
+                    setPickerMessage(t.Message(new("App", "DroppedItemsEmpty")));
+                    return;
+                }
+
+                AddSelectedItems(selected);
+            }
+            catch (Exception exception)
+            {
+                setPickerMessage(t.Message(
+                    new("App", "DropItemsFailed"),
+                    ("error", exception.Message)));
+            }
+        }
+
         void PublishTransferOverlay(
             LocalSendDevice device,
             IReadOnlyList<SendItem> items,
@@ -846,6 +920,57 @@ sealed class SendPage : Component<SendPageProps>
         .MinHeight(104)
         .HAlign(HorizontalAlignment.Stretch)
         .AutomationName(t.Message(new("App", "ChooseItem"), ("item", label)));
+
+    private static Element EmptySelection(
+        bool isDropActive,
+        string pickerMessage,
+        IntlAccessor t)
+    {
+        var nothingSelected = t.Message(new("App", "NothingSelected"));
+        var dropText = isDropActive
+            ? t.Message(new("App", "ReleaseFilesToAdd"))
+            : t.Message(new("App", "DropFilesOrFolders"));
+
+        return (FlexColumn(
+                Image("ms-appx:///Assets/FileDrop.svg")
+                    .Size(192, 112)
+                    .AccessibilityHidden(),
+                Subtitle(dropText),
+                pickerMessage == nothingSelected
+                    ? null
+                    : Caption(pickerMessage)
+                        .Foreground(Theme.SecondaryText)
+                        .TextWrapping(TextWrapping.WrapWholeWords)) with
+        {
+            RowGap = 12,
+            AlignItems = FlexAlign.Center,
+            JustifyContent = FlexJustify.Center,
+        })
+            .MinHeight(280)
+            .HAlign(HorizontalAlignment.Stretch)
+            .VAlign(VerticalAlignment.Stretch);
+    }
+
+    private static bool IsSafeLocalStorageItem(IStorageItem storageItem)
+    {
+        try
+        {
+            var path = storageItem.Path;
+            if (string.IsNullOrWhiteSpace(path)
+                || path.StartsWith(@"\\", StringComparison.Ordinal)
+                || !Path.IsPathFullyQualified(path))
+            {
+                return false;
+            }
+
+            var attributes = System.IO.File.GetAttributes(path);
+            return (attributes & System.IO.FileAttributes.ReparsePoint) == 0;
+        }
+        catch
+        {
+            return false;
+        }
+    }
 
     private static Element SelectedItemRow(SelectedSendItem item, Action remove, IntlAccessor t) =>
         Grid(
