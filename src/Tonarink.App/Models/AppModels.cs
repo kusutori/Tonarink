@@ -12,6 +12,7 @@ enum AppRoute
     NetworkInterfaces,
     WebShare,
     WebReceive,
+    DeviceDetails,
 }
 
 static class AppNavigation
@@ -22,7 +23,8 @@ static class AppNavigation
     };
 
     public static bool IsDetail(AppRoute route) => route is
-        AppRoute.History or AppRoute.NetworkInterfaces or AppRoute.WebShare or AppRoute.WebReceive;
+        AppRoute.History or AppRoute.NetworkInterfaces or AppRoute.WebShare or AppRoute.WebReceive
+        or AppRoute.DeviceDetails;
 }
 
 enum AutoSaveMode
@@ -98,6 +100,7 @@ sealed record AppRuntimeState(
     LocalSendIdentity? Identity,
     IReadOnlyList<LocalSendDevice> Devices,
     IReadOnlyList<IncomingTransferRequest> IncomingTransfers,
+    IReadOnlyDictionary<string, IReadOnlyList<DeviceActivityEntry>> DeviceActivity,
     string? Error,
     string? AppliedMulticastGroup,
     string? DiscoveryWarning,
@@ -109,12 +112,18 @@ sealed record AppRuntimeState(
         Identity: null,
         Devices: Array.Empty<LocalSendDevice>(),
         IncomingTransfers: Array.Empty<IncomingTransferRequest>(),
+        DeviceActivity: new Dictionary<string, IReadOnlyList<DeviceActivityEntry>>(StringComparer.Ordinal),
         Error: null,
         AppliedMulticastGroup: null,
         DiscoveryWarning: null,
         AppliedNetworkWhitelist: null,
         AppliedNetworkBlacklist: null);
 }
+
+sealed record DeviceActivityEntry(
+    DeviceChangeKind Kind,
+    DateTimeOffset Timestamp,
+    IReadOnlyList<DeviceEndpoint> Endpoints);
 
 sealed record OutgoingTransferViewState(
     LocalSendIdentity? Sender,

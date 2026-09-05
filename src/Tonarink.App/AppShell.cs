@@ -128,6 +128,7 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
         var (runtime, updateRuntime) = UseReducer(AppRuntimeState.Initial);
         var runtimeRef = UseRef(runtime);
         runtimeRef.Current = runtime;
+        var (detailsDevice, setDetailsDevice) = UseState<LocalSendDevice?>(null);
         var (outgoingTransfer, setOutgoingTransfer) = UseState<OutgoingTransferViewState?>(null);
         var (shareTargetPayload, setShareTargetPayload) = UseState<ShareTargetPayload?>(null);
         var (serverDesired, setServerDesired) = UseState(true);
@@ -380,7 +381,12 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
                 RefreshAsync,
                 setOutgoingTransfer,
                 shareTargetPayload,
-                ConsumeShareTargetPayload)),
+                ConsumeShareTargetPayload,
+                device =>
+                {
+                    setDetailsDevice(device);
+                    navigation.Navigate(AppRoute.DeviceDetails, AppNavigation.DrillIn);
+                })),
             AppRoute.Settings => Component<SettingsPage, SettingsPageProps>(new(
                 settings,
                 runtime,
@@ -402,6 +408,12 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
                 settings,
                 SetHttpsOverride,
                 WebShareMode.Receive)),
+            AppRoute.DeviceDetails when detailsDevice is not null =>
+                Component<DeviceDetailsPage, DeviceDetailsPageProps>(new(
+                    runtime,
+                    detailsDevice,
+                    contentTheme))
+                .WithKey(detailsDevice.Fingerprint),
             _ => TextBlock(t.Message(new("App", "PageNotFound"))),
         }) with
         {
@@ -814,11 +826,12 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
 
         async Task WatchDevicesAsync(LocalSendNode node, CancellationToken cancellationToken)
         {
-            await foreach (var _ in node.WatchDeviceChangesAsync(cancellationToken).ConfigureAwait(false))
+            await foreach (var change in node.WatchDeviceChangesAsync(cancellationToken).ConfigureAwait(false))
             {
                 updateRuntime(current => current with
                 {
                     Devices = node.GetDevices(),
+                    DeviceActivity = AppendDeviceActivity(current.DeviceActivity, change),
                 });
             }
         }
@@ -982,8 +995,26 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
         AppRoute.NetworkInterfaces => "settings",
         AppRoute.WebShare => "send",
         AppRoute.WebReceive => "receive",
+        AppRoute.DeviceDetails => "send",
         _ => "receive",
     };
+
+    private static IReadOnlyDictionary<string, IReadOnlyList<DeviceActivityEntry>> AppendDeviceActivity(
+        IReadOnlyDictionary<string, IReadOnlyList<DeviceActivityEntry>> activity,
+        DeviceChange change)
+    {
+        var updated = activity.ToDictionary(
+            static pair => pair.Key,
+            static pair => pair.Value,
+            StringComparer.Ordinal);
+        var existing = updated.GetValueOrDefault(change.Device.Fingerprint)
+            ?? Array.Empty<DeviceActivityEntry>();
+        updated[change.Device.Fingerprint] = existing
+            .Append(new DeviceActivityEntry(change.Kind, DateTimeOffset.Now, change.Device.Endpoints))
+            .TakeLast(100)
+            .ToArray();
+        return updated;
+    }
 
     private static AppRoute ParseRoute(string tag) => tag switch
     {

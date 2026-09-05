@@ -1,12 +1,10 @@
 using LocalSendDotNet;
 using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Core;
-using Microsoft.UI.Reactor.Controls.Validation;
 using Microsoft.UI.Reactor.Layout;
 using Microsoft.UI.Reactor.Localization;
 using Microsoft.UI.Reactor.Navigation;
 using Microsoft.UI.Reactor.Input;
-using System.Net;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
@@ -15,7 +13,6 @@ using Windows.Storage;
 using Windows.Storage.Pickers;
 using Tonarink.Components.Animations;
 using static Microsoft.UI.Reactor.Factories;
-using static Microsoft.UI.Reactor.Controls.Validation.FormFieldDsl;
 using static TransferOverlayVisuals;
 
 sealed record SendPageProps(
@@ -25,7 +22,8 @@ sealed record SendPageProps(
     Func<Task> RefreshAsync,
     Action<OutgoingTransferViewState?> SetTransferOverlay,
     ShareTargetPayload? ShareTargetPayload,
-    Action<Guid> ConsumeShareTargetPayload);
+    Action<Guid> ConsumeShareTargetPayload,
+    Action<LocalSendDevice> OpenDeviceDetails);
 
 sealed record SelectedSendItem(
     Guid Id,
@@ -81,11 +79,6 @@ sealed class SendPage : Component<SendPageProps>
                 return () => FavoriteDeviceStore.Changed -= listener;
             },
             static () => FavoriteDeviceStore.Entries);
-        var (favoriteTarget, setFavoriteTarget) = UseState<LocalSendDevice?>(null);
-        var (favoriteName, setFavoriteName) = UseState(string.Empty);
-        var (favoriteAddress, setFavoriteAddress) = UseState(string.Empty);
-        var (favoritePort, setFavoritePort) = UseState(string.Empty);
-        var (removeFavoriteTarget, setRemoveFavoriteTarget) = UseState<LocalSendDevice?>(null);
         var (transfer, updateTransfer) = UseReducer(TransferUiState.Idle(
             t.Message(new("App", "SendHint"))));
         var sendCancellationRef = UseRef<CancellationTokenSource?>(null);
@@ -277,9 +270,7 @@ sealed class SendPage : Component<SendPageProps>
                                 source,
                                 () => _ = StartSendAsync(device, pin: null));
                         },
-                        onFavorite: favorite is null
-                            ? () => OpenFavoriteDialog(device)
-                            : () => setRemoveFavoriteTarget(device),
+                        onDetails: () => Props.OpenDeviceDetails(device),
                         t)
                         .PositionInSet(index + 1, devices.Count)
                         .WithKey(device.Fingerprint);
@@ -354,9 +345,7 @@ sealed class SendPage : Component<SendPageProps>
                 selectionGrid),
             contentCards,
             TextDialog(),
-            PinDialog(),
-            FavoriteDialog(),
-            RemoveFavoriteDialog()) with
+            PinDialog()) with
         {
             RowGap = 20,
         });
@@ -462,104 +451,6 @@ sealed class SendPage : Component<SendPageProps>
                 }
             },
         }).Set(dialog => ApplyDialogTheme(dialog, Props.Theme));
-
-        Element FavoriteDialog()
-        {
-            const string addressPlaceholder = "192.168.1.72";
-            const string portPlaceholder = "53317";
-            var validAddress = IPAddress.TryParse(favoriteAddress, out _);
-            var validPort = int.TryParse(favoritePort, out var parsedPort)
-                && parsedPort is >= 1 and <= ushort.MaxValue;
-            var canSave = favoriteTarget is not null
-                && !string.IsNullOrWhiteSpace(favoriteName)
-                && validAddress
-                && validPort;
-
-            return (ContentDialog(
-                t.Message(new("App", "AddFavoriteTitle")),
-                VStack(12,
-                    FormField(
-                        TextBox(favoriteName, setFavoriteName, placeholderText: t.Message(new("App", "DeviceName")))
-                            .AutomationName(t.Message(new("App", "FavoriteDeviceName"))),
-                        label: t.Message(new("App", "Name")),
-                        required: true),
-                    FormField(
-                        TextBox(favoriteAddress, setFavoriteAddress, placeholderText: addressPlaceholder)
-                            .AutomationName(t.Message(new("App", "FavoriteIpAddress"))),
-                        label: t.Message(new("App", "IpAddress")),
-                        required: true,
-                        description: validAddress || string.IsNullOrWhiteSpace(favoriteAddress)
-                            ? null
-                            : t.Message(new("App", "InvalidIpAddress"))),
-                    FormField(
-                        TextBox(favoritePort, setFavoritePort, placeholderText: portPlaceholder)
-                            .NumericInput()
-                            .AutomationName(t.Message(new("App", "FavoritePort"))),
-                        label: t.Message(new("App", "Port")),
-                        required: true,
-                        description: validPort || string.IsNullOrWhiteSpace(favoritePort)
-                            ? null
-                            : t.Message(new("App", "InvalidPort")))),
-                primaryButtonText: t.Message(new("App", "Save"))) with
-            {
-                IsOpen = favoriteTarget is not null,
-                SecondaryButtonText = t.Message(new("App", "Cancel")),
-                DefaultButton = ContentDialogButton.Primary,
-                OnClosed = result =>
-                {
-                    var target = favoriteTarget;
-                    if (result == ContentDialogResult.Primary && target is not null && canSave)
-                    {
-                        var savedFavorite = new FavoriteDevice(
-                            target.Fingerprint,
-                            favoriteName.Trim(),
-                            IPAddress.Parse(favoriteAddress).ToString(),
-                            parsedPort);
-                        FavoriteDeviceStore.Upsert(savedFavorite);
-                    }
-                    setFavoriteTarget(null);
-                },
-            })
-                .IsPrimaryButtonEnabled(canSave)
-                .Set(dialog => ApplyDialogTheme(dialog, Props.Theme));
-        }
-
-        void OpenFavoriteDialog(LocalSendDevice device)
-        {
-            var endpoint = device.PreferredEndpoint;
-            setFavoriteName(device.Alias);
-            setFavoriteAddress(endpoint?.Address.ToString() ?? string.Empty);
-            setFavoritePort(endpoint?.Port.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "53317");
-            setFavoriteTarget(device);
-        }
-
-        Element RemoveFavoriteDialog()
-        {
-            var deviceName = removeFavoriteTarget is not null
-                && favorites.TryGetValue(removeFavoriteTarget.Fingerprint, out var favorite)
-                    ? favorite.Name
-                    : removeFavoriteTarget?.Alias ?? string.Empty;
-
-            return (ContentDialog(
-                t.Message(new("App", "DeleteFavoriteTitle")),
-                TextBlock(t.Message(
-                        new("App", "DeleteFavoriteConfirm"),
-                        ("device", deviceName)))
-                    .TextWrapping(TextWrapping.WrapWholeWords),
-                primaryButtonText: t.Message(new("App", "Delete"))) with
-            {
-                IsOpen = removeFavoriteTarget is not null,
-                SecondaryButtonText = t.Message(new("App", "Cancel")),
-                DefaultButton = ContentDialogButton.Primary,
-                OnClosed = result =>
-                {
-                    var target = removeFavoriteTarget;
-                    setRemoveFavoriteTarget(null);
-                    if (result == ContentDialogResult.Primary && target is not null)
-                        FavoriteDeviceStore.Remove(target.Fingerprint);
-                },
-            }).Set(dialog => ApplyDialogTheme(dialog, Props.Theme));
-        }
 
         static void ApplyDialogTheme(ContentDialog dialog, ElementTheme theme) =>
             dialog.RequestedTheme = theme;
@@ -1041,16 +932,10 @@ sealed class SendPage : Component<SendPageProps>
         FavoriteDevice? favorite,
         bool isEnabled,
         Action<FrameworkElement?> onClick,
-        Action onFavorite,
+        Action onDetails,
         IntlAccessor t)
     {
         var displayName = favorite?.Name ?? device.Alias;
-        var favoriteName = favorite is null
-            ? t.Message(new("App", "FavoriteDevice"), ("device", displayName))
-            : t.Message(new("App", "RemoveFavoriteDevice"), ("device", displayName));
-        var favoriteForeground = favorite is null
-            ? Theme.PrimaryText
-            : Theme.AccentText;
 
         return Grid(
             columns: [GridSize.Star()],
@@ -1067,11 +952,9 @@ sealed class SendPage : Component<SendPageProps>
                 TrailingReserve: 64,
                 AnimationRole: DeviceIdentityCardAnimationRole.Source))
                 .Grid(0, 0),
-            Button(Icon(favorite is null ? "\uEB51" : "\uEB52"), onFavorite)
-                .AutomationName(favoriteName)
-                .ToolTip(favorite is null
-                    ? t.Message(new("App", "AddFavoriteTitle"))
-                    : t.Message(new("App", "DeleteFavoriteTitle")))
+            Button(Icon("\uE946"), onDetails)
+                .AutomationName(t.Message(new("App", "OpenDeviceDetails"), ("device", displayName)))
+                .ToolTip(t.Message(new("App", "DeviceDetailsTitle")))
                 .MinWidth(48)
                 .MinHeight(48)
                 .Resources(resources => resources
@@ -1082,9 +965,9 @@ sealed class SendPage : Component<SendPageProps>
                     .Set("ButtonBorderBrushPointerOver", Theme.Ref("SubtleFillColorTransparentBrush"))
                     .Set("ButtonBorderBrushPressed", Theme.Ref("SubtleFillColorTransparentBrush"))
                     .Set("ButtonBorderBrushDisabled", Theme.Ref("SubtleFillColorTransparentBrush"))
-                    .Set("ButtonForeground", favoriteForeground)
-                    .Set("ButtonForegroundPointerOver", favoriteForeground)
-                    .Set("ButtonForegroundPressed", favoriteForeground)
+                    .Set("ButtonForeground", Theme.PrimaryText)
+                    .Set("ButtonForegroundPointerOver", Theme.PrimaryText)
+                    .Set("ButtonForegroundPressed", Theme.PrimaryText)
                     .Set("ButtonForegroundDisabled", Theme.DisabledText))
                 .HAlign(HorizontalAlignment.Right)
                 .VAlign(VerticalAlignment.Center)

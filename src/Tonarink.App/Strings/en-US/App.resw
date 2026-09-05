@@ -51,6 +51,28 @@
   <data name="DeviceInfoIp" xml:space="preserve"><value>IP:</value></data>
   <data name="DeviceInfoNoAddress" xml:space="preserve"><value>No address available</value></data>
   <data name="DeviceInfoPort" xml:space="preserve"><value>Port:</value></data>
+  <data name="DeviceDetailsTitle" xml:space="preserve"><value>Device details</value></data>
+  <data name="OpenDeviceDetails" xml:space="preserve"><value>View details for {device}</value></data>
+  <data name="DeviceInformation" xml:space="preserve"><value>Device information</value></data>
+  <data name="DeviceModelLabel" xml:space="preserve"><value>Device model</value></data>
+  <data name="ProtocolVersion" xml:space="preserve"><value>Protocol version</value></data>
+  <data name="Address" xml:space="preserve"><value>Address</value></data>
+  <data name="LastSeen" xml:space="preserve"><value>Last seen</value></data>
+  <data name="FingerprintLabel" xml:space="preserve"><value>Fingerprint</value></data>
+  <data name="FavoriteAction" xml:space="preserve"><value>Favorite</value></data>
+  <data name="RemoveFavoriteAction" xml:space="preserve"><value>Unfavorite</value></data>
+  <data name="VerifyAction" xml:space="preserve"><value>Verify</value></data>
+  <data name="VerificationTitle" xml:space="preserve"><value>Verify device</value></data>
+  <data name="VerificationIcons" xml:space="preserve"><value>Icons</value></data>
+  <data name="VerificationText" xml:space="preserve"><value>Text</value></data>
+  <data name="VerificationCompareHint" xml:space="preserve"><value>Does the other device show the same content?</value></data>
+  <data name="VerificationUnencryptedTitle" xml:space="preserve"><value>Connection is not encrypted</value></data>
+  <data name="VerificationUnencryptedMessage" xml:space="preserve"><value>This comparison is not cryptographically bound when the device uses HTTP.</value></data>
+  <data name="DeviceLog" xml:space="preserve"><value>Activity</value></data>
+  <data name="DeviceLogEmpty" xml:space="preserve"><value>No discovery activity has been recorded in this session.</value></data>
+  <data name="DeviceLogAdded" xml:space="preserve"><value>Discovered</value></data>
+  <data name="DeviceLogUpdated" xml:space="preserve"><value>Updated</value></data>
+  <data name="DeviceLogRemoved" xml:space="preserve"><value>Expired</value></data>
   <data name="DeviceDesktop" xml:space="preserve"><value>Desktop</value></data>
   <data name="DeviceHeadless" xml:space="preserve"><value>Headless device</value></data>
   <data name="DeviceMobile" xml:space="preserve"><value>Mobile device</value></data>

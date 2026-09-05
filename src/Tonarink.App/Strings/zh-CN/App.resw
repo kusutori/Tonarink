@@ -51,6 +51,28 @@
   <data name="DeviceInfoIp" xml:space="preserve"><value>IP：</value></data>
   <data name="DeviceInfoNoAddress" xml:space="preserve"><value>暂无可用地址</value></data>
   <data name="DeviceInfoPort" xml:space="preserve"><value>端口：</value></data>
+  <data name="DeviceDetailsTitle" xml:space="preserve"><value>设备详情</value></data>
+  <data name="OpenDeviceDetails" xml:space="preserve"><value>查看“{device}”的设备详情</value></data>
+  <data name="DeviceInformation" xml:space="preserve"><value>设备信息</value></data>
+  <data name="DeviceModelLabel" xml:space="preserve"><value>设备型号</value></data>
+  <data name="ProtocolVersion" xml:space="preserve"><value>协议版本</value></data>
+  <data name="Address" xml:space="preserve"><value>地址</value></data>
+  <data name="LastSeen" xml:space="preserve"><value>最后发现</value></data>
+  <data name="FingerprintLabel" xml:space="preserve"><value>指纹</value></data>
+  <data name="FavoriteAction" xml:space="preserve"><value>收藏</value></data>
+  <data name="RemoveFavoriteAction" xml:space="preserve"><value>取消收藏</value></data>
+  <data name="VerifyAction" xml:space="preserve"><value>验证</value></data>
+  <data name="VerificationTitle" xml:space="preserve"><value>验证设备</value></data>
+  <data name="VerificationIcons" xml:space="preserve"><value>图标</value></data>
+  <data name="VerificationText" xml:space="preserve"><value>文本</value></data>
+  <data name="VerificationCompareHint" xml:space="preserve"><value>另一台设备上显示的内容相同吗？</value></data>
+  <data name="VerificationUnencryptedTitle" xml:space="preserve"><value>连接未加密</value></data>
+  <data name="VerificationUnencryptedMessage" xml:space="preserve"><value>设备使用 HTTP 时，此比较结果没有加密身份绑定。</value></data>
+  <data name="DeviceLog" xml:space="preserve"><value>日志</value></data>
+  <data name="DeviceLogEmpty" xml:space="preserve"><value>本次运行中尚未记录设备发现日志。</value></data>
+  <data name="DeviceLogAdded" xml:space="preserve"><value>已发现</value></data>
+  <data name="DeviceLogUpdated" xml:space="preserve"><value>已更新</value></data>
+  <data name="DeviceLogRemoved" xml:space="preserve"><value>已过期</value></data>
   <data name="DeviceDesktop" xml:space="preserve"><value>桌面设备</value></data>
   <data name="DeviceHeadless" xml:space="preserve"><value>无界面设备</value></data>
   <data name="DeviceMobile" xml:space="preserve"><value>移动设备</value></data>
