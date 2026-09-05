@@ -150,7 +150,7 @@ sealed class WebSharePage : Component<WebSharePageProps>
                     },
                     t.Message(new("App", "WebShareAutoAccept"))),
                 CheckBox(
-                    (bool?)(pin is not null),
+                    (bool?)(pin is not null || pinDialogOpen),
                     value =>
                     {
                         if (value)
@@ -180,12 +180,14 @@ sealed class WebSharePage : Component<WebSharePageProps>
                     DefaultButton = ContentDialogButton.Primary,
                     OnClosed = result =>
                     {
+                        if (result == ContentDialogResult.Primary && !string.IsNullOrWhiteSpace(pinDraft))
+                        {
+                            var next = pinDraft.Trim();
+                            setPin(next);
+                            node?.SetWebSharePin(next);
+                        }
+
                         setPinDialogOpen(false);
-                        if (result != ContentDialogResult.Primary || string.IsNullOrWhiteSpace(pinDraft))
-                            return;
-                        var next = pinDraft.Trim();
-                        setPin(next);
-                        node?.SetWebSharePin(next);
                     },
                 }).Set(dialog => ApplyDialogTheme(dialog, dialogTheme)),
                 (ContentDialog(
