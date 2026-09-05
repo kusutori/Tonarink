@@ -43,6 +43,9 @@
   <data name="Copy" xml:space="preserve"><value>Copy</value></data>
   <data name="CopyReceivedText" xml:space="preserve"><value>Copy received text</value></data>
   <data name="Decline" xml:space="preserve"><value>Decline</value></data>
+  <data name="Delete" xml:space="preserve"><value>Delete</value></data>
+  <data name="DeleteFavoriteConfirm" xml:space="preserve"><value>Are you sure you want to remove “{device}” from favorites?</value></data>
+  <data name="DeleteFavoriteTitle" xml:space="preserve"><value>Delete favorite</value></data>
   <data name="DeviceInfo" xml:space="preserve"><value>Device information</value></data>
   <data name="DeviceInfoAlias" xml:space="preserve"><value>Alias (device name):</value></data>
   <data name="DeviceInfoIp" xml:space="preserve"><value>IP:</value></data>
@@ -142,6 +145,7 @@
   <data name="ReceivingPreparing" xml:space="preserve"><value>Preparing to receive…</value></data>
   <data name="RefreshDevices" xml:space="preserve"><value>Refresh nearby devices</value></data>
   <data name="Remove" xml:space="preserve"><value>Remove</value></data>
+  <data name="RemoveFavoriteDevice" xml:space="preserve"><value>Remove {device} from favorites</value></data>
   <data name="RemoveItem" xml:space="preserve"><value>Remove {item}</value></data>
   <data name="Retry" xml:space="preserve"><value>Retry</value></data>
   <data name="SameNetworkHint" xml:space="preserve"><value>Make sure the target device is connected to the same Wi-Fi network.</value></data>

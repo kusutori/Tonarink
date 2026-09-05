@@ -84,6 +84,7 @@ sealed class SendPage : Component<SendPageProps>
         var (favoriteName, setFavoriteName) = UseState(string.Empty);
         var (favoriteAddress, setFavoriteAddress) = UseState(string.Empty);
         var (favoritePort, setFavoritePort) = UseState(string.Empty);
+        var (removeFavoriteTarget, setRemoveFavoriteTarget) = UseState<LocalSendDevice?>(null);
         var (transfer, updateTransfer) = UseReducer(TransferUiState.Idle(
             t.Message(new("App", "SendHint"))));
         var sendCancellationRef = UseRef<CancellationTokenSource?>(null);
@@ -249,9 +250,11 @@ sealed class SendPage : Component<SendPageProps>
                 .VAlign(VerticalAlignment.Stretch)
             : VStack(8,
                 devices.Select((device, index) =>
-                    DeviceCard(
+                {
+                    var favorite = favorites.GetValueOrDefault(device.Fingerprint);
+                    return DeviceCard(
                         device,
-                        favorites.GetValueOrDefault(device.Fingerprint),
+                        favorite,
                         isEnabled: Props.Node?.State == LocalSendNodeState.Running
                             && !sendMutation.IsPending,
                         onClick: source =>
@@ -273,10 +276,13 @@ sealed class SendPage : Component<SendPageProps>
                                 source,
                                 () => _ = StartSendAsync(device, pin: null));
                         },
-                        onFavorite: () => OpenFavoriteDialog(device),
+                        onFavorite: favorite is null
+                            ? () => OpenFavoriteDialog(device)
+                            : () => setRemoveFavoriteTarget(device),
                         t)
                         .PositionInSet(index + 1, devices.Count)
-                        .WithKey(device.Fingerprint))
+                        .WithKey(device.Fingerprint);
+                })
                 .ToArray<Element?>());
 
         Element deviceContent = isWideLayout
@@ -348,7 +354,8 @@ sealed class SendPage : Component<SendPageProps>
             contentCards,
             TextDialog(),
             PinDialog(),
-            FavoriteDialog()) with
+            FavoriteDialog(),
+            RemoveFavoriteDialog()) with
         {
             RowGap = 20,
         });
@@ -468,9 +475,7 @@ sealed class SendPage : Component<SendPageProps>
                 && validPort;
 
             return (ContentDialog(
-                favorites.ContainsKey(favoriteTarget?.Fingerprint ?? string.Empty)
-                    ? t.Message(new("App", "EditFavoriteTitle"))
-                    : t.Message(new("App", "AddFavoriteTitle")),
+                t.Message(new("App", "AddFavoriteTitle")),
                 VStack(12,
                     FormField(
                         TextBox(favoriteName, setFavoriteName, placeholderText: t.Message(new("App", "DeviceName")))
@@ -518,20 +523,39 @@ sealed class SendPage : Component<SendPageProps>
 
         void OpenFavoriteDialog(LocalSendDevice device)
         {
-            if (favorites.TryGetValue(device.Fingerprint, out var favorite))
-            {
-                setFavoriteName(favorite.Name);
-                setFavoriteAddress(favorite.Address);
-                setFavoritePort(favorite.Port.ToString(System.Globalization.CultureInfo.InvariantCulture));
-            }
-            else
-            {
-                var endpoint = device.PreferredEndpoint;
-                setFavoriteName(device.Alias);
-                setFavoriteAddress(endpoint?.Address.ToString() ?? string.Empty);
-                setFavoritePort(endpoint?.Port.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "53317");
-            }
+            var endpoint = device.PreferredEndpoint;
+            setFavoriteName(device.Alias);
+            setFavoriteAddress(endpoint?.Address.ToString() ?? string.Empty);
+            setFavoritePort(endpoint?.Port.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "53317");
             setFavoriteTarget(device);
+        }
+
+        Element RemoveFavoriteDialog()
+        {
+            var deviceName = removeFavoriteTarget is not null
+                && favorites.TryGetValue(removeFavoriteTarget.Fingerprint, out var favorite)
+                    ? favorite.Name
+                    : removeFavoriteTarget?.Alias ?? string.Empty;
+
+            return ContentDialog(
+                t.Message(new("App", "DeleteFavoriteTitle")),
+                TextBlock(t.Message(
+                        new("App", "DeleteFavoriteConfirm"),
+                        ("device", deviceName)))
+                    .TextWrapping(TextWrapping.WrapWholeWords),
+                primaryButtonText: t.Message(new("App", "Delete"))) with
+            {
+                IsOpen = removeFavoriteTarget is not null,
+                SecondaryButtonText = t.Message(new("App", "Cancel")),
+                DefaultButton = ContentDialogButton.Primary,
+                OnClosed = result =>
+                {
+                    var target = removeFavoriteTarget;
+                    setRemoveFavoriteTarget(null);
+                    if (result == ContentDialogResult.Primary && target is not null)
+                        FavoriteDeviceStore.Remove(target.Fingerprint);
+                },
+            };
         }
 
         async Task PickFileAsync()
@@ -1010,7 +1034,10 @@ sealed class SendPage : Component<SendPageProps>
         var displayName = favorite?.Name ?? device.Alias;
         var favoriteName = favorite is null
             ? t.Message(new("App", "FavoriteDevice"), ("device", displayName))
-            : t.Message(new("App", "EditFavoriteDevice"), ("device", displayName));
+            : t.Message(new("App", "RemoveFavoriteDevice"), ("device", displayName));
+        var favoriteForeground = favorite is null
+            ? Theme.PrimaryText
+            : Theme.AccentText;
 
         return Grid(
             columns: [GridSize.Star()],
@@ -1031,17 +1058,21 @@ sealed class SendPage : Component<SendPageProps>
                 .AutomationName(favoriteName)
                 .ToolTip(favorite is null
                     ? t.Message(new("App", "AddFavoriteTitle"))
-                    : t.Message(new("App", "EditFavorite")))
+                    : t.Message(new("App", "DeleteFavoriteTitle")))
                 .MinWidth(48)
                 .MinHeight(48)
-                .Resources(static resources => resources
+                .Resources(resources => resources
                     .Set("ButtonBackground", Theme.Ref("SubtleFillColorTransparentBrush"))
                     .Set("ButtonBackgroundPointerOver", Theme.Ref("SubtleFillColorSecondaryBrush"))
                     .Set("ButtonBackgroundPressed", Theme.Ref("SubtleFillColorTertiaryBrush"))
                     .Set("ButtonBorderBrush", Theme.Ref("SubtleFillColorTransparentBrush"))
                     .Set("ButtonBorderBrushPointerOver", Theme.Ref("SubtleFillColorTransparentBrush"))
                     .Set("ButtonBorderBrushPressed", Theme.Ref("SubtleFillColorTransparentBrush"))
-                    .Set("ButtonBorderBrushDisabled", Theme.Ref("SubtleFillColorTransparentBrush")))
+                    .Set("ButtonBorderBrushDisabled", Theme.Ref("SubtleFillColorTransparentBrush"))
+                    .Set("ButtonForeground", favoriteForeground)
+                    .Set("ButtonForegroundPointerOver", favoriteForeground)
+                    .Set("ButtonForegroundPressed", favoriteForeground)
+                    .Set("ButtonForegroundDisabled", Theme.DisabledText))
                 .HAlign(HorizontalAlignment.Right)
                 .VAlign(VerticalAlignment.Center)
                 .Margin(right: 16)

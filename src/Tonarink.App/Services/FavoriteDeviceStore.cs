@@ -48,6 +48,27 @@ static class FavoriteDeviceStore
         Changed?.Invoke();
     }
 
+    public static void Remove(string fingerprint)
+    {
+        var removed = false;
+        lock (Gate)
+        {
+            var updated = (_cached ??= LoadCore()).ToDictionary(
+                static pair => pair.Key,
+                static pair => pair.Value,
+                StringComparer.Ordinal);
+            removed = updated.Remove(fingerprint);
+            if (removed)
+            {
+                _cached = updated;
+                SaveCore(updated);
+            }
+        }
+
+        if (removed)
+            Changed?.Invoke();
+    }
+
     private static IReadOnlyDictionary<string, FavoriteDevice> LoadCore()
     {
         try

@@ -43,6 +43,9 @@
   <data name="Copy" xml:space="preserve"><value>复制</value></data>
   <data name="CopyReceivedText" xml:space="preserve"><value>复制收到的文本</value></data>
   <data name="Decline" xml:space="preserve"><value>拒绝</value></data>
+  <data name="Delete" xml:space="preserve"><value>删除</value></data>
+  <data name="DeleteFavoriteConfirm" xml:space="preserve"><value>确定要删除收藏“{device}”吗？</value></data>
+  <data name="DeleteFavoriteTitle" xml:space="preserve"><value>删除收藏</value></data>
   <data name="DeviceInfo" xml:space="preserve"><value>设备信息</value></data>
   <data name="DeviceInfoAlias" xml:space="preserve"><value>别名（设备名称）：</value></data>
   <data name="DeviceInfoIp" xml:space="preserve"><value>IP：</value></data>
@@ -142,6 +145,7 @@
   <data name="ReceivingPreparing" xml:space="preserve"><value>正在准备接收…</value></data>
   <data name="RefreshDevices" xml:space="preserve"><value>刷新附近设备</value></data>
   <data name="Remove" xml:space="preserve"><value>移除</value></data>
+  <data name="RemoveFavoriteDevice" xml:space="preserve"><value>取消收藏 {device}</value></data>
   <data name="RemoveItem" xml:space="preserve"><value>移除 {item}</value></data>
   <data name="Retry" xml:space="preserve"><value>重试</value></data>
   <data name="SameNetworkHint" xml:space="preserve"><value>请确保目标设备连接到同一个 Wi-Fi 网络。</value></data>
