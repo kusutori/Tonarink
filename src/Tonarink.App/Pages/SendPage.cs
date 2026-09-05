@@ -23,7 +23,7 @@ sealed record SendPageProps(
     Action<OutgoingTransferViewState?> SetTransferOverlay,
     ShareTargetPayload? ShareTargetPayload,
     Action<Guid> ConsumeShareTargetPayload,
-    Action<LocalSendDevice, FrameworkElement?> OpenDeviceDetails);
+    Action<LocalSendDevice> OpenDeviceDetails);
 
 sealed record SelectedSendItem(
     Guid Id,
@@ -270,7 +270,7 @@ sealed class SendPage : Component<SendPageProps>
                                 source,
                                 () => _ = StartSendAsync(device, pin: null));
                         },
-                        onDetails: source => Props.OpenDeviceDetails(device, source),
+                        onDetails: () => Props.OpenDeviceDetails(device),
                         t)
                         .PositionInSet(index + 1, devices.Count)
                         .WithKey(device.Fingerprint);
@@ -932,7 +932,7 @@ sealed class SendPage : Component<SendPageProps>
         FavoriteDevice? favorite,
         bool isEnabled,
         Action<FrameworkElement?> onClick,
-        Action<FrameworkElement?> onDetails,
+        Action onDetails,
         IntlAccessor t)
     {
         var displayName = favorite?.Name ?? device.Alias;
@@ -952,7 +952,7 @@ sealed class SendPage : Component<SendPageProps>
                 SecondaryAutomationName: t.Message(
                     new("App", "OpenDeviceDetails"),
                     ("device", displayName)),
-                OnSecondaryClick: onDetails));
+                OnSecondaryClick: _ => onDetails()));
     }
 
     private static Element EmptyDevices(

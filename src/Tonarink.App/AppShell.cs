@@ -11,7 +11,6 @@ using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using static Microsoft.UI.Reactor.Factories;
-using static TransferOverlayVisuals;
 using Windows.System.UserProfile;
 
 sealed class AppShell : Component
@@ -383,18 +382,10 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
                 setOutgoingTransfer,
                 shareTargetPayload,
                 ConsumeShareTargetPayload,
-                (device, source) =>
+                device =>
                 {
                     setDetailsDevice(device);
-                    void Navigate() => navigation.Navigate(AppRoute.DeviceDetails, AppNavigation.DrillIn);
-
-                    if (source is null)
-                        Navigate();
-                    else
-                        DeviceConnectedAnimation.NavigateToDestination(
-                            DeviceConnectedKey(device.Fingerprint),
-                            source,
-                            Navigate);
+                    navigation.Navigate(AppRoute.DeviceDetails, AppNavigation.DrillIn);
                 })),
             AppRoute.Settings => Component<SettingsPage, SettingsPageProps>(new(
                 settings,

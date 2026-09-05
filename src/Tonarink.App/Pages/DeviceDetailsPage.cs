@@ -1,5 +1,4 @@
 using System.Net;
-using CommunityToolkit.WinUI.Controls;
 using LocalSendDotNet;
 using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Core;
@@ -48,13 +47,12 @@ sealed class DeviceDetailsPage : Component<DeviceDetailsPageProps>
         var (showRemoveFavorite, setShowRemoveFavorite) = UseState(false);
         var verificationModes = UseMemo(() => new object[]
         {
-            new SegmentedItem { Content = t.Message(new("App", "VerificationIcons")) },
-            new SegmentedItem { Content = t.Message(new("App", "VerificationText")) },
+            t.Message(new("App", "VerificationIcons")),
+            t.Message(new("App", "VerificationText")),
         }, t.Locale);
 
         var activity = Props.Runtime.DeviceActivity.GetValueOrDefault(currentDevice.Fingerprint)
             ?? Array.Empty<DeviceActivityEntry>();
-
         var page = FlexColumn(
             Heading(t.Message(new("App", "DeviceDetailsTitle")))
                 .HeadingLevel(AutomationHeadingLevel.Level1),
@@ -62,9 +60,7 @@ sealed class DeviceDetailsPage : Component<DeviceDetailsPageProps>
                 displayName,
                 currentDevice.DeviceModel,
                 currentDevice.DeviceType,
-                RemoteDeviceNumber(currentDevice),
-                ConnectedAnimationKey: DeviceConnectedKey(currentDevice.Fingerprint),
-                AnimationRole: DeviceIdentityCardAnimationRole.Destination))
+                RemoteDeviceNumber(currentDevice)))
                 .MaxWidth(560)
                 .HAlign(HorizontalAlignment.Stretch),
             HStack(12,
@@ -79,8 +75,7 @@ sealed class DeviceDetailsPage : Component<DeviceDetailsPageProps>
                                 OpenFavoriteDialog(currentDevice);
                             else
                                 setShowRemoveFavorite(true);
-                        },
-                        isSelected: favorite is not null),
+                        }),
                     ActionButton(
                         "\uE73E",
                         t.Message(new("App", "VerifyAction")),
@@ -194,32 +189,15 @@ sealed class DeviceDetailsPage : Component<DeviceDetailsPageProps>
         }
     }
 
-    private static Element ActionButton(
-        string glyph,
-        string label,
-        Action onClick,
-        bool isSelected = false)
-    {
-        var foreground = isSelected
-            ? Theme.Ref("TextOnAccentFillColorPrimaryBrush")
-            : Theme.PrimaryText;
-
-        return Button(
+    private static Element ActionButton(string glyph, string label, Action onClick) =>
+        Button(
                 VStack(6,
                     Icon(glyph),
                     Caption(label)),
                 onClick)
             .MinWidth(104)
             .MinHeight(68)
-            .AutomationName(label)
-            .Resources(resources => resources
-                .Set("ButtonBackground", isSelected ? Theme.Accent : Theme.ControlFill)
-                .Set("ButtonBackgroundPointerOver", isSelected ? Theme.AccentSecondary : Theme.ControlFillSecondary)
-                .Set("ButtonBackgroundPressed", isSelected ? Theme.AccentTertiary : Theme.ControlFillTertiary)
-                .Set("ButtonForeground", foreground)
-                .Set("ButtonForegroundPointerOver", foreground)
-                .Set("ButtonForegroundPressed", foreground));
-    }
+            .AutomationName(label);
 
     private static Element InfoCard(IntlAccessor t, LocalSendDevice device)
     {
@@ -309,13 +287,18 @@ sealed class DeviceDetailsPage : Component<DeviceDetailsPageProps>
         else
         {
             var combined = DeviceVerification.CombineFingerprints(localFingerprint, device.Fingerprint);
-            content = FlexColumn(
+            content = VStack(12,
                 Segmented(
                     selectedIndex: mode,
                     onSelectedIndexChanged: setMode,
                     items: modes)
                     .HAlign(HorizontalAlignment.Stretch),
-                mode == 0 ? VerificationIcons(combined) : VerificationText(combined, t),
+                Grid(
+                        columns: [GridSize.Star()],
+                        rows: [GridSize.Star()],
+                        mode == 0 ? VerificationIcons(combined) : VerificationText(combined, t))
+                    .Height(224)
+                    .HAlign(HorizontalAlignment.Stretch),
                 TextBlock(t.Message(new("App", "VerificationCompareHint")))
                     .Foreground(Theme.SecondaryText)
                     .TextWrapping(TextWrapping.WrapWholeWords),
@@ -327,10 +310,10 @@ sealed class DeviceDetailsPage : Component<DeviceDetailsPageProps>
                     {
                         Severity = InfoBarSeverity.Warning,
                         IsOpen = true,
-                    }) with
-            {
-                RowGap = 12,
-            };
+                    })
+                .MinWidth(384)
+                .HAlign(HorizontalAlignment.Stretch)
+                .VAlign(VerticalAlignment.Center);
         }
 
         return (ContentDialog(
@@ -340,17 +323,13 @@ sealed class DeviceDetailsPage : Component<DeviceDetailsPageProps>
         {
             IsOpen = isOpen,
             OnClosed = _ => setOpen(false),
-        }).Set(dialog =>
-        {
-            ApplyDialogTheme(dialog, theme);
-            dialog.MaxHeight = 440;
-        });
+        }).Set(dialog => ApplyDialogTheme(dialog, theme));
     }
 
     private static Element VerificationIcons(string combined) =>
-        Grid(
+        (Grid(
             columns: [GridSize.Star(), GridSize.Star(), GridSize.Star(), GridSize.Star()],
-            rows: [GridSize.Auto, GridSize.Auto, GridSize.Auto, GridSize.Auto],
+            rows: [GridSize.Star(), GridSize.Star(), GridSize.Star(), GridSize.Star()],
             DeviceVerification.GetMaterialIconGlyphs(combined).Select((glyph, index) =>
                 TextBlock(glyph)
                     .FontFamily(MaterialIcons)
@@ -363,13 +342,17 @@ sealed class DeviceDetailsPage : Component<DeviceDetailsPageProps>
                 .ToArray<Element?>()) with
         {
             RowSpacing = 8,
-            ColumnSpacing = 12,
-        };
+            ColumnSpacing = 8,
+        })
+        .Size(224, 224)
+        .HAlign(HorizontalAlignment.Center);
 
     private static Element VerificationText(string combined, IntlAccessor t) =>
         TextBox(combined, _ => { })
             .IsReadOnly(true)
             .TextWrapping(TextWrapping.Wrap)
+            .HAlign(HorizontalAlignment.Stretch)
+            .VAlign(VerticalAlignment.Stretch)
             .AutomationName(t.Message(new("App", "VerificationText")));
 
     private static void ApplyDialogTheme(ContentDialog dialog, ElementTheme theme) =>

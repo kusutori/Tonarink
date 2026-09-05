@@ -1,4 +1,5 @@
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Animation;
 using System.Runtime.InteropServices;
 
@@ -35,14 +36,20 @@ internal static class DeviceConnectedAnimation
         Prepare(key, destination);
         close();
 
-        destination.DispatcherQueue.TryEnqueue(() =>
+        // Closing the overlay schedules a Reactor reconciliation. Wait for the
+        // next composition frame so the source card's visual is visible again
+        // before using it as the connected-animation destination.
+        EventHandler<object> onRendering = null!;
+        onRendering = (_, _) =>
         {
+            CompositionTarget.Rendering -= onRendering;
             if (Sources.TryGetValue(key, out var reference)
                 && reference.TryGetTarget(out var source))
             {
                 TryStart(key, source);
             }
-        });
+        };
+        CompositionTarget.Rendering += onRendering;
     }
 
     private static void Prepare(string key, UIElement source)
