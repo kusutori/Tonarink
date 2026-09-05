@@ -67,6 +67,11 @@ sealed class SettingsPage : Component<SettingsPageProps>
             t.Message(new("App", "LanguageChinese")),
             t.Message(new("App", "LanguageEnglish")),
         ];
+        string[] notificationDefaultActionOptions =
+        [
+            t.Message(new("App", "SettingsNotificationsDefaultOpenFile")),
+            t.Message(new("App", "SettingsNotificationsDefaultShowInFolder")),
+        ];
 
         var generalCards = SettingsGroup(
             t.Message(new("App", "SettingsGeneral")),
@@ -129,6 +134,26 @@ sealed class SettingsPage : Component<SettingsPageProps>
                             Props.UpdateSettings(settings => settings with { NotificationsEnabled = value });
                             AppNotificationService.SetEnabled(value);
                         })),
+                    SettingsCard(
+                        header: t.Message(new("App", "SettingsNotificationsDefaultAction")),
+                        description: t.Message(new("App", "SettingsNotificationsDefaultActionDescription")),
+                        isClickEnabled: false,
+                        isActionIconVisible: false,
+                        content:
+                        ComboBox(
+                            notificationDefaultActionOptions,
+                            (int)Props.Settings.NotificationDefaultAction,
+                            index =>
+                            {
+                                if (Enum.IsDefined(typeof(NotificationDefaultAction), index))
+                                {
+                                    Props.UpdateSettings(settings => settings with
+                                    {
+                                        NotificationDefaultAction = (NotificationDefaultAction)index,
+                                    });
+                                }
+                            })
+                            .MinWidth(180)),
                     SettingsCard(
                         header: t.Message(new("App", "SettingsNotificationsTest")),
                         description: t.Message(new("App", "SettingsNotificationsTestDescription")),

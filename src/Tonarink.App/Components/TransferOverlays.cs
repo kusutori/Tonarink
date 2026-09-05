@@ -389,7 +389,7 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                 if (result.IsSuccess)
                 {
                     ReceiveHistoryStore.Record(request.Sender.Alias, result);
-                    AppNotificationService.Show(
+                    AppNotificationService.ShowTransferComplete(
                         t.Message(new("App", "NotificationReceiveCompleteTitle")),
                         request.Items.Count == 1
                             ? t.Message(
@@ -399,7 +399,11 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                                 new("App", "NotificationReceiveCompleteMany"),
                                 ("count", request.Items.Count),
                                 ("device", request.Sender.Alias)),
-                        "receive-complete");
+                        "receive-complete",
+                        result.Items.Select(static item => item.SavedPath ?? string.Empty),
+                        AppSettingsStore.Load().NotificationDefaultAction,
+                        t.Message(new("App", "NotificationOpenFile")),
+                        t.Message(new("App", "NotificationShowInFolder")));
                 }
                 var receivedText = showText && result.IsSuccess
                     ? await ReadReceivedTextAsync(result)

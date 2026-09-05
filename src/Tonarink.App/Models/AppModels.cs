@@ -32,6 +32,12 @@ enum AutoSaveMode
     On,
 }
 
+enum NotificationDefaultAction
+{
+    OpenFile,
+    ShowInFolder,
+}
+
 sealed record AppSettings(
     string Alias,
     AutoSaveMode AutoSave,
@@ -40,6 +46,7 @@ sealed record AppSettings(
     bool MinimizeToTray,
     bool StartWithWindows,
     bool NotificationsEnabled,
+    NotificationDefaultAction NotificationDefaultAction,
     bool FavoritesOnly,
     string DownloadDirectory,
     LocalSendDeviceType DeviceType,
@@ -60,6 +67,7 @@ sealed record AppSettings(
         MinimizeToTray: false,
         StartWithWindows: false,
         NotificationsEnabled: true,
+        NotificationDefaultAction: NotificationDefaultAction.OpenFile,
         FavoritesOnly: false,
         DownloadDirectory: AppPlatform.DefaultDownloadDirectory,
         DeviceType: LocalSendDeviceType.Desktop,

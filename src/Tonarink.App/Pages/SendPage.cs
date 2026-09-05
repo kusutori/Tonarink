@@ -802,7 +802,7 @@ sealed class SendPage : Component<SendPageProps>
                     isPending: false);
                 if (result.IsSuccess)
                 {
-                    AppNotificationService.Show(
+                    AppNotificationService.ShowTransferComplete(
                         t.Message(new("App", "NotificationSendCompleteTitle")),
                         selectedItems.Count == 1
                             ? t.Message(
@@ -812,7 +812,14 @@ sealed class SendPage : Component<SendPageProps>
                                 new("App", "NotificationSendCompleteMany"),
                                 ("count", selectedItems.Count),
                                 ("device", device.Alias)),
-                        "send-complete");
+                        "send-complete",
+                        selectedItems
+                            .Select(static selected => selected.Item)
+                            .OfType<SendFileItem>()
+                            .Select(static item => item.Path),
+                        AppSettingsStore.Load().NotificationDefaultAction,
+                        t.Message(new("App", "NotificationOpenFile")),
+                        t.Message(new("App", "NotificationShowInFolder")));
                     updateSelectedItems(_ => Array.Empty<SelectedSendItem>());
                     setPickerMessage(t.Message(new("App", "NothingSelected")));
                 }

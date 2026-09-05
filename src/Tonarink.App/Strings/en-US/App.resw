@@ -111,6 +111,8 @@
   <data name="NotificationSendCompleteTitle" xml:space="preserve"><value>Send complete</value></data>
   <data name="NotificationSendCompleteOne" xml:space="preserve"><value>Sent an item to {device}.</value></data>
   <data name="NotificationSendCompleteMany" xml:space="preserve"><value>Sent {count} items to {device}.</value></data>
+  <data name="NotificationOpenFile" xml:space="preserve"><value>Open file</value></data>
+  <data name="NotificationShowInFolder" xml:space="preserve"><value>Show in folder</value></data>
   <data name="NearbyDevices" xml:space="preserve"><value>Nearby devices</value></data>
   <data name="NetworkStartFailed" xml:space="preserve"><value>Could not start the network service</value></data>
   <data name="DiscoveryScanHint" xml:space="preserve"><value>Multicast discovery is unavailable. Nearby devices are found by scanning this network.</value></data>
@@ -229,6 +231,10 @@
   <data name="SettingsNotificationsDescription" xml:space="preserve"><value>Show Windows notifications for incoming requests and completed transfers.</value></data>
   <data name="SettingsNotificationsEnabled" xml:space="preserve"><value>Enable notifications</value></data>
   <data name="SettingsNotificationsEnabledDescription" xml:space="preserve"><value>Allow Tonarink to send Windows system notifications.</value></data>
+  <data name="SettingsNotificationsDefaultAction" xml:space="preserve"><value>When a completion notification is clicked</value></data>
+  <data name="SettingsNotificationsDefaultActionDescription" xml:space="preserve"><value>Choose the default action when you click a completed transfer notification.</value></data>
+  <data name="SettingsNotificationsDefaultOpenFile" xml:space="preserve"><value>Open file</value></data>
+  <data name="SettingsNotificationsDefaultShowInFolder" xml:space="preserve"><value>Show in folder</value></data>
   <data name="SettingsNotificationsTest" xml:space="preserve"><value>Test notification</value></data>
   <data name="SettingsNotificationsTestDescription" xml:space="preserve"><value>Send a system notification to check the current Windows notification configuration.</value></data>
   <data name="SettingsNotificationsSendTest" xml:space="preserve"><value>Send test notification</value></data>

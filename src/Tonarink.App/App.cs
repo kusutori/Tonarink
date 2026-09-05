@@ -17,7 +17,8 @@ try
         {
             ReactorApp.ShutdownPolicy = ShutdownPolicy.OnLastSurfaceClosed;
             AppWindows.OpenMain(
-                startHidden: AppPlatform.StartHidden && startupSettings.MinimizeToTray);
+                startHidden: (AppPlatform.StartHidden && startupSettings.MinimizeToTray)
+                    || AppNotificationService.HasPendingBackgroundAction);
         });
     }
     finally

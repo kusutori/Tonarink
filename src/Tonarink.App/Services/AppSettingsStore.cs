@@ -53,6 +53,7 @@ sealed class AppSettingsFile
     public bool? MinimizeToTray { get; set; }
     public bool? StartWithWindows { get; set; }
     public bool? NotificationsEnabled { get; set; }
+    public string? NotificationDefaultAction { get; set; }
     public bool? FavoritesOnly { get; set; }
     public string? DownloadDirectory { get; set; }
     public string? DeviceType { get; set; }
@@ -80,6 +81,7 @@ sealed class AppSettingsFile
         MinimizeToTray = settings.MinimizeToTray,
         StartWithWindows = settings.StartWithWindows,
         NotificationsEnabled = settings.NotificationsEnabled,
+        NotificationDefaultAction = settings.NotificationDefaultAction.ToString(),
         FavoritesOnly = settings.FavoritesOnly,
         DownloadDirectory = settings.DownloadDirectory,
         DeviceType = settings.DeviceType.ToString(),
@@ -111,6 +113,12 @@ sealed class AppSettingsFile
             MinimizeToTray = MinimizeToTray ?? defaults.MinimizeToTray,
             StartWithWindows = StartWithWindows ?? defaults.StartWithWindows,
             NotificationsEnabled = NotificationsEnabled ?? defaults.NotificationsEnabled,
+            NotificationDefaultAction = Enum.TryParse<NotificationDefaultAction>(
+                NotificationDefaultAction,
+                ignoreCase: true,
+                out var notificationDefaultAction)
+                    ? notificationDefaultAction
+                    : defaults.NotificationDefaultAction,
             FavoritesOnly = autoSave == AutoSaveMode.Favorites,
             DownloadDirectory = string.IsNullOrWhiteSpace(DownloadDirectory)
                 ? defaults.DownloadDirectory

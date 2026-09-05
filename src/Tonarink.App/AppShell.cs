@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using LocalSendDotNet;
 using Microsoft.UI.Input;
 using Microsoft.UI.Reactor;
@@ -119,6 +120,8 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
         var navigationViewRef = UseRef<NavigationView?>(null);
         var (isNavigationPaneOpen, setNavigationPaneOpen) = UseState(false);
         var (runtime, updateRuntime) = UseReducer(AppRuntimeState.Initial);
+        var runtimeRef = UseRef(runtime);
+        runtimeRef.Current = runtime;
         var (outgoingTransfer, setOutgoingTransfer) = UseState<OutgoingTransferViewState?>(null);
         var (shareTargetPayload, setShareTargetPayload) = UseState<ShareTargetPayload?>(null);
         var (serverDesired, setServerDesired) = UseState(true);
@@ -561,7 +564,12 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
             drainingActivationsRef.Current = true;
             try
             {
-                RestoreWindow();
+                while (AppNotificationService.TryDequeueActivation(out var activation))
+                {
+                    if (activation is not null)
+                        _ = HandleNotificationActivationAsync(activation);
+                }
+
                 while (ShareTargetActivationBroker.TryDequeue(out var payload))
                 {
                     if (payload is null)
@@ -576,8 +584,61 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
             finally
             {
                 drainingActivationsRef.Current = false;
-                if (ShareTargetActivationBroker.HasPendingActivations)
+                if (ShareTargetActivationBroker.HasPendingActivations
+                    || AppNotificationService.HasPendingActivations)
                     ScheduleActivationDrain();
+            }
+        }
+
+        async Task HandleNotificationActivationAsync(AppNotificationActivation activation)
+        {
+            switch (activation.Action)
+            {
+                case "incoming-accept":
+                case "incoming-decline":
+                    if (activation.RequestId is not { } requestId
+                        || nodeRef.Current is not { } node
+                        || runtimeRef.Current.IncomingTransfers.FirstOrDefault(
+                            request => request.RequestId == requestId) is not { } request)
+                    {
+                        RestoreWindow();
+                        return;
+                    }
+
+                    DismissIncoming(requestId);
+                    if (activation.Action == "incoming-accept")
+                    {
+                        var currentSettings = AppSettingsStore.Load();
+                        await AutoAcceptIncomingAsync(
+                            node,
+                            request,
+                            currentSettings.DownloadDirectory,
+                            CancellationToken.None).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        try
+                        {
+                            await node.DeclineAsync(requestId).ConfigureAwait(false);
+                        }
+                        catch (Exception exception)
+                        {
+                            updateRuntime(current => current with { Error = exception.Message });
+                        }
+                    }
+                    return;
+
+                case "open-file":
+                    OpenNotificationPath(activation.Path, reveal: false);
+                    return;
+
+                case "show-in-folder":
+                    OpenNotificationPath(activation.Path, reveal: true);
+                    return;
+
+                default:
+                    RestoreWindow();
+                    return;
             }
         }
 
@@ -759,13 +820,6 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
         {
             await foreach (var request in node.WatchIncomingTransfersAsync(cancellationToken).ConfigureAwait(false))
             {
-                AppNotificationService.Show(
-                    t.Message(
-                        new("App", "NotificationIncomingTitle"),
-                        ("device", request.Sender.Alias)),
-                    TransferOverlayVisuals.IncomingSummary(t, request.Items),
-                    "incoming-request");
-
                 var currentSettings = AppSettingsStore.Load();
                 var autoAccept = currentSettings.AutoSave switch
                 {
@@ -787,6 +841,14 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
                 {
                     IncomingTransfers = [.. current.IncomingTransfers, request],
                 });
+                AppNotificationService.ShowIncomingRequest(
+                    t.Message(
+                        new("App", "NotificationIncomingTitle"),
+                        ("device", request.Sender.Alias)),
+                    TransferOverlayVisuals.IncomingSummary(t, request.Items),
+                    request.RequestId,
+                    t.Message(new("App", "Accept")),
+                    t.Message(new("App", "Decline")));
             }
         }
 
@@ -817,7 +879,7 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
                 }
 
                 ReceiveHistoryStore.Record(request.Sender.Alias, result);
-                AppNotificationService.Show(
+                AppNotificationService.ShowTransferComplete(
                     t.Message(new("App", "NotificationReceiveCompleteTitle")),
                     request.Items.Count == 1
                         ? t.Message(
@@ -827,7 +889,11 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
                             new("App", "NotificationReceiveCompleteMany"),
                             ("count", request.Items.Count),
                             ("device", request.Sender.Alias)),
-                    "receive-complete");
+                    "receive-complete",
+                    result.Items.Select(static item => item.SavedPath ?? string.Empty),
+                    AppSettingsStore.Load().NotificationDefaultAction,
+                    t.Message(new("App", "NotificationOpenFile")),
+                    t.Message(new("App", "NotificationShowInFolder")));
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
@@ -839,6 +905,39 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
                     exception.Message,
                     "receive-failed");
                 updateRuntime(current => current with { Error = exception.Message });
+            }
+        }
+
+        static void OpenNotificationPath(string? path, bool reveal)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+                return;
+
+            try
+            {
+                var fullPath = Path.GetFullPath(path);
+                if (Directory.Exists(fullPath))
+                {
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = fullPath,
+                        UseShellExecute = true,
+                    });
+                    return;
+                }
+
+                if (!File.Exists(fullPath))
+                    return;
+
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = reveal ? "explorer.exe" : fullPath,
+                    Arguments = reveal ? $"/select,\"{fullPath}\"" : string.Empty,
+                    UseShellExecute = true,
+                });
+            }
+            catch
+            {
             }
         }
 

@@ -111,6 +111,8 @@
   <data name="NotificationSendCompleteTitle" xml:space="preserve"><value>发送完成</value></data>
   <data name="NotificationSendCompleteOne" xml:space="preserve"><value>已向 {device} 发送 1 个项目。</value></data>
   <data name="NotificationSendCompleteMany" xml:space="preserve"><value>已向 {device} 发送 {count} 个项目。</value></data>
+  <data name="NotificationOpenFile" xml:space="preserve"><value>打开文件</value></data>
+  <data name="NotificationShowInFolder" xml:space="preserve"><value>打开文件所在位置</value></data>
   <data name="NearbyDevices" xml:space="preserve"><value>附近的设备</value></data>
   <data name="NetworkStartFailed" xml:space="preserve"><value>无法启动网络服务</value></data>
   <data name="DiscoveryScanHint" xml:space="preserve"><value>多播发现不可用。正在通过扫描局域网查找附近设备。</value></data>
@@ -229,6 +231,10 @@
   <data name="SettingsNotificationsDescription" xml:space="preserve"><value>在收到传输请求以及发送或接收完成时显示 Windows 通知。</value></data>
   <data name="SettingsNotificationsEnabled" xml:space="preserve"><value>启用通知</value></data>
   <data name="SettingsNotificationsEnabledDescription" xml:space="preserve"><value>允许 Tonarink 发送 Windows 系统通知。</value></data>
+  <data name="SettingsNotificationsDefaultAction" xml:space="preserve"><value>点击完成通知时</value></data>
+  <data name="SettingsNotificationsDefaultActionDescription" xml:space="preserve"><value>选择点击传输完成通知本身时执行的默认操作。</value></data>
+  <data name="SettingsNotificationsDefaultOpenFile" xml:space="preserve"><value>打开文件</value></data>
+  <data name="SettingsNotificationsDefaultShowInFolder" xml:space="preserve"><value>打开文件所在位置</value></data>
   <data name="SettingsNotificationsTest" xml:space="preserve"><value>测试通知</value></data>
   <data name="SettingsNotificationsTestDescription" xml:space="preserve"><value>发送一条系统通知，检查当前 Windows 通知配置。</value></data>
   <data name="SettingsNotificationsSendTest" xml:space="preserve"><value>发送测试通知</value></data>
