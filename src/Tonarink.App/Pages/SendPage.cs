@@ -23,7 +23,7 @@ sealed record SendPageProps(
     Action<OutgoingTransferViewState?> SetTransferOverlay,
     ShareTargetPayload? ShareTargetPayload,
     Action<Guid> ConsumeShareTargetPayload,
-    Action<LocalSendDevice> OpenDeviceDetails);
+    Action<LocalSendDevice, FrameworkElement?> OpenDeviceDetails);
 
 sealed record SelectedSendItem(
     Guid Id,
@@ -270,7 +270,7 @@ sealed class SendPage : Component<SendPageProps>
                                 source,
                                 () => _ = StartSendAsync(device, pin: null));
                         },
-                        onDetails: () => Props.OpenDeviceDetails(device),
+                        onDetails: source => Props.OpenDeviceDetails(device, source),
                         t)
                         .PositionInSet(index + 1, devices.Count)
                         .WithKey(device.Fingerprint);
@@ -932,15 +932,12 @@ sealed class SendPage : Component<SendPageProps>
         FavoriteDevice? favorite,
         bool isEnabled,
         Action<FrameworkElement?> onClick,
-        Action onDetails,
+        Action<FrameworkElement?> onDetails,
         IntlAccessor t)
     {
         var displayName = favorite?.Name ?? device.Alias;
 
-        return Grid(
-            columns: [GridSize.Star()],
-            rows: [GridSize.Auto],
-            Component<DeviceIdentityCard, DeviceIdentityCardProps>(new(
+        return Component<DeviceIdentityCard, DeviceIdentityCardProps>(new(
                 displayName,
                 device.DeviceModel,
                 device.DeviceType,
@@ -950,31 +947,12 @@ sealed class SendPage : Component<SendPageProps>
                 t.Message(new("App", "SendToDevice"), ("device", displayName)),
                 isEnabled,
                 TrailingReserve: 64,
-                AnimationRole: DeviceIdentityCardAnimationRole.Source))
-                .Grid(0, 0),
-            Button(Icon("\uE946"), onDetails)
-                .AutomationName(t.Message(new("App", "OpenDeviceDetails"), ("device", displayName)))
-                .ToolTip(t.Message(new("App", "DeviceDetailsTitle")))
-                .MinWidth(48)
-                .MinHeight(48)
-                .Resources(resources => resources
-                    .Set("ButtonBackground", Theme.Ref("SubtleFillColorTransparentBrush"))
-                    .Set("ButtonBackgroundPointerOver", Theme.Ref("SubtleFillColorSecondaryBrush"))
-                    .Set("ButtonBackgroundPressed", Theme.Ref("SubtleFillColorTertiaryBrush"))
-                    .Set("ButtonBorderBrush", Theme.Ref("SubtleFillColorTransparentBrush"))
-                    .Set("ButtonBorderBrushPointerOver", Theme.Ref("SubtleFillColorTransparentBrush"))
-                    .Set("ButtonBorderBrushPressed", Theme.Ref("SubtleFillColorTransparentBrush"))
-                    .Set("ButtonBorderBrushDisabled", Theme.Ref("SubtleFillColorTransparentBrush"))
-                    .Set("ButtonForeground", Theme.PrimaryText)
-                    .Set("ButtonForegroundPointerOver", Theme.PrimaryText)
-                    .Set("ButtonForegroundPressed", Theme.PrimaryText)
-                    .Set("ButtonForegroundDisabled", Theme.DisabledText))
-                .HAlign(HorizontalAlignment.Right)
-                .VAlign(VerticalAlignment.Center)
-                .Margin(right: 16)
-                .Grid(0, 0))
-            .MinHeight(104)
-            .HAlign(HorizontalAlignment.Stretch);
+                AnimationRole: DeviceIdentityCardAnimationRole.Source,
+                SecondaryGlyph: "\uE946",
+                SecondaryAutomationName: t.Message(
+                    new("App", "OpenDeviceDetails"),
+                    ("device", displayName)),
+                OnSecondaryClick: onDetails));
     }
 
     private static Element EmptyDevices(

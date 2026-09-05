@@ -62,7 +62,9 @@ sealed class DeviceDetailsPage : Component<DeviceDetailsPageProps>
                 displayName,
                 currentDevice.DeviceModel,
                 currentDevice.DeviceType,
-                RemoteDeviceNumber(currentDevice)))
+                RemoteDeviceNumber(currentDevice),
+                ConnectedAnimationKey: DeviceConnectedKey(currentDevice.Fingerprint),
+                AnimationRole: DeviceIdentityCardAnimationRole.Destination))
                 .MaxWidth(560)
                 .HAlign(HorizontalAlignment.Stretch),
             HStack(12,
@@ -78,12 +80,11 @@ sealed class DeviceDetailsPage : Component<DeviceDetailsPageProps>
                             else
                                 setShowRemoveFavorite(true);
                         },
-                        favorite is null ? Theme.PrimaryText : Theme.AccentText),
+                        isSelected: favorite is not null),
                     ActionButton(
                         "\uE73E",
                         t.Message(new("App", "VerifyAction")),
-                        () => setShowVerification(true),
-                        Theme.PrimaryText))
+                        () => setShowVerification(true)))
                 .HAlign(HorizontalAlignment.Center),
             InfoCard(t, currentDevice),
             ActivityCard(t, activity),
@@ -193,8 +194,17 @@ sealed class DeviceDetailsPage : Component<DeviceDetailsPageProps>
         }
     }
 
-    private static Element ActionButton(string glyph, string label, Action onClick, ThemeRef foreground) =>
-        Button(
+    private static Element ActionButton(
+        string glyph,
+        string label,
+        Action onClick,
+        bool isSelected = false)
+    {
+        var foreground = isSelected
+            ? Theme.Ref("TextOnAccentFillColorPrimaryBrush")
+            : Theme.PrimaryText;
+
+        return Button(
                 VStack(6,
                     Icon(glyph),
                     Caption(label)),
@@ -203,9 +213,13 @@ sealed class DeviceDetailsPage : Component<DeviceDetailsPageProps>
             .MinHeight(68)
             .AutomationName(label)
             .Resources(resources => resources
+                .Set("ButtonBackground", isSelected ? Theme.Accent : Theme.ControlFill)
+                .Set("ButtonBackgroundPointerOver", isSelected ? Theme.AccentSecondary : Theme.ControlFillSecondary)
+                .Set("ButtonBackgroundPressed", isSelected ? Theme.AccentTertiary : Theme.ControlFillTertiary)
                 .Set("ButtonForeground", foreground)
                 .Set("ButtonForegroundPointerOver", foreground)
                 .Set("ButtonForegroundPressed", foreground));
+    }
 
     private static Element InfoCard(IntlAccessor t, LocalSendDevice device)
     {
@@ -315,7 +329,7 @@ sealed class DeviceDetailsPage : Component<DeviceDetailsPageProps>
                         IsOpen = true,
                     }) with
             {
-                RowGap = 20,
+                RowGap = 12,
             };
         }
 
@@ -326,7 +340,11 @@ sealed class DeviceDetailsPage : Component<DeviceDetailsPageProps>
         {
             IsOpen = isOpen,
             OnClosed = _ => setOpen(false),
-        }).Set(dialog => ApplyDialogTheme(dialog, theme));
+        }).Set(dialog =>
+        {
+            ApplyDialogTheme(dialog, theme);
+            dialog.MaxHeight = 440;
+        });
     }
 
     private static Element VerificationIcons(string combined) =>
@@ -336,7 +354,7 @@ sealed class DeviceDetailsPage : Component<DeviceDetailsPageProps>
             DeviceVerification.GetMaterialIconGlyphs(combined).Select((glyph, index) =>
                 TextBlock(glyph)
                     .FontFamily(MaterialIcons)
-                    .FontSize(28)
+                    .FontSize(24)
                     .HAlign(HorizontalAlignment.Center)
                     .VAlign(VerticalAlignment.Center)
                     .AccessibilityHidden()
@@ -344,8 +362,8 @@ sealed class DeviceDetailsPage : Component<DeviceDetailsPageProps>
                     .WithKey(index.ToString(System.Globalization.CultureInfo.InvariantCulture)))
                 .ToArray<Element?>()) with
         {
-            RowSpacing = 16,
-            ColumnSpacing = 16,
+            RowSpacing = 8,
+            ColumnSpacing = 12,
         };
 
     private static Element VerificationText(string combined, IntlAccessor t) =>

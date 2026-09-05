@@ -18,7 +18,10 @@ sealed record DeviceIdentityCardProps(
     bool IsEnabled = true,
     double TrailingReserve = 0,
     DeviceIdentityCardAnimationRole AnimationRole = DeviceIdentityCardAnimationRole.None,
-    Action<FrameworkElement?>? ElementChanged = null);
+    Action<FrameworkElement?>? ElementChanged = null,
+    string? SecondaryGlyph = null,
+    string? SecondaryAutomationName = null,
+    Action<FrameworkElement?>? OnSecondaryClick = null);
 
 enum DeviceIdentityCardAnimationRole
 {
@@ -98,6 +101,35 @@ sealed class DeviceIdentityCard : Component<DeviceIdentityCardProps>
                 cardRef.Current = null;
             });
 
-        return card;
+        if (Props.OnSecondaryClick is null || Props.SecondaryGlyph is null)
+            return card;
+
+        return Grid(
+                columns: [GridSize.Star()],
+                rows: [GridSize.Auto],
+                card.Grid(0, 0),
+                Button(Icon(Props.SecondaryGlyph), () => Props.OnSecondaryClick(cardRef.Current))
+                    .AutomationName(Props.SecondaryAutomationName ?? Props.Alias)
+                    .ToolTip(Props.SecondaryAutomationName ?? Props.Alias)
+                    .MinWidth(48)
+                    .MinHeight(48)
+                    .Resources(resources => resources
+                        .Set("ButtonBackground", Theme.Ref("SubtleFillColorTransparentBrush"))
+                        .Set("ButtonBackgroundPointerOver", Theme.Ref("SubtleFillColorSecondaryBrush"))
+                        .Set("ButtonBackgroundPressed", Theme.Ref("SubtleFillColorTertiaryBrush"))
+                        .Set("ButtonBorderBrush", Theme.Ref("SubtleFillColorTransparentBrush"))
+                        .Set("ButtonBorderBrushPointerOver", Theme.Ref("SubtleFillColorTransparentBrush"))
+                        .Set("ButtonBorderBrushPressed", Theme.Ref("SubtleFillColorTransparentBrush"))
+                        .Set("ButtonBorderBrushDisabled", Theme.Ref("SubtleFillColorTransparentBrush"))
+                        .Set("ButtonForeground", Theme.PrimaryText)
+                        .Set("ButtonForegroundPointerOver", Theme.PrimaryText)
+                        .Set("ButtonForegroundPressed", Theme.PrimaryText)
+                        .Set("ButtonForegroundDisabled", Theme.DisabledText))
+                    .HAlign(HorizontalAlignment.Right)
+                    .VAlign(VerticalAlignment.Center)
+                    .Margin(right: 16)
+                    .Grid(0, 0))
+            .MinHeight(104)
+            .HAlign(HorizontalAlignment.Stretch);
     }
 }
