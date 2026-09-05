@@ -23,6 +23,8 @@ sealed record SendPageProps(
     Action<OutgoingTransferViewState?> SetTransferOverlay,
     ShareTargetPayload? ShareTargetPayload,
     Action<Guid> ConsumeShareTargetPayload,
+    IReadOnlyList<SelectedSendItem> SelectedItems,
+    Action<Func<IReadOnlyList<SelectedSendItem>, IReadOnlyList<SelectedSendItem>>> UpdateSelectedItems,
     Action<LocalSendDevice> OpenDeviceDetails);
 
 sealed record SelectedSendItem(
@@ -63,8 +65,8 @@ sealed class SendPage : Component<SendPageProps>
         var window = UseWindow();
         var isWideLayout = UseBreakpoint(800);
         var navigation = UseNavigation<AppRoute>();
-        var (selectedItems, updateSelectedItems) = UseReducer<IReadOnlyList<SelectedSendItem>>(
-            Array.Empty<SelectedSendItem>());
+        var selectedItems = Props.SelectedItems;
+        var updateSelectedItems = Props.UpdateSelectedItems;
         var (pickerMessage, setPickerMessage) = UseState(t.Message(new("App", "NothingSelected")));
         var (isFileDropActive, setFileDropActive) = UseState(false);
         var (text, setText) = UseState(string.Empty);

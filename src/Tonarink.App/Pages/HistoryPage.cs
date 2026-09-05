@@ -9,7 +9,7 @@ using Microsoft.UI.Xaml.Controls.Primitives;
 using static Microsoft.UI.Reactor.Factories;
 using static TransferOverlayVisuals;
 
-sealed record HistoryPageProps(string DownloadDirectory);
+sealed record HistoryPageProps(string DownloadDirectory, ElementTheme Theme);
 
 sealed class HistoryPage : Component<HistoryPageProps>
 {
@@ -56,7 +56,7 @@ sealed class HistoryPage : Component<HistoryPageProps>
                     ScrollView(list)
                         .HorizontalContentAlignment(HorizontalAlignment.Stretch)
                         .Flex(grow: 1, basis: 0),
-                    ContentDialog(
+                    (ContentDialog(
                         t.Message(new("App", "HistoryDeleteAllConfirm")),
                         TextBlock(t.Message(new("App", "HistoryDeleteAllConfirmMessage")))
                             .TextWrapping(TextWrapping.WrapWholeWords),
@@ -71,8 +71,8 @@ sealed class HistoryPage : Component<HistoryPageProps>
                                 ReceiveHistoryStore.Clear();
                             setConfirmClear(false);
                         },
-                    },
-                    ContentDialog(
+                    }).Set(dialog => dialog.RequestedTheme = Props.Theme),
+                    (ContentDialog(
                         t.Message(new("App", "HistoryInfoTitle")),
                         infoEntry is null ? Empty() : HistoryInfoBody(infoEntry, t),
                         primaryButtonText: t.Message(new("App", "Close"))) with
@@ -80,7 +80,7 @@ sealed class HistoryPage : Component<HistoryPageProps>
                         IsOpen = infoEntry is not null,
                         DefaultButton = ContentDialogButton.Close,
                         OnClosed = _ => setInfoEntry(null),
-                    }) with
+                    }).Set(dialog => dialog.RequestedTheme = Props.Theme)) with
                 { RowGap = 20 }))
             .Padding(36)
             .Landmark(AutomationLandmarkType.Main);

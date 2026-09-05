@@ -129,6 +129,8 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
         var runtimeRef = UseRef(runtime);
         runtimeRef.Current = runtime;
         var (detailsDevice, setDetailsDevice) = UseState<LocalSendDevice?>(null);
+        var (selectedSendItems, updateSelectedSendItems) =
+            UseReducer<IReadOnlyList<SelectedSendItem>>(Array.Empty<SelectedSendItem>());
         var (outgoingTransfer, setOutgoingTransfer) = UseState<OutgoingTransferViewState?>(null);
         var (shareTargetPayload, setShareTargetPayload) = UseState<ShareTargetPayload?>(null);
         var (serverDesired, setServerDesired) = UseState(true);
@@ -373,7 +375,7 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
                 settings,
                 updateSettings)),
             AppRoute.History => Component<HistoryPage, HistoryPageProps>(
-                new(settings.DownloadDirectory)),
+                new(settings.DownloadDirectory, contentTheme)),
             AppRoute.Send => Component<SendPage, SendPageProps>(new(
                 runtime,
                 nodeRef.Current,
@@ -382,6 +384,8 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
                 setOutgoingTransfer,
                 shareTargetPayload,
                 ConsumeShareTargetPayload,
+                selectedSendItems,
+                updateSelectedSendItems,
                 device =>
                 {
                     setDetailsDevice(device);
