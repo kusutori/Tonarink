@@ -40,6 +40,12 @@ sealed class WebSharePage : Component<WebSharePageProps>
         var nextCopyFeedbackVersion = UseRef(0);
         var alive = UseRef(true);
         var node = Props.Node;
+        var dialogTheme = Props.Settings.ThemeIndex switch
+        {
+            1 => ElementTheme.Light,
+            2 => ElementTheme.Dark,
+            _ => ElementTheme.Default,
+        };
 
         UseEffect(() => () =>
         {
@@ -163,7 +169,7 @@ sealed class WebSharePage : Component<WebSharePageProps>
                     ? null
                     : TextBlock(t.Message(new("App", "WebSharePinHint"), ("pin", pin)))
                         .Foreground(Theme.SystemCaution),
-                ContentDialog(
+                (ContentDialog(
                     t.Message(new("App", "WebSharePinTitle")),
                     TextBox(pinDraft, setPinDraft)
                         .AutomationName(t.Message(new("App", "WebSharePinTitle"))),
@@ -181,8 +187,8 @@ sealed class WebSharePage : Component<WebSharePageProps>
                         setPin(next);
                         node?.SetWebSharePin(next);
                     },
-                },
-                ContentDialog(
+                }).Set(dialog => ApplyDialogTheme(dialog, dialogTheme)),
+                (ContentDialog(
                     t.Message(new("App", "WebShareQrTitle")),
                     qrPath is null
                         ? ProgressRing()
@@ -202,8 +208,8 @@ sealed class WebSharePage : Component<WebSharePageProps>
                         setQrUrl(null);
                         setQrPath(null);
                     },
-                },
-                ContentDialog(
+                }).Set(dialog => ApplyDialogTheme(dialog, dialogTheme)),
+                (ContentDialog(
                     t.Message(new("App", "WebShareZoomTitle")),
                     Title(zoomUrl ?? "")
                         .TextWrapping(TextWrapping.WrapWholeWords)
@@ -213,10 +219,13 @@ sealed class WebSharePage : Component<WebSharePageProps>
                 {
                     IsOpen = zoomUrl is not null,
                     OnClosed = _ => setZoomUrl(null),
-                })
+                }).Set(dialog => ApplyDialogTheme(dialog, dialogTheme)))
             .Padding(36))
             .HorizontalContentAlignment(HorizontalAlignment.Stretch)
             .Landmark(AutomationLandmarkType.Main);
+
+        static void ApplyDialogTheme(ContentDialog dialog, ElementTheme theme) =>
+            dialog.RequestedTheme = theme;
 
         void ShowQr(string url)
         {

@@ -21,6 +21,7 @@ using static TransferOverlayVisuals;
 sealed record SendPageProps(
     AppRuntimeState Runtime,
     LocalSendNode? Node,
+    ElementTheme Theme,
     Func<Task> RefreshAsync,
     Action<OutgoingTransferViewState?> SetTransferOverlay,
     ShareTargetPayload? ShareTargetPayload,
@@ -394,7 +395,7 @@ sealed class SendPage : Component<SendPageProps>
                     }
                 });
 
-        Element TextDialog() => ContentDialog(
+        Element TextDialog() => (ContentDialog(
             t.Message(new("App", "SendTextTitle")),
             TextBox(text, setText, placeholderText: t.Message(new("App", "SendTextPlaceholder")))
                 .Header(t.Message(new("App", "TextContent")))
@@ -421,9 +422,9 @@ sealed class SendPage : Component<SendPageProps>
                 }
                 setShowTextDialog(false);
             },
-        };
+        }).Set(dialog => ApplyDialogTheme(dialog, Props.Theme));
 
-        Element PinDialog() => ContentDialog(
+        Element PinDialog() => (ContentDialog(
             t.Message(new("App", "PinRequiredTitle")),
             VStack(8,
                 TextBlock(t.Message(
@@ -460,7 +461,7 @@ sealed class SendPage : Component<SendPageProps>
                     setPinError(null);
                 }
             },
-        };
+        }).Set(dialog => ApplyDialogTheme(dialog, Props.Theme));
 
         Element FavoriteDialog()
         {
@@ -518,7 +519,9 @@ sealed class SendPage : Component<SendPageProps>
                     }
                     setFavoriteTarget(null);
                 },
-            }).IsPrimaryButtonEnabled(canSave);
+            })
+                .IsPrimaryButtonEnabled(canSave)
+                .Set(dialog => ApplyDialogTheme(dialog, Props.Theme));
         }
 
         void OpenFavoriteDialog(LocalSendDevice device)
@@ -537,7 +540,7 @@ sealed class SendPage : Component<SendPageProps>
                     ? favorite.Name
                     : removeFavoriteTarget?.Alias ?? string.Empty;
 
-            return ContentDialog(
+            return (ContentDialog(
                 t.Message(new("App", "DeleteFavoriteTitle")),
                 TextBlock(t.Message(
                         new("App", "DeleteFavoriteConfirm"),
@@ -555,8 +558,11 @@ sealed class SendPage : Component<SendPageProps>
                     if (result == ContentDialogResult.Primary && target is not null)
                         FavoriteDeviceStore.Remove(target.Fingerprint);
                 },
-            };
+            }).Set(dialog => ApplyDialogTheme(dialog, Props.Theme));
         }
+
+        static void ApplyDialogTheme(ContentDialog dialog, ElementTheme theme) =>
+            dialog.RequestedTheme = theme;
 
         async Task PickFileAsync()
         {

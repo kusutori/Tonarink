@@ -115,6 +115,12 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
         var window = UseWindow();
         var useTitleBarPaneToggle = !UseBreakpoint(640);
         var settings = Props.Settings;
+        var contentTheme = settings.ThemeIndex switch
+        {
+            1 => ElementTheme.Light,
+            2 => ElementTheme.Dark,
+            _ => ElementTheme.Default,
+        };
         var updateSettings = Props.UpdateSettings;
         var navigation = UseNavigation(AppRoute.Receive);
         var navigationViewRef = UseRef<NavigationView?>(null);
@@ -370,6 +376,7 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
             AppRoute.Send => Component<SendPage, SendPageProps>(new(
                 runtime,
                 nodeRef.Current,
+                contentTheme,
                 RefreshAsync,
                 setOutgoingTransfer,
                 shareTargetPayload,
