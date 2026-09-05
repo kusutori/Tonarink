@@ -114,6 +114,47 @@ sealed class SettingsPage : Component<SettingsPageProps>
                 content:
                 ToggleSwitch(Props.Settings.StartWithWindows, value =>
                     _ = SetStartupAsync(value))),
+            SettingsExpander(
+                headerIcon: HeaderGlyph("\uE7E7"),
+                items:
+                [
+                    SettingsCard(
+                        header: t.Message(new("App", "SettingsNotificationsEnabled")),
+                        description: t.Message(new("App", "SettingsNotificationsEnabledDescription")),
+                        isClickEnabled: false,
+                        isActionIconVisible: false,
+                        content:
+                        ToggleSwitch(Props.Settings.NotificationsEnabled, value =>
+                        {
+                            Props.UpdateSettings(settings => settings with { NotificationsEnabled = value });
+                            AppNotificationService.SetEnabled(value);
+                        })),
+                    SettingsCard(
+                        header: t.Message(new("App", "SettingsNotificationsTest")),
+                        description: t.Message(new("App", "SettingsNotificationsTestDescription")),
+                        isClickEnabled: false,
+                        isActionIconVisible: false,
+                        content:
+                        Button(t.Message(new("App", "SettingsNotificationsSendTest")), () =>
+                        {
+                            var shown = AppNotificationService.TryShow(
+                                t.Message(new("App", "SettingsNotificationsTestTitle")),
+                                t.Message(new("App", "SettingsNotificationsTestMessage")),
+                                "test");
+                            setStatusMessage(t.Message(new(
+                                "App",
+                                shown
+                                    ? "SettingsNotificationsTestSent"
+                                    : "SettingsNotificationsTestFailed")));
+                        })
+                            .AutomationName(t.Message(new("App", "SettingsNotificationsSendTest")))
+                            .IsEnabled(Props.Settings.NotificationsEnabled)),
+                ])
+                .Set(expander =>
+                {
+                    expander.Header = t.Message(new("App", "SettingsNotifications"));
+                    expander.Description = t.Message(new("App", "SettingsNotificationsDescription"));
+                }),
             SettingsCard(
                 header: t.Message(new("App", "SettingsExplorerContextMenu")),
                 description: t.Message(new("App", "SettingsExplorerContextMenuDescription")),

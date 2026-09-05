@@ -1,21 +1,31 @@
 using Microsoft.UI.Reactor;
 
-if (await ShareTargetActivationBroker.RedirectToPrimaryInstanceAsync())
-    return;
-
-ToolkitXamlMetadata.Register();
-WidgetAppHost.Start();
+var startupSettings = AppSettingsStore.Load();
 try
 {
-    ReactorApp.Run(_ =>
+    if (await ShareTargetActivationBroker.RedirectToPrimaryInstanceAsync(
+            () => AppNotificationService.Initialize(startupSettings.NotificationsEnabled)))
     {
-        ReactorApp.ShutdownPolicy = ShutdownPolicy.OnLastSurfaceClosed;
-        var settings = AppSettingsStore.Load();
-        AppWindows.OpenMain(startHidden: AppPlatform.StartHidden && settings.MinimizeToTray);
-        AppNotificationService.Initialize();
-    });
+        return;
+    }
+
+    ToolkitXamlMetadata.Register();
+    WidgetAppHost.Start();
+    try
+    {
+        ReactorApp.Run(_ =>
+        {
+            ReactorApp.ShutdownPolicy = ShutdownPolicy.OnLastSurfaceClosed;
+            AppWindows.OpenMain(
+                startHidden: AppPlatform.StartHidden && startupSettings.MinimizeToTray);
+        });
+    }
+    finally
+    {
+        WidgetAppHost.Stop();
+    }
 }
 finally
 {
-    WidgetAppHost.Stop();
+    AppNotificationService.Shutdown();
 }

@@ -220,10 +220,41 @@
                           PrivateAssets="all" />
         <PackageReference Include="Microsoft.Graphics.Win2D" />
         <PackageReference Include="Microsoft.WindowsAppSDK" />
+        <PackageReference Include="Microsoft.WindowsAppSDK.Runtime"
+                          GeneratePathProperty="true"
+                          PrivateAssets="all" />
         <PackageReference Include="Microsoft.UI.Reactor" />
         <PackageReference Include="WinUIEx" />
         <PackageReference Include="Net.Codecrete.QrCodeGenerator" />
         <ProjectReference Include="..\LocalSendDotNet.Core\LocalSendDotNet.Core.csproj" />
+    </ItemGroup>
+
+    <!-- Windows App SDK 2.4's self-contained payload omits this aggregate-runtime
+         resource even though AppNotificationManager.Register still loads it.
+         Extract the architecture-matched copy from the SDK runtime MSIX until the
+         upstream missing-resource fix ships in a stable SDK release. -->
+    <PropertyGroup>
+        <_WinAppRuntimeArchitecture>x64</_WinAppRuntimeArchitecture>
+        <_WinAppRuntimeArchitecture Condition="'$(RuntimeIdentifier)' == 'win-x86' Or '$(Platform)' == 'X86' Or '$(Platform)' == 'x86'">x86</_WinAppRuntimeArchitecture>
+        <_WinAppRuntimeArchitecture Condition="'$(RuntimeIdentifier)' == 'win-arm64' Or '$(Platform)' == 'ARM64' Or '$(Platform)' == 'arm64'">arm64</_WinAppRuntimeArchitecture>
+        <_WinAppRuntimeMsix>$(PkgMicrosoft_WindowsAppSDK_Runtime)\tools\MSIX\win10-$(_WinAppRuntimeArchitecture)\Microsoft.WindowsAppRuntime.2.msix</_WinAppRuntimeMsix>
+        <_WinAppRuntimeInsightsResource>$(BaseIntermediateOutputPath)winappruntime\$(_WinAppRuntimeArchitecture)\Microsoft.WindowsAppRuntime.Insights.Resource.dll</_WinAppRuntimeInsightsResource>
+    </PropertyGroup>
+
+    <Target Name="_PrepareWinAppRuntimeInsightsResource"
+            BeforeTargets="AssignTargetPaths"
+            Inputs="$(_WinAppRuntimeMsix)"
+            Outputs="$(_WinAppRuntimeInsightsResource)"
+            Condition="'$(WindowsAppSDKSelfContained)' == 'true'">
+        <Exec Command="powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File &quot;$(MSBuildThisFileDirectory)..\..\tools\Extract-ZipEntry.ps1&quot; -Source &quot;$(_WinAppRuntimeMsix)&quot; -Entry &quot;Microsoft.WindowsAppRuntime.Insights.Resource.dll&quot; -Destination &quot;$(_WinAppRuntimeInsightsResource)&quot;" />
+    </Target>
+
+    <ItemGroup Condition="'$(WindowsAppSDKSelfContained)' == 'true'">
+        <Content Include="$(_WinAppRuntimeInsightsResource)">
+            <Link>Microsoft.WindowsAppRuntime.Insights.Resource.dll</Link>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+        </Content>
     </ItemGroup>
 
     <!-- ReswResourceProvider reads the source .resw files at runtime. -->

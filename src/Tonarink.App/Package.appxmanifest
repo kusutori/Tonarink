@@ -4,10 +4,11 @@
   xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
   xmlns:uap5="http://schemas.microsoft.com/appx/manifest/uap/windows10/5"
   xmlns:com="http://schemas.microsoft.com/appx/manifest/com/windows10"
+  xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10"
   xmlns:desktop4="http://schemas.microsoft.com/appx/manifest/desktop/windows10/4"
   xmlns:desktop5="http://schemas.microsoft.com/appx/manifest/desktop/windows10/5"
   xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
-  IgnorableNamespaces="uap uap5 rescap com desktop4 desktop5">
+  IgnorableNamespaces="uap uap5 rescap com desktop desktop4 desktop5">
 
   <Identity Name="Tonarink.App" Publisher="CN=kusutori" Version="0.1.11.0" />
 
@@ -76,6 +77,22 @@
                 Path="Tonarink.ExplorerCommand.dll"
                 ThreadingModel="STA" />
             </com:SurrogateServer>
+          </com:ComServer>
+        </com:Extension>
+        <desktop:Extension Category="windows.toastNotificationActivation">
+          <desktop:ToastNotificationActivation
+            ToastActivatorCLSID="89632005-D013-4771-BA98-D53DEC9C974D" />
+        </desktop:Extension>
+        <com:Extension Category="windows.comServer">
+          <com:ComServer>
+            <com:ExeServer
+              Executable="Tonarink.exe"
+              Arguments="----AppNotificationActivated:"
+              DisplayName="Tonarink">
+              <com:Class
+                Id="89632005-D013-4771-BA98-D53DEC9C974D"
+                DisplayName="Tonarink" />
+            </com:ExeServer>
           </com:ComServer>
         </com:Extension>
         <desktop4:Extension Category="windows.fileExplorerContextMenus">

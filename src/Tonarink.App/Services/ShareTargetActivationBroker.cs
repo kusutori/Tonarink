@@ -25,10 +25,11 @@ static class ShareTargetActivationBroker
 
     public static bool HasPendingActivations => !PendingPayloads.IsEmpty;
 
-    public static async Task<bool> RedirectToPrimaryInstanceAsync()
+    public static async Task<bool> RedirectToPrimaryInstanceAsync(Action? beforePrimaryActivationRead = null)
     {
         if (!AppPlatform.HasPackageIdentity())
         {
+            beforePrimaryActivationRead?.Invoke();
             DrainExplorerShare();
             StartExplorerShareWatch();
             return false;
@@ -45,6 +46,7 @@ static class ShareTargetActivationBroker
         }
 
         primary.Activated += OnActivated;
+        beforePrimaryActivationRead?.Invoke();
         await IngestAsync(current.GetActivatedEventArgs()).ConfigureAwait(true);
         StartExplorerShareWatch();
         return false;

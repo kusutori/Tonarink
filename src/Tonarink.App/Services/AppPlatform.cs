@@ -14,6 +14,7 @@ static class AppPlatform
 
     private static readonly Lazy<string> DataDirectoryValue = new(ResolveDataDirectory);
     private static readonly Lazy<string> DefaultDownloadDirectoryValue = new(ResolveDefaultDownloadDirectory);
+    private static readonly Lazy<bool> StartHiddenValue = new(DetectStartHidden);
 
     public static string DataDirectory => DataDirectoryValue.Value;
 
@@ -35,7 +36,7 @@ static class AppPlatform
 
     public static string DefaultDownloadDirectory => DefaultDownloadDirectoryValue.Value;
 
-    public static bool StartHidden { get; } = DetectStartHidden();
+    public static bool StartHidden => StartHiddenValue.Value;
 
     public static bool HasPackageIdentity()
     {
