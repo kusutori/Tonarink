@@ -234,7 +234,6 @@
   <data name="SettingsNotificationsSendTest" xml:space="preserve"><value>发送测试通知</value></data>
   <data name="SettingsNotificationsTestTitle" xml:space="preserve"><value>Tonarink 测试通知</value></data>
   <data name="SettingsNotificationsTestMessage" xml:space="preserve"><value>系统通知已经可以正常显示。</value></data>
-  <data name="SettingsNotificationsTestSent" xml:space="preserve"><value>测试通知已发送。</value></data>
   <data name="SettingsNotificationsTestFailed" xml:space="preserve"><value>测试通知发送失败，请检查 notifications.log 或 Windows 通知设置。</value></data>
   <data name="ExplorerCommandTitle" xml:space="preserve"><value>使用 Tonarink 发送</value></data>
   <data name="SettingsExplorerContextMenu" xml:space="preserve"><value>在文件资源管理器中显示</value></data>

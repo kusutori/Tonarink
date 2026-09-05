@@ -234,7 +234,6 @@
   <data name="SettingsNotificationsSendTest" xml:space="preserve"><value>Send test notification</value></data>
   <data name="SettingsNotificationsTestTitle" xml:space="preserve"><value>Tonarink test notification</value></data>
   <data name="SettingsNotificationsTestMessage" xml:space="preserve"><value>System notifications are working correctly.</value></data>
-  <data name="SettingsNotificationsTestSent" xml:space="preserve"><value>The test notification was sent.</value></data>
   <data name="SettingsNotificationsTestFailed" xml:space="preserve"><value>The test notification failed. Check notifications.log or Windows notification settings.</value></data>
   <data name="ExplorerCommandTitle" xml:space="preserve"><value>Send with Tonarink</value></data>
   <data name="SettingsExplorerContextMenu" xml:space="preserve"><value>Show in File Explorer</value></data>

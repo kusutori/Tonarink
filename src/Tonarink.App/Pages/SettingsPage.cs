@@ -115,7 +115,7 @@ sealed class SettingsPage : Component<SettingsPageProps>
                 ToggleSwitch(Props.Settings.StartWithWindows, value =>
                     _ = SetStartupAsync(value))),
             SettingsExpander(
-                headerIcon: HeaderGlyph("\uE7E7"),
+                headerIcon: HeaderGlyph("\uEA8F"),
                 items:
                 [
                     SettingsCard(
@@ -141,11 +141,9 @@ sealed class SettingsPage : Component<SettingsPageProps>
                                 t.Message(new("App", "SettingsNotificationsTestTitle")),
                                 t.Message(new("App", "SettingsNotificationsTestMessage")),
                                 "test");
-                            setStatusMessage(t.Message(new(
-                                "App",
-                                shown
-                                    ? "SettingsNotificationsTestSent"
-                                    : "SettingsNotificationsTestFailed")));
+                            setStatusMessage(shown
+                                ? null
+                                : t.Message(new("App", "SettingsNotificationsTestFailed")));
                         })
                             .AutomationName(t.Message(new("App", "SettingsNotificationsSendTest")))
                             .IsEnabled(Props.Settings.NotificationsEnabled)),
