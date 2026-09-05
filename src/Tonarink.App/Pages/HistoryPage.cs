@@ -64,7 +64,7 @@ sealed class HistoryPage : Component<HistoryPageProps>
                     {
                         IsOpen = confirmClear,
                         SecondaryButtonText = t.Message(new("App", "Cancel")),
-                        DefaultButton = ContentDialogButton.Close,
+                        DefaultButton = ContentDialogButton.Primary,
                         OnClosed = result =>
                         {
                             if (result == ContentDialogResult.Primary)
@@ -78,7 +78,7 @@ sealed class HistoryPage : Component<HistoryPageProps>
                         primaryButtonText: t.Message(new("App", "Close"))) with
                     {
                         IsOpen = infoEntry is not null,
-                        DefaultButton = ContentDialogButton.Close,
+                        DefaultButton = ContentDialogButton.Primary,
                         OnClosed = _ => setInfoEntry(null),
                     }).Set(dialog => dialog.RequestedTheme = Props.Theme)) with
                 { RowGap = 20 }))
