@@ -65,7 +65,7 @@ sealed class DeviceDetailsPage : Component<DeviceDetailsPageProps>
                                 setShowRemoveFavorite(true);
                         }),
                     ActionButton(
-                        "\uE73E",
+                        "\uF760",
                         t.Message(new("App", "VerifyAction")),
                         () => setShowVerification(true)))
                 .HAlign(HorizontalAlignment.Center),

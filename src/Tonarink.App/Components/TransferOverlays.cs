@@ -57,7 +57,9 @@ sealed class OutgoingTransferOverlay : Component<OutgoingTransferOverlayProps>
                     RemoteDeviceNumber(transfer.Receiver),
                     connectedAnimationKey,
                     AnimationRole: DeviceIdentityCardAnimationRole.Destination,
-                    ElementChanged: element => receiverCardRef.Current = element)))
+                    ElementChanged: element => receiverCardRef.Current = element)),
+                VerificationButton(t, () => setShowVerification(true))
+                    .HAlign(HorizontalAlignment.Center))
             .MaxWidth(720)
             .HAlign(HorizontalAlignment.Stretch);
 
@@ -81,28 +83,34 @@ sealed class OutgoingTransferOverlay : Component<OutgoingTransferOverlayProps>
                         .Foreground(Theme.SecondaryText)
                         .HAlign(HorizontalAlignment.Center)
                     : null,
-                HStack(12,
-                        VerificationButton(t, () => setShowVerification(true)),
-                        transfer.IsPending
-                            ? Button(t.Message(new("App", "Cancel")), transfer.Cancel)
-                                .AutomationName(t.Message(new("App", "CancelCurrentSend")))
-                                .MinWidth(120)
-                            : Button(t.Message(new("App", "Close")), () =>
+                (transfer.IsPending
+                    ? Button(
+                            HStack(8,
+                                Icon("\uE711").AccessibilityHidden(),
+                                TextBlock(t.Message(new("App", "Cancel")))),
+                            transfer.Cancel)
+                        .AutomationName(t.Message(new("App", "CancelCurrentSend")))
+                        .MinWidth(120)
+                    : Button(
+                            HStack(8,
+                                Icon("\uE711").AccessibilityHidden(),
+                                TextBlock(t.Message(new("App", "Close")))),
+                            () =>
+                            {
+                                if (receiverCardRef.Current is { } receiverCard)
                                 {
-                                    if (receiverCardRef.Current is { } receiverCard)
-                                    {
-                                        DeviceConnectedAnimation.ReturnToSource(
-                                            connectedAnimationKey,
-                                            receiverCard,
-                                            Props.Close);
-                                    }
-                                    else
-                                    {
-                                        Props.Close();
-                                    }
-                                })
-                                .AutomationName(t.Message(new("App", "Close")))
-                                .MinWidth(120))
+                                    DeviceConnectedAnimation.ReturnToSource(
+                                        connectedAnimationKey,
+                                        receiverCard,
+                                        Props.Close);
+                                }
+                                else
+                                {
+                                    Props.Close();
+                                }
+                            })
+                        .AutomationName(t.Message(new("App", "Close")))
+                        .MinWidth(120))
                     .HAlign(HorizontalAlignment.Center))
             .MaxWidth(640)
             .HAlign(HorizontalAlignment.Stretch);
@@ -308,7 +316,8 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                                     : t.Message(new("App", "Copy")))),
                             CopyText)
                         .AutomationName(t.Message(new("App", "CopyReceivedText")))
-                        .IsEnabled(!string.IsNullOrEmpty(view.Text)))
+                        .IsEnabled(!string.IsNullOrEmpty(view.Text))
+                        .MinWidth(120))
                     .HAlign(HorizontalAlignment.Center))
             : VStack(12,
                 BodyLarge(view.Status)
@@ -361,7 +370,11 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                                 .Set("ButtonForegroundDisabled", Theme.DisabledText))
                             .IsEnabled(!isPending)
                             .MinWidth(120),
-                        Button(t.Message(new("App", "Accept")), () => _ = AcceptAsync())
+                        Button(
+                                HStack(8,
+                                    Icon("\uE8FB").AccessibilityHidden(),
+                                    TextBlock(t.Message(new("App", "Accept")))),
+                                () => _ = AcceptAsync())
                             .AutomationName(t.Message(new("App", "Accept")))
                             .IsEnabled(!isPending)
                             .MinWidth(120)
@@ -382,7 +395,11 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                         Caption(progressText)
                             .Foreground(Theme.SecondaryText)
                             .HAlign(HorizontalAlignment.Center),
-                        Button(t.Message(new("App", "Cancel")), CancelReceive)
+                        Button(
+                                HStack(8,
+                                    Icon("\uE711").AccessibilityHidden(),
+                                    TextBlock(t.Message(new("App", "Cancel")))),
+                                CancelReceive)
                             .AutomationName(t.Message(new("App", "Cancel")))
                             .MinWidth(120)
                             .HAlign(HorizontalAlignment.Center))
@@ -395,7 +412,11 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                         .Foreground(view.IsError ? Theme.SystemCritical : Theme.SecondaryText)
                         .TextAlignment(TextAlignment.Center)
                         .LiveRegion(AutomationLiveSetting.Polite),
-                    Button(t.Message(new("App", "Close")), () => Props.Dismiss(request.RequestId))
+                    Button(
+                            HStack(8,
+                                Icon("\uE711").AccessibilityHidden(),
+                                TextBlock(t.Message(new("App", "Close")))),
+                            () => Props.Dismiss(request.RequestId))
                         .AutomationName(t.Message(new("App", "Close")))
                         .MinWidth(120)
                         .HAlign(HorizontalAlignment.Center))
