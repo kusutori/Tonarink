@@ -361,13 +361,20 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
             if (!view.IsDecided)
             {
                 return HStack(12,
-                        Button(t.Message(new("App", "Decline")), () => _ = DeclineAsync())
+                        Button(
+                                HStack(8,
+                                    Icon("\uE711").AccessibilityHidden(),
+                                    TextBlock(t.Message(new("App", "Decline")))),
+                                () => _ = DeclineAsync())
                             .AutomationName(t.Message(new("App", "Decline")))
                             .Resources(static resources => resources
-                                .Set("ButtonForeground", Theme.SystemCritical)
-                                .Set("ButtonForegroundPointerOver", Theme.SystemCritical)
-                                .Set("ButtonForegroundPressed", Theme.SystemCritical)
-                                .Set("ButtonForegroundDisabled", Theme.DisabledText))
+                            // .Set("ButtonBackground", Theme.SystemCritical)
+                            // .Set("ButtonBackgroundPointerOver", "#C42B1C")
+                            // .Set("ButtonBackgroundPressed", "#A92319"))
+                            .Set("ButtonForeground", Theme.SystemCritical)
+                            .Set("ButtonForegroundPointerOver", Theme.SystemCritical)
+                            .Set("ButtonForegroundPressed", Theme.SystemCritical)
+                            .Set("ButtonForegroundDisabled", Theme.DisabledText))
                             .IsEnabled(!isPending)
                             .MinWidth(120),
                         Button(
@@ -378,11 +385,8 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                             .AutomationName(t.Message(new("App", "Accept")))
                             .IsEnabled(!isPending)
                             .MinWidth(120)
-                            .Resources(static resources => resources
-                                .Set("ButtonBackground", Theme.Accent)
-                                .Set("ButtonBackgroundPointerOver", Theme.Accent)
-                                .Set("ButtonBackgroundPressed", Theme.Accent)
-                                .Set("ButtonForeground", Theme.Ref("TextOnAccentFillColorPrimaryBrush"))))
+                            .AccentButton()
+                        )
                     .HAlign(HorizontalAlignment.Center);
             }
 
