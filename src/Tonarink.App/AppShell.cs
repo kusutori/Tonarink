@@ -123,6 +123,13 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
         };
         var updateSettings = Props.UpdateSettings;
         var navigation = UseNavigation(AppRoute.Receive);
+        var favoriteRevision = UseExternalStore<int>(
+            listener =>
+            {
+                FavoriteDeviceStore.Changed += listener;
+                return () => FavoriteDeviceStore.Changed -= listener;
+            },
+            static () => FavoriteDeviceStore.Revision);
         var navigationViewRef = UseRef<NavigationView?>(null);
         var (isNavigationPaneOpen, setNavigationPaneOpen) = UseState(false);
         var (runtime, updateRuntime) = UseReducer(AppRuntimeState.Initial);
@@ -425,7 +432,7 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
             Transition = AppNavigation.IsDetail(navigation.CurrentRoute)
                 ? NavigationTransition.DrillIn()
                 : NavigationTransition.Slide(),
-        }).WithKey($"navigation:{Props.Locale}");
+        }).WithKey($"navigation:{Props.Locale}:{favoriteRevision}");
 
         var navigationView = (NavigationView(
             [

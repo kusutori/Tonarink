@@ -14,8 +14,18 @@ static class FavoriteDeviceStore
         "favorite-devices.json");
     private static readonly object Gate = new();
     private static IReadOnlyDictionary<string, FavoriteDevice>? _cached;
+    private static int _revision;
 
     public static event Action? Changed;
+
+    public static int Revision
+    {
+        get
+        {
+            lock (Gate)
+                return _revision;
+        }
+    }
 
     public static IReadOnlyDictionary<string, FavoriteDevice> Entries
     {
@@ -43,6 +53,7 @@ static class FavoriteDeviceStore
             updated[favorite.Fingerprint] = favorite;
             _cached = updated;
             SaveCore(updated);
+            _revision++;
         }
 
         Changed?.Invoke();
@@ -62,6 +73,7 @@ static class FavoriteDeviceStore
             {
                 _cached = updated;
                 SaveCore(updated);
+                _revision++;
             }
         }
 

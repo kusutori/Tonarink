@@ -1,6 +1,7 @@
 using LocalSendDotNet;
 using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Core;
+using Microsoft.UI.Reactor.Layout;
 using Microsoft.UI.Reactor.Localization;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -21,7 +22,8 @@ sealed record DeviceIdentityCardProps(
     Action<FrameworkElement?>? ElementChanged = null,
     string? SecondaryGlyph = null,
     string? SecondaryAutomationName = null,
-    Action<FrameworkElement?>? OnSecondaryClick = null);
+    Action<FrameworkElement?>? OnSecondaryClick = null,
+    bool IsFavorite = false);
 
 enum DeviceIdentityCardAnimationRole
 {
@@ -45,9 +47,23 @@ sealed class DeviceIdentityCard : Component<DeviceIdentityCardProps>
                 .Background(Theme.SubtleFill)
                 .Grid(column: 0),
             VStack(8,
-                BodyLarge(Props.Alias)
-                    .TextTrimming(TextTrimming.CharacterEllipsis)
-                    .ToolTip(Props.Alias),
+                (FlexRow(
+                    BodyLarge(Props.Alias)
+                        .TextTrimming(TextTrimming.CharacterEllipsis)
+                        .ToolTip(Props.Alias)
+                        .Flex(shrink: 1),
+                    Props.IsFavorite
+                        ? TextBlock("\uEC61")
+                            .FontFamily("Segoe Fluent Icons")
+                            .FontSize(16)
+                            .Foreground(Theme.AccentText)
+                            .AccessibilityHidden()
+                            .Flex(shrink: 0)
+                        : null) with
+                {
+                    AlignItems = FlexAlign.Center,
+                    ColumnGap = 8,
+                }),
                 HStack(8,
                     DeviceTag(Props.Number),
                     DeviceTag(DeviceModel(t, Props.Model, Props.Type))))

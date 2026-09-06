@@ -954,7 +954,8 @@ sealed class SendPage : Component<SendPageProps>
                 SecondaryAutomationName: t.Message(
                     new("App", "OpenDeviceDetails"),
                     ("device", displayName)),
-                OnSecondaryClick: _ => onDetails()));
+                OnSecondaryClick: _ => onDetails(),
+                IsFavorite: favorite is not null));
     }
 
     private static Element EmptyDevices(
