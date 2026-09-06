@@ -63,7 +63,8 @@ sealed class DeviceDetailsPage : Component<DeviceDetailsPageProps>
                                 OpenFavoriteDialog(currentDevice);
                             else
                                 setShowRemoveFavorite(true);
-                        }),
+                        },
+                        accent: favorite is not null),
                     ActionButton(
                         "\uF760",
                         t.Message(new("App", "VerifyAction")),
@@ -180,8 +181,13 @@ sealed class DeviceDetailsPage : Component<DeviceDetailsPageProps>
         }
     }
 
-    private static Element ActionButton(string glyph, string label, Action onClick) =>
-        Button(
+    private static Element ActionButton(
+        string glyph,
+        string label,
+        Action onClick,
+        bool accent = false)
+    {
+        var button = Button(
                 VStack(6,
                     Icon(glyph),
                     Caption(label)),
@@ -189,6 +195,9 @@ sealed class DeviceDetailsPage : Component<DeviceDetailsPageProps>
             .MinWidth(104)
             .MinHeight(68)
             .AutomationName(label);
+
+        return accent ? button.AccentButton() : button;
+    }
 
     private static Element InfoCard(IntlAccessor t, LocalSendDevice device)
     {
