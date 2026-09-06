@@ -483,6 +483,7 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
             : outgoingTransfer is not null
                 ? Component<OutgoingTransferOverlay, OutgoingTransferOverlayProps>(new(
                     outgoingTransfer,
+                    contentTheme,
                     () => setOutgoingTransfer(null)))
                     .WithKey(outgoingTransfer.Receiver.Fingerprint)
                 : null;

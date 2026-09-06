@@ -14,6 +14,7 @@ using static TransferOverlayVisuals;
 
 sealed record OutgoingTransferOverlayProps(
     OutgoingTransferViewState Transfer,
+    ElementTheme Theme,
     Action Close);
 
 sealed class OutgoingTransferOverlay : Component<OutgoingTransferOverlayProps>
@@ -23,6 +24,7 @@ sealed class OutgoingTransferOverlay : Component<OutgoingTransferOverlayProps>
         var t = UseIntl();
         var window = UseWindow();
         var transfer = Props.Transfer;
+        var (showVerification, setShowVerification) = UseState(false);
         var receiverCardRef = UseRef<FrameworkElement?>(null);
         var connectedAnimationKey = DeviceConnectedKey(transfer.Receiver.Fingerprint);
         var taskbarProgress = new TaskbarTransferProgress(
@@ -79,28 +81,29 @@ sealed class OutgoingTransferOverlay : Component<OutgoingTransferOverlayProps>
                         .Foreground(Theme.SecondaryText)
                         .HAlign(HorizontalAlignment.Center)
                     : null,
-                transfer.IsPending
-                    ? Button(t.Message(new("App", "Cancel")), transfer.Cancel)
-                        .AutomationName(t.Message(new("App", "CancelCurrentSend")))
-                        .MinWidth(120)
-                        .HAlign(HorizontalAlignment.Center)
-                    : Button(t.Message(new("App", "Close")), () =>
-                        {
-                            if (receiverCardRef.Current is { } receiverCard)
-                            {
-                                DeviceConnectedAnimation.ReturnToSource(
-                                    connectedAnimationKey,
-                                    receiverCard,
-                                    Props.Close);
-                            }
-                            else
-                            {
-                                Props.Close();
-                            }
-                        })
-                        .AutomationName(t.Message(new("App", "Close")))
-                        .MinWidth(120)
-                        .HAlign(HorizontalAlignment.Center))
+                HStack(12,
+                        VerificationButton(t, () => setShowVerification(true)),
+                        transfer.IsPending
+                            ? Button(t.Message(new("App", "Cancel")), transfer.Cancel)
+                                .AutomationName(t.Message(new("App", "CancelCurrentSend")))
+                                .MinWidth(120)
+                            : Button(t.Message(new("App", "Close")), () =>
+                                {
+                                    if (receiverCardRef.Current is { } receiverCard)
+                                    {
+                                        DeviceConnectedAnimation.ReturnToSource(
+                                            connectedAnimationKey,
+                                            receiverCard,
+                                            Props.Close);
+                                    }
+                                    else
+                                    {
+                                        Props.Close();
+                                    }
+                                })
+                                .AutomationName(t.Message(new("App", "Close")))
+                                .MinWidth(120))
+                    .HAlign(HorizontalAlignment.Center))
             .MaxWidth(640)
             .HAlign(HorizontalAlignment.Stretch);
 
@@ -121,7 +124,13 @@ sealed class OutgoingTransferOverlay : Component<OutgoingTransferOverlayProps>
                     .Grid(row: 0),
                 Border(status)
                     .Padding(horizontal: 40, vertical: 24)
-                    .Grid(row: 1))
+                    .Grid(row: 1),
+                Component<DeviceVerificationDialog, DeviceVerificationDialogProps>(new(
+                    transfer.Receiver,
+                    transfer.Sender?.Fingerprint,
+                    Props.Theme,
+                    showVerification,
+                    () => setShowVerification(false))))
             .Transition(new FadeTransition())
             .Landmark(AutomationLandmarkType.Main);
     }
@@ -271,6 +280,10 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                     .HAlign(HorizontalAlignment.Center))
             .HAlign(HorizontalAlignment.Center);
 
+        var verificationButton = VerificationButton(
+            t,
+            () => setShowVerification(true),
+            isEnabled: !isPending);
         Element content = showText
             ? VStack(12,
                 TextBlock(view.IsDecided
@@ -285,11 +298,17 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                     .MinHeight(120)
                     .MaxHeight(260)
                     .AutomationName(t.Message(new("App", "ReceivedTextContent"))),
-                Button(copied
-                        ? t.Message(new("App", "Copied"))
-                        : t.Message(new("App", "Copy")), CopyText)
-                    .AutomationName(t.Message(new("App", "CopyReceivedText")))
-                    .IsEnabled(!string.IsNullOrEmpty(view.Text))
+                HStack(12,
+                    verificationButton,
+                    Button(
+                            HStack(8,
+                                Icon("\uE8C8").AccessibilityHidden(),
+                                TextBlock(copied
+                                    ? t.Message(new("App", "Copied"))
+                                    : t.Message(new("App", "Copy")))),
+                            CopyText)
+                        .AutomationName(t.Message(new("App", "CopyReceivedText")))
+                        .IsEnabled(!string.IsNullOrEmpty(view.Text)))
                     .HAlign(HorizontalAlignment.Center))
             : VStack(12,
                 BodyLarge(view.Status)
@@ -298,7 +317,9 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                 Card(
                     VStack(8, itemRows))
                     .MaxWidth(640)
-                    .HAlign(HorizontalAlignment.Stretch));
+                    .HAlign(HorizontalAlignment.Stretch),
+                verificationButton
+                    .HAlign(HorizontalAlignment.Center));
 
         var actions = RenderActions();
 
@@ -338,14 +359,6 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                                 .Set("ButtonForegroundPointerOver", Theme.SystemCritical)
                                 .Set("ButtonForegroundPressed", Theme.SystemCritical)
                                 .Set("ButtonForegroundDisabled", Theme.DisabledText))
-                            .IsEnabled(!isPending)
-                            .MinWidth(120),
-                        Button(
-                                HStack(8,
-                                    Icon("\uE73E").AccessibilityHidden(),
-                                    TextBlock(t.Message(new("App", "VerifyAction")))),
-                                () => setShowVerification(true))
-                            .AutomationName(t.Message(new("App", "VerifyAction")))
                             .IsEnabled(!isPending)
                             .MinWidth(120),
                         Button(t.Message(new("App", "Accept")), () => _ = AcceptAsync())
@@ -559,6 +572,19 @@ static class TransferOverlayVisuals
             .Padding(horizontal: 8, vertical: 4)
             .CornerRadius(4)
             .Background(Theme.SubtleFill);
+
+    public static Element VerificationButton(
+        IntlAccessor t,
+        Action onClick,
+        bool isEnabled = true) =>
+        Button(
+                HStack(8,
+                    Icon("\uF760").AccessibilityHidden(),
+                    TextBlock(t.Message(new("App", "VerifyAction")))),
+                onClick)
+            .AutomationName(t.Message(new("App", "VerifyAction")))
+            .IsEnabled(isEnabled)
+            .MinWidth(120);
 
     public static string DeviceTypeGlyph(LocalSendDeviceType type) => type switch
     {
