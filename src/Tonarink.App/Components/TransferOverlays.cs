@@ -141,6 +141,7 @@ sealed record IncomingTransferOverlayProps(
     LocalSendNode Node,
     IncomingTransferRequest Request,
     string DownloadDirectory,
+    ElementTheme Theme,
     Action<Guid> Dismiss);
 
 sealed record IncomingTransferViewState(
@@ -176,6 +177,7 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
             request,
             IncomingSummary(t, request.Items)));
         var (copied, setCopied) = UseState(false);
+        var (showVerification, setShowVerification) = UseState(false);
         var cancellationRef = UseRef<CancellationTokenSource?>(null);
         var taskbarProgress = new TaskbarTransferProgress(
             view.State,
@@ -314,7 +316,13 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                     .Grid(row: 0),
                 Border(actions)
                     .Padding(horizontal: 40, vertical: 24)
-                    .Grid(row: 1))
+                    .Grid(row: 1),
+                Component<DeviceVerificationDialog, DeviceVerificationDialogProps>(new(
+                    request.Sender,
+                    Props.Node.Identity?.Fingerprint,
+                    Props.Theme,
+                    showVerification,
+                    () => setShowVerification(false))))
             .Transition(Transition.Enter(new FadeTransition()))
             .Landmark(AutomationLandmarkType.Main);
 
@@ -330,6 +338,14 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                                 .Set("ButtonForegroundPointerOver", Theme.SystemCritical)
                                 .Set("ButtonForegroundPressed", Theme.SystemCritical)
                                 .Set("ButtonForegroundDisabled", Theme.DisabledText))
+                            .IsEnabled(!isPending)
+                            .MinWidth(120),
+                        Button(
+                                HStack(8,
+                                    Icon("\uE73E").AccessibilityHidden(),
+                                    TextBlock(t.Message(new("App", "VerifyAction")))),
+                                () => setShowVerification(true))
+                            .AutomationName(t.Message(new("App", "VerifyAction")))
                             .IsEnabled(!isPending)
                             .MinWidth(120),
                         Button(t.Message(new("App", "Accept")), () => _ = AcceptAsync())

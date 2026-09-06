@@ -477,6 +477,7 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
                     node,
                     pendingIncoming,
                     settings.DownloadDirectory,
+                    contentTheme,
                     DismissIncoming))
                 .WithKey(pendingIncoming.RequestId.ToString("N"))
             : outgoingTransfer is not null
