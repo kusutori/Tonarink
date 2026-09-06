@@ -115,7 +115,7 @@ sealed class AnimatedRefreshButton : Component<AnimatedRefreshButtonProps>
         var (turns, setTurns) = UseState(0);
 
         return Button(
-                Icon("Refresh")
+                Icon("Sync")
                     .RotationTransition(TimeSpan.FromMilliseconds(Props.DurationMilliseconds))
                     .Rotation(turns * 360f)
                     .OnSizeChanged(CenterRotation),
