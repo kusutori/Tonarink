@@ -1,4 +1,6 @@
 using System.Collections.Concurrent;
+using System.Diagnostics;
+using System.Text;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Reactor;
 using Microsoft.Windows.AppLifecycle;
@@ -20,6 +22,7 @@ static class ShareTargetActivationBroker
     private static FileSystemWatcher? ExplorerShareWatcher;
     private static EventWaitHandle? ExplorerShareEvent;
     private static RegisteredWaitHandle? ExplorerShareWait;
+    private static string LogFilePath => Path.Combine(AppPlatform.DataDirectory, "share-target.log");
 
     public static event EventHandler? ActivationReceived;
 
@@ -62,16 +65,27 @@ static class ShareTargetActivationBroker
     {
         try
         {
+            // AppActivationArguments.Data exposes the activation *interface*, not
+            // necessarily the projected runtime class. The class check happens to
+            // work in JIT builds, but can fail after Native AOT trimming because the
+            // inspectable is materialized directly as the WinRT interface.
             if (activation?.Kind == ExtendedActivationKind.ShareTarget
-                && activation.Data is ShareTargetActivatedEventArgs shareArgs)
+                && activation.Data is IShareTargetActivatedEventArgs shareArgs)
             {
                 var payload = await CaptureSharePayloadAsync(shareArgs).ConfigureAwait(false);
                 if (payload is not null)
                     PendingPayloads.Enqueue(payload);
             }
+            else if (activation?.Kind == ExtendedActivationKind.ShareTarget)
+            {
+                WriteDiagnostic(
+                    $"Share activation data did not expose {nameof(IShareTargetActivatedEventArgs)} " +
+                    $"(runtime type: {activation.Data?.GetType().FullName ?? "<null>"}).");
+            }
         }
-        catch
+        catch (Exception exception)
         {
+            WriteDiagnostic("Failed to ingest a share activation.", exception);
         }
         finally
         {
@@ -164,7 +178,7 @@ static class ShareTargetActivationBroker
     }
 
     private static Task<ShareTargetPayload?> CaptureSharePayloadAsync(
-        ShareTargetActivatedEventArgs shareArgs)
+        IShareTargetActivatedEventArgs shareArgs)
     {
         var dispatcher = ReactorApp.UIDispatcher;
         if (dispatcher is null || dispatcher.HasThreadAccess)
@@ -182,7 +196,7 @@ static class ShareTargetActivationBroker
     }
 
     private static async Task CompleteOnDispatcherAsync(
-        ShareTargetActivatedEventArgs shareArgs,
+        IShareTargetActivatedEventArgs shareArgs,
         TaskCompletionSource<ShareTargetPayload?> completion)
     {
         try
@@ -196,7 +210,7 @@ static class ShareTargetActivationBroker
     }
 
     private static async Task<ShareTargetPayload?> CaptureSharePayloadCoreAsync(
-        ShareTargetActivatedEventArgs shareArgs)
+        IShareTargetActivatedEventArgs shareArgs)
     {
         var operation = shareArgs.ShareOperation;
         operation.ReportStarted();
@@ -253,5 +267,25 @@ static class ShareTargetActivationBroker
             throw new InvalidDataException("The share did not contain accessible files or text.");
 
         return new ShareTargetPayload(Guid.NewGuid(), items);
+    }
+
+    private static void WriteDiagnostic(string message, Exception? exception = null)
+    {
+        var text = exception is null
+            ? $"[share-target] {message}"
+            : $"[share-target] {message} {exception}";
+        Trace.WriteLine(text);
+
+        try
+        {
+            Directory.CreateDirectory(AppPlatform.DataDirectory);
+            File.AppendAllText(
+                LogFilePath,
+                $"{DateTimeOffset.Now:O} {text}{Environment.NewLine}",
+                Encoding.UTF8);
+        }
+        catch
+        {
+        }
     }
 }
