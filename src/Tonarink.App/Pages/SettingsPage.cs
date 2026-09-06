@@ -47,14 +47,14 @@ sealed class SettingsPage : Component<SettingsPageProps>
                     StringComparison.Ordinal)
                 || !SameStringList(Props.Runtime.AppliedNetworkWhitelist, Props.Settings.NetworkWhitelist)
                 || !SameStringList(Props.Runtime.AppliedNetworkBlacklist, Props.Settings.NetworkBlacklist));
-        var deviceTypeOptions = new[]
-        {
-            t.Message(new("App", "DeviceDesktop")),
-            t.Message(new("App", "DeviceMobile")),
-            t.Message(new("App", "DeviceWeb")),
-            t.Message(new("App", "DeviceHeadless")),
-            t.Message(new("App", "DeviceServer")),
-        };
+        Element[] deviceTypeOptions =
+        [
+            DeviceTypeOption(LocalSendDeviceType.Desktop, t.Message(new("App", "DeviceDesktop"))),
+            DeviceTypeOption(LocalSendDeviceType.Mobile, t.Message(new("App", "DeviceMobile"))),
+            DeviceTypeOption(LocalSendDeviceType.Web, t.Message(new("App", "DeviceWeb"))),
+            DeviceTypeOption(LocalSendDeviceType.Headless, t.Message(new("App", "DeviceHeadless"))),
+            DeviceTypeOption(LocalSendDeviceType.Server, t.Message(new("App", "DeviceServer"))),
+        ];
         string[] themeOptions =
         [
             t.Message(new("App", "OptionSystem")),
@@ -508,6 +508,15 @@ sealed class SettingsPage : Component<SettingsPageProps>
 
     private static Element HeaderGlyph(string glyph) =>
         Icon(glyph).AccessibilityHidden();
+
+    private static Element DeviceTypeOption(LocalSendDeviceType type, string label) =>
+        HStack(10,
+                Icon(FontIcon(TransferOverlayVisuals.DeviceTypeGlyph(type), fontSize: 16))
+                    .Width(20)
+                    .AccessibilityHidden(),
+                TextBlock(label)
+                    .VAlign(VerticalAlignment.Center))
+            .WithKey(type.ToString());
 
     private static Element SettingsGroup(string title, params Element[] cards) =>
         VStack(4,

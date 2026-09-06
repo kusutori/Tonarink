@@ -368,7 +368,7 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
         .Tall()
         .Flex(shrink: 0);
 
-        var content = NavigationHost(navigation, route => route switch
+        var content = (NavigationHost(navigation, route => route switch
         {
             AppRoute.Receive => Component<ReceivePage, ReceivePageProps>(new(
                 runtime,
@@ -396,8 +396,7 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
                 runtime,
                 updateSettings,
                 StartOrRestartServer,
-                StopServer))
-                .WithKey($"settings:{Props.Locale}"),
+                StopServer)),
             AppRoute.NetworkInterfaces => Component<NetworkInterfacesPage, NetworkInterfacesPageProps>(
                 new(settings, updateSettings)),
             AppRoute.WebShare => Component<WebSharePage, WebSharePageProps>(new(
@@ -426,7 +425,7 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
             Transition = AppNavigation.IsDetail(navigation.CurrentRoute)
                 ? NavigationTransition.DrillIn()
                 : NavigationTransition.Slide(),
-        };
+        }).WithKey($"navigation:{Props.Locale}");
 
         var navigationView = (NavigationView(
             [

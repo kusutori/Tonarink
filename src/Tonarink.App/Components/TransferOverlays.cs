@@ -255,7 +255,7 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
             .ToArray<Element?>();
 
         var sender = VStack(16,
-                Border(Icon(DeviceIcon(request.Sender.DeviceType)).AccessibilityHidden())
+                Border(Icon(FontIcon(DeviceTypeGlyph(request.Sender.DeviceType))).AccessibilityHidden())
                     .Size(88, 88)
                     .CornerRadius(44)
                     .Background(Theme.SubtleFill)
@@ -544,21 +544,13 @@ static class TransferOverlayVisuals
             .CornerRadius(4)
             .Background(Theme.SubtleFill);
 
-    public static string DeviceIcon(LocalSendDeviceType type) => type switch
-    {
-        LocalSendDeviceType.Mobile => "Phone",
-        LocalSendDeviceType.Web => "World",
-        LocalSendDeviceType.Server => "World",
-        _ => "Remote",
-    };
-
     public static string DeviceTypeGlyph(LocalSendDeviceType type) => type switch
     {
         LocalSendDeviceType.Mobile => "\uE8EA",
         LocalSendDeviceType.Web => "\uE12B",
         LocalSendDeviceType.Server => "\uE968",
         LocalSendDeviceType.Headless => "\uE950",
-        _ => "\uE701",
+        _ => "\uE977",
     };
 
     public static string DeviceModel(IntlAccessor t, string? model, LocalSendDeviceType type) =>

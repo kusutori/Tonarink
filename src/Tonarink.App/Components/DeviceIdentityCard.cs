@@ -39,7 +39,7 @@ sealed class DeviceIdentityCard : Component<DeviceIdentityCardProps>
         var identity = Grid(
             columns: [GridSize.Auto, GridSize.Star()],
             rows: [GridSize.Auto],
-            Border(Icon(DeviceIcon(Props.Type)).AccessibilityHidden())
+            Border(Icon(FontIcon(DeviceTypeGlyph(Props.Type))).AccessibilityHidden())
                 .Size(64, 64)
                 .CornerRadius(32)
                 .Background(Theme.SubtleFill)
