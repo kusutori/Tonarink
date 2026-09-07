@@ -43,10 +43,10 @@ sealed class OutgoingTransferOverlay : Component<OutgoingTransferOverlayProps>
 
         var devices = VStack(20,
                 Component<DeviceIdentityCard, DeviceIdentityCardProps>(new(
-                    transfer.Sender?.Alias ?? t.Message(new("App", "ThisDevice")),
-                    transfer.Sender?.DeviceModel,
-                    transfer.Sender?.DeviceType ?? LocalSendDeviceType.Desktop,
-                    LocalDeviceNumber(transfer.Sender)))
+                        transfer.Sender?.Alias ?? t.Message(new("App", "ThisDevice")),
+                        transfer.Sender?.DeviceModel,
+                        transfer.Sender?.DeviceType ?? LocalSendDeviceType.Desktop,
+                        LocalDeviceNumber(transfer.Sender)))
                     .Transition(Transition.Enter(Transition.Slide(Edge.Top))),
                 Icon(FontIcon("\uE74B", fontSize: 28)).AccessibilityHidden()
                     .HAlign(HorizontalAlignment.Center),
@@ -111,7 +111,7 @@ sealed class OutgoingTransferOverlay : Component<OutgoingTransferOverlayProps>
                             })
                         .AutomationName(t.Message(new("App", "Close")))
                         .MinWidth(120))
-                    .HAlign(HorizontalAlignment.Center))
+                .HAlign(HorizontalAlignment.Center))
             .MaxWidth(640)
             .HAlign(HorizontalAlignment.Stretch);
 
@@ -215,7 +215,7 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                 BytesTransferred: view.BytesTransferred,
                 TotalBytes: view.TotalBytes,
                 Indeterminate: view.TotalBytes <= 0
-                    || view.State is TransferState.Preparing or TransferState.WaitingForAcceptance));
+                               || view.State is TransferState.Preparing or TransferState.WaitingForAcceptance));
             return () => WidgetAppHost.SetIncoming(null);
         }, view.State, view.BytesTransferred, view.TotalBytes, view.Status, request.RequestId);
 
@@ -254,21 +254,21 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
         var showText = request.Items.Count == 1 && IsText(request.Items[0]);
         var itemRows = request.Items.Take(5).Select(item =>
                 Grid(
-                    columns: [GridSize.Star(), GridSize.Auto],
-                    rows: [GridSize.Auto],
-                    TextBlock(item.FileName)
-                        .TextTrimming(TextTrimming.CharacterEllipsis)
-                        .ToolTip(item.FileName)
-                        .Grid(column: 0),
-                    Caption(FormatBytes(item.Size))
-                        .Foreground(Theme.SecondaryText)
-                        .Grid(column: 1))
-                .WithKey(item.Id))
+                        columns: [GridSize.Star(), GridSize.Auto],
+                        rows: [GridSize.Auto],
+                        TextBlock(item.FileName)
+                            .TextTrimming(TextTrimming.CharacterEllipsis)
+                            .ToolTip(item.FileName)
+                            .Grid(column: 0),
+                        Caption(FormatBytes(item.Size))
+                            .Foreground(Theme.SecondaryText)
+                            .Grid(column: 1))
+                    .WithKey(item.Id))
             .Cast<Element?>()
             .Append(request.Items.Count > 5
                 ? Caption(t.Message(
-                    new("App", "MoreItems"),
-                    ("count", request.Items.Count - 5)))
+                        new("App", "MoreItems"),
+                        ("count", request.Items.Count - 5)))
                     .Foreground(Theme.SecondaryText)
                 : null)
             .ToArray<Element?>();
@@ -283,8 +283,8 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                     .TextAlignment(TextAlignment.Center)
                     .HAlign(HorizontalAlignment.Center),
                 HStack(8,
-                    DeviceTag(RemoteDeviceNumber(request.Sender)),
-                    DeviceTag(DeviceModel(t, request.Sender.DeviceModel, request.Sender.DeviceType)))
+                        DeviceTag(RemoteDeviceNumber(request.Sender)),
+                        DeviceTag(DeviceModel(t, request.Sender.DeviceModel, request.Sender.DeviceType)))
                     .HAlign(HorizontalAlignment.Center))
             .HAlign(HorizontalAlignment.Center);
 
@@ -307,24 +307,24 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                     .MaxHeight(260)
                     .AutomationName(t.Message(new("App", "ReceivedTextContent"))),
                 HStack(12,
-                    verificationButton,
-                    Button(
-                            HStack(8,
-                                Icon("\uE8C8").AccessibilityHidden(),
-                                TextBlock(copied
-                                    ? t.Message(new("App", "Copied"))
-                                    : t.Message(new("App", "Copy")))),
-                            CopyText)
-                        .AutomationName(t.Message(new("App", "CopyReceivedText")))
-                        .IsEnabled(!string.IsNullOrEmpty(view.Text))
-                        .MinWidth(120))
+                        verificationButton,
+                        Button(
+                                HStack(8,
+                                    Icon("\uE8C8").AccessibilityHidden(),
+                                    TextBlock(copied
+                                        ? t.Message(new("App", "Copied"))
+                                        : t.Message(new("App", "Copy")))),
+                                CopyText)
+                            .AutomationName(t.Message(new("App", "CopyReceivedText")))
+                            .IsEnabled(!string.IsNullOrEmpty(view.Text))
+                            .MinWidth(120))
                     .HAlign(HorizontalAlignment.Center))
             : VStack(12,
                 BodyLarge(view.Status)
                     .TextAlignment(TextAlignment.Center)
                     .HAlign(HorizontalAlignment.Center),
                 Card(
-                    VStack(8, itemRows))
+                        VStack(8, itemRows))
                     .MaxWidth(640)
                     .HAlign(HorizontalAlignment.Stretch),
                 verificationButton
@@ -337,10 +337,10 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                 rows: [GridSize.Star(), GridSize.Auto],
                 ScrollView(
                         VStack(28,
-                            sender,
-                            content)
-                        .MaxWidth(760)
-                        .HAlign(HorizontalAlignment.Stretch))
+                                sender,
+                                content)
+                            .MaxWidth(760)
+                            .HAlign(HorizontalAlignment.Stretch))
                     .Padding(horizontal: 40, vertical: 40)
                     .HorizontalContentAlignment(HorizontalAlignment.Stretch)
                     .Grid(row: 0),
@@ -367,16 +367,9 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                                     TextBlock(t.Message(new("App", "Decline")))),
                                 () => _ = DeclineAsync())
                             .AutomationName(t.Message(new("App", "Decline")))
-                            .Resources(static resources => resources
-                            // .Set("ButtonBackground", Theme.SystemCritical)
-                            // .Set("ButtonBackgroundPointerOver", "#C42B1C")
-                            // .Set("ButtonBackgroundPressed", "#A92319"))
-                            .Set("ButtonForeground", Theme.SystemCritical)
-                            .Set("ButtonForegroundPointerOver", Theme.SystemCritical)
-                            .Set("ButtonForegroundPressed", Theme.SystemCritical)
-                            .Set("ButtonForegroundDisabled", Theme.DisabledText))
                             .IsEnabled(!isPending)
-                            .MinWidth(120),
+                            .MinWidth(120)
+                            .CriticalButton(),
                         Button(
                                 HStack(8,
                                     Icon("\uE8FB").AccessibilityHidden(),
@@ -386,7 +379,7 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                             .IsEnabled(!isPending)
                             .MinWidth(120)
                             .AccentButton()
-                        )
+                    )
                     .HAlign(HorizontalAlignment.Center);
             }
 
@@ -459,6 +452,7 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                         t.Message(new("App", "NotificationOpenFile")),
                         t.Message(new("App", "NotificationShowInFolder")));
                 }
+
                 var receivedText = showText && result.IsSuccess
                     ? await ReadReceivedTextAsync(result)
                     : view.Text;
@@ -538,6 +532,7 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                 continue;
             texts.Add(await File.ReadAllTextAsync(path).ConfigureAwait(false));
         }
+
         return texts.Count == 0 ? null : string.Join(Environment.NewLine, texts);
     }
 }
@@ -621,14 +616,16 @@ static class TransferOverlayVisuals
     };
 
     public static string DeviceModel(IntlAccessor t, string? model, LocalSendDeviceType type) =>
-        string.IsNullOrWhiteSpace(model) ? type switch
-        {
-            LocalSendDeviceType.Mobile => t.Message(new("App", "DeviceMobile")),
-            LocalSendDeviceType.Web => t.Message(new("App", "DeviceWeb")),
-            LocalSendDeviceType.Headless => t.Message(new("App", "DeviceHeadless")),
-            LocalSendDeviceType.Server => t.Message(new("App", "DeviceServer")),
-            _ => t.Message(new("App", "DeviceDesktop")),
-        } : model;
+        string.IsNullOrWhiteSpace(model)
+            ? type switch
+            {
+                LocalSendDeviceType.Mobile => t.Message(new("App", "DeviceMobile")),
+                LocalSendDeviceType.Web => t.Message(new("App", "DeviceWeb")),
+                LocalSendDeviceType.Headless => t.Message(new("App", "DeviceHeadless")),
+                LocalSendDeviceType.Server => t.Message(new("App", "DeviceServer")),
+                _ => t.Message(new("App", "DeviceDesktop")),
+            }
+            : model;
 
     public static string LocalDeviceNumber(LocalSendIdentity? identity)
     {
@@ -671,6 +668,7 @@ static class TransferOverlayVisuals
             value /= 1024;
             unit++;
         }
+
         return unit == 0 ? $"{value:0} {units[unit]}" : $"{value:0.##} {units[unit]}";
     }
 }
