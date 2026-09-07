@@ -30,9 +30,11 @@ sealed class HistoryPage : Component<HistoryPageProps>
             .HeadingLevel(AutomationHeadingLevel.Level1);
 
         var actions = FlexRow(
-                Button(t.Message(new("App", "HistoryOpenDirectory")), OpenDownloadDirectory)
+                Button(HStack(Icon("\uE8DA").AccessibilityHidden(), t.Message(new("App", "HistoryOpenDirectory"))),
+                        OpenDownloadDirectory)
                     .AutomationName(t.Message(new("App", "HistoryOpenDirectory"))),
-                Button(t.Message(new("App", "HistoryDeleteAll")), () => setConfirmClear(true))
+                Button(HStack(Icon("\uE74D").AccessibilityHidden(), t.Message(new("App", "HistoryDeleteAll"))),
+                        () => setConfirmClear(true))
                     .AutomationName(t.Message(new("App", "HistoryDeleteAll")))
                     .IsEnabled(entries.Count > 0)
                     .Resources(static resources => resources
@@ -41,7 +43,9 @@ sealed class HistoryPage : Component<HistoryPageProps>
                         .Set("ButtonForegroundPressed", Theme.SystemCritical)
                         .Set("ButtonForegroundDisabled", Theme.DisabledText)))
             with
-        { ColumnGap = 8, Wrap = FlexWrap.Wrap };
+            {
+                ColumnGap = 8, Wrap = FlexWrap.Wrap
+            };
 
         Element list = entries.Count == 0
             ? Caption(t.Message(new("App", "HistoryEmpty")))
@@ -51,37 +55,39 @@ sealed class HistoryPage : Component<HistoryPageProps>
 
         return Border(
                 (FlexColumn(
-                    header,
-                    actions,
-                    ScrollView(list)
-                        .HorizontalContentAlignment(HorizontalAlignment.Stretch)
-                        .Flex(grow: 1, basis: 0),
-                    (ContentDialog(
-                        t.Message(new("App", "HistoryDeleteAllConfirm")),
-                        TextBlock(t.Message(new("App", "HistoryDeleteAllConfirmMessage")))
-                            .TextWrapping(TextWrapping.WrapWholeWords),
-                        primaryButtonText: t.Message(new("App", "HistoryDeleteAll"))) with
+                        header,
+                        actions,
+                        ScrollView(list)
+                            .HorizontalContentAlignment(HorizontalAlignment.Stretch)
+                            .Flex(grow: 1, basis: 0),
+                        (ContentDialog(
+                                t.Message(new("App", "HistoryDeleteAllConfirm")),
+                                TextBlock(t.Message(new("App", "HistoryDeleteAllConfirmMessage")))
+                                    .TextWrapping(TextWrapping.WrapWholeWords),
+                                primaryButtonText: t.Message(new("App", "HistoryDeleteAll"))) with
+                            {
+                                IsOpen = confirmClear,
+                                SecondaryButtonText = t.Message(new("App", "Cancel")),
+                                DefaultButton = ContentDialogButton.Primary,
+                                OnClosed = result =>
+                                {
+                                    if (result == ContentDialogResult.Primary)
+                                        ReceiveHistoryStore.Clear();
+                                    setConfirmClear(false);
+                                },
+                            }).Set(dialog => dialog.RequestedTheme = Props.Theme),
+                        (ContentDialog(
+                                t.Message(new("App", "HistoryInfoTitle")),
+                                infoEntry is null ? Empty() : HistoryInfoBody(infoEntry, t),
+                                primaryButtonText: t.Message(new("App", "Close"))) with
+                            {
+                                IsOpen = infoEntry is not null,
+                                DefaultButton = ContentDialogButton.Primary,
+                                OnClosed = _ => setInfoEntry(null),
+                            }).Set(dialog => dialog.RequestedTheme = Props.Theme)) with
                     {
-                        IsOpen = confirmClear,
-                        SecondaryButtonText = t.Message(new("App", "Cancel")),
-                        DefaultButton = ContentDialogButton.Primary,
-                        OnClosed = result =>
-                        {
-                            if (result == ContentDialogResult.Primary)
-                                ReceiveHistoryStore.Clear();
-                            setConfirmClear(false);
-                        },
-                    }).Set(dialog => dialog.RequestedTheme = Props.Theme),
-                    (ContentDialog(
-                        t.Message(new("App", "HistoryInfoTitle")),
-                        infoEntry is null ? Empty() : HistoryInfoBody(infoEntry, t),
-                        primaryButtonText: t.Message(new("App", "Close"))) with
-                    {
-                        IsOpen = infoEntry is not null,
-                        DefaultButton = ContentDialogButton.Primary,
-                        OnClosed = _ => setInfoEntry(null),
-                    }).Set(dialog => dialog.RequestedTheme = Props.Theme)) with
-                { RowGap = 20 }))
+                        RowGap = 20
+                    }))
             .Padding(36)
             .Landmark(AutomationLandmarkType.Main);
 
@@ -131,7 +137,7 @@ sealed class HistoryPage : Component<HistoryPageProps>
                         .Margin(horizontal: 12, vertical: 0)
                         .VAlign(VerticalAlignment.Center)
                         .Grid(column: 1),
-                    Button(Icon("\uE712"), null)
+                    Button(Icon("\uE712"))
                         .SubtleButton()
                         .AutomationName(t.Message(new("App", "HistoryEntryActions"), ("file", entry.FileName)))
                         .MinWidth(40)
@@ -161,7 +167,7 @@ sealed class HistoryPage : Component<HistoryPageProps>
             .Padding(12)
             .CornerRadius(8)
             .Background(Theme.CardBackground)
-            .WithBorder(Theme.CardStroke, 1);
+            .WithBorder(Theme.CardStroke);
     }
 
     private static Element HistoryInfoBody(
