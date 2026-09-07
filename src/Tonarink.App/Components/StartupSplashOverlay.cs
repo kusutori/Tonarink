@@ -4,7 +4,9 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using static Microsoft.UI.Reactor.Factories;
 
-sealed class StartupSplashOverlay : Component
+sealed record StartupSplashOverlayProps(Action<bool> SetVisible);
+
+sealed class StartupSplashOverlay : Component<StartupSplashOverlayProps>
 {
     private static readonly TimeSpan FadeDuration = TimeSpan.FromMilliseconds(280);
 
@@ -12,6 +14,7 @@ sealed class StartupSplashOverlay : Component
     {
         var (opacity, setOpacity) = UseState(1.0);
         var alive = UseRef(true);
+        var completionStarted = UseRef(false);
 
         UseEffect(() => () => { alive.Current = false; });
 
@@ -42,8 +45,15 @@ sealed class StartupSplashOverlay : Component
             {
             }
 
+            if (!alive.Current || completionStarted.Current)
+                return;
+
+            completionStarted.Current = true;
+            setOpacity(0);
+            await Task.Delay(FadeDuration);
+
             if (alive.Current)
-                setOpacity(0);
+                Props.SetVisible(false);
         }
     }
 }

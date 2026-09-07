@@ -75,7 +75,7 @@ sealed class AppShell : Component
             _ => ElementTheme.Default,
         };
         var startHidden = AppPlatform.StartHidden && settings.MinimizeToTray;
-        var (splashVisible, _) = UseState(!startHidden);
+        var (splashVisible, setSplashVisible) = UseState(!startHidden);
 
         var shell = LocaleProvider(
             locale,
@@ -84,14 +84,15 @@ sealed class AppShell : Component
             defaultLocale: "en-US")
             .RequestedTheme(theme);
 
-        if (!splashVisible)
-            return shell.Backdrop(BackdropKind.Mica);
-
         return Grid(
                 columns: [GridSize.Star()],
                 rows: [GridSize.Star()],
                 shell.Grid(row: 0, column: 0),
-                Component<StartupSplashOverlay>().Grid(row: 0, column: 0))
+                splashVisible
+                    ? Component<StartupSplashOverlay, StartupSplashOverlayProps>(
+                        new(setSplashVisible))
+                        .Grid(row: 0, column: 0)
+                    : null)
             .RequestedTheme(theme)
             .Backdrop(BackdropKind.Mica);
     }
