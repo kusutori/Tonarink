@@ -4,9 +4,8 @@ using Microsoft.UI.Reactor.Core;
 using Microsoft.UI.Reactor.Layout;
 using Microsoft.UI.Reactor.Localization;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
 using static Microsoft.UI.Reactor.Factories;
-using static TransferOverlayVisuals;
+using static DeviceVisuals;
 
 sealed record DeviceIdentityCardProps(
     string Alias,
@@ -41,11 +40,7 @@ sealed class DeviceIdentityCard : Component<DeviceIdentityCardProps>
         var identity = Grid(
             columns: [GridSize.Auto, GridSize.Star()],
             rows: [GridSize.Auto],
-            Border(Icon(FontIcon(DeviceTypeGlyph(Props.Type))).AccessibilityHidden())
-                .Size(64, 64)
-                .CornerRadius(32)
-                .Background(Theme.SubtleFill)
-                .Grid(column: 0),
+            DeviceAvatar(Props.Type).Grid(column: 0),
             VStack(8,
                 (FlexRow(
                     BodyLarge(Props.Alias)
@@ -82,11 +77,7 @@ sealed class DeviceIdentityCard : Component<DeviceIdentityCardProps>
                 .HorizontalContentAlignment(HorizontalAlignment.Stretch)
                 .AutomationName(Props.AutomationName ?? Props.Alias)
                 .IsEnabled(Props.IsEnabled)
-                .Resources(static resources => resources
-                    .Set("ButtonBackground", Theme.Ref("SubtleFillColorTransparentBrush"))
-                    .Set("ButtonBackgroundPointerOver", Theme.Ref("SubtleFillColorSecondaryBrush"))
-                    .Set("ButtonBackgroundPressed", Theme.Ref("SubtleFillColorTertiaryBrush"))
-                    .Set("ButtonBorderBrush", Theme.Ref("SubtleFillColorTransparentBrush")));
+                .GhostButton();
 
         var card = Card(body)
             .Padding(Props.OnClick is null ? 16 : 0)
@@ -129,14 +120,7 @@ sealed class DeviceIdentityCard : Component<DeviceIdentityCardProps>
                     .ToolTip(Props.SecondaryAutomationName ?? Props.Alias)
                     .MinWidth(48)
                     .MinHeight(48)
-                    .Resources(resources => resources
-                        .Set("ButtonBackground", Theme.Ref("SubtleFillColorTransparentBrush"))
-                        .Set("ButtonBackgroundPointerOver", Theme.Ref("SubtleFillColorSecondaryBrush"))
-                        .Set("ButtonBackgroundPressed", Theme.Ref("SubtleFillColorTertiaryBrush"))
-                        .Set("ButtonBorderBrush", Theme.Ref("SubtleFillColorTransparentBrush"))
-                        .Set("ButtonBorderBrushPointerOver", Theme.Ref("SubtleFillColorTransparentBrush"))
-                        .Set("ButtonBorderBrushPressed", Theme.Ref("SubtleFillColorTransparentBrush"))
-                        .Set("ButtonBorderBrushDisabled", Theme.Ref("SubtleFillColorTransparentBrush")))
+                    .GhostButton()
                     .HAlign(HorizontalAlignment.Right)
                     .VAlign(VerticalAlignment.Center)
                     .Margin(right: 16)

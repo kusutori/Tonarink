@@ -13,6 +13,8 @@ using Windows.Storage;
 using Windows.Storage.Pickers;
 using Tonarink.Components.Animations;
 using static Microsoft.UI.Reactor.Factories;
+using static ByteSize;
+using static DeviceVisuals;
 using static TransferOverlayVisuals;
 
 sealed record SendPageProps(
@@ -1125,17 +1127,4 @@ sealed class SendPage : Component<SendPageProps>
     };
 
     private static long TextLength(string value) => System.Text.Encoding.UTF8.GetByteCount(value);
-
-    private static string FormatBytes(long bytes)
-    {
-        string[] units = ["B", "KB", "MB", "GB", "TB"];
-        var value = (double)Math.Max(bytes, 0);
-        var unit = 0;
-        while (value >= 1024 && unit < units.Length - 1)
-        {
-            value /= 1024;
-            unit++;
-        }
-        return unit == 0 ? $"{value:0} {units[unit]}" : $"{value:0.##} {units[unit]}";
-    }
 }

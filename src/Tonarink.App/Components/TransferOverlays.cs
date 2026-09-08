@@ -7,10 +7,11 @@ using Microsoft.UI.Reactor.Localization;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
-using System.Net.Sockets;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage.Pickers;
 using static Microsoft.UI.Reactor.Factories;
+using static ByteSize;
+using static DeviceVisuals;
 using static TransferOverlayVisuals;
 
 sealed record OutgoingTransferOverlayProps(
@@ -296,10 +297,7 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
             .ToArray<Element?>();
 
         var sender = VStack(16,
-                Border(Icon(FontIcon(DeviceTypeGlyph(request.Sender.DeviceType))).AccessibilityHidden())
-                    .Size(88, 88)
-                    .CornerRadius(44)
-                    .Background(Theme.SubtleFill)
+                DeviceAvatar(request.Sender.DeviceType, OverlayAvatarSize)
                     .HAlign(HorizontalAlignment.Center),
                 Title(request.Sender.Alias)
                     .TextAlignment(TextAlignment.Center)
@@ -717,10 +715,7 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                                 ("file", displayName)))
                             .HAlign(HorizontalAlignment.Stretch)
                             .HorizontalContentAlignment(HorizontalAlignment.Stretch)
-                            .Resources(static resources => resources
-                                .Set("ButtonBackground", Theme.Ref("SubtleFillColorTransparentBrush"))
-                                .Set("ButtonBackgroundPointerOver", Theme.Ref("SubtleFillColorSecondaryBrush"))
-                                .Set("ButtonBackgroundPressed", Theme.Ref("SubtleFillColorTertiaryBrush")))
+                            .GhostButton()
                             .Grid(column: 0),
                         Button(
                                 Icon("\uE70F").AccessibilityHidden(),
@@ -950,12 +945,6 @@ static class TransferOverlayVisuals
         window.TaskbarItem.Description = null;
     }
 
-    public static Element DeviceTag(string text) =>
-        Border(Caption(text))
-            .Padding(horizontal: 8, vertical: 4)
-            .CornerRadius(4)
-            .Background(Theme.SubtleFill);
-
     public static Element VerificationButton(
         IntlAccessor t,
         Action onClick,
@@ -969,46 +958,6 @@ static class TransferOverlayVisuals
             .IsEnabled(isEnabled)
             .MinWidth(120);
 
-    public static string DeviceTypeGlyph(LocalSendDeviceType type) => type switch
-    {
-        LocalSendDeviceType.Mobile => "\uE8EA",
-        LocalSendDeviceType.Web => "\uE12B",
-        LocalSendDeviceType.Server => "\uE968",
-        LocalSendDeviceType.Headless => "\uE950",
-        _ => "\uE977",
-    };
-
-    public static string DeviceModel(IntlAccessor t, string? model, LocalSendDeviceType type) =>
-        string.IsNullOrWhiteSpace(model)
-            ? type switch
-            {
-                LocalSendDeviceType.Mobile => t.Message(new("App", "DeviceMobile")),
-                LocalSendDeviceType.Web => t.Message(new("App", "DeviceWeb")),
-                LocalSendDeviceType.Headless => t.Message(new("App", "DeviceHeadless")),
-                LocalSendDeviceType.Server => t.Message(new("App", "DeviceServer")),
-                _ => t.Message(new("App", "DeviceDesktop")),
-            }
-            : model;
-
-    public static string LocalDeviceNumber(LocalSendIdentity? identity)
-    {
-        if (identity is null || identity.Fingerprint.Length < 4)
-            return "#—";
-        return $"#{Convert.ToInt32(identity.Fingerprint[..4], 16) % 1000}";
-    }
-
-    public static string RemoteDeviceNumber(LocalSendDevice device)
-    {
-        var address = device.PreferredEndpoint?.Address;
-        if (address is null)
-            return "#—";
-        if (address.IsIPv4MappedToIPv6)
-            address = address.MapToIPv4();
-        return address.AddressFamily == AddressFamily.InterNetwork
-            ? $"#{address.GetAddressBytes()[^1]}"
-            : "#—";
-    }
-
     public static bool IsText(IncomingItem item) =>
         item.ContentType.StartsWith("text/", StringComparison.OrdinalIgnoreCase);
 
@@ -1019,20 +968,6 @@ static class TransferOverlayVisuals
         if (items.Count == 1)
             return t.Message(new("App", "IncomingFileSummary"), ("file", items[0].FileName));
         return t.Message(new("App", "IncomingItemsSummary"), ("count", items.Count));
-    }
-
-    public static string FormatBytes(long bytes)
-    {
-        string[] units = ["B", "KB", "MB", "GB", "TB"];
-        var value = (double)Math.Max(bytes, 0);
-        var unit = 0;
-        while (value >= 1024 && unit < units.Length - 1)
-        {
-            value /= 1024;
-            unit++;
-        }
-
-        return unit == 0 ? $"{value:0} {units[unit]}" : $"{value:0.##} {units[unit]}";
     }
 }
 

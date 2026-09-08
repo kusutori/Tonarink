@@ -7,7 +7,7 @@ using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using static Microsoft.UI.Reactor.Factories;
-using static TransferOverlayVisuals;
+using static ByteSize;
 
 sealed record HistoryPageProps(string DownloadDirectory, ElementTheme Theme);
 

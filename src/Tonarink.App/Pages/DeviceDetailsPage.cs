@@ -10,7 +10,7 @@ using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using static Microsoft.UI.Reactor.Controls.Validation.FormFieldDsl;
 using static Microsoft.UI.Reactor.Factories;
-using static TransferOverlayVisuals;
+using static DeviceVisuals;
 
 sealed record DeviceDetailsPageProps(
     AppRuntimeState Runtime,

@@ -517,7 +517,7 @@ sealed class SettingsPage : Component<SettingsPageProps>
 
     private static Element DeviceTypeOption(LocalSendDeviceType type, string label) =>
         HStack(10,
-                Icon(FontIcon(TransferOverlayVisuals.DeviceTypeGlyph(type), fontSize: 16))
+                Icon(FontIcon(DeviceVisuals.DeviceTypeGlyph(type), fontSize: 16))
                     .Width(20)
                     .AccessibilityHidden(),
                 TextBlock(label)
