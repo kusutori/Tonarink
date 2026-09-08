@@ -423,12 +423,13 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                 rows: [GridSize.Star(), GridSize.Auto],
                 ScrollView(
                         VStack(28,
-                                sender,
-                                content)
+                                showFileOptions && !showText ? null : sender,
+                                showFileOptions && !showText ? null : content)
                             .Width(overlayContentWidth)
                             .HAlign(HorizontalAlignment.Center))
                     .Padding(horizontal: 0, vertical: 40)
                     .HorizontalContentAlignment(HorizontalAlignment.Stretch)
+                    .IsHitTestVisible(!showFileOptions)
                     .Grid(row: 0),
                 Border(actions)
                     .Padding(horizontal: 40, vertical: 24)
@@ -436,7 +437,6 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                 showFileOptions && !showText
                     ? Border(fileCard)
                         .Padding(horizontal: 40, vertical: 24)
-                        .Background(Theme.SmokeFill)
                         .HAlign(HorizontalAlignment.Stretch)
                         .VAlign(VerticalAlignment.Stretch)
                         .Grid(row: 0)
