@@ -22,14 +22,24 @@ internal static class DeviceConnectedAnimation
         }
     }
 
-    public static void NavigateToDestination(string key, UIElement source, Action navigate)
+    public static void NavigateToDestination(
+        string key,
+        UIElement source,
+        Action navigate,
+        ConnectedAnimationConfiguration? configuration = null)
     {
-        Prepare(key, source);
+        Prepare(key, source, configuration);
         navigate();
     }
 
-    public static void StartDestinationWhenReady(string key, UIElement destination) =>
-        destination.DispatcherQueue.TryEnqueue(() => TryStart(key, destination));
+    public static void StartDestinationWhenReady(
+        string key,
+        UIElement destination,
+        Action<bool>? completed = null)
+    {
+        if (!destination.DispatcherQueue.TryEnqueue(() => TryStart(key, destination, completed)))
+            completed?.Invoke(false);
+    }
 
     public static void ReturnToSource(string key, UIElement destination, Action close)
     {
@@ -52,32 +62,56 @@ internal static class DeviceConnectedAnimation
         CompositionTarget.Rendering += onRendering;
     }
 
-    private static void Prepare(string key, UIElement source)
+    private static void Prepare(
+        string key,
+        UIElement source,
+        ConnectedAnimationConfiguration? configuration = null)
     {
         PreparedKeys.Remove(key);
         try
         {
-            ConnectedAnimationService.GetForCurrentView().PrepareToAnimate(key, source);
+            var animation = ConnectedAnimationService.GetForCurrentView().PrepareToAnimate(key, source);
+            if (configuration is not null)
+                animation.Configuration = configuration;
             PreparedKeys.Add(key);
         }
-        catch (COMException)
+        catch (Exception exception) when (exception is COMException or ArgumentException)
         {
-            // Animation is progressive enhancement; navigation must remain usable.
+            // Animation is progressive enhancement. A source can be detached by
+            // an overlapping reconciliation before composition captures it.
         }
     }
 
-    private static void TryStart(string key, UIElement destination)
+    private static void TryStart(
+        string key,
+        UIElement destination,
+        Action<bool>? completed = null)
     {
         if (!PreparedKeys.Remove(key))
+        {
+            completed?.Invoke(false);
             return;
+        }
 
         try
         {
-            ConnectedAnimationService.GetForCurrentView().GetAnimation(key)?.TryStart(destination);
+            var animation = ConnectedAnimationService.GetForCurrentView().GetAnimation(key);
+            if (animation is null)
+            {
+                completed?.Invoke(false);
+                return;
+            }
+
+            if (completed is not null)
+                animation.Completed += (_, _) => completed(true);
+
+            if (!animation.TryStart(destination))
+                completed?.Invoke(false);
         }
-        catch (COMException)
+        catch (Exception exception) when (exception is COMException or ArgumentException)
         {
             // A disappearing window or target should degrade to the regular fade.
+            completed?.Invoke(false);
         }
     }
 }

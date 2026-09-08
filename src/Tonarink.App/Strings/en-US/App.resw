@@ -112,6 +112,7 @@
   <data name="HistoryTitle" xml:space="preserve"><value>Receive history</value></data>
   <data name="IdentityLoading" xml:space="preserve"><value>Loading identity…</value></data>
   <data name="IncomingFileSummary" xml:space="preserve"><value>Wants to send you the file {file}.</value></data>
+  <data name="IncomingFiles" xml:space="preserve"><value>Files</value></data>
   <data name="IncomingItemsSummary" xml:space="preserve"><value>Wants to send you {count} items.</value></data>
   <data name="IncomingTextSummary" xml:space="preserve"><value>Wants to send you a text message.</value></data>
   <data name="InvalidIpAddress" xml:space="preserve"><value>Enter a valid IP address.</value></data>
@@ -164,6 +165,7 @@
   <data name="ReceivedMessage" xml:space="preserve"><value>Sent you a message:</value></data>
   <data name="ReceivedTextContent" xml:space="preserve"><value>Received text content</value></data>
   <data name="ReceiveFailed" xml:space="preserve"><value>Receive failed.</value></data>
+  <data name="ReceiveSaveDirectory" xml:space="preserve"><value>Save directory</value></data>
   <data name="ReceiveTitle" xml:space="preserve"><value>Receive</value></data>
   <data name="ReceivingContent" xml:space="preserve"><value>Receiving content…</value></data>
   <data name="ReceivingPreparing" xml:space="preserve"><value>Preparing to receive…</value></data>
@@ -171,12 +173,20 @@
   <data name="Remove" xml:space="preserve"><value>Remove</value></data>
   <data name="RemoveFavoriteDevice" xml:space="preserve"><value>Remove {device} from favorites</value></data>
   <data name="RemoveItem" xml:space="preserve"><value>Remove {item}</value></data>
+  <data name="Rename" xml:space="preserve"><value>Rename</value></data>
+  <data name="RenameIncomingFile" xml:space="preserve"><value>Rename {file}</value></data>
+  <data name="ResetReceiveOptions" xml:space="preserve"><value>Reset file choices</value></data>
   <data name="Retry" xml:space="preserve"><value>Retry</value></data>
   <data name="SameNetworkHint" xml:space="preserve"><value>Make sure the target device is connected to the same Wi-Fi network.</value></data>
   <data name="Save" xml:space="preserve"><value>Save</value></data>
   <data name="SearchingDevices" xml:space="preserve"><value>Looking for nearby devices</value></data>
   <data name="SelectContentFirst" xml:space="preserve"><value>Choose something to send first.</value></data>
   <data name="SelectedItems" xml:space="preserve"><value>{count} items selected · {size}</value></data>
+  <data name="SelectedIncomingFiles" xml:space="preserve"><value>{selected} of {count} files selected</value></data>
+  <data name="SelectIncomingFile" xml:space="preserve"><value>Select {file}</value></data>
+  <data name="DeselectIncomingFile" xml:space="preserve"><value>Deselect {file}</value></data>
+  <data name="ShowReceiveOptions" xml:space="preserve"><value>Details</value></data>
+  <data name="HideReceiveOptions" xml:space="preserve"><value>Collapse</value></data>
   <data name="SendCancelled" xml:space="preserve"><value>Send cancelled</value></data>
   <data name="SendFailed" xml:space="preserve"><value>Send failed</value></data>
   <data name="SendHint" xml:space="preserve"><value>Choose content, then select a nearby device to send it.</value></data>

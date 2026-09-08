@@ -112,6 +112,7 @@
   <data name="HistoryTitle" xml:space="preserve"><value>接收历史</value></data>
   <data name="IdentityLoading" xml:space="preserve"><value>正在载入身份…</value></data>
   <data name="IncomingFileSummary" xml:space="preserve"><value>想要发送给你文件 {file}。</value></data>
+  <data name="IncomingFiles" xml:space="preserve"><value>文件</value></data>
   <data name="IncomingItemsSummary" xml:space="preserve"><value>想要发送给你 {count} 个项目。</value></data>
   <data name="IncomingTextSummary" xml:space="preserve"><value>想要发送给你一条文本消息。</value></data>
   <data name="InvalidIpAddress" xml:space="preserve"><value>请输入有效的 IP 地址。</value></data>
@@ -164,6 +165,7 @@
   <data name="ReceivedMessage" xml:space="preserve"><value>发送给你了一条消息：</value></data>
   <data name="ReceivedTextContent" xml:space="preserve"><value>收到的文本内容</value></data>
   <data name="ReceiveFailed" xml:space="preserve"><value>接收失败。</value></data>
+  <data name="ReceiveSaveDirectory" xml:space="preserve"><value>保存目录</value></data>
   <data name="ReceiveTitle" xml:space="preserve"><value>接收</value></data>
   <data name="ReceivingContent" xml:space="preserve"><value>正在接收内容…</value></data>
   <data name="ReceivingPreparing" xml:space="preserve"><value>正在准备接收…</value></data>
@@ -171,12 +173,20 @@
   <data name="Remove" xml:space="preserve"><value>移除</value></data>
   <data name="RemoveFavoriteDevice" xml:space="preserve"><value>取消收藏 {device}</value></data>
   <data name="RemoveItem" xml:space="preserve"><value>移除 {item}</value></data>
+  <data name="Rename" xml:space="preserve"><value>重命名</value></data>
+  <data name="RenameIncomingFile" xml:space="preserve"><value>重命名 {file}</value></data>
+  <data name="ResetReceiveOptions" xml:space="preserve"><value>撤回文件更改</value></data>
   <data name="Retry" xml:space="preserve"><value>重试</value></data>
   <data name="SameNetworkHint" xml:space="preserve"><value>请确保目标设备连接到同一个 Wi-Fi 网络。</value></data>
   <data name="Save" xml:space="preserve"><value>保存</value></data>
   <data name="SearchingDevices" xml:space="preserve"><value>正在寻找附近设备</value></data>
   <data name="SelectContentFirst" xml:space="preserve"><value>请先选择要发送的内容。</value></data>
   <data name="SelectedItems" xml:space="preserve"><value>已选择 {count} 项 · {size}</value></data>
+  <data name="SelectedIncomingFiles" xml:space="preserve"><value>已选择 {selected}/{count} 个文件</value></data>
+  <data name="SelectIncomingFile" xml:space="preserve"><value>选择 {file}</value></data>
+  <data name="DeselectIncomingFile" xml:space="preserve"><value>取消选择 {file}</value></data>
+  <data name="ShowReceiveOptions" xml:space="preserve"><value>详细设置</value></data>
+  <data name="HideReceiveOptions" xml:space="preserve"><value>收起</value></data>
   <data name="SendCancelled" xml:space="preserve"><value>发送已取消</value></data>
   <data name="SendFailed" xml:space="preserve"><value>发送失败</value></data>
   <data name="SendHint" xml:space="preserve"><value>选择内容后，点击附近设备即可发送。</value></data>
