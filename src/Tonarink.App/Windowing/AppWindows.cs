@@ -8,10 +8,10 @@ static class AppWindows
             new WindowSpec
             {
                 Title = "Tonarink",
-                Width = 1120,
-                Height = 760,
-                MinWidth = 360,
-                MinHeight = 520,
+                Width = AppLayout.WindowWidth,
+                Height = AppLayout.WindowHeight,
+                MinWidth = AppLayout.WindowMinWidth,
+                MinHeight = AppLayout.WindowMinHeight,
                 Icon = AppPlatform.AppWindowIcon,
                 ShowInTaskbar = !startHidden,
             },

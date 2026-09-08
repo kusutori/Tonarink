@@ -49,7 +49,7 @@ sealed class DeviceDetailsPage : Component<DeviceDetailsPageProps>
                 currentDevice.DeviceModel,
                 currentDevice.DeviceType,
                 RemoteDeviceNumber(currentDevice)))
-                .MaxWidth(560)
+                .MaxWidth(AppLayout.NarrowContentWidth)
                 .HAlign(HorizontalAlignment.Stretch),
             HStack(12,
                     ActionButton(
@@ -86,8 +86,8 @@ sealed class DeviceDetailsPage : Component<DeviceDetailsPageProps>
 
         return ScrollView(
                 Border(page)
-                    .Padding(36)
-                    .MaxWidth(760)
+                    .Padding(AppLayout.PagePadding)
+                    .MaxWidth(AppLayout.DetailsContentWidth)
                     .HAlign(HorizontalAlignment.Stretch)
                     .Landmark(AutomationLandmarkType.Main))
             .HorizontalContentAlignment(HorizontalAlignment.Stretch);

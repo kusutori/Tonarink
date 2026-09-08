@@ -457,7 +457,7 @@ sealed class SettingsPage : Component<SettingsPageProps>
                     DefaultButton = ContentDialogButton.Close,
                     OnClosed = _ => setEncryptionNoticeOpen(false),
                 })
-            .Padding(36))
+            .Padding(AppLayout.PagePadding))
             .HorizontalContentAlignment(HorizontalAlignment.Stretch)
             .Landmark(AutomationLandmarkType.Main);
 

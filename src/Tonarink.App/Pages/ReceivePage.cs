@@ -122,7 +122,7 @@ sealed class ReceivePage : Component<ReceivePageProps>
                     items: autoSaveItems)
                     .HAlign(HorizontalAlignment.Stretch)) with
             { RowGap = 20 })
-            .MaxWidth(560)
+            .MaxWidth(AppLayout.NarrowContentWidth)
             .HAlign(HorizontalAlignment.Stretch);
 
         var page = ScrollView(
@@ -152,7 +152,7 @@ sealed class ReceivePage : Component<ReceivePageProps>
                 RowGap = 32,
                 AlignItems = FlexAlign.Stretch,
             })
-            .Padding(36)
+            .Padding(AppLayout.PagePadding)
             .HorizontalContentAlignment(HorizontalAlignment.Stretch)
             .Landmark(AutomationLandmarkType.Main);
 

@@ -222,7 +222,7 @@ sealed class WebSharePage : Component<WebSharePageProps>
                     IsOpen = zoomUrl is not null,
                     OnClosed = _ => setZoomUrl(null),
                 }).Set(dialog => ApplyDialogTheme(dialog, dialogTheme)))
-            .Padding(36))
+            .Padding(AppLayout.PagePadding))
             .HorizontalContentAlignment(HorizontalAlignment.Stretch)
             .Landmark(AutomationLandmarkType.Main);
 

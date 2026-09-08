@@ -65,7 +65,7 @@ sealed class SendPage : Component<SendPageProps>
     {
         var t = UseIntl();
         var window = UseWindow();
-        var isWideLayout = UseBreakpoint(800);
+        var isWideLayout = UseBreakpoint(AppLayout.WideBreakpoint);
         var navigation = UseNavigation<AppRoute>();
         var selectedItems = Props.SelectedItems;
         var updateSelectedItems = Props.UpdateSelectedItems;
@@ -355,8 +355,8 @@ sealed class SendPage : Component<SendPageProps>
         });
 
         var pageContainer = Border(page)
-            .Padding(36)
-            .MaxWidth(1120)
+            .Padding(AppLayout.PagePadding)
+            .MaxWidth(AppLayout.PageMaxWidth)
             .HAlign(HorizontalAlignment.Stretch)
             .VAlign(isWideLayout ? VerticalAlignment.Stretch : VerticalAlignment.Top)
             .Landmark(AutomationLandmarkType.Main);

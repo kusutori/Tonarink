@@ -89,7 +89,7 @@ sealed class NetworkInterfacesPage : Component<NetworkInterfacesPageProps>
                             .AutomationName(t.Message(new("App", "Add")))
                             .VAlign(VerticalAlignment.Bottom)
                             .Grid(column: 1)))
-                .Padding(36))
+                .Padding(AppLayout.PagePadding))
             .HorizontalContentAlignment(HorizontalAlignment.Stretch)
             .Landmark(AutomationLandmarkType.Main);
 

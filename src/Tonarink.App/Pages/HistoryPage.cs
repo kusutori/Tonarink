@@ -88,7 +88,7 @@ sealed class HistoryPage : Component<HistoryPageProps>
                     {
                         RowGap = 20
                     }))
-            .Padding(36)
+            .Padding(AppLayout.PagePadding)
             .Landmark(AutomationLandmarkType.Main);
 
         void OpenDownloadDirectory()

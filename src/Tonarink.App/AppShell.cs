@@ -114,7 +114,7 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
     {
         var t = UseIntl();
         var window = UseWindow();
-        var useTitleBarPaneToggle = !UseBreakpoint(640);
+        var useTitleBarPaneToggle = !UseBreakpoint(AppLayout.CompactBreakpoint);
         var settings = Props.Settings;
         var contentTheme = settings.ThemeIndex switch
         {
@@ -444,10 +444,10 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
             content)
             .WithNavigation(navigation, RouteTag, ParseRoute)
             .PaneDisplayMode(NavigationViewPaneDisplayMode.Auto)
-            .CompactModeThresholdWidth(640)
-            .ExpandedModeThresholdWidth(1008)
-            .OpenPaneLength(248)
-            .CompactPaneLength(56)
+            .CompactModeThresholdWidth(AppLayout.CompactBreakpoint)
+            .ExpandedModeThresholdWidth(AppLayout.ExpandedBreakpoint)
+            .OpenPaneLength(AppLayout.NavigationOpenPaneLength)
+            .CompactPaneLength(AppLayout.NavigationCompactPaneLength)
             .PaneFooter(paneStatus)
             .PaneOpenChanged(setNavigationPaneOpen)
             .PaneToggleButtonVisible(!useTitleBarPaneToggle)

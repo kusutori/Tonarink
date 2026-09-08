@@ -62,7 +62,7 @@ sealed class OutgoingTransferOverlay : Component<OutgoingTransferOverlayProps>
                     ElementChanged: element => receiverCardRef.Current = element)),
                 VerificationButton(t, () => setShowVerification(true))
                     .HAlign(HorizontalAlignment.Center))
-            .MaxWidth(720)
+            .MaxWidth(AppLayout.OverlayDevicesMaxWidth)
             .HAlign(HorizontalAlignment.Stretch);
 
         var status = VStack(12,
@@ -76,9 +76,9 @@ sealed class OutgoingTransferOverlay : Component<OutgoingTransferOverlayProps>
                     .TextAlignment(TextAlignment.Center)
                     .HAlign(HorizontalAlignment.Center),
                 transfer.State is TransferState.Preparing or TransferState.WaitingForAcceptance
-                    ? ProgressIndeterminate().MaxWidth(440).HAlign(HorizontalAlignment.Stretch)
+                    ? ProgressIndeterminate().MaxWidth(AppLayout.OverlayProgressMaxWidth).HAlign(HorizontalAlignment.Stretch)
                     : transfer.TotalBytes > 0
-                        ? Progress(progress).MaxWidth(440).HAlign(HorizontalAlignment.Stretch)
+                        ? Progress(progress).MaxWidth(AppLayout.OverlayProgressMaxWidth).HAlign(HorizontalAlignment.Stretch)
                         : null,
                 transfer.TotalBytes > 0
                     ? Caption(progressText)
@@ -114,7 +114,7 @@ sealed class OutgoingTransferOverlay : Component<OutgoingTransferOverlayProps>
                         .AutomationName(t.Message(new("App", "Close")))
                         .MinWidth(120))
                 .HAlign(HorizontalAlignment.Center))
-            .MaxWidth(640)
+            .MaxWidth(AppLayout.OverlayStatusMaxWidth)
             .HAlign(HorizontalAlignment.Stretch);
 
         return Grid(
@@ -315,16 +315,21 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
             () => setShowVerification(true),
             isEnabled: !isPending);
         var availableContentWidth = windowWidth > 0
-            ? Math.Max(320, windowWidth - 96)
-            : 960;
+            ? Math.Max(AppLayout.OverlayMinContentWidth, windowWidth - AppLayout.OverlayHorizontalChrome)
+            : AppLayout.OverlayContentMaxWidth;
         // Keep the coordinate space stable while the card itself changes size.
         // Changing the parent width in the same render shifts both destination
         // coordinates and makes the connected animation appear off-centre.
-        var overlayContentWidth = Math.Min(960, availableContentWidth);
-        var fileCardWidth = Math.Min(showFileOptions ? 920 : 640, overlayContentWidth);
+        var overlayContentWidth = Math.Min(AppLayout.OverlayContentMaxWidth, availableContentWidth);
+        var fileCardWidth = Math.Min(
+            showFileOptions ? AppLayout.OverlayFileCardExpandedWidth : AppLayout.OverlayFileCardWidth,
+            overlayContentWidth);
         var expandedFileCardHeight = windowHeight > 0
-            ? Math.Clamp(windowHeight - 240, 360, 760)
-            : 640;
+            ? Math.Clamp(
+                windowHeight - AppLayout.OverlayExpandedHeightChrome,
+                AppLayout.OverlayExpandedHeightMin,
+                AppLayout.OverlayExpandedHeightMax)
+            : AppLayout.OverlayExpandedHeightFallback;
         var fileCardAnimationKey = $"incoming-file-options:{request.RequestId:N}";
         Element fileCard = Card(
                 Grid(
@@ -497,8 +502,8 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
             {
                 return VStack(12,
                         view.State is TransferState.Preparing or TransferState.WaitingForAcceptance
-                            ? ProgressIndeterminate().MaxWidth(440).HAlign(HorizontalAlignment.Stretch)
-                            : Progress(progressValue).MaxWidth(440).HAlign(HorizontalAlignment.Stretch),
+                            ? ProgressIndeterminate().MaxWidth(AppLayout.OverlayProgressMaxWidth).HAlign(HorizontalAlignment.Stretch)
+                            : Progress(progressValue).MaxWidth(AppLayout.OverlayProgressMaxWidth).HAlign(HorizontalAlignment.Stretch),
                         Caption(progressText)
                             .Foreground(Theme.SecondaryText)
                             .HAlign(HorizontalAlignment.Center),
@@ -510,7 +515,7 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                             .AutomationName(t.Message(new("App", "Cancel")))
                             .MinWidth(120)
                             .HAlign(HorizontalAlignment.Center))
-                    .MaxWidth(520)
+                    .MaxWidth(AppLayout.OverlayIncomingActionsMaxWidth)
                     .HAlign(HorizontalAlignment.Stretch);
             }
 
