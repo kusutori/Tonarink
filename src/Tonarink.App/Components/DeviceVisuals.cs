@@ -2,6 +2,7 @@ using LocalSendDotNet;
 using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Core;
 using Microsoft.UI.Reactor.Localization;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System.Net.Sockets;
 using static Microsoft.UI.Reactor.Factories;
@@ -12,7 +13,11 @@ static class DeviceVisuals
     public const double OverlayAvatarSize = 88;
 
     public static Element DeviceAvatar(LocalSendDeviceType type, double size = AvatarSize) =>
-        Border(Icon(FontIcon(DeviceTypeGlyph(type))).AccessibilityHidden())
+        Border(
+                Icon(FontIcon(DeviceTypeGlyph(type), fontSize: size * 0.5))
+                    .AccessibilityHidden()
+                    .HAlign(HorizontalAlignment.Center)
+                    .VAlign(VerticalAlignment.Center))
             .Size(size, size)
             .CornerRadius(size / 2)
             .Background(Theme.SubtleFill);

@@ -83,6 +83,7 @@ sealed class DeviceIdentityCard : Component<DeviceIdentityCardProps>
             .Padding(Props.OnClick is null ? 16 : 0)
             .MinHeight(104)
             .HAlign(HorizontalAlignment.Stretch)
+            .WithBorder(Theme.CardStroke, 2)
             .OnMountAdd(element =>
             {
                 cardRef.Current = element;

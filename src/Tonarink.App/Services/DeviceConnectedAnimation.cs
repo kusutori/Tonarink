@@ -37,8 +37,14 @@ internal static class DeviceConnectedAnimation
         UIElement destination,
         Action<bool>? completed = null)
     {
-        if (!destination.DispatcherQueue.TryEnqueue(() => TryStart(key, destination, completed)))
+        if (!destination.DispatcherQueue.TryEnqueue(() =>
+            {
+                if (!TryStart(key, destination, completed))
+                    StartDestinationAfterLayout(key, destination, completed);
+            }))
+        {
             completed?.Invoke(false);
+        }
     }
 
     public static void StartDestinationAfterLayout(
@@ -46,27 +52,34 @@ internal static class DeviceConnectedAnimation
         UIElement destination,
         Action<bool>? completed = null)
     {
-        const int maximumLayoutFrames = 4;
+        const int maximumLayoutFrames = 8;
         var remainingLayoutFrames = maximumLayoutFrames;
         EventHandler<object> onRendering = null!;
         onRendering = (_, _) =>
         {
+            remainingLayoutFrames--;
             if (destination.XamlRoot is null)
             {
                 CompositionTarget.Rendering -= onRendering;
+                PreparedKeys.Remove(key);
                 completed?.Invoke(false);
                 return;
             }
 
-            if (destination is FrameworkElement element
-                && (element.ActualWidth <= 0 || element.ActualHeight <= 0)
-                && --remainingLayoutFrames > 0)
+            var sized = destination is not FrameworkElement element
+                || (element.ActualWidth > 0 && element.ActualHeight > 0);
+            if (sized && TryStart(key, destination, completed))
             {
+                CompositionTarget.Rendering -= onRendering;
                 return;
             }
 
+            if (remainingLayoutFrames > 0)
+                return;
+
             CompositionTarget.Rendering -= onRendering;
-            TryStart(key, destination, completed);
+            PreparedKeys.Remove(key);
+            completed?.Invoke(false);
         };
         CompositionTarget.Rendering += onRendering;
     }
@@ -76,18 +89,38 @@ internal static class DeviceConnectedAnimation
         Prepare(key, destination);
         close();
 
-        // Closing the overlay schedules a Reactor reconciliation. Wait for the
-        // next composition frame so the source card's visual is visible again
-        // before using it as the connected-animation destination.
+        // Closing the overlay only schedules a Reactor render. One composition
+        // frame is often still before the source card is back in a live, sized
+        // visual — TryStart then fails and the prepared animation is gone.
+        const int maximumFrames = 8;
+        var remainingFrames = maximumFrames;
         EventHandler<object> onRendering = null!;
         onRendering = (_, _) =>
         {
-            CompositionTarget.Rendering -= onRendering;
-            if (Sources.TryGetValue(key, out var reference)
-                && reference.TryGetTarget(out var source))
+            remainingFrames--;
+            if (!PreparedKeys.Contains(key))
             {
-                TryStart(key, source);
+                CompositionTarget.Rendering -= onRendering;
+                return;
             }
+
+            if (Sources.TryGetValue(key, out var reference)
+                && reference.TryGetTarget(out var source)
+                && source.XamlRoot is not null
+                && source is FrameworkElement element
+                && element.ActualWidth > 0
+                && element.ActualHeight > 0
+                && TryStart(key, source))
+            {
+                CompositionTarget.Rendering -= onRendering;
+                return;
+            }
+
+            if (remainingFrames > 0)
+                return;
+
+            CompositionTarget.Rendering -= onRendering;
+            PreparedKeys.Remove(key);
         };
         CompositionTarget.Rendering += onRendering;
     }
@@ -112,15 +145,15 @@ internal static class DeviceConnectedAnimation
         }
     }
 
-    private static void TryStart(
+    private static bool TryStart(
         string key,
         UIElement destination,
         Action<bool>? completed = null)
     {
-        if (!PreparedKeys.Remove(key))
+        if (!PreparedKeys.Contains(key))
         {
             completed?.Invoke(false);
-            return;
+            return true;
         }
 
         try
@@ -128,20 +161,23 @@ internal static class DeviceConnectedAnimation
             var animation = ConnectedAnimationService.GetForCurrentView().GetAnimation(key);
             if (animation is null)
             {
+                PreparedKeys.Remove(key);
                 completed?.Invoke(false);
-                return;
+                return true;
             }
 
+            if (!animation.TryStart(destination))
+                return false;
+
+            PreparedKeys.Remove(key);
             if (completed is not null)
                 animation.Completed += (_, _) => completed(true);
-
-            if (!animation.TryStart(destination))
-                completed?.Invoke(false);
+            return true;
         }
         catch (Exception exception) when (exception is COMException or ArgumentException)
         {
-            // A disappearing window or target should degrade to the regular fade.
-            completed?.Invoke(false);
+            // Ancestor OpacityTransition can reject RenderTransform for a frame.
+            return false;
         }
     }
 }
