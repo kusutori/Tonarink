@@ -175,7 +175,17 @@
   <data name="RemoveItem" xml:space="preserve"><value>移除 {item}</value></data>
   <data name="Rename" xml:space="preserve"><value>重命名</value></data>
   <data name="RenameIncomingFile" xml:space="preserve"><value>重命名 {file}</value></data>
+  <data name="RenameSuccess" xml:space="preserve"><value>重命名成功 · {size}</value></data>
   <data name="ResetReceiveOptions" xml:space="preserve"><value>撤回文件更改</value></data>
+  <data name="QuickActionsTitle" xml:space="preserve"><value>快速操作</value></data>
+  <data name="QuickActionsCounter" xml:space="preserve"><value>计数器</value></data>
+  <data name="QuickActionsRandom" xml:space="preserve"><value>随机</value></data>
+  <data name="QuickActionsPrefix" xml:space="preserve"><value>前缀</value></data>
+  <data name="QuickActionsPadZero" xml:space="preserve"><value>以零填充</value></data>
+  <data name="QuickActionsSortBeforeCount" xml:space="preserve"><value>事先以字母顺序排序</value></data>
+  <data name="QuickActionsExample" xml:space="preserve"><value>示例: {name}</value></data>
+  <data name="QuickActionsInvalidPrefix" xml:space="preserve"><value>前缀包含无效字符。</value></data>
+  <data name="UndoIncomingFileRename" xml:space="preserve"><value>撤回重命名</value></data>
   <data name="Retry" xml:space="preserve"><value>重试</value></data>
   <data name="SameNetworkHint" xml:space="preserve"><value>请确保目标设备连接到同一个 Wi-Fi 网络。</value></data>
   <data name="Save" xml:space="preserve"><value>保存</value></data>
@@ -184,7 +194,9 @@
   <data name="SelectedItems" xml:space="preserve"><value>已选择 {count} 项 · {size}</value></data>
   <data name="SelectedIncomingFiles" xml:space="preserve"><value>已选择 {selected}/{count} 个文件</value></data>
   <data name="SelectIncomingFile" xml:space="preserve"><value>选择 {file}</value></data>
+  <data name="SelectAllIncomingFiles" xml:space="preserve"><value>全选</value></data>
   <data name="DeselectIncomingFile" xml:space="preserve"><value>取消选择 {file}</value></data>
+  <data name="DeselectAllIncomingFiles" xml:space="preserve"><value>取消全选</value></data>
   <data name="ShowReceiveOptions" xml:space="preserve"><value>详细设置</value></data>
   <data name="HideReceiveOptions" xml:space="preserve"><value>收起</value></data>
   <data name="SendCancelled" xml:space="preserve"><value>发送已取消</value></data>

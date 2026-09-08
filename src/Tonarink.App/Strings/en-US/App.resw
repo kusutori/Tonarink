@@ -175,7 +175,17 @@
   <data name="RemoveItem" xml:space="preserve"><value>Remove {item}</value></data>
   <data name="Rename" xml:space="preserve"><value>Rename</value></data>
   <data name="RenameIncomingFile" xml:space="preserve"><value>Rename {file}</value></data>
+  <data name="RenameSuccess" xml:space="preserve"><value>Renamed · {size}</value></data>
   <data name="ResetReceiveOptions" xml:space="preserve"><value>Reset file choices</value></data>
+  <data name="QuickActionsTitle" xml:space="preserve"><value>Quick actions</value></data>
+  <data name="QuickActionsCounter" xml:space="preserve"><value>Counter</value></data>
+  <data name="QuickActionsRandom" xml:space="preserve"><value>Random</value></data>
+  <data name="QuickActionsPrefix" xml:space="preserve"><value>Prefix</value></data>
+  <data name="QuickActionsPadZero" xml:space="preserve"><value>Pad with zeros</value></data>
+  <data name="QuickActionsSortBeforeCount" xml:space="preserve"><value>Sort alphabetically beforehand</value></data>
+  <data name="QuickActionsExample" xml:space="preserve"><value>Example: {name}</value></data>
+  <data name="QuickActionsInvalidPrefix" xml:space="preserve"><value>The prefix contains invalid characters.</value></data>
+  <data name="UndoIncomingFileRename" xml:space="preserve"><value>Undo rename</value></data>
   <data name="Retry" xml:space="preserve"><value>Retry</value></data>
   <data name="SameNetworkHint" xml:space="preserve"><value>Make sure the target device is connected to the same Wi-Fi network.</value></data>
   <data name="Save" xml:space="preserve"><value>Save</value></data>
@@ -184,7 +194,9 @@
   <data name="SelectedItems" xml:space="preserve"><value>{count} items selected · {size}</value></data>
   <data name="SelectedIncomingFiles" xml:space="preserve"><value>{selected} of {count} files selected</value></data>
   <data name="SelectIncomingFile" xml:space="preserve"><value>Select {file}</value></data>
+  <data name="SelectAllIncomingFiles" xml:space="preserve"><value>Select all</value></data>
   <data name="DeselectIncomingFile" xml:space="preserve"><value>Deselect {file}</value></data>
+  <data name="DeselectAllIncomingFiles" xml:space="preserve"><value>Deselect all</value></data>
   <data name="ShowReceiveOptions" xml:space="preserve"><value>Details</value></data>
   <data name="HideReceiveOptions" xml:space="preserve"><value>Collapse</value></data>
   <data name="SendCancelled" xml:space="preserve"><value>Send cancelled</value></data>

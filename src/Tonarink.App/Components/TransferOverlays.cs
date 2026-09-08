@@ -207,6 +207,7 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
             new Dictionary<string, string>(StringComparer.Ordinal));
         var (renameItemId, setRenameItemId) = UseState<string?>(null);
         var (renameFileName, setRenameFileName) = UseState(string.Empty);
+        var (showQuickActions, setShowQuickActions) = UseState(false);
         var (folderError, setFolderError) = UseState<string?>(null);
         var cancellationRef = UseRef<CancellationTokenSource?>(null);
         var fileCardRef = UseRef<FrameworkElement?>(null);
@@ -448,6 +449,19 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                     Props.Theme,
                     showVerification,
                     () => setShowVerification(false))),
+                Component<IncomingQuickActionsDialog, IncomingQuickActionsDialogProps>(new(
+                    request.Items
+                        .Where(item => selectedItemIds.Contains(item.Id))
+                        .Select(item => new IncomingQuickActionFile(
+                            item.Id,
+                            targetFileNames.TryGetValue(item.Id, out var renamed)
+                                ? renamed
+                                : item.FileName))
+                        .ToArray(),
+                    Props.Theme,
+                    showQuickActions,
+                    () => setShowQuickActions(false),
+                    ApplyQuickActionNames)),
                 RenameDialog())
             .Transition(Transition.Enter(new FadeTransition()))
             .Landmark(AutomationLandmarkType.Main);
@@ -639,11 +653,10 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                                         .ToolTip(destinationDirectory))
                                 .Grid(column: 0),
                             Button(
-                                    HStack(8,
-                                        Icon("\uE8A7").AccessibilityHidden(),
-                                        TextBlock(t.Message(new("App", "Change")))),
+                                    Icon("\uE8DA").AccessibilityHidden(),
                                     () => _ = PickDestinationDirectoryAsync())
                                 .AutomationName(t.Message(new("App", "ChangeSaveLocation")))
+                                .ToolTip(t.Message(new("App", "ChangeSaveLocation")))
                                 .IsEnabled(!view.IsDecided && !isPending)
                                 .Grid(column: 1)),
                         folderError is null
@@ -653,16 +666,43 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                 Grid(
                     columns: [GridSize.Star(), GridSize.Auto],
                     rows: [GridSize.Auto],
-                    TextBlock(t.Message(new("App", "IncomingFiles")))
-                        .SemiBold()
+                    HStack(8,
+                            TextBlock(t.Message(new("App", "IncomingFiles")))
+                                .SemiBold()
+                                .VAlign(VerticalAlignment.Center),
+                            Button(
+                                    Icon("\uEF60").AccessibilityHidden(),
+                                    () => setShowQuickActions(true))
+                                .AutomationName(t.Message(new("App", "QuickActionsTitle")))
+                                .ToolTip(t.Message(new("App", "QuickActionsTitle")))
+                                .IsEnabled(!view.IsDecided && !isPending)
+                                .VAlign(VerticalAlignment.Center),
+                            Button(
+                                    Icon("\uE7A7").AccessibilityHidden(),
+                                    ResetFileOptions)
+                                .AutomationName(t.Message(new("App", "ResetReceiveOptions")))
+                                .ToolTip(t.Message(new("App", "ResetReceiveOptions")))
+                                .IsEnabled(!view.IsDecided && !isPending)
+                                .VAlign(VerticalAlignment.Center))
+                        .HAlign(HorizontalAlignment.Left)
                         .VAlign(VerticalAlignment.Center)
                         .Grid(column: 0),
-                    Button(
-                            Icon("\uE7A7").AccessibilityHidden(),
-                            ResetFileOptions)
-                        .AutomationName(t.Message(new("App", "ResetReceiveOptions")))
-                        .ToolTip(t.Message(new("App", "ResetReceiveOptions")))
+                    ThreeStateCheckBox(SelectAllState(), _ => ToggleSelectAll())
+                        .AutomationName(t.Message(new(
+                            "App",
+                            selectedItemIds.Count == request.Items.Count
+                                ? "DeselectAllIncomingFiles"
+                                : "SelectAllIncomingFiles")))
+                        .ToolTip(t.Message(new(
+                            "App",
+                            selectedItemIds.Count == request.Items.Count
+                                ? "DeselectAllIncomingFiles"
+                                : "SelectAllIncomingFiles")))
                         .IsEnabled(!view.IsDecided && !isPending)
+                        .Scale(1.3f)
+                        .MinWidth(32)
+                        .MinHeight(32)
+                        .VAlign(VerticalAlignment.Center)
                         .Grid(column: 1))
                     .Grid(row: 1),
                 ScrollView(
@@ -678,9 +718,27 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
         Element ReceiveItemRow(IncomingItem item)
         {
             var isSelected = selectedItemIds.Contains(item.Id);
-            var displayName = targetFileNames.TryGetValue(item.Id, out var renamed)
-                ? renamed
+            var isRenamed = targetFileNames.ContainsKey(item.Id);
+            var displayName = isRenamed
+                ? targetFileNames[item.Id]
                 : item.FileName;
+            var renameHint = t.Message(
+                new("App", "RenameSuccess"),
+                ("size", FormatBytes(item.Size)));
+            var canEdit = !view.IsDecided && !isPending;
+            var canUndoRename = isRenamed && canEdit;
+            var undoRename = canUndoRename
+                ? () => UndoItemRename(item.Id)
+                : (Action?)null;
+            Element FileRowMenu() => MenuItems(
+                MenuItem(
+                    t.Message(new("App", "UndoIncomingFileRename")),
+                    undoRename,
+                    icon: "\uE7A7"),
+                MenuItem(
+                    t.Message(new("App", "Rename")),
+                    canEdit ? () => OpenRenameDialog(item.Id, displayName) : null,
+                    icon: "\uE70F"));
             return Border(
                     Grid(
                         columns: [GridSize.Star(), GridSize.Auto],
@@ -700,8 +758,8 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                                                 .ToolTip(displayName)
                                                 .TextAlignment(TextAlignment.Left)
                                                 .HAlign(HorizontalAlignment.Stretch),
-                                            Caption(FormatBytes(item.Size))
-                                                .Foreground(Theme.SecondaryText)
+                                            Caption(isRenamed ? renameHint : FormatBytes(item.Size))
+                                                .Foreground(isRenamed ? Theme.SystemCaution : Theme.SecondaryText)
                                                 .TextAlignment(TextAlignment.Left)
                                                 .HAlign(HorizontalAlignment.Stretch))
                                         .VAlign(VerticalAlignment.Center)
@@ -716,20 +774,32 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                             .HAlign(HorizontalAlignment.Stretch)
                             .HorizontalContentAlignment(HorizontalAlignment.Stretch)
                             .GhostButton()
+                            .WithContextFlyout(FileRowMenu())
                             .Grid(column: 0),
-                        Button(
-                                Icon("\uE70F").AccessibilityHidden(),
-                                () => OpenRenameDialog(item.Id, displayName))
-                            .AutomationName(t.Message(
-                                new("App", "RenameIncomingFile"),
-                                ("file", displayName)))
-                            .ToolTip(t.Message(new("App", "Rename")))
-                            .IsEnabled(!view.IsDecided && !isPending)
+                        HStack(
+                                Button(
+                                        Icon("\uE7A7").AccessibilityHidden(),
+                                        () => UndoItemRename(item.Id))
+                                    .AutomationName(t.Message(new("App", "UndoIncomingFileRename")))
+                                    .ToolTip(t.Message(new("App", "UndoIncomingFileRename")))
+                                    .IsEnabled(canUndoRename)
+                                    .WithContextFlyout(FileRowMenu()),
+                                Button(
+                                        Icon("\uE70F").AccessibilityHidden(),
+                                        () => OpenRenameDialog(item.Id, displayName))
+                                    .AutomationName(t.Message(
+                                        new("App", "RenameIncomingFile"),
+                                        ("file", displayName)))
+                                    .ToolTip(t.Message(new("App", "Rename")))
+                                    .IsEnabled(canEdit)
+                                    .WithContextFlyout(FileRowMenu()))
                             .Margin(8)
+                            .VAlign(VerticalAlignment.Center)
                             .Grid(column: 1)))
                 .CornerRadius(8)
                 .Background(Theme.CardBackground)
-                .WithBorder(isSelected ? Theme.Accent : Theme.CardStroke, 2);
+                .WithBorder(isSelected ? Theme.Accent : Theme.CardStroke, 2)
+                .WithContextFlyout(FileRowMenu());
         }
 
         Element RenameDialog()
@@ -776,6 +846,28 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                 next.Add(itemId);
             return next;
         });
+
+        bool? SelectAllState()
+        {
+            if (selectedItemIds.Count == 0)
+                return false;
+            if (selectedItemIds.Count == request.Items.Count)
+                return true;
+            return null;
+        }
+
+        void ToggleSelectAll()
+        {
+            if (selectedItemIds.Count == request.Items.Count)
+            {
+                updateSelectedItemIds(_ => new HashSet<string>(StringComparer.Ordinal));
+                return;
+            }
+
+            updateSelectedItemIds(_ => request.Items
+                .Select(static item => item.Id)
+                .ToHashSet(StringComparer.Ordinal));
+        }
 
         void ToggleFileOptions()
         {
@@ -826,6 +918,29 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
             setRenameFileName(currentName);
             setRenameItemId(itemId);
         }
+
+        void UndoItemRename(string itemId) => updateTargetFileNames(current =>
+        {
+            var next = new Dictionary<string, string>(current, StringComparer.Ordinal);
+            next.Remove(itemId);
+            return next;
+        });
+
+        void ApplyQuickActionNames(IReadOnlyDictionary<string, string> names) =>
+            updateTargetFileNames(current =>
+            {
+                var next = new Dictionary<string, string>(current, StringComparer.Ordinal);
+                foreach (var (itemId, fileName) in names)
+                {
+                    var originalName = request.Items.First(item => item.Id == itemId).FileName;
+                    if (string.Equals(fileName, originalName, StringComparison.Ordinal))
+                        next.Remove(itemId);
+                    else
+                        next[itemId] = fileName;
+                }
+
+                return next;
+            });
 
         void ResetFileOptions()
         {
