@@ -51,6 +51,7 @@ sealed class AppShell : Component
 
         UseEffect(() =>
         {
+            NativeSystemMenuTheme.Apply(settings.ThemeIndex);
             if (window is not null)
             {
                 window.AppWindow.TitleBar.PreferredTheme = settings.ThemeIndex switch

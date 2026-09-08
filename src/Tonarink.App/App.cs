@@ -10,6 +10,7 @@ try
     }
 
     ToolkitXamlMetadata.Register();
+    NativeSystemMenuTheme.Apply(startupSettings.ThemeIndex);
     WidgetAppHost.Start();
     try
     {
