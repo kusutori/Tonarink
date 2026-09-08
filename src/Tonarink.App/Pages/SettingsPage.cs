@@ -250,10 +250,11 @@ sealed class SettingsPage : Component<SettingsPageProps>
                 isClickEnabled: false,
                 isActionIconVisible: false,
                 content:
-                TextBox(Props.Settings.Alias, value =>
-                    Props.UpdateSettings(settings => settings with { Alias = value }))
-                    .AutomationName(t.Message(new("App", "SettingsDeviceName")))
-                    .MinWidth(240)),
+                Component<DeferredTextSetting, DeferredTextSettingProps>(new(
+                    Props.Settings.Alias,
+                    value => Props.UpdateSettings(settings => settings with { Alias = value }),
+                    t.Message(new("App", "SettingsDeviceName")),
+                    MinWidth: 240))),
             SettingsExpander(
                 headerIcon: HeaderGlyph("\uE756"),
                 items:
@@ -277,12 +278,12 @@ sealed class SettingsPage : Component<SettingsPageProps>
                         isClickEnabled: false,
                         isActionIconVisible: false,
                         content:
-                        TextBox(
+                        Component<DeferredTextSetting, DeferredTextSettingProps>(new(
                             Props.Settings.DeviceModel,
                             value => Props.UpdateSettings(settings => settings with { DeviceModel = value }),
-                            placeholderText: Environment.MachineName)
-                            .AutomationName(t.Message(new("App", "SettingsDeviceModel")))
-                            .MinWidth(240)),
+                            t.Message(new("App", "SettingsDeviceModel")),
+                            PlaceholderText: Environment.MachineName,
+                            MinWidth: 240))),
                     SettingsCard(
                         header: t.Message(new("App", "SettingsPort")),
                         description: Props.Settings.Port == LocalSendOptions.DefaultPort
@@ -291,16 +292,18 @@ sealed class SettingsPage : Component<SettingsPageProps>
                         isClickEnabled: false,
                         isActionIconVisible: false,
                         content:
-                        NumberBox(Props.Settings.Port, value =>
-                        {
-                            var port = (int)Math.Round(value);
-                            if (port is >= 1 and <= ushort.MaxValue && port != Props.Settings.Port)
-                                Props.UpdateSettings(settings => settings with { Port = port });
-                        })
-                            .Range(1, ushort.MaxValue)
-                            .SpinButtons()
-                            .AutomationName(t.Message(new("App", "SettingsPort")))
-                            .MinWidth(160)),
+                        Component<DeferredNumberSetting, DeferredNumberSettingProps>(new(
+                            Props.Settings.Port,
+                            value =>
+                            {
+                                var port = (int)Math.Round(value);
+                                if (port is >= 1 and <= ushort.MaxValue && port != Props.Settings.Port)
+                                    Props.UpdateSettings(settings => settings with { Port = port });
+                            },
+                            t.Message(new("App", "SettingsPort")),
+                            1,
+                            ushort.MaxValue,
+                            MinWidth: 160))),
                     SettingsCard(
                         header: t.Message(new("App", "SettingsNetworkInterfaces")),
                         description: NetworkInterfacesSummary(t, Props.Settings),
@@ -315,16 +318,18 @@ sealed class SettingsPage : Component<SettingsPageProps>
                         isClickEnabled: false,
                         isActionIconVisible: false,
                         content:
-                        NumberBox(Props.Settings.DiscoveryTimeoutMs, value =>
-                        {
-                            var timeout = (int)Math.Round(value);
-                            if (timeout > 0 && timeout != Props.Settings.DiscoveryTimeoutMs)
-                                Props.UpdateSettings(settings => settings with { DiscoveryTimeoutMs = timeout });
-                        })
-                            .Range(1, 60_000)
-                            .SpinButtons()
-                            .AutomationName(t.Message(new("App", "SettingsDiscoveryTimeout")))
-                            .MinWidth(160)),
+                        Component<DeferredNumberSetting, DeferredNumberSettingProps>(new(
+                            Props.Settings.DiscoveryTimeoutMs,
+                            value =>
+                            {
+                                var timeout = (int)Math.Round(value);
+                                if (timeout > 0 && timeout != Props.Settings.DiscoveryTimeoutMs)
+                                    Props.UpdateSettings(settings => settings with { DiscoveryTimeoutMs = timeout });
+                            },
+                            t.Message(new("App", "SettingsDiscoveryTimeout")),
+                            1,
+                            60_000,
+                            MinWidth: 160))),
                     SettingsCard(
                         header: t.Message(new("App", "SettingsEncryption")),
                         description: t.Message(new("App", "SettingsEncryptionDescription")),
@@ -350,10 +355,11 @@ sealed class SettingsPage : Component<SettingsPageProps>
                         isClickEnabled: false,
                         isActionIconVisible: false,
                         content:
-                        TextBox(Props.Settings.MulticastGroup, value =>
-                            Props.UpdateSettings(settings => settings with { MulticastGroup = value }))
-                            .AutomationName(t.Message(new("App", "SettingsMulticast")))
-                            .MinWidth(180)),
+                        Component<DeferredTextSetting, DeferredTextSettingProps>(new(
+                            Props.Settings.MulticastGroup,
+                            value => Props.UpdateSettings(settings => settings with { MulticastGroup = value }),
+                            t.Message(new("App", "SettingsMulticast")),
+                            MinWidth: 180))),
                 ])
                 .Set(expander =>
                 {

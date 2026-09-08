@@ -154,8 +154,10 @@ sealed class NetworkInterfacesPage : Component<NetworkInterfacesPageProps>
         Grid(
             columns: [GridSize.Star(), GridSize.Auto],
             rows: [GridSize.Auto],
-            TextBox(pattern, onChanged)
-                .AutomationName(t.Message(new("App", "SettingsNetworkInterfacesPattern"), ("index", index + 1)))
+            Component<DeferredTextSetting, DeferredTextSettingProps>(new(
+                pattern,
+                onChanged,
+                t.Message(new("App", "SettingsNetworkInterfacesPattern"), ("index", index + 1))))
                 .Grid(column: 0),
             Button(Icon("\uE711"), onRemove)
                 .SubtleButton()
