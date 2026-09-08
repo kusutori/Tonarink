@@ -41,6 +41,36 @@ internal static class DeviceConnectedAnimation
             completed?.Invoke(false);
     }
 
+    public static void StartDestinationAfterLayout(
+        string key,
+        UIElement destination,
+        Action<bool>? completed = null)
+    {
+        const int maximumLayoutFrames = 4;
+        var remainingLayoutFrames = maximumLayoutFrames;
+        EventHandler<object> onRendering = null!;
+        onRendering = (_, _) =>
+        {
+            if (destination.XamlRoot is null)
+            {
+                CompositionTarget.Rendering -= onRendering;
+                completed?.Invoke(false);
+                return;
+            }
+
+            if (destination is FrameworkElement element
+                && (element.ActualWidth <= 0 || element.ActualHeight <= 0)
+                && --remainingLayoutFrames > 0)
+            {
+                return;
+            }
+
+            CompositionTarget.Rendering -= onRendering;
+            TryStart(key, destination, completed);
+        };
+        CompositionTarget.Rendering += onRendering;
+    }
+
     public static void ReturnToSource(string key, UIElement destination, Action close)
     {
         Prepare(key, destination);

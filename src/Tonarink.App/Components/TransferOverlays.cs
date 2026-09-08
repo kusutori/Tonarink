@@ -190,7 +190,7 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
     {
         var t = UseIntl();
         var window = UseWindow();
-        var (windowWidth, _) = UseWindowSize();
+        var (windowWidth, windowHeight) = UseWindowSize();
         var reduceMotion = UseReducedMotion();
         var request = Props.Request;
         var (view, updateView) = UseReducer(IncomingTransferViewState.Pending(
@@ -322,9 +322,14 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
         // coordinates and makes the connected animation appear off-centre.
         var overlayContentWidth = Math.Min(960, availableContentWidth);
         var fileCardWidth = Math.Min(showFileOptions ? 920 : 640, overlayContentWidth);
+        var expandedFileCardHeight = windowHeight > 0
+            ? Math.Clamp(windowHeight - 240, 360, 760)
+            : 640;
         var fileCardAnimationKey = $"incoming-file-options:{request.RequestId:N}";
         Element fileCard = Card(
-                VStack(12,
+                Grid(
+                    columns: [GridSize.Star()],
+                    rows: [GridSize.Auto, showFileOptions ? GridSize.Star() : GridSize.Auto],
                     Grid(
                         columns: [GridSize.Star(), GridSize.Auto],
                         rows: [GridSize.Auto],
@@ -336,29 +341,35 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                             .VAlign(VerticalAlignment.Center)
                             .Grid(column: 0),
                         Button(
-                                HStack(8,
-                                    Icon(showFileOptions ? "\uE73F" : "\uE740").AccessibilityHidden(),
-                                    TextBlock(t.Message(new(
-                                        "App",
-                                        showFileOptions ? "HideReceiveOptions" : "ShowReceiveOptions")))),
+                                Icon(showFileOptions ? "\uE73F" : "\uE740").AccessibilityHidden(),
                                 ToggleFileOptions)
                             .AutomationName(t.Message(new(
                                 "App",
                                 showFileOptions ? "HideReceiveOptions" : "ShowReceiveOptions")))
+                            .ToolTip(t.Message(new(
+                                "App",
+                                showFileOptions ? "HideReceiveOptions" : "ShowReceiveOptions")))
                             .IsEnabled(!view.IsDecided && !isPending)
+                            .SubtleButton()
                             .Grid(column: 1)),
                     showFileOptions
-                        ? ReceiveOptions()
-                        : VStack(8, itemRows)))
+                        ? ReceiveOptions().Grid(row: 1)
+                        : VStack(8, itemRows).Grid(row: 1)) with
+                {
+                    RowSpacing = 12,
+                })
             .Width(fileCardWidth)
-            .HAlign(HorizontalAlignment.Center)
+            .HAlign(HorizontalAlignment.Center);
+        if (showFileOptions)
+            fileCard = fileCard.Height(expandedFileCardHeight);
+        fileCard = fileCard
             .WithKey(showFileOptions ? "incoming-file-options-expanded" : "incoming-file-options-collapsed")
             .OnMountAdd(element =>
             {
                 fileCardRef.Current = element;
                 if (!reduceMotion && fileOptionsAnimatingRef.Current)
                 {
-                    DeviceConnectedAnimation.StartDestinationWhenReady(
+                    DeviceConnectedAnimation.StartDestinationAfterLayout(
                         fileCardAnimationKey,
                         element,
                         _ => CompleteFileOptionsTransition());
@@ -401,7 +412,7 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                 BodyLarge(view.Status)
                     .TextAlignment(TextAlignment.Center)
                     .HAlign(HorizontalAlignment.Center),
-                fileCard,
+                showFileOptions ? null : fileCard,
                 verificationButton
                     .HAlign(HorizontalAlignment.Center));
 
@@ -422,6 +433,14 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                 Border(actions)
                     .Padding(horizontal: 40, vertical: 24)
                     .Grid(row: 1),
+                showFileOptions && !showText
+                    ? Border(fileCard)
+                        .Padding(horizontal: 40, vertical: 24)
+                        .Background(Theme.SmokeFill)
+                        .HAlign(HorizontalAlignment.Stretch)
+                        .VAlign(VerticalAlignment.Stretch)
+                        .Grid(row: 0)
+                    : null,
                 Component<DeviceVerificationDialog, DeviceVerificationDialogProps>(new(
                     request.Sender,
                     Props.Node.Identity?.Fingerprint,
@@ -604,28 +623,32 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
         Element ReceiveOptions()
         {
             var rows = request.Items.Select(item => ReceiveItemRow(item).WithKey(item.Id)).ToArray<Element?>();
-            return VStack(12,
-                Grid(
-                    columns: [GridSize.Star(), GridSize.Auto],
-                    rows: [GridSize.Auto],
-                    VStack(2,
-                            Caption(t.Message(new("App", "ReceiveSaveDirectory")))
-                                .Foreground(Theme.SecondaryText),
-                            TextBlock(destinationDirectory)
-                                .TextTrimming(TextTrimming.CharacterEllipsis)
-                                .ToolTip(destinationDirectory))
-                        .Grid(column: 0),
-                    Button(
-                            HStack(8,
-                                Icon("\uE8A7").AccessibilityHidden(),
-                                TextBlock(t.Message(new("App", "Change")))),
-                            () => _ = PickDestinationDirectoryAsync())
-                        .AutomationName(t.Message(new("App", "ChangeSaveLocation")))
-                        .IsEnabled(!view.IsDecided && !isPending)
-                        .Grid(column: 1)),
-                folderError is null
-                    ? null
-                    : Caption(folderError).Foreground(Theme.SystemCritical),
+            return Grid(
+                columns: [GridSize.Star()],
+                rows: [GridSize.Auto, GridSize.Auto, GridSize.Star()],
+                VStack(4,
+                        Grid(
+                            columns: [GridSize.Star(), GridSize.Auto],
+                            rows: [GridSize.Auto],
+                            VStack(2,
+                                    Caption(t.Message(new("App", "ReceiveSaveDirectory")))
+                                        .Foreground(Theme.SecondaryText),
+                                    TextBlock(destinationDirectory)
+                                        .TextTrimming(TextTrimming.CharacterEllipsis)
+                                        .ToolTip(destinationDirectory))
+                                .Grid(column: 0),
+                            Button(
+                                    HStack(8,
+                                        Icon("\uE8A7").AccessibilityHidden(),
+                                        TextBlock(t.Message(new("App", "Change")))),
+                                    () => _ = PickDestinationDirectoryAsync())
+                                .AutomationName(t.Message(new("App", "ChangeSaveLocation")))
+                                .IsEnabled(!view.IsDecided && !isPending)
+                                .Grid(column: 1)),
+                        folderError is null
+                            ? null
+                            : Caption(folderError).Foreground(Theme.SystemCritical))
+                    .Grid(row: 0),
                 Grid(
                     columns: [GridSize.Star(), GridSize.Auto],
                     rows: [GridSize.Auto],
@@ -639,12 +662,16 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                         .AutomationName(t.Message(new("App", "ResetReceiveOptions")))
                         .ToolTip(t.Message(new("App", "ResetReceiveOptions")))
                         .IsEnabled(!view.IsDecided && !isPending)
-                        .Grid(column: 1)),
+                        .Grid(column: 1))
+                    .Grid(row: 1),
                 ScrollView(
                         VStack(8, rows)
                             .Padding(left: 4, top: 4, right: 16, bottom: 4))
-                    .MaxHeight(320)
-                    .HorizontalContentAlignment(HorizontalAlignment.Stretch));
+                    .HorizontalContentAlignment(HorizontalAlignment.Stretch)
+                    .Grid(row: 2)) with
+            {
+                RowSpacing = 12,
+            };
         }
 
         Element ReceiveItemRow(IncomingItem item)
