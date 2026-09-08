@@ -308,7 +308,8 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                         DeviceTag(RemoteDeviceNumber(request.Sender)),
                         DeviceTag(DeviceModel(t, request.Sender.DeviceModel, request.Sender.DeviceType)))
                     .HAlign(HorizontalAlignment.Center))
-            .HAlign(HorizontalAlignment.Center);
+            .HAlign(HorizontalAlignment.Center)
+            .Transition(Transition.Enter(new FadeTransition()));
 
         var verificationButton = VerificationButton(
             t,
@@ -411,10 +412,12 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
             : VStack(12,
                 BodyLarge(view.Status)
                     .TextAlignment(TextAlignment.Center)
-                    .HAlign(HorizontalAlignment.Center),
+                    .HAlign(HorizontalAlignment.Center)
+                    .Transition(Transition.Enter(new FadeTransition())),
                 showFileOptions ? null : fileCard,
                 verificationButton
-                    .HAlign(HorizontalAlignment.Center));
+                    .HAlign(HorizontalAlignment.Center)
+                    .Transition(Transition.Enter(new FadeTransition())));
 
         var actions = RenderActions();
 
