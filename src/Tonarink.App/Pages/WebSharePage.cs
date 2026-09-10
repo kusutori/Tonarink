@@ -32,7 +32,6 @@ sealed class WebSharePage : Component<WebSharePageProps>
         var (pinDialogOpen, setPinDialogOpen) = UseState(false);
         var (encrypted, setEncrypted) = UseState(
             Props.Mode == WebShareMode.Send && Props.Runtime.Identity?.Protocol == LocalSendProtocol.Https);
-        var (qrPath, setQrPath) = UseState<string?>(null);
         var (qrUrl, setQrUrl) = UseState<string?>(null);
         var (zoomUrl, setZoomUrl) = UseState<string?>(null);
         var (copyFeedbackVersions, updateCopyFeedbackVersions) =
@@ -192,24 +191,19 @@ sealed class WebSharePage : Component<WebSharePageProps>
                 }).Set(dialog => ApplyDialogTheme(dialog, dialogTheme)),
                 (ContentDialog(
                     t.Message(new("App", "WebShareQrTitle")),
-                    qrPath is null
-                        ? ProgressRing()
+                    qrUrl is null
+                        ? Empty()
                         : VStack(12,
-                            Image(qrPath)
-                                .Size(240, 240)
-                                .HAlign(HorizontalAlignment.Center)
-                                .AutomationName(t.Message(new("App", "WebShareQrTitle"))),
-                            TextBlock(qrUrl ?? "")
+                            QrCodeCanvas.Render(
+                                qrUrl,
+                                t.Message(new("App", "WebShareQrTitle"))),
+                            TextBlock(qrUrl)
                                 .TextWrapping(TextWrapping.WrapWholeWords)
                                 .IsTextSelectionEnabled(true)),
                     primaryButtonText: t.Message(new("App", "Close"))) with
                 {
                     IsOpen = qrUrl is not null,
-                    OnClosed = _ =>
-                    {
-                        setQrUrl(null);
-                        setQrPath(null);
-                    },
+                    OnClosed = _ => setQrUrl(null),
                 }).Set(dialog => ApplyDialogTheme(dialog, dialogTheme)),
                 (ContentDialog(
                     t.Message(new("App", "WebShareZoomTitle")),
@@ -232,20 +226,6 @@ sealed class WebSharePage : Component<WebSharePageProps>
         void ShowQr(string url)
         {
             setQrUrl(url);
-            setQrPath(null);
-            _ = WriteQrAsync(url);
-        }
-
-        async Task WriteQrAsync(string url)
-        {
-            try
-            {
-                var path = await QrPng.WriteAsync(url).ConfigureAwait(true);
-                setQrPath(path);
-            }
-            catch
-            {
-            }
         }
 
         async Task CopyWithFeedbackAsync(string url)
