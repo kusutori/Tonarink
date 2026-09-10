@@ -431,47 +431,57 @@ sealed class SendPage : Component<SendPageProps>
             },
         }).Set(dialog => ApplyDialogTheme(dialog, Props.Theme));
 
-        Element AddressDialog() => (ContentDialog(
-            t.Message(new("App", "EnterAddressTitle")),
-            VStack(6,
-                TextBox(manualAddress, value =>
-                    {
-                        setManualAddress(value);
-                        if (manualAddressError is not null)
-                            setManualAddressError(null);
-                    },
-                    placeholderText: t.Message(new("App", "AddressPlaceholder")))
-                    .AutomationName(t.Message(new("App", "DeviceAddress")))
-                    .IsEnabled(!isResolvingAddress),
-                manualAddressError is not null
-                    ? Caption(manualAddressError)
-                        .Foreground(Theme.SystemAttention)
-                        .TextWrapping(TextWrapping.WrapWholeWords)
-                    : recentManualAddress is not null
-                        ? HStack(2,
-                            Caption(t.Message(new("App", "RecentlyUsedAddress"))),
-                            HyperlinkButton(recentManualAddress, onClick: UseRecentAddress)
-                                .Padding(2, 0)
-                                .AutomationName(t.Message(
-                                    new("App", "UseRecentAddress"),
-                                    ("address", recentManualAddress))))
-                        : Caption(t.Message(
-                            new("App", "AddressExample"),
-                            ("address", "192.168.1.100"))))
-                .MinWidth(340),
-            primaryButtonText: t.Message(new("App", "Confirm"))) with
+        Element AddressDialog()
         {
-            IsOpen = showAddressDialog,
-            IsPrimaryButtonEnabled = !isResolvingAddress && !string.IsNullOrWhiteSpace(manualAddress),
-            SecondaryButtonText = t.Message(new("App", "Cancel")),
-            DefaultButton = ContentDialogButton.Primary,
-            OnClosed = result =>
+            var hasAddress = !string.IsNullOrWhiteSpace(manualAddress);
+            var hasValidFormat = hasAddress && TryParseAddress(manualAddress, out _, out _);
+            var validationMessage = manualAddressError
+                ?? (hasAddress && !hasValidFormat
+                    ? t.Message(new("App", "InvalidDeviceAddress"))
+                    : null);
+
+            return (ContentDialog(
+                t.Message(new("App", "EnterAddressTitle")),
+                VStack(6,
+                    TextBox(manualAddress, value =>
+                        {
+                            setManualAddress(value);
+                            if (manualAddressError is not null)
+                                setManualAddressError(null);
+                        },
+                        placeholderText: t.Message(new("App", "AddressPlaceholder")))
+                        .AutomationName(t.Message(new("App", "DeviceAddress")))
+                        .IsEnabled(!isResolvingAddress),
+                    validationMessage is not null
+                        ? Caption(validationMessage)
+                            .Foreground(Theme.SystemAttention)
+                            .TextWrapping(TextWrapping.WrapWholeWords)
+                        : recentManualAddress is not null
+                            ? HStack(2,
+                                Caption(t.Message(new("App", "RecentlyUsedAddress"))),
+                                HyperlinkButton(recentManualAddress, onClick: UseRecentAddress)
+                                    .Padding(2, 0)
+                                    .AutomationName(t.Message(
+                                        new("App", "UseRecentAddress"),
+                                        ("address", recentManualAddress))))
+                            : Caption(t.Message(
+                                new("App", "AddressExample"),
+                                ("address", "192.168.1.100"))))
+                    .MinWidth(340),
+                primaryButtonText: t.Message(new("App", "Confirm"))) with
             {
-                setShowAddressDialog(false);
-                if (result == ContentDialogResult.Primary)
-                    _ = SendToAddressAsync(manualAddress);
-            },
-        }).Set(dialog => ApplyDialogTheme(dialog, Props.Theme));
+                IsOpen = showAddressDialog,
+                IsPrimaryButtonEnabled = !isResolvingAddress && hasValidFormat,
+                SecondaryButtonText = t.Message(new("App", "Cancel")),
+                DefaultButton = ContentDialogButton.Primary,
+                OnClosed = result =>
+                {
+                    setShowAddressDialog(false);
+                    if (result == ContentDialogResult.Primary)
+                        _ = SendToAddressAsync(manualAddress);
+                },
+            }).Set(dialog => ApplyDialogTheme(dialog, Props.Theme));
+        }
 
         Element PinDialog() => (ContentDialog(
             t.Message(new("App", "PinRequiredTitle")),
