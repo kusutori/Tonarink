@@ -28,6 +28,8 @@ sealed record SendPageProps(
     Action<Guid> ConsumeShareTargetPayload,
     IReadOnlyList<SelectedSendItem> SelectedItems,
     Action<Func<IReadOnlyList<SelectedSendItem>, IReadOnlyList<SelectedSendItem>>> UpdateSelectedItems,
+    bool KeepItemsForMultipleReceivers,
+    Action<bool> SetKeepItemsForMultipleReceivers,
     Action<LocalSendDevice> OpenDeviceDetails);
 
 sealed record SelectedSendItem(
@@ -337,7 +339,16 @@ sealed class SendPage : Component<SendPageProps>
                                     .AutomationName(t.Message(new("App", "WebShareTitle")))
                                     .ToolTip(t.Message(new("App", "WebShareTitle")))
                                     .IsEnabled(!sendMutation.IsPending
-                                               && Props.Runtime.NodeState == LocalSendNodeState.Running)) with
+                                               && Props.Runtime.NodeState == LocalSendNodeState.Running),
+                                ToggleButton(
+                                        "\uF22C",
+                                        Props.KeepItemsForMultipleReceivers,
+                                        Props.SetKeepItemsForMultipleReceivers)
+                                    .FontFamily("Segoe Fluent Icons")
+                                    .FontSize(20)
+                                    .AutomationName(t.Message(new("App", "MultipleReceivers")))
+                                    .ToolTip(t.Message(new("App", "MultipleReceiversDescription")))
+                                    .IsEnabled(!sendMutation.IsPending)) with
                             {
                                 AlignItems = FlexAlign.Center,
                                 ColumnGap = 8,
@@ -944,8 +955,11 @@ sealed class SendPage : Component<SendPageProps>
                         AppSettingsStore.Load().NotificationDefaultAction,
                         t.Message(new("App", "NotificationOpenFile")),
                         t.Message(new("App", "NotificationShowInFolder")));
-                    updateSelectedItems(_ => Array.Empty<SelectedSendItem>());
-                    setPickerMessage(t.Message(new("App", "NothingSelected")));
+                    if (!Props.KeepItemsForMultipleReceivers)
+                    {
+                        updateSelectedItems(_ => Array.Empty<SelectedSendItem>());
+                        setPickerMessage(t.Message(new("App", "NothingSelected")));
+                    }
                 }
             }
             catch (PinRequiredException exception)

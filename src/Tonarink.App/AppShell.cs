@@ -140,6 +140,7 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
         var (detailsDevice, setDetailsDevice) = UseState<LocalSendDevice?>(null);
         var (selectedSendItems, updateSelectedSendItems) =
             UseReducer<IReadOnlyList<SelectedSendItem>>(Array.Empty<SelectedSendItem>());
+        var (keepItemsForMultipleReceivers, setKeepItemsForMultipleReceivers) = UseState(false);
         var (outgoingTransfer, setOutgoingTransfer) = UseState<OutgoingTransferViewState?>(null);
         var (shareTargetPayload, setShareTargetPayload) = UseState<ShareTargetPayload?>(null);
         var (serverDesired, setServerDesired) = UseState(true);
@@ -395,6 +396,8 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
                 ConsumeShareTargetPayload,
                 selectedSendItems,
                 updateSelectedSendItems,
+                keepItemsForMultipleReceivers,
+                setKeepItemsForMultipleReceivers,
                 device =>
                 {
                     setDetailsDevice(device);

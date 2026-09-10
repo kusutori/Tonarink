@@ -89,6 +89,8 @@
   <data name="FavoritesEmpty" xml:space="preserve"><value>收藏夹中还没有设备。</value></data>
   <data name="FavoritesTitle" xml:space="preserve"><value>收藏夹</value></data>
   <data name="NewFavorite" xml:space="preserve"><value>新建</value></data>
+  <data name="MultipleReceivers" xml:space="preserve"><value>发送给多个设备</value></data>
+  <data name="MultipleReceiversDescription" xml:space="preserve"><value>发送完成后保留待发送内容，以便继续选择其他设备。</value></data>
   <data name="SendToFavorite" xml:space="preserve"><value>发送到收藏设备“{device}”</value></data>
   <data name="File" xml:space="preserve"><value>文件</value></data>
   <data name="Fingerprint" xml:space="preserve"><value>指纹  {fingerprint}…</value></data>
