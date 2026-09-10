@@ -453,20 +453,28 @@ sealed class SendPage : Component<SendPageProps>
                         .AutomationName(t.Message(new("App", "DeviceAddress")))
                         .IsEnabled(!isResolvingAddress),
                     validationMessage is not null
-                        ? Caption(validationMessage)
+                        ? TextBlock(validationMessage)
+                            .FontSize(14)
                             .Foreground(Theme.SystemAttention)
                             .TextWrapping(TextWrapping.WrapWholeWords)
                         : recentManualAddress is not null
                             ? HStack(2,
-                                Caption(t.Message(new("App", "RecentlyUsedAddress"))),
+                                TextBlock(t.Message(new("App", "RecentlyUsedAddress")))
+                                    .FontSize(14)
+                                    .Foreground(Theme.SecondaryText)
+                                    .VAlign(VerticalAlignment.Center),
                                 HyperlinkButton(recentManualAddress, onClick: UseRecentAddress)
                                     .Padding(2, 0)
+                                    .FontSize(14)
+                                    .VAlign(VerticalAlignment.Center)
                                     .AutomationName(t.Message(
                                         new("App", "UseRecentAddress"),
                                         ("address", recentManualAddress))))
-                            : Caption(t.Message(
-                                new("App", "AddressExample"),
-                                ("address", "192.168.1.100"))))
+                            : TextBlock(t.Message(
+                                    new("App", "AddressExample"),
+                                    ("address", "192.168.1.100")))
+                                .FontSize(14)
+                                .Foreground(Theme.SecondaryText))
                     .MinWidth(340),
                 primaryButtonText: t.Message(new("App", "Confirm"))) with
             {
