@@ -140,25 +140,25 @@ sealed class SendPage : Component<SendPageProps>
         });
 
         var selectionGrid = Grid(
-            columns:
-            [
-                GridSize.Star().MinSize(88),
-                GridSize.Star().MinSize(88),
-                GridSize.Star().MinSize(88),
-                GridSize.Star().MinSize(88),
-            ],
-            rows: [GridSize.Auto],
-            SelectionTile(t.Message(new("App", "File")), "Document", () => _ = PickFileAsync(), t)
-                .Grid(column: 0),
-            SelectionTile(t.Message(new("App", "Folder")), "Folder", () => _ = PickFolderAsync(), t)
-                .Grid(column: 1),
-            SelectionTile(t.Message(new("App", "Text")), "Edit", () => setShowTextDialog(true), t)
-                .Grid(column: 2),
-            SelectionTile(t.Message(new("App", "Clipboard")), "Paste", () => _ = AddClipboardAsync(), t)
-                .Grid(column: 3)) with
-        {
-            ColumnSpacing = 12,
-        };
+                columns:
+                [
+                    GridSize.Star().MinSize(88),
+                    GridSize.Star().MinSize(88),
+                    GridSize.Star().MinSize(88),
+                    GridSize.Star().MinSize(88),
+                ],
+                rows: [GridSize.Auto],
+                SelectionTile(t.Message(new("App", "File")), "Document", () => _ = PickFileAsync(), t)
+                    .Grid(column: 0),
+                SelectionTile(t.Message(new("App", "Folder")), "Folder", () => _ = PickFolderAsync(), t)
+                    .Grid(column: 1),
+                SelectionTile(t.Message(new("App", "Text")), "Edit", () => setShowTextDialog(true), t)
+                    .Grid(column: 2),
+                SelectionTile(t.Message(new("App", "Clipboard")), "Paste", () => _ = AddClipboardAsync(), t)
+                    .Grid(column: 3)) with
+            {
+                ColumnSpacing = 12,
+            };
 
         var selectedHeader = selectedItems.Count == 0
             ? t.Message(new("App", "NothingSelected"))
@@ -174,12 +174,12 @@ sealed class SendPage : Component<SendPageProps>
                 t)
             : VStack(8,
                 selectedItems.Select(item => SelectedItemRow(
-                    item,
-                    () => updateSelectedItems(current =>
-                        current.Where(candidate => candidate.Id != item.Id).ToArray()),
-                    t)
-                    .WithKey(item.Id.ToString("N")))
-                .ToArray<Element?>());
+                            item,
+                            () => updateSelectedItems(current =>
+                                current.Where(candidate => candidate.Id != item.Id).ToArray()),
+                            t)
+                        .WithKey(item.Id.ToString("N")))
+                    .ToArray<Element?>());
 
         Element selectedItemsContent = isWideLayout
             ? ScrollView(selectedItemsBody)
@@ -190,23 +190,23 @@ sealed class SendPage : Component<SendPageProps>
 
         var selectedItemsCard = Card(
                 (FlexColumn(
-                    FlexRow(
-                        BodyStrong(selectedHeader).Flex(grow: 1, basis: 0),
-                        selectedItems.Count == 0
-                            ? null
-                            : Button(t.Message(new("App", "Clear")), () =>
+                        FlexRow(
+                                BodyStrong(selectedHeader).Flex(grow: 1, basis: 0),
+                                selectedItems.Count == 0
+                                    ? null
+                                    : Button(t.Message(new("App", "Clear")), () =>
+                                    {
+                                        updateSelectedItems(_ => Array.Empty<SelectedSendItem>());
+                                        setPickerMessage(t.Message(new("App", "NothingSelected")));
+                                    }).AutomationName(t.Message(new("App", "Clear")))) with
                             {
-                                updateSelectedItems(_ => Array.Empty<SelectedSendItem>());
-                                setPickerMessage(t.Message(new("App", "NothingSelected")));
-                            }).AutomationName(t.Message(new("App", "Clear")))) with
+                                AlignItems = FlexAlign.Center,
+                                ColumnGap = 8,
+                            },
+                        selectedItemsContent) with
                     {
-                        AlignItems = FlexAlign.Center,
-                        ColumnGap = 8,
-                    },
-                    selectedItemsContent) with
-                {
-                    RowGap = 12,
-                }))
+                        RowGap = 12,
+                    }))
             .VAlign(VerticalAlignment.Stretch);
         if (isWideLayout)
             selectedItemsCard = selectedItemsCard.Flex(grow: 1, shrink: 1, basis: 320);
@@ -255,38 +255,38 @@ sealed class SendPage : Component<SendPageProps>
                 .VAlign(VerticalAlignment.Stretch)
             : VStack(8,
                 devices.Select((device, index) =>
-                {
-                    var favorite = favorites.GetValueOrDefault(device.Fingerprint);
-                    return DeviceCard(
-                        device,
-                        favorite,
-                        isEnabled: Props.Node?.State == LocalSendNodeState.Running
-                            && !sendMutation.IsPending,
-                        onClick: source =>
-                        {
-                            if (selectedItems.Count == 0)
-                            {
-                                setPickerMessage(t.Message(new("App", "SelectContentFirst")));
-                                return;
-                            }
+                    {
+                        var favorite = favorites.GetValueOrDefault(device.Fingerprint);
+                        return DeviceCard(
+                                device,
+                                favorite,
+                                isEnabled: Props.Node?.State == LocalSendNodeState.Running
+                                           && !sendMutation.IsPending,
+                                onClick: source =>
+                                {
+                                    if (selectedItems.Count == 0)
+                                    {
+                                        setPickerMessage(t.Message(new("App", "SelectContentFirst")));
+                                        return;
+                                    }
 
-                            if (source is null)
-                            {
-                                _ = StartSendAsync(device, pin: null);
-                                return;
-                            }
+                                    if (source is null)
+                                    {
+                                        _ = StartSendAsync(device, pin: null);
+                                        return;
+                                    }
 
-                            DeviceConnectedAnimation.NavigateToDestination(
-                                DeviceConnectedKey(device.Fingerprint),
-                                source,
-                                () => _ = StartSendAsync(device, pin: null));
-                        },
-                        onDetails: () => Props.OpenDeviceDetails(device),
-                        t)
-                        .PositionInSet(index + 1, devices.Count)
-                        .WithKey(device.Fingerprint);
-                })
-                .ToArray<Element?>());
+                                    DeviceConnectedAnimation.NavigateToDestination(
+                                        DeviceConnectedKey(device.Fingerprint),
+                                        source,
+                                        () => _ = StartSendAsync(device, pin: null));
+                                },
+                                onDetails: () => Props.OpenDeviceDetails(device),
+                                t)
+                            .PositionInSet(index + 1, devices.Count)
+                            .WithKey(device.Fingerprint);
+                    })
+                    .ToArray<Element?>());
 
         Element deviceContent = isWideLayout
             ? ScrollView(deviceBody)
@@ -297,43 +297,44 @@ sealed class SendPage : Component<SendPageProps>
 
         var nearbyDevicesCard = Card(
                 (FlexColumn(
-                    FlexRow(
-                        BodyStrong(t.Message(new("App", "NearbyDevices")))
-                            .Flex(grow: 1, basis: 0),
-                        AnimatedButtons.Refresh(
-                            t.Message(new("App", "RefreshDevices")),
-                            () => _ = Props.RefreshAsync(),
-                            isEnabled: !sendMutation.IsPending),
-                        Button(Icon("\uF272"), OpenAddressDialog)
-                            .AutomationName(t.Message(new("App", "SendToAddress")))
-                            .ToolTip(t.Message(new("App", "SendToAddress")))
-                            .IsEnabled(!sendMutation.IsPending
-                                && !isResolvingAddress
-                                && Props.Runtime.NodeState == LocalSendNodeState.Running),
-                        Button(Icon("\uE71B"), () =>
-                        {
-                            if (selectedItems.Count == 0)
+                        FlexRow(
+                                BodyStrong(t.Message(new("App", "NearbyDevices")))
+                                    .Flex(grow: 1, basis: 0),
+                                AnimatedButtons.Refresh(
+                                    t.Message(new("App", "RefreshDevices")),
+                                    () => _ = Props.RefreshAsync(),
+                                    isEnabled: !sendMutation.IsPending),
+                                Button(Icon("\uF272"), OpenAddressDialog)
+                                    .AutomationName(t.Message(new("App", "SendToAddress")))
+                                    .ToolTip(t.Message(new("App", "SendToAddress")))
+                                    .IsEnabled(!sendMutation.IsPending
+                                               && !isResolvingAddress
+                                               && Props.Runtime.NodeState == LocalSendNodeState.Running),
+                                Button(Icon("\uE71B"), () =>
+                                    {
+                                        if (selectedItems.Count == 0)
+                                        {
+                                            setPickerMessage(t.Message(new("App", "SelectContentFirst")));
+                                            return;
+                                        }
+
+                                        if (Props.Node?.State != LocalSendNodeState.Running)
+                                            return;
+                                        WebShareLaunch.Items = selectedItems.Select(static item => item.Item).ToArray();
+                                        navigation.Navigate(AppRoute.WebShare, AppNavigation.DrillIn);
+                                    })
+                                    .AutomationName(t.Message(new("App", "WebShareTitle")))
+                                    .ToolTip(t.Message(new("App", "WebShareTitle")))
+                                    .IsEnabled(!sendMutation.IsPending
+                                               && Props.Runtime.NodeState == LocalSendNodeState.Running)) with
                             {
-                                setPickerMessage(t.Message(new("App", "SelectContentFirst")));
-                                return;
-                            }
-                            if (Props.Node?.State != LocalSendNodeState.Running)
-                                return;
-                            WebShareLaunch.Items = selectedItems.Select(static item => item.Item).ToArray();
-                            navigation.Navigate(AppRoute.WebShare, AppNavigation.DrillIn);
-                        })
-                            .AutomationName(t.Message(new("App", "WebShareTitle")))
-                            .ToolTip(t.Message(new("App", "WebShareTitle")))
-                            .IsEnabled(!sendMutation.IsPending
-                                && Props.Runtime.NodeState == LocalSendNodeState.Running)) with
+                                AlignItems = FlexAlign.Center,
+                                ColumnGap = 8,
+                            },
+                        deviceContent) with
                     {
-                        AlignItems = FlexAlign.Center,
-                        ColumnGap = 8,
-                    },
-                    deviceContent) with
-                {
-                    RowGap = 12,
-                }))
+                        RowGap = 12,
+                    }))
             .VAlign(VerticalAlignment.Stretch);
         if (isWideLayout)
             nearbyDevicesCard = nearbyDevicesCard.Flex(grow: 1, shrink: 1, basis: 320);
@@ -345,28 +346,28 @@ sealed class SendPage : Component<SendPageProps>
                 AlignContent = FlexAlign.Stretch,
                 ColumnGap = 16,
             })
-                .VAlign(VerticalAlignment.Stretch)
-                .Flex(grow: 1, basis: 0)
+            .VAlign(VerticalAlignment.Stretch)
+            .Flex(grow: 1, basis: 0)
             : (FlexColumn(selectedItemsCard, nearbyDevicesCard) with
             {
                 RowGap = 16,
             })
-                .HAlign(HorizontalAlignment.Stretch);
+            .HAlign(HorizontalAlignment.Stretch);
 
         var page = (FlexColumn(
-            Heading(t.Message(new("App", "SendTitle")))
-                .HeadingLevel(AutomationHeadingLevel.Level1),
-            VStack(12,
-                Subtitle(t.Message(new("App", "ChooseContent")))
-                    .HeadingLevel(AutomationHeadingLevel.Level2),
-                selectionGrid),
-            contentCards,
-            TextDialog(),
-            AddressDialog(),
-            PinDialog()) with
-        {
-            RowGap = 20,
-        });
+                Heading(t.Message(new("App", "SendTitle")))
+                    .HeadingLevel(AutomationHeadingLevel.Level1),
+                VStack(12,
+                    Subtitle(t.Message(new("App", "ChooseContent")))
+                        .HeadingLevel(AutomationHeadingLevel.Level2),
+                    selectionGrid),
+                contentCards,
+                TextDialog(),
+                AddressDialog(),
+                PinDialog()) with
+            {
+                RowGap = 20,
+            });
 
         var pageContainer = Border(page)
             .Padding(AppLayout.PagePadding)
@@ -383,154 +384,157 @@ sealed class SendPage : Component<SendPageProps>
 
         Element SearchingDevicesAnimation() =>
             (AnimatedVisualPlayer() with { AutoPlay = false })
-                .Size(144, 144)
-                .AccessibilityHidden()
-                .OnMountAdd(element =>
-                {
-                    if (element is not AnimatedVisualPlayer player)
-                        return;
+            .Size(144, 144)
+            .AccessibilityHidden()
+            .OnMountAdd(element =>
+            {
+                if (element is not AnimatedVisualPlayer player)
+                    return;
 
-                    searchingPlayerRef.Current = player;
-                    PlaySearchingAnimation(player);
-                })
-                .OnUnmountAdd(element =>
+                searchingPlayerRef.Current = player;
+                PlaySearchingAnimation(player);
+            })
+            .OnUnmountAdd(element =>
+            {
+                if (element is AnimatedVisualPlayer player
+                    && ReferenceEquals(searchingPlayerRef.Current, player))
                 {
-                    if (element is AnimatedVisualPlayer player
-                        && ReferenceEquals(searchingPlayerRef.Current, player))
-                    {
-                        searchingPlayerRef.Current = null;
-                    }
-                });
+                    searchingPlayerRef.Current = null;
+                }
+            });
 
         Element TextDialog() => (ContentDialog(
-            t.Message(new("App", "SendTextTitle")),
-            TextBox(text, setText, placeholderText: t.Message(new("App", "SendTextPlaceholder")))
-                .Header(t.Message(new("App", "TextContent")))
-                .AutomationName(t.Message(new("App", "TextContent")))
-                .AcceptsReturn()
-                .TextWrapping(TextWrapping.Wrap)
-                .MinHeight(160),
-            primaryButtonText: t.Message(new("App", "Add"))) with
-        {
-            IsOpen = showTextDialog,
-            SecondaryButtonText = t.Message(new("App", "Cancel")),
-            OnClosed = result =>
+                t.Message(new("App", "SendTextTitle")),
+                TextBox(text, setText, placeholderText: t.Message(new("App", "SendTextPlaceholder")))
+                    .Header(t.Message(new("App", "TextContent")))
+                    .AutomationName(t.Message(new("App", "TextContent")))
+                    .AcceptsReturn()
+                    .TextWrapping(TextWrapping.Wrap)
+                    .MinHeight(160),
+                primaryButtonText: t.Message(new("App", "Add"))) with
             {
-                if (result == ContentDialogResult.Primary && !string.IsNullOrWhiteSpace(text))
+                IsOpen = showTextDialog,
+                SecondaryButtonText = t.Message(new("App", "Cancel")),
+                OnClosed = result =>
                 {
-                    var item = new SendTextItem(text);
-                    AddSelectedItems([new(
-                        Guid.NewGuid(),
-                        item,
-                        t.Message(new("App", "TextMessage")),
-                        TextLength(text),
-                        "text")]);
-                    setText(string.Empty);
-                }
-                setShowTextDialog(false);
-            },
-        }).Set(dialog => ApplyDialogTheme(dialog, Props.Theme));
+                    if (result == ContentDialogResult.Primary && !string.IsNullOrWhiteSpace(text))
+                    {
+                        var item = new SendTextItem(text);
+                        AddSelectedItems([
+                            new(
+                                Guid.NewGuid(),
+                                item,
+                                t.Message(new("App", "TextMessage")),
+                                TextLength(text),
+                                "text")
+                        ]);
+                        setText(string.Empty);
+                    }
+
+                    setShowTextDialog(false);
+                },
+            }).Set(dialog => ApplyDialogTheme(dialog, Props.Theme));
 
         Element AddressDialog()
         {
             var hasAddress = !string.IsNullOrWhiteSpace(manualAddress);
             var hasValidFormat = hasAddress && TryParseAddress(manualAddress, out _, out _);
             var validationMessage = manualAddressError
-                ?? (hasAddress && !hasValidFormat
-                    ? t.Message(new("App", "InvalidDeviceAddress"))
-                    : null);
+                                    ?? (hasAddress && !hasValidFormat
+                                        ? t.Message(new("App", "InvalidDeviceAddress"))
+                                        : null);
 
             return (ContentDialog(
-                t.Message(new("App", "EnterAddressTitle")),
-                VStack(6,
-                    TextBox(manualAddress, value =>
-                        {
-                            setManualAddress(value);
-                            if (manualAddressError is not null)
-                                setManualAddressError(null);
-                        },
-                        placeholderText: t.Message(new("App", "AddressPlaceholder")))
-                        .AutomationName(t.Message(new("App", "DeviceAddress")))
-                        .IsEnabled(!isResolvingAddress),
-                    validationMessage is not null
-                        ? TextBlock(validationMessage)
-                            .FontSize(14)
-                            .Foreground(Theme.SystemAttention)
-                            .TextWrapping(TextWrapping.WrapWholeWords)
-                        : recentManualAddress is not null
-                            ? HStack(2,
-                                TextBlock(t.Message(new("App", "RecentlyUsedAddress")))
+                    t.Message(new("App", "EnterAddressTitle")),
+                    VStack(6,
+                            TextBox(manualAddress, value =>
+                                    {
+                                        setManualAddress(value);
+                                        if (manualAddressError is not null)
+                                            setManualAddressError(null);
+                                    },
+                                    placeholderText: t.Message(new("App", "AddressPlaceholder")))
+                                .AutomationName(t.Message(new("App", "DeviceAddress")))
+                                .IsEnabled(!isResolvingAddress),
+                            validationMessage is not null
+                                ? TextBlock(validationMessage)
                                     .FontSize(14)
-                                    .Foreground(Theme.SecondaryText)
-                                    .VAlign(VerticalAlignment.Center),
-                                HyperlinkButton(recentManualAddress, onClick: UseRecentAddress)
-                                    .Padding(2, 0)
-                                    .FontSize(14)
-                                    .VAlign(VerticalAlignment.Center)
-                                    .AutomationName(t.Message(
-                                        new("App", "UseRecentAddress"),
-                                        ("address", recentManualAddress))))
-                            : TextBlock(t.Message(
-                                    new("App", "AddressExample"),
-                                    ("address", "192.168.1.100")))
-                                .FontSize(14)
-                                .Foreground(Theme.SecondaryText))
-                    .MinWidth(340),
-                primaryButtonText: t.Message(new("App", "Confirm"))) with
-            {
-                IsOpen = showAddressDialog,
-                IsPrimaryButtonEnabled = !isResolvingAddress && hasValidFormat,
-                SecondaryButtonText = t.Message(new("App", "Cancel")),
-                DefaultButton = ContentDialogButton.Primary,
-                OnClosed = result =>
+                                    .Foreground(Theme.SystemAttention)
+                                    .TextWrapping(TextWrapping.WrapWholeWords)
+                                : recentManualAddress is not null
+                                    ? HStack(2,
+                                        TextBlock(t.Message(new("App", "RecentlyUsedAddress")))
+                                            .FontSize(14)
+                                            .Foreground(Theme.SecondaryText)
+                                            .VAlign(VerticalAlignment.Center),
+                                        HyperlinkButton(recentManualAddress, onClick: UseRecentAddress)
+                                            .Padding(0, 0)
+                                            .FontSize(14)
+                                            .VAlign(VerticalAlignment.Center)
+                                            .AutomationName(t.Message(
+                                                new("App", "UseRecentAddress"),
+                                                ("address", recentManualAddress))))
+                                    : TextBlock(t.Message(
+                                            new("App", "AddressExample"),
+                                            ("address", "192.168.1.100")))
+                                        .FontSize(14)
+                                        .Foreground(Theme.SecondaryText))
+                        .MinWidth(340),
+                    primaryButtonText: t.Message(new("App", "Confirm"))) with
                 {
-                    setShowAddressDialog(false);
-                    if (result == ContentDialogResult.Primary)
-                        _ = SendToAddressAsync(manualAddress);
-                },
-            }).Set(dialog => ApplyDialogTheme(dialog, Props.Theme));
+                    IsOpen = showAddressDialog,
+                    IsPrimaryButtonEnabled = !isResolvingAddress && hasValidFormat,
+                    SecondaryButtonText = t.Message(new("App", "Cancel")),
+                    DefaultButton = ContentDialogButton.Primary,
+                    OnClosed = result =>
+                    {
+                        setShowAddressDialog(false);
+                        if (result == ContentDialogResult.Primary)
+                            _ = SendToAddressAsync(manualAddress);
+                    },
+                }).Set(dialog => ApplyDialogTheme(dialog, Props.Theme));
         }
 
         Element PinDialog() => (ContentDialog(
-            t.Message(new("App", "PinRequiredTitle")),
-            VStack(8,
-                TextBlock(t.Message(
-                        new("App", "PinRequiredMessage"),
-                        ("device", pinTarget?.Alias ?? t.Message(new("App", "TargetDevice")))))
-                    .TextWrapping(TextWrapping.WrapWholeWords),
-                PasswordBox(pin, setPin, placeholderText: t.Message(new("App", "PinPlaceholder")))
-                    .Header(t.Message(new("App", "Pin")))
-                    .AutomationName(t.Message(new("App", "Pin")))
-                    .MaxLength(32),
-                pinError is null
-                    ? null
-                    : TextBlock(pinError).Foreground(Theme.SystemCritical)),
-            primaryButtonText: t.Message(new("App", "Retry"))) with
-        {
-            IsOpen = pinTarget is not null,
-            SecondaryButtonText = t.Message(new("App", "Cancel")),
-            OnClosed = result =>
+                t.Message(new("App", "PinRequiredTitle")),
+                VStack(8,
+                    TextBlock(t.Message(
+                            new("App", "PinRequiredMessage"),
+                            ("device", pinTarget?.Alias ?? t.Message(new("App", "TargetDevice")))))
+                        .TextWrapping(TextWrapping.WrapWholeWords),
+                    PasswordBox(pin, setPin, placeholderText: t.Message(new("App", "PinPlaceholder")))
+                        .Header(t.Message(new("App", "Pin")))
+                        .AutomationName(t.Message(new("App", "Pin")))
+                        .MaxLength(32),
+                    pinError is null
+                        ? null
+                        : TextBlock(pinError).Foreground(Theme.SystemCritical)),
+                primaryButtonText: t.Message(new("App", "Retry"))) with
             {
-                var target = pinTarget;
-                var targetAddress = pinManualAddress;
-                setPinTarget(null);
-                setPinManualAddress(null);
-                if (result == ContentDialogResult.Primary
-                    && target is not null
-                    && !string.IsNullOrWhiteSpace(pin))
+                IsOpen = pinTarget is not null,
+                SecondaryButtonText = t.Message(new("App", "Cancel")),
+                OnClosed = result =>
                 {
-                    var retryPin = pin;
-                    setPin(string.Empty);
-                    setPinError(null);
-                    _ = StartSendAsync(target, retryPin, targetAddress);
-                }
-                else
-                {
-                    setPin(string.Empty);
-                    setPinError(null);
-                }
-            },
-        }).Set(dialog => ApplyDialogTheme(dialog, Props.Theme));
+                    var target = pinTarget;
+                    var targetAddress = pinManualAddress;
+                    setPinTarget(null);
+                    setPinManualAddress(null);
+                    if (result == ContentDialogResult.Primary
+                        && target is not null
+                        && !string.IsNullOrWhiteSpace(pin))
+                    {
+                        var retryPin = pin;
+                        setPin(string.Empty);
+                        setPinError(null);
+                        _ = StartSendAsync(target, retryPin, targetAddress);
+                    }
+                    else
+                    {
+                        setPin(string.Empty);
+                        setPinError(null);
+                    }
+                },
+            }).Set(dialog => ApplyDialogTheme(dialog, Props.Theme));
 
         static void ApplyDialogTheme(ContentDialog dialog, ElementTheme theme) =>
             dialog.RequestedTheme = theme;
@@ -584,6 +588,7 @@ sealed class SendPage : Component<SendPageProps>
                     setPickerMessage(t.Message(new("App", "FolderEmpty")));
                     return;
                 }
+
                 AddSelectedItems(selected);
             }
             catch (Exception exception)
@@ -597,7 +602,7 @@ sealed class SendPage : Component<SendPageProps>
         void InitializePicker(object picker)
         {
             var nativeWindow = window?.NativeWindow
-                ?? throw new InvalidOperationException(t.Message(new("App", "WindowUnavailable")));
+                               ?? throw new InvalidOperationException(t.Message(new("App", "WindowUnavailable")));
             var windowHandle = WinRT.Interop.WindowNative.GetWindowHandle(nativeWindow);
             WinRT.Interop.InitializeWithWindow.Initialize(picker, windowHandle);
         }
@@ -623,6 +628,7 @@ sealed class SendPage : Component<SendPageProps>
                                 break;
                         }
                     }
+
                     if (selected.Count > 0)
                     {
                         AddSelectedItems(selected);
@@ -636,12 +642,14 @@ sealed class SendPage : Component<SendPageProps>
                     if (!string.IsNullOrWhiteSpace(clipboardText))
                     {
                         var item = new SendTextItem(clipboardText, "clipboard.txt");
-                        AddSelectedItems([new(
-                            Guid.NewGuid(),
-                            item,
-                            t.Message(new("App", "ClipboardText")),
-                            TextLength(clipboardText),
-                            "clipboard")]);
+                        AddSelectedItems([
+                            new(
+                                Guid.NewGuid(),
+                                item,
+                                t.Message(new("App", "ClipboardText")),
+                                TextLength(clipboardText),
+                                "clipboard")
+                        ]);
                         return;
                     }
                 }
@@ -649,10 +657,12 @@ sealed class SendPage : Component<SendPageProps>
                 if (data.Contains(StandardDataFormats.Bitmap))
                 {
                     var bitmap = await FromClipboardBitmapAsync(data, CancellationToken.None);
-                    AddSelectedItems([bitmap with
-                    {
-                        DisplayName = t.Message(new("App", "ClipboardImage")),
-                    }]);
+                    AddSelectedItems([
+                        bitmap with
+                        {
+                            DisplayName = t.Message(new("App", "ClipboardImage")),
+                        }
+                    ]);
                     return;
                 }
 
@@ -784,6 +794,7 @@ sealed class SendPage : Component<SendPageProps>
                         RecentManualAddressStore.Save(resolvedManualAddress);
                         setRecentManualAddress(resolvedManualAddress);
                     }
+
                     AppNotificationService.ShowTransferComplete(
                         t.Message(new("App", "NotificationSendCompleteTitle")),
                         selectedItems.Count == 1
@@ -829,7 +840,8 @@ sealed class SendPage : Component<SendPageProps>
                     t.Message(new("App", "PinRateLimited")),
                     IsError: true);
                 updateTransfer(_ => errorState);
-                PublishTransferOverlay(device, selectedItems.Select(static item => item.Item).ToArray(), errorState, false);
+                PublishTransferOverlay(device, selectedItems.Select(static item => item.Item).ToArray(), errorState,
+                    false);
             }
             catch (Exception exception)
             {
@@ -841,7 +853,8 @@ sealed class SendPage : Component<SendPageProps>
                     exception.Message,
                     IsError: true);
                 updateTransfer(_ => errorState);
-                PublishTransferOverlay(device, selectedItems.Select(static item => item.Item).ToArray(), errorState, false);
+                PublishTransferOverlay(device, selectedItems.Select(static item => item.Item).ToArray(), errorState,
+                    false);
             }
             finally
             {
@@ -858,6 +871,7 @@ sealed class SendPage : Component<SendPageProps>
                 setPickerMessage(t.Message(new("App", "SelectContentFirst")));
                 return;
             }
+
             if (Props.Node?.State != LocalSendNodeState.Running)
                 return;
 
@@ -1041,13 +1055,13 @@ sealed class SendPage : Component<SendPageProps>
 
     private static Element SelectionTile(string label, string icon, Action onClick, IntlAccessor t) =>
         Button(
-            VStack(8,
-                Icon(icon).AccessibilityHidden(),
-                BodyStrong(label)),
-            onClick)
-        .MinHeight(104)
-        .HAlign(HorizontalAlignment.Stretch)
-        .AutomationName(t.Message(new("App", "ChooseItem"), ("item", label)));
+                VStack(8,
+                    Icon(icon).AccessibilityHidden(),
+                    BodyStrong(label)),
+                onClick)
+            .MinHeight(104)
+            .HAlign(HorizontalAlignment.Stretch)
+            .AutomationName(t.Message(new("App", "ChooseItem"), ("item", label)));
 
     private static Element EmptySelection(
         bool isDropActive,
@@ -1060,20 +1074,20 @@ sealed class SendPage : Component<SendPageProps>
             : t.Message(new("App", "DropFilesOrFolders"));
 
         return (FlexColumn(
-                Image("ms-appx:///Assets/FileDrop.svg")
-                    .Size(192, 112)
-                    .AccessibilityHidden(),
-                Subtitle(dropText),
-                pickerMessage == nothingSelected
-                    ? null
-                    : Caption(pickerMessage)
-                        .Foreground(Theme.SecondaryText)
-                        .TextWrapping(TextWrapping.WrapWholeWords)) with
-        {
-            RowGap = 12,
-            AlignItems = FlexAlign.Center,
-            JustifyContent = FlexJustify.Center,
-        })
+                    Image("ms-appx:///Assets/FileDrop.svg")
+                        .Size(192, 112)
+                        .AccessibilityHidden(),
+                    Subtitle(dropText),
+                    pickerMessage == nothingSelected
+                        ? null
+                        : Caption(pickerMessage)
+                            .Foreground(Theme.SecondaryText)
+                            .TextWrapping(TextWrapping.WrapWholeWords)) with
+                {
+                    RowGap = 12,
+                    AlignItems = FlexAlign.Center,
+                    JustifyContent = FlexJustify.Center,
+                })
             .MinHeight(280)
             .HAlign(HorizontalAlignment.Stretch)
             .VAlign(VerticalAlignment.Stretch);
@@ -1102,30 +1116,30 @@ sealed class SendPage : Component<SendPageProps>
 
     private static Element SelectedItemRow(SelectedSendItem item, Action remove, IntlAccessor t) =>
         Grid(
-            columns: [GridSize.Auto, GridSize.Star(), GridSize.Auto],
-            rows: [GridSize.Auto],
-            Icon(ItemIcon(item)).AccessibilityHidden()
-                .VAlign(VerticalAlignment.Center)
-                .Grid(column: 0),
-            VStack(2,
-                TextBlock(item.DisplayName)
-                    .TextTrimming(TextTrimming.CharacterEllipsis)
-                    .ToolTip(item.DisplayName),
-                Caption(t.Message(
-                        new("App", "ItemKindAndSize"),
-                        ("kind", ItemKindLabel(t, item.Kind)),
-                        ("size", FormatBytes(item.Length))))
-                    .Foreground(Theme.SecondaryText))
-                .Margin(horizontal: 12, vertical: 0)
-                .Grid(column: 1),
-            Button(Icon("Delete"), remove)
-                .AutomationName(t.Message(new("App", "RemoveItem"), ("item", item.DisplayName)))
-                .ToolTip(t.Message(new("App", "Remove")))
-                .Grid(column: 2))
-        .Padding(12)
-        .CornerRadius(8)
-        .Background(Theme.SubtleFill)
-        .WithBorder(Theme.CardStroke, 1);
+                columns: [GridSize.Auto, GridSize.Star(), GridSize.Auto],
+                rows: [GridSize.Auto],
+                Icon(ItemIcon(item)).AccessibilityHidden()
+                    .VAlign(VerticalAlignment.Center)
+                    .Grid(column: 0),
+                VStack(2,
+                        TextBlock(item.DisplayName)
+                            .TextTrimming(TextTrimming.CharacterEllipsis)
+                            .ToolTip(item.DisplayName),
+                        Caption(t.Message(
+                                new("App", "ItemKindAndSize"),
+                                ("kind", ItemKindLabel(t, item.Kind)),
+                                ("size", FormatBytes(item.Length))))
+                            .Foreground(Theme.SecondaryText))
+                    .Margin(horizontal: 12, vertical: 0)
+                    .Grid(column: 1),
+                Button(Icon("Delete"), remove)
+                    .AutomationName(t.Message(new("App", "RemoveItem"), ("item", item.DisplayName)))
+                    .ToolTip(t.Message(new("App", "Remove")))
+                    .Grid(column: 2))
+            .Padding(12)
+            .CornerRadius(8)
+            .Background(Theme.SubtleFill)
+            .WithBorder(Theme.CardStroke, 1);
 
     private static Element DeviceCard(
         LocalSendDevice device,
@@ -1138,22 +1152,22 @@ sealed class SendPage : Component<SendPageProps>
         var displayName = favorite?.Name ?? device.Alias;
 
         return Component<DeviceIdentityCard, DeviceIdentityCardProps>(new(
-                displayName,
-                device.DeviceModel,
-                device.DeviceType,
-                RemoteDeviceNumber(device),
-                DeviceConnectedKey(device.Fingerprint),
-                onClick,
-                t.Message(new("App", "SendToDevice"), ("device", displayName)),
-                isEnabled,
-                TrailingReserve: 64,
-                AnimationRole: DeviceIdentityCardAnimationRole.Source,
-                SecondaryGlyph: "\uE946",
-                SecondaryAutomationName: t.Message(
-                    new("App", "OpenDeviceDetails"),
-                    ("device", displayName)),
-                OnSecondaryClick: _ => onDetails(),
-                IsFavorite: favorite is not null));
+            displayName,
+            device.DeviceModel,
+            device.DeviceType,
+            RemoteDeviceNumber(device),
+            DeviceConnectedKey(device.Fingerprint),
+            onClick,
+            t.Message(new("App", "SendToDevice"), ("device", displayName)),
+            isEnabled,
+            TrailingReserve: 64,
+            AnimationRole: DeviceIdentityCardAnimationRole.Source,
+            SecondaryGlyph: "\uE946",
+            SecondaryAutomationName: t.Message(
+                new("App", "OpenDeviceDetails"),
+                ("device", displayName)),
+            OnSecondaryClick: _ => onDetails(),
+            IsFavorite: favorite is not null));
     }
 
     private static Element EmptyDevices(
@@ -1162,24 +1176,24 @@ sealed class SendPage : Component<SendPageProps>
         string? discoveryWarning,
         Element searchingAnimation) =>
         FlexColumn(
-            state == LocalSendNodeState.Faulted
-                ? Icon("\uE783").AccessibilityHidden()
-                : searchingAnimation,
-            Subtitle(state == LocalSendNodeState.Faulted
-                ? t.Message(new("App", "NetworkStartFailed"))
-                : t.Message(new("App", "SearchingDevices"))),
-            TextBlock(state == LocalSendNodeState.Faulted
-                    ? t.Message(new("App", "PortInUseHint"))
-                    : discoveryWarning is not null
-                        ? t.Message(new("App", "DiscoveryScanHint"))
-                        : t.Message(new("App", "SameNetworkHint")))
-                .Foreground(Theme.SecondaryText)
-                .TextWrapping(TextWrapping.WrapWholeWords)) with
-        {
-            RowGap = 12,
-            AlignItems = FlexAlign.Center,
-            JustifyContent = FlexJustify.Center,
-        };
+                state == LocalSendNodeState.Faulted
+                    ? Icon("\uE783").AccessibilityHidden()
+                    : searchingAnimation,
+                Subtitle(state == LocalSendNodeState.Faulted
+                    ? t.Message(new("App", "NetworkStartFailed"))
+                    : t.Message(new("App", "SearchingDevices"))),
+                TextBlock(state == LocalSendNodeState.Faulted
+                        ? t.Message(new("App", "PortInUseHint"))
+                        : discoveryWarning is not null
+                            ? t.Message(new("App", "DiscoveryScanHint"))
+                            : t.Message(new("App", "SameNetworkHint")))
+                    .Foreground(Theme.SecondaryText)
+                    .TextWrapping(TextWrapping.WrapWholeWords)) with
+            {
+                RowGap = 12,
+                AlignItems = FlexAlign.Center,
+                JustifyContent = FlexJustify.Center,
+            };
 
     private static void PlaySearchingAnimation(AnimatedVisualPlayer? player)
     {
@@ -1214,30 +1228,30 @@ sealed class SendPage : Component<SendPageProps>
     private static Task<IReadOnlyList<SelectedSendItem>> FromFolderPathAsync(
         string folderPath,
         CancellationToken cancellationToken) => Task.Run<IReadOnlyList<SelectedSendItem>>(() =>
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            if (string.IsNullOrWhiteSpace(folderPath))
-                throw new IOException("The selected folder has no accessible local path.");
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        if (string.IsNullOrWhiteSpace(folderPath))
+            throw new IOException("The selected folder has no accessible local path.");
 
-            var folder = new DirectoryInfo(folderPath);
-            if (!folder.Exists)
-                throw new DirectoryNotFoundException($"The shared folder is no longer available: {folderPath}");
+        var folder = new DirectoryInfo(folderPath);
+        if (!folder.Exists)
+            throw new DirectoryNotFoundException($"The shared folder is no longer available: {folderPath}");
 
-            return Directory.EnumerateFiles(folder.FullName, "*", SearchOption.AllDirectories)
-                .Select(path =>
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-                    var relativeName = Path.GetRelativePath(folder.FullName, path).Replace('\\', '/');
-                    var protocolName = $"{folder.Name}/{relativeName}";
-                    return new SelectedSendItem(
-                        Guid.NewGuid(),
-                        new SendFileItem(path, protocolName),
-                        protocolName,
-                        new FileInfo(path).Length,
-                        "folder");
-                })
-                .ToArray();
-        }, cancellationToken);
+        return Directory.EnumerateFiles(folder.FullName, "*", SearchOption.AllDirectories)
+            .Select(path =>
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                var relativeName = Path.GetRelativePath(folder.FullName, path).Replace('\\', '/');
+                var protocolName = $"{folder.Name}/{relativeName}";
+                return new SelectedSendItem(
+                    Guid.NewGuid(),
+                    new SendFileItem(path, protocolName),
+                    protocolName,
+                    new FileInfo(path).Length,
+                    "folder");
+            })
+            .ToArray();
+    }, cancellationToken);
 
     private static async Task<SelectedSendItem> FromClipboardBitmapAsync(
         DataPackageView data,
@@ -1272,29 +1286,29 @@ sealed class SendPage : Component<SendPageProps>
         TransferResult result,
         string deviceAlias,
         long requestedBytes) => result.State switch
-        {
-            TransferState.Completed => new(
-                result.State,
-                deviceAlias,
-                result.BytesTransferred,
-                result.BytesTransferred,
-                t.Message(new("App", "SentToDevice"), ("device", deviceAlias)),
-                IsError: false),
-            TransferState.Cancelled => new(
-                result.State,
-                deviceAlias,
-                result.BytesTransferred,
-                requestedBytes,
-                t.Message(new("App", "TransferCancelled")),
-                IsError: false),
-            _ => new(
-                result.State,
-                deviceAlias,
-                result.BytesTransferred,
-                requestedBytes,
-                result.Failure?.Message ?? t.Message(new("App", "TransferFailed")),
-                IsError: true),
-        };
+    {
+        TransferState.Completed => new(
+            result.State,
+            deviceAlias,
+            result.BytesTransferred,
+            result.BytesTransferred,
+            t.Message(new("App", "SentToDevice"), ("device", deviceAlias)),
+            IsError: false),
+        TransferState.Cancelled => new(
+            result.State,
+            deviceAlias,
+            result.BytesTransferred,
+            requestedBytes,
+            t.Message(new("App", "TransferCancelled")),
+            IsError: false),
+        _ => new(
+            result.State,
+            deviceAlias,
+            result.BytesTransferred,
+            requestedBytes,
+            result.Failure?.Message ?? t.Message(new("App", "TransferFailed")),
+            IsError: true),
+    };
 
     private static string ProgressMessage(IntlAccessor t, TransferState state, string deviceAlias) => state switch
     {
