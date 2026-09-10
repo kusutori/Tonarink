@@ -19,6 +19,11 @@ sealed class DeviceDetailsPage : Component<DeviceDetailsPageProps>
     public override Element Render()
     {
         var t = UseIntl();
+        var (_, refreshCachedPage) = UseReducer(0);
+        // NavigationHost caches this page by AppRoute.DeviceDetails. A cache hit restores
+        // its previous element tree without calling the route factory, so request one
+        // reconciliation before the transition to pick up the newly selected device props.
+        UseNavigationLifecycle(onNavigatingTo: _ => refreshCachedPage(value => value + 1));
         var favorites = UseExternalStore<IReadOnlyDictionary<string, FavoriteDevice>>(
             listener =>
             {
