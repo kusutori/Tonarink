@@ -137,6 +137,15 @@
   <data name="NotificationOpenFile" xml:space="preserve"><value>打开文件</value></data>
   <data name="NotificationShowInFolder" xml:space="preserve"><value>打开文件所在位置</value></data>
   <data name="NearbyDevices" xml:space="preserve"><value>附近的设备</value></data>
+  <data name="AddressExample" xml:space="preserve"><value>示例：{address}</value></data>
+  <data name="AddressPlaceholder" xml:space="preserve"><value>IP 地址或 IP:端口</value></data>
+  <data name="DeviceAddress" xml:space="preserve"><value>设备地址</value></data>
+  <data name="DeviceAddressNotFound" xml:space="preserve"><value>在 {address} 未找到兼容的设备，请检查地址和网络连接。</value></data>
+  <data name="EnterAddressTitle" xml:space="preserve"><value>输入地址</value></data>
+  <data name="InvalidDeviceAddress" xml:space="preserve"><value>请输入有效的 IP 地址。</value></data>
+  <data name="RecentlyUsedAddress" xml:space="preserve"><value>最近使用：</value></data>
+  <data name="SendToAddress" xml:space="preserve"><value>按地址发送</value></data>
+  <data name="UseRecentAddress" xml:space="preserve"><value>使用最近的地址 {address}</value></data>
   <data name="NetworkStartFailed" xml:space="preserve"><value>无法启动网络服务</value></data>
   <data name="DiscoveryScanHint" xml:space="preserve"><value>多播发现不可用。正在通过扫描局域网查找附近设备。</value></data>
   <data name="NodeDisconnected" xml:space="preserve"><value>未连接</value></data>

@@ -23,7 +23,7 @@ public sealed class TransportReliabilityTests
             var prepareTask = setup.Client.PrepareUploadAsync(setup.Endpoint, setup.ReceiverFingerprint, setup.Request(files), null, default);
             var incoming = await requestTask;
             var receiveTask = receiver.AcceptAsync(incoming.RequestId);
-            var prepared = await prepareTask;
+            var prepared = Assert.IsType<PrepareUploadResponseDto>(await prepareTask);
 
             await Task.WhenAll(files.Select(pair => UploadAsync(setup, prepared, pair.Value, pair.Key == "a" ? "alpha" : "bravo")));
             var result = await receiveTask;
@@ -90,7 +90,7 @@ public sealed class TransportReliabilityTests
                 setup.Request(new Dictionary<string, FileDto> { ["a"] = file }), null, default);
             var incoming = await requestTask;
             var receiveTask = receiver.AcceptAsync(incoming.RequestId);
-            var prepared = await prepareTask;
+            var prepared = Assert.IsType<PrepareUploadResponseDto>(await prepareTask);
 
             await Assert.ThrowsAsync<HttpRequestException>(() => UploadAsync(setup, prepared, file, "expected"));
             var result = await receiveTask;
@@ -115,7 +115,7 @@ public sealed class TransportReliabilityTests
                 setup.Request(new Dictionary<string, FileDto> { ["a"] = file }), null, default);
             var incoming = await requestTask;
             var receiveTask = receiver.AcceptAsync(incoming.RequestId);
-            var prepared = await prepareTask;
+            var prepared = Assert.IsType<PrepareUploadResponseDto>(await prepareTask);
             var validToken = prepared.Files[file.Id];
             var bytes = System.Text.Encoding.UTF8.GetBytes("retry");
 
@@ -142,7 +142,7 @@ public sealed class TransportReliabilityTests
                 setup.Request(new Dictionary<string, FileDto> { ["a"] = file }), null, default);
             var incoming = await requestTask;
             var receiveTask = receiver.AcceptAsync(incoming.RequestId);
-            var prepared = await prepareTask;
+            var prepared = Assert.IsType<PrepareUploadResponseDto>(await prepareTask);
 
             await Assert.ThrowsAnyAsync<Exception>(() => setup.Client.UploadAsync(setup.Endpoint, setup.ReceiverFingerprint,
                 prepared.SessionId, file.Id, prepared.Files[file.Id], new MemoryStream([1, 2]), file.Size, file.FileType, default));

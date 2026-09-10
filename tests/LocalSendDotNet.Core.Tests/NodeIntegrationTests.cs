@@ -21,19 +21,24 @@ public sealed class NodeIntegrationTests
         try
         {
             await Task.WhenAll(receiver.StartAsync(), sender.StartAsync());
-            var receiveTask = AcceptNextAsync(receiver);
+            var requestTask = NextRequestAsync(receiver);
             await Task.Delay(100);
 
             var fingerprint = await ReadFingerprintAsync(receiverData);
             var device = new LocalSendDevice("Receiver", "2.2", null, LocalSendDeviceType.Desktop, fingerprint, false,
                 [new DeviceEndpoint(IPAddress.Loopback, receiverPort, LocalSendProtocol.Https)], DateTimeOffset.UtcNow);
-            var sent = await sender.SendAsync(device, [new SendTextItem("hello from dotnet")], new SendOptions { ComputeSha256 = true });
-            var received = await receiveTask;
+            var sendTask = sender.SendAsync(device, [new SendTextItem("hello from dotnet")], new SendOptions { ComputeSha256 = true });
+            var request = await requestTask;
+            var incomingItem = Assert.Single(request.Items);
+            Assert.Equal("text/plain", incomingItem.ContentType);
+            Assert.Equal("hello from dotnet", incomingItem.Preview);
+            var received = await receiver.AcceptAsync(request.RequestId);
+            var sent = await sendTask;
 
             Assert.Equal(TransferState.Completed, sent.State);
             Assert.Equal(TransferState.Completed, received.State);
-            var saved = Assert.Single(received.Items).SavedPath;
-            Assert.Equal("hello from dotnet", await File.ReadAllTextAsync(saved!));
+            Assert.Null(Assert.Single(received.Items).SavedPath);
+            Assert.Empty(Directory.EnumerateFiles(downloads));
         }
         finally { Directory.Delete(root, recursive: true); }
     }

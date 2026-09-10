@@ -1,4 +1,5 @@
 using LocalSendDotNet;
+using System.Net;
 using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Core;
 using Microsoft.UI.Reactor.Layout;
@@ -73,7 +74,13 @@ sealed class SendPage : Component<SendPageProps>
         var (isFileDropActive, setFileDropActive) = UseState(false);
         var (text, setText) = UseState(string.Empty);
         var (showTextDialog, setShowTextDialog) = UseState(false);
+        var (showAddressDialog, setShowAddressDialog) = UseState(false);
+        var (manualAddress, setManualAddress) = UseState(string.Empty);
+        var (manualAddressError, setManualAddressError) = UseState<string?>(null);
+        var (isResolvingAddress, setResolvingAddress) = UseState(false);
+        var (recentManualAddress, setRecentManualAddress) = UseState(RecentManualAddressStore.Load());
         var (pinTarget, setPinTarget) = UseState<LocalSendDevice?>(null);
+        var (pinManualAddress, setPinManualAddress) = UseState<string?>(null);
         var (pin, setPin) = UseState(string.Empty);
         var (pinError, setPinError) = UseState<string?>(null);
         var favorites = UseExternalStore<IReadOnlyDictionary<string, FavoriteDevice>>(
@@ -297,6 +304,12 @@ sealed class SendPage : Component<SendPageProps>
                             t.Message(new("App", "RefreshDevices")),
                             () => _ = Props.RefreshAsync(),
                             isEnabled: !sendMutation.IsPending),
+                        Button(Icon("\uF272"), OpenAddressDialog)
+                            .AutomationName(t.Message(new("App", "SendToAddress")))
+                            .ToolTip(t.Message(new("App", "SendToAddress")))
+                            .IsEnabled(!sendMutation.IsPending
+                                && !isResolvingAddress
+                                && Props.Runtime.NodeState == LocalSendNodeState.Running),
                         Button(Icon("\uE71B"), () =>
                         {
                             if (selectedItems.Count == 0)
@@ -349,6 +362,7 @@ sealed class SendPage : Component<SendPageProps>
                 selectionGrid),
             contentCards,
             TextDialog(),
+            AddressDialog(),
             PinDialog()) with
         {
             RowGap = 20,
@@ -417,6 +431,48 @@ sealed class SendPage : Component<SendPageProps>
             },
         }).Set(dialog => ApplyDialogTheme(dialog, Props.Theme));
 
+        Element AddressDialog() => (ContentDialog(
+            t.Message(new("App", "EnterAddressTitle")),
+            VStack(6,
+                TextBox(manualAddress, value =>
+                    {
+                        setManualAddress(value);
+                        if (manualAddressError is not null)
+                            setManualAddressError(null);
+                    },
+                    placeholderText: t.Message(new("App", "AddressPlaceholder")))
+                    .AutomationName(t.Message(new("App", "DeviceAddress")))
+                    .IsEnabled(!isResolvingAddress),
+                manualAddressError is not null
+                    ? Caption(manualAddressError)
+                        .Foreground(Theme.SystemAttention)
+                        .TextWrapping(TextWrapping.WrapWholeWords)
+                    : recentManualAddress is not null
+                        ? HStack(2,
+                            Caption(t.Message(new("App", "RecentlyUsedAddress"))),
+                            HyperlinkButton(recentManualAddress, onClick: UseRecentAddress)
+                                .Padding(2, 0)
+                                .AutomationName(t.Message(
+                                    new("App", "UseRecentAddress"),
+                                    ("address", recentManualAddress))))
+                        : Caption(t.Message(
+                            new("App", "AddressExample"),
+                            ("address", "192.168.1.100"))))
+                .MinWidth(340),
+            primaryButtonText: t.Message(new("App", "Confirm"))) with
+        {
+            IsOpen = showAddressDialog,
+            IsPrimaryButtonEnabled = !isResolvingAddress && !string.IsNullOrWhiteSpace(manualAddress),
+            SecondaryButtonText = t.Message(new("App", "Cancel")),
+            DefaultButton = ContentDialogButton.Primary,
+            OnClosed = result =>
+            {
+                setShowAddressDialog(false);
+                if (result == ContentDialogResult.Primary)
+                    _ = SendToAddressAsync(manualAddress);
+            },
+        }).Set(dialog => ApplyDialogTheme(dialog, Props.Theme));
+
         Element PinDialog() => (ContentDialog(
             t.Message(new("App", "PinRequiredTitle")),
             VStack(8,
@@ -438,7 +494,9 @@ sealed class SendPage : Component<SendPageProps>
             OnClosed = result =>
             {
                 var target = pinTarget;
+                var targetAddress = pinManualAddress;
                 setPinTarget(null);
+                setPinManualAddress(null);
                 if (result == ContentDialogResult.Primary
                     && target is not null
                     && !string.IsNullOrWhiteSpace(pin))
@@ -446,7 +504,7 @@ sealed class SendPage : Component<SendPageProps>
                     var retryPin = pin;
                     setPin(string.Empty);
                     setPinError(null);
-                    _ = StartSendAsync(target, retryPin);
+                    _ = StartSendAsync(target, retryPin, targetAddress);
                 }
                 else
                 {
@@ -656,7 +714,7 @@ sealed class SendPage : Component<SendPageProps>
             }
         }
 
-        async Task StartSendAsync(LocalSendDevice device, string? pin)
+        async Task StartSendAsync(LocalSendDevice device, string? pin, string? resolvedManualAddress = null)
         {
             if (Props.Node?.State != LocalSendNodeState.Running || selectedItems.Count == 0)
                 return;
@@ -703,6 +761,11 @@ sealed class SendPage : Component<SendPageProps>
                     isPending: false);
                 if (result.IsSuccess)
                 {
+                    if (resolvedManualAddress is not null)
+                    {
+                        RecentManualAddressStore.Save(resolvedManualAddress);
+                        setRecentManualAddress(resolvedManualAddress);
+                    }
                     AppNotificationService.ShowTransferComplete(
                         t.Message(new("App", "NotificationSendCompleteTitle")),
                         selectedItems.Count == 1
@@ -730,6 +793,7 @@ sealed class SendPage : Component<SendPageProps>
                 Props.SetTransferOverlay(null);
                 setPinError(exception.InvalidPin ? t.Message(new("App", "PinIncorrect")) : null);
                 setPinTarget(device);
+                setPinManualAddress(resolvedManualAddress);
                 updateTransfer(current => current with
                 {
                     State = TransferState.WaitingForAcceptance,
@@ -767,6 +831,120 @@ sealed class SendPage : Component<SendPageProps>
                     sendCancellationRef.Current = null;
                 cancellation.Dispose();
             }
+        }
+
+        void OpenAddressDialog()
+        {
+            if (selectedItems.Count == 0)
+            {
+                setPickerMessage(t.Message(new("App", "SelectContentFirst")));
+                return;
+            }
+            if (Props.Node?.State != LocalSendNodeState.Running)
+                return;
+
+            setManualAddressError(null);
+            setManualAddress(recentManualAddress ?? string.Empty);
+            setShowAddressDialog(true);
+        }
+
+        void UseRecentAddress()
+        {
+            if (recentManualAddress is null)
+                return;
+
+            setManualAddress(recentManualAddress);
+            setShowAddressDialog(false);
+            _ = SendToAddressAsync(recentManualAddress);
+        }
+
+        async Task SendToAddressAsync(string value)
+        {
+            if (!TryParseAddress(value, out var address, out var port))
+            {
+                setManualAddressError(t.Message(new("App", "InvalidDeviceAddress")));
+                setShowAddressDialog(true);
+                return;
+            }
+
+            var normalizedAddress = FormatAddress(address, port);
+            setManualAddress(normalizedAddress);
+            setManualAddressError(null);
+            setResolvingAddress(true);
+            try
+            {
+                var node = Props.Node ?? throw new InvalidOperationException();
+                var preferredProtocol = Props.Runtime.Identity?.Protocol ?? LocalSendProtocol.Https;
+                Exception? lastError = null;
+                foreach (var protocol in new[]
+                         {
+                             preferredProtocol,
+                             preferredProtocol == LocalSendProtocol.Https
+                                 ? LocalSendProtocol.Http
+                                 : LocalSendProtocol.Https,
+                         })
+                {
+                    try
+                    {
+                        var endpoint = new DeviceEndpoint(address, port, protocol);
+                        var probe = await node.ProbeDeviceAsync(endpoint).ConfigureAwait(true);
+                        var device = await node.AddKnownDeviceAsync(
+                            endpoint,
+                            probe.Device.Fingerprint).ConfigureAwait(true);
+                        setResolvingAddress(false);
+                        await StartSendAsync(device, pin: null, normalizedAddress).ConfigureAwait(true);
+                        return;
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        throw;
+                    }
+                    catch (Exception exception)
+                    {
+                        lastError = exception;
+                    }
+                }
+
+                throw lastError ?? new LocalSendException("No compatible device responded.");
+            }
+            catch (Exception)
+            {
+                setManualAddressError(t.Message(
+                    new("App", "DeviceAddressNotFound"),
+                    ("address", normalizedAddress)));
+                setShowAddressDialog(true);
+            }
+            finally
+            {
+                setResolvingAddress(false);
+            }
+        }
+
+        static bool TryParseAddress(string value, out IPAddress address, out int port)
+        {
+            var input = value.Trim();
+            port = LocalSendOptions.DefaultPort;
+            if (IPAddress.TryParse(input, out address!))
+                return true;
+
+            if (Uri.TryCreate($"tcp://{input}", UriKind.Absolute, out var uri)
+                && IPAddress.TryParse(uri.Host, out address!)
+                && uri.Port is >= 1 and <= ushort.MaxValue)
+            {
+                port = uri.Port;
+                return true;
+            }
+
+            address = IPAddress.None;
+            return false;
+        }
+
+        static string FormatAddress(IPAddress address, int port)
+        {
+            var host = address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetworkV6
+                ? $"[{address}]"
+                : address.ToString();
+            return port == LocalSendOptions.DefaultPort ? host : $"{host}:{port}";
         }
 
         async Task AddDroppedItemsAsync(DragData dragData)

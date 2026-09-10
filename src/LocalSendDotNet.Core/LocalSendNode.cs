@@ -369,14 +369,21 @@ public sealed class LocalSendNode : IAsyncDisposable
             var totalBytes = itemMap.Sum(static x => x.Length);
             progress?.Report(new(transferId, null, TransferDirection.Send, TransferState.Preparing, 0, totalBytes));
             var files = new Dictionary<string, FileDto>(StringComparer.Ordinal);
+            var includeTextPreview = itemMap.Length == 1 && itemMap[0].Item is SendTextItem;
             foreach (var item in itemMap)
             {
                 var sha256 = options.ComputeSha256 ? await ComputeSha256Async(item.Item, linked.Token).ConfigureAwait(false) : null;
-                files[item.Id] = ToFileDto(item.Id, item.Item, item.Length, sha256);
+                files[item.Id] = ToFileDto(item.Id, item.Item, item.Length, sha256, includeTextPreview);
             }
             var dto = new PrepareUploadRequestDto { Info = CreateLocalInfo(), Files = files };
             progress?.Report(new(transferId, null, TransferDirection.Send, TransferState.WaitingForAcceptance, 0, totalBytes));
             prepared = await _client!.PrepareUploadAsync(endpoint, device.Fingerprint, dto, options.Pin, linked.Token).ConfigureAwait(false);
+            if (prepared is null)
+            {
+                progress?.Report(new(transferId, null, TransferDirection.Send, TransferState.Completed, totalBytes, totalBytes));
+                return new(transferId, TransferDirection.Send, TransferState.Completed,
+                    itemMap.Select(static item => new TransferredItemResult(item.Id, item.Item.FileName, item.Length, null)).ToArray());
+            }
             _outgoingSessions[prepared.SessionId] = (endpoint.Address, linked);
             long completedBytes = 0;
             foreach (var (id, item, length) in itemMap)
@@ -653,6 +660,18 @@ public sealed class LocalSendNode : IAsyncDisposable
             return new(HttpStatusCode.NoContent);
         }
 
+        if (request.Files.Count == 1 && selected.Count == 1)
+        {
+            var message = request.Files.Values.Single();
+            if (message.Preview is not null && message.FileType.StartsWith("text/", StringComparison.OrdinalIgnoreCase))
+            {
+                _transferSlots.Release();
+                session.Completion.TrySetResult(new(transferId, TransferDirection.Receive, TransferState.Completed,
+                    [new(message.Id, message.FileName, message.Size, null)]));
+                return new(HttpStatusCode.NoContent);
+            }
+        }
+
         try
         {
             var destinationRoot = decision.Options.DestinationDirectory ?? _options.DownloadDirectory;
@@ -780,7 +799,7 @@ public sealed class LocalSendNode : IAsyncDisposable
         catch (OperationCanceledException) when (_lifetime.IsCancellationRequested) { }
     }
 
-    private static FileDto ToFileDto(string id, SendItem item, long length, string? sha256)
+    private static FileDto ToFileDto(string id, SendItem item, long length, string? sha256, bool includeTextPreview)
     {
         FileMetadataDto? metadata = null;
         if (item is SendFileItem file)
@@ -788,7 +807,16 @@ public sealed class LocalSendNode : IAsyncDisposable
             var info = new FileInfo(file.Path);
             metadata = new() { Modified = info.LastWriteTimeUtc.ToString("O"), Accessed = info.LastAccessTimeUtc.ToString("O") };
         }
-        return new() { Id = id, FileName = item.FileName, Size = length, FileType = item.ContentType, Sha256 = sha256, Metadata = metadata };
+        return new()
+        {
+            Id = id,
+            FileName = item.FileName,
+            Size = length,
+            FileType = item.ContentType,
+            Sha256 = sha256,
+            Preview = includeTextPreview && item is SendTextItem text ? text.Text : null,
+            Metadata = metadata
+        };
     }
 
     private static async Task<string> ComputeSha256Async(SendItem item, CancellationToken cancellationToken)

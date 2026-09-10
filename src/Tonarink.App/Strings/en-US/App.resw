@@ -137,6 +137,15 @@
   <data name="NotificationOpenFile" xml:space="preserve"><value>Open file</value></data>
   <data name="NotificationShowInFolder" xml:space="preserve"><value>Show in folder</value></data>
   <data name="NearbyDevices" xml:space="preserve"><value>Nearby devices</value></data>
+  <data name="AddressExample" xml:space="preserve"><value>Example: {address}</value></data>
+  <data name="AddressPlaceholder" xml:space="preserve"><value>IP address or IP:port</value></data>
+  <data name="DeviceAddress" xml:space="preserve"><value>Device address</value></data>
+  <data name="DeviceAddressNotFound" xml:space="preserve"><value>No compatible device was found at {address}. Check the address and network connection.</value></data>
+  <data name="EnterAddressTitle" xml:space="preserve"><value>Enter address</value></data>
+  <data name="InvalidDeviceAddress" xml:space="preserve"><value>Enter a valid IP address.</value></data>
+  <data name="RecentlyUsedAddress" xml:space="preserve"><value>Recently used:</value></data>
+  <data name="SendToAddress" xml:space="preserve"><value>Send to address</value></data>
+  <data name="UseRecentAddress" xml:space="preserve"><value>Use recent address {address}</value></data>
   <data name="NetworkStartFailed" xml:space="preserve"><value>Could not start the network service</value></data>
   <data name="DiscoveryScanHint" xml:space="preserve"><value>Multicast discovery is unavailable. Nearby devices are found by scanning this network.</value></data>
   <data name="NodeDisconnected" xml:space="preserve"><value>Disconnected</value></data>

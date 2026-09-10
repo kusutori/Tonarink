@@ -61,7 +61,7 @@ internal sealed class V2HttpClient(DeviceIdentity identity, LocalSendOptions opt
         return result;
     }
 
-    public async Task<PrepareUploadResponseDto> PrepareUploadAsync(DeviceEndpoint endpoint, string expectedFingerprint, PrepareUploadRequestDto request, string? pin, CancellationToken cancellationToken)
+    public async Task<PrepareUploadResponseDto?> PrepareUploadAsync(DeviceEndpoint endpoint, string expectedFingerprint, PrepareUploadRequestDto request, string? pin, CancellationToken cancellationToken)
     {
         using var client = CreateClient(endpoint, expectedFingerprint);
         var path = V2Constants.BasePath + "/prepare-upload" + (pin is null ? string.Empty : $"?pin={Uri.EscapeDataString(pin)}");
@@ -79,6 +79,8 @@ internal sealed class V2HttpClient(DeviceIdentity identity, LocalSendOptions opt
         }
         if (response.StatusCode == HttpStatusCode.Forbidden)
             throw new TransferDeclinedException();
+        if (response.StatusCode == HttpStatusCode.NoContent)
+            return null;
         response.EnsureSuccessStatusCode();
         return await response.Content.ReadFromJsonAsync(V2JsonContext.Default.PrepareUploadResponseDto, cancellationToken).ConfigureAwait(false)
             ?? throw new LocalSendException("The peer returned an empty prepare-upload response.");
