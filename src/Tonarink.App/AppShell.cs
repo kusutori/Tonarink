@@ -434,7 +434,10 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
             Transition = AppNavigation.IsDetail(navigation.CurrentRoute)
                 ? NavigationTransition.DrillIn()
                 : NavigationTransition.Slide(),
-        }).WithKey($"navigation:{Props.Locale}:{favoriteRevision}");
+        // NavigationHost caches by route. DeviceDetails is a single enum route, so without
+        // the selected fingerprint in the host identity its cached component keeps the
+        // props from the first device that opened it.
+        }).WithKey($"navigation:{Props.Locale}:{favoriteRevision}:{detailsDevice?.Fingerprint}");
 
         var navigationView = (NavigationView(
             [
