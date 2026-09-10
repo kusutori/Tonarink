@@ -140,7 +140,6 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
         var (detailsDevice, setDetailsDevice) = UseState<LocalSendDevice?>(null);
         var (selectedSendItems, updateSelectedSendItems) =
             UseReducer<IReadOnlyList<SelectedSendItem>>(Array.Empty<SelectedSendItem>());
-        var (keepItemsForMultipleReceivers, setKeepItemsForMultipleReceivers) = UseState(false);
         var (outgoingTransfer, setOutgoingTransfer) = UseState<OutgoingTransferViewState?>(null);
         var (shareTargetPayload, setShareTargetPayload) = UseState<ShareTargetPayload?>(null);
         var (serverDesired, setServerDesired) = UseState(true);
@@ -396,8 +395,11 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
                 ConsumeShareTargetPayload,
                 selectedSendItems,
                 updateSelectedSendItems,
-                keepItemsForMultipleReceivers,
-                setKeepItemsForMultipleReceivers,
+                settings.KeepItemsForMultipleReceivers,
+                value => updateSettings(current => current with
+                {
+                    KeepItemsForMultipleReceivers = value,
+                }),
                 device =>
                 {
                     setDetailsDevice(device);
@@ -482,6 +484,7 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
                     node,
                     pendingIncoming,
                     settings.DownloadDirectory,
+                    settings.SaveReceiveHistory,
                     contentTheme,
                     DismissIncoming))
                 .WithKey(pendingIncoming.RequestId.ToString("N"))
@@ -747,6 +750,7 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
                     DownloadDirectory = settings.DownloadDirectory,
                     Port = settings.Port,
                     EnableHttps = httpsOverride ?? settings.EnableHttps,
+                    ReceivePin = settings.ResolvedReceivePin,
                     MulticastAddress = settings.ResolvedMulticastAddress,
                     DiscoveryTimeout = TimeSpan.FromMilliseconds(Math.Max(1, settings.DiscoveryTimeoutMs)),
                     NetworkWhitelist = settings.NetworkWhitelist,
@@ -771,6 +775,7 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
                     Devices = node.GetDevices(),
                     Error = null,
                     AppliedMulticastGroup = settings.ResolvedMulticastAddress.ToString(),
+                    AppliedReceivePin = settings.ResolvedReceivePin,
                     DiscoveryWarning = node.DiscoveryError,
                     AppliedNetworkWhitelist = settings.NetworkWhitelist,
                     AppliedNetworkBlacklist = settings.NetworkBlacklist,
@@ -915,7 +920,8 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
                     return;
                 }
 
-                ReceiveHistoryStore.Record(request.Sender.Alias, result);
+                if (AppSettingsStore.Load().SaveReceiveHistory)
+                    ReceiveHistoryStore.Record(request.Sender.Alias, result);
                 AppNotificationService.ShowTransferComplete(
                     t.Message(new("App", "NotificationReceiveCompleteTitle")),
                     request.Items.Count == 1

@@ -54,6 +54,10 @@ sealed class AppSettingsFile
     public bool? StartWithWindows { get; set; }
     public bool? NotificationsEnabled { get; set; }
     public string? NotificationDefaultAction { get; set; }
+    public bool? KeepItemsForMultipleReceivers { get; set; }
+    public bool? SaveReceiveHistory { get; set; }
+    public bool? ReceivePinEnabled { get; set; }
+    public string? ReceivePin { get; set; }
     public bool? FavoritesOnly { get; set; }
     public string? DownloadDirectory { get; set; }
     public string? DeviceType { get; set; }
@@ -82,6 +86,10 @@ sealed class AppSettingsFile
         StartWithWindows = settings.StartWithWindows,
         NotificationsEnabled = settings.NotificationsEnabled,
         NotificationDefaultAction = settings.NotificationDefaultAction.ToString(),
+        KeepItemsForMultipleReceivers = settings.KeepItemsForMultipleReceivers,
+        SaveReceiveHistory = settings.SaveReceiveHistory,
+        ReceivePinEnabled = settings.ReceivePinEnabled,
+        ReceivePin = settings.ReceivePin,
         FavoritesOnly = settings.FavoritesOnly,
         DownloadDirectory = settings.DownloadDirectory,
         DeviceType = settings.DeviceType.ToString(),
@@ -119,6 +127,10 @@ sealed class AppSettingsFile
                 out var notificationDefaultAction)
                     ? notificationDefaultAction
                     : defaults.NotificationDefaultAction,
+            KeepItemsForMultipleReceivers = KeepItemsForMultipleReceivers ?? defaults.KeepItemsForMultipleReceivers,
+            SaveReceiveHistory = SaveReceiveHistory ?? defaults.SaveReceiveHistory,
+            ReceivePinEnabled = ReceivePinEnabled ?? defaults.ReceivePinEnabled,
+            ReceivePin = string.IsNullOrWhiteSpace(ReceivePin) ? defaults.ReceivePin : ReceivePin.Trim(),
             FavoritesOnly = autoSave == AutoSaveMode.Favorites,
             DownloadDirectory = string.IsNullOrWhiteSpace(DownloadDirectory)
                 ? defaults.DownloadDirectory

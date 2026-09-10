@@ -38,6 +38,45 @@ sealed class DeferredTextSetting : Component<DeferredTextSettingProps>
     }
 }
 
+sealed record DeferredPasswordSettingProps(
+    string Value,
+    Action<string> Commit,
+    string AutomationName,
+    string? PlaceholderText = null,
+    double MinWidth = 0,
+    int MaxLength = 32);
+
+sealed class DeferredPasswordSetting : Component<DeferredPasswordSettingProps>
+{
+    public override Element Render()
+    {
+        var (draft, setDraft) = UseState(Props.Value);
+        var draftRef = UseRef(draft);
+        draftRef.Current = draft;
+
+        UseEffect(() =>
+        {
+            draftRef.Current = Props.Value;
+            setDraft(Props.Value);
+        }, Props.Value);
+
+        return PasswordBox(draft, value =>
+            {
+                draftRef.Current = value;
+                setDraft(value);
+            }, placeholderText: Props.PlaceholderText)
+            .OnLostFocus((_, _) =>
+            {
+                var value = draftRef.Current.Trim();
+                if (value.Length > 0 && !string.Equals(value, Props.Value, StringComparison.Ordinal))
+                    Props.Commit(value);
+            })
+            .MaxLength(Props.MaxLength)
+            .AutomationName(Props.AutomationName)
+            .MinWidth(Props.MinWidth);
+    }
+}
+
 sealed record DeferredNumberSettingProps(
     double Value,
     Action<double> Commit,

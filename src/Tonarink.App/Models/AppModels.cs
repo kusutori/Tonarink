@@ -49,6 +49,10 @@ sealed record AppSettings(
     bool StartWithWindows,
     bool NotificationsEnabled,
     NotificationDefaultAction NotificationDefaultAction,
+    bool KeepItemsForMultipleReceivers,
+    bool SaveReceiveHistory,
+    bool ReceivePinEnabled,
+    string ReceivePin,
     bool FavoritesOnly,
     string DownloadDirectory,
     LocalSendDeviceType DeviceType,
@@ -70,6 +74,10 @@ sealed record AppSettings(
         StartWithWindows: false,
         NotificationsEnabled: true,
         NotificationDefaultAction: NotificationDefaultAction.OpenFile,
+        KeepItemsForMultipleReceivers: false,
+        SaveReceiveHistory: true,
+        ReceivePinEnabled: false,
+        ReceivePin: "1234",
         FavoritesOnly: false,
         DownloadDirectory: AppPlatform.DefaultDownloadDirectory,
         DeviceType: LocalSendDeviceType.Desktop,
@@ -88,6 +96,9 @@ sealed record AppSettings(
     public string ResolvedDeviceModel =>
         string.IsNullOrWhiteSpace(DeviceModel) ? Environment.MachineName : DeviceModel.Trim();
 
+    public string? ResolvedReceivePin =>
+        ReceivePinEnabled && !string.IsNullOrWhiteSpace(ReceivePin) ? ReceivePin.Trim() : null;
+
     public IPAddress ResolvedMulticastAddress =>
         IPAddress.TryParse(MulticastGroup, out var address)
             && address.AddressFamily == AddressFamily.InterNetwork
@@ -104,6 +115,7 @@ sealed record AppRuntimeState(
     string? Error,
     string? AppliedMulticastGroup,
     string? DiscoveryWarning,
+    string? AppliedReceivePin,
     IReadOnlyList<string>? AppliedNetworkWhitelist,
     IReadOnlyList<string>? AppliedNetworkBlacklist)
 {
@@ -116,6 +128,7 @@ sealed record AppRuntimeState(
         Error: null,
         AppliedMulticastGroup: null,
         DiscoveryWarning: null,
+        AppliedReceivePin: null,
         AppliedNetworkWhitelist: null,
         AppliedNetworkBlacklist: null);
 }
@@ -135,6 +148,12 @@ sealed record OutgoingTransferViewState(
     string Status,
     bool IsPending,
     bool IsError,
+    Action Cancel,
+    OutgoingPinPrompt? PinPrompt = null);
+
+sealed record OutgoingPinPrompt(
+    string? Error,
+    Action<string> Submit,
     Action Cancel);
 
 sealed record ShareTargetPayload(

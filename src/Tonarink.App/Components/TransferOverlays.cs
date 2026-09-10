@@ -27,6 +27,8 @@ sealed class OutgoingTransferOverlay : Component<OutgoingTransferOverlayProps>
         var window = UseWindow();
         var transfer = Props.Transfer;
         var (showVerification, setShowVerification) = UseState(false);
+        var (connectedAnimationReady, setConnectedAnimationReady) = UseState(false);
+        var (pin, setPin) = UseState(string.Empty);
         var receiverCardRef = UseRef<FrameworkElement?>(null);
         var connectedAnimationKey = DeviceConnectedKey(transfer.Receiver.Fingerprint);
         var taskbarProgress = new TaskbarTransferProgress(
@@ -59,6 +61,7 @@ sealed class OutgoingTransferOverlay : Component<OutgoingTransferOverlayProps>
                     RemoteDeviceNumber(transfer.Receiver),
                     connectedAnimationKey,
                     AnimationRole: DeviceIdentityCardAnimationRole.Destination,
+                    AnimationCompleted: _ => setConnectedAnimationReady(true),
                     ElementChanged: element => receiverCardRef.Current = element)),
                 VerificationButton(t, () => setShowVerification(true))
                     .HAlign(HorizontalAlignment.Center))
@@ -97,20 +100,7 @@ sealed class OutgoingTransferOverlay : Component<OutgoingTransferOverlayProps>
                             HStack(8,
                                 Icon("\uE711").AccessibilityHidden(),
                                 TextBlock(t.Message(new("App", "Close")))),
-                            () =>
-                            {
-                                if (receiverCardRef.Current is { } receiverCard)
-                                {
-                                    DeviceConnectedAnimation.ReturnToSource(
-                                        connectedAnimationKey,
-                                        receiverCard,
-                                        Props.Close);
-                                }
-                                else
-                                {
-                                    Props.Close();
-                                }
-                            })
+                            CloseOverlay)
                         .AutomationName(t.Message(new("App", "Close")))
                         .MinWidth(120))
                 .HAlign(HorizontalAlignment.Center))
@@ -140,9 +130,66 @@ sealed class OutgoingTransferOverlay : Component<OutgoingTransferOverlayProps>
                     transfer.Sender?.Fingerprint,
                     Props.Theme,
                     showVerification,
-                    () => setShowVerification(false))))
+                    () => setShowVerification(false))),
+                PinDialog())
             .Transition(new FadeTransition())
             .Landmark(AutomationLandmarkType.Main);
+
+        Element PinDialog()
+        {
+            var prompt = transfer.PinPrompt;
+            return (ContentDialog(
+                    t.Message(new("App", "PinRequiredTitle")),
+                    VStack(8,
+                        TextBlock(t.Message(
+                                new("App", "PinRequiredMessage"),
+                                ("device", transfer.Receiver.Alias)))
+                            .TextWrapping(TextWrapping.WrapWholeWords),
+                        PasswordBox(pin, setPin, placeholderText: t.Message(new("App", "PinPlaceholder")))
+                            .Header(t.Message(new("App", "Pin")))
+                            .AutomationName(t.Message(new("App", "Pin")))
+                            .MaxLength(32),
+                        prompt?.Error is null
+                            ? null
+                            : TextBlock(prompt.Error).Foreground(Theme.SystemCritical)),
+                    primaryButtonText: t.Message(new("App", "Retry"))) with
+            {
+                IsOpen = connectedAnimationReady && prompt is not null,
+                SecondaryButtonText = t.Message(new("App", "Cancel")),
+                DefaultButton = ContentDialogButton.Primary,
+                IsPrimaryButtonEnabled = !string.IsNullOrWhiteSpace(pin),
+                OnClosed = result =>
+                {
+                    var submittedPin = pin.Trim();
+                    setPin(string.Empty);
+                    if (prompt is null)
+                        return;
+
+                    if (result == ContentDialogResult.Primary && submittedPin.Length > 0)
+                        prompt.Submit(submittedPin);
+                    else
+                    {
+                        prompt.Cancel();
+                        CloseOverlay();
+                    }
+                },
+            }).Set(dialog => dialog.RequestedTheme = Props.Theme);
+        }
+
+        void CloseOverlay()
+        {
+            if (receiverCardRef.Current is { } receiverCard)
+            {
+                DeviceConnectedAnimation.ReturnToSource(
+                    connectedAnimationKey,
+                    receiverCard,
+                    Props.Close);
+            }
+            else
+            {
+                Props.Close();
+            }
+        }
     }
 
     private static string OutgoingStatus(IntlAccessor t, TransferState state) => state switch
@@ -160,6 +207,7 @@ sealed record IncomingTransferOverlayProps(
     LocalSendNode Node,
     IncomingTransferRequest Request,
     string DownloadDirectory,
+    bool SaveReceiveHistory,
     ElementTheme Theme,
     Action<Guid> Dismiss);
 
@@ -553,7 +601,8 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                     new Dictionary<string, string>(targetFileNames, StringComparer.Ordinal)));
                 if (result.IsSuccess)
                 {
-                    ReceiveHistoryStore.Record(request.Sender.Alias, result);
+                    if (Props.SaveReceiveHistory)
+                        ReceiveHistoryStore.Record(request.Sender.Alias, result);
                     AppNotificationService.ShowTransferComplete(
                         t.Message(new("App", "NotificationReceiveCompleteTitle")),
                         request.Items.Count == 1

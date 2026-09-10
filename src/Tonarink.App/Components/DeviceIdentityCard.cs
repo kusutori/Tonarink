@@ -18,6 +18,7 @@ sealed record DeviceIdentityCardProps(
     bool IsEnabled = true,
     double TrailingReserve = 0,
     DeviceIdentityCardAnimationRole AnimationRole = DeviceIdentityCardAnimationRole.None,
+    Action<bool>? AnimationCompleted = null,
     Action<FrameworkElement?>? ElementChanged = null,
     string? SecondaryGlyph = null,
     string? SecondaryAutomationName = null,
@@ -95,7 +96,10 @@ sealed class DeviceIdentityCard : Component<DeviceIdentityCardProps>
                 if (Props.AnimationRole == DeviceIdentityCardAnimationRole.Source)
                     DeviceConnectedAnimation.RegisterSource(key, element);
                 else if (Props.AnimationRole == DeviceIdentityCardAnimationRole.Destination)
-                    DeviceConnectedAnimation.StartDestinationWhenReady(key, element);
+                    DeviceConnectedAnimation.StartDestinationWhenReady(
+                        key,
+                        element,
+                        Props.AnimationCompleted);
             })
             .OnUnmountAdd(element =>
             {

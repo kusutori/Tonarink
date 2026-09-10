@@ -84,10 +84,6 @@ sealed class SendPage : Component<SendPageProps>
         var (manualAddressError, setManualAddressError) = UseState<string?>(null);
         var (isResolvingAddress, setResolvingAddress) = UseState(false);
         var (recentManualAddress, setRecentManualAddress) = UseState(RecentManualAddressStore.Load());
-        var (pinTarget, setPinTarget) = UseState<LocalSendDevice?>(null);
-        var (pinManualAddress, setPinManualAddress) = UseState<string?>(null);
-        var (pin, setPin) = UseState(string.Empty);
-        var (pinError, setPinError) = UseState<string?>(null);
         var favorites = UseExternalStore<IReadOnlyDictionary<string, FavoriteDevice>>(
             listener =>
             {
@@ -163,9 +159,9 @@ sealed class SendPage : Component<SendPageProps>
                     .Grid(column: 2),
                 SelectionTile(t.Message(new("App", "Clipboard")), "Paste", () => _ = AddClipboardAsync(), t)
                     .Grid(column: 3)) with
-            {
-                ColumnSpacing = 12,
-            };
+        {
+            ColumnSpacing = 12,
+        };
 
         var selectedHeader = selectedItems.Count == 0
             ? t.Message(new("App", "NothingSelected"))
@@ -206,14 +202,14 @@ sealed class SendPage : Component<SendPageProps>
                                         updateSelectedItems(_ => Array.Empty<SelectedSendItem>());
                                         setPickerMessage(t.Message(new("App", "NothingSelected")));
                                     }).AutomationName(t.Message(new("App", "Clear")))) with
-                            {
-                                AlignItems = FlexAlign.Center,
-                                ColumnGap = 8,
-                            },
+                        {
+                            AlignItems = FlexAlign.Center,
+                            ColumnGap = 8,
+                        },
                         selectedItemsContent) with
-                    {
-                        RowGap = 12,
-                    }))
+                {
+                    RowGap = 12,
+                }))
             .VAlign(VerticalAlignment.Stretch);
         if (isWideLayout)
             selectedItemsCard = selectedItemsCard.Flex(grow: 1, shrink: 1, basis: 320);
@@ -349,14 +345,14 @@ sealed class SendPage : Component<SendPageProps>
                                     .AutomationName(t.Message(new("App", "MultipleReceivers")))
                                     .ToolTip(t.Message(new("App", "MultipleReceiversDescription")))
                                     .IsEnabled(!sendMutation.IsPending)) with
-                            {
-                                AlignItems = FlexAlign.Center,
-                                ColumnGap = 8,
-                            },
+                        {
+                            AlignItems = FlexAlign.Center,
+                            ColumnGap = 8,
+                        },
                         deviceContent) with
-                    {
-                        RowGap = 12,
-                    }))
+                {
+                    RowGap = 12,
+                }))
             .VAlign(VerticalAlignment.Stretch);
         if (isWideLayout)
             nearbyDevicesCard = nearbyDevicesCard.Flex(grow: 1, shrink: 1, basis: 320);
@@ -395,11 +391,10 @@ sealed class SendPage : Component<SendPageProps>
                         Props.Theme,
                         FavoriteDeviceStore.Upsert,
                         () => setFavoriteEdit(null))),
-                DeleteFavoriteDialog(),
-                PinDialog()) with
-            {
-                RowGap = 20,
-            });
+                DeleteFavoriteDialog()) with
+        {
+            RowGap = 20,
+        });
 
         var pageContainer = Border(page)
             .Padding(AppLayout.PagePadding)
@@ -444,28 +439,28 @@ sealed class SendPage : Component<SendPageProps>
                     .TextWrapping(TextWrapping.Wrap)
                     .MinHeight(160),
                 primaryButtonText: t.Message(new("App", "Add"))) with
+        {
+            IsOpen = showTextDialog,
+            SecondaryButtonText = t.Message(new("App", "Cancel")),
+            OnClosed = result =>
             {
-                IsOpen = showTextDialog,
-                SecondaryButtonText = t.Message(new("App", "Cancel")),
-                OnClosed = result =>
+                if (result == ContentDialogResult.Primary && !string.IsNullOrWhiteSpace(text))
                 {
-                    if (result == ContentDialogResult.Primary && !string.IsNullOrWhiteSpace(text))
-                    {
-                        var item = new SendTextItem(text);
-                        AddSelectedItems([
-                            new(
+                    var item = new SendTextItem(text);
+                    AddSelectedItems([
+                        new(
                                 Guid.NewGuid(),
                                 item,
                                 t.Message(new("App", "TextMessage")),
                                 TextLength(text),
                                 "text")
-                        ]);
-                        setText(string.Empty);
-                    }
+                    ]);
+                    setText(string.Empty);
+                }
 
-                    setShowTextDialog(false);
-                },
-            }).Set(dialog => ApplyDialogTheme(dialog, Props.Theme));
+                setShowTextDialog(false);
+            },
+        }).Set(dialog => ApplyDialogTheme(dialog, Props.Theme));
 
         Element AddressDialog()
         {
@@ -513,18 +508,18 @@ sealed class SendPage : Component<SendPageProps>
                                         .Foreground(Theme.SecondaryText))
                         .MinWidth(340),
                     primaryButtonText: t.Message(new("App", "Confirm"))) with
+            {
+                IsOpen = showAddressDialog,
+                IsPrimaryButtonEnabled = !isResolvingAddress && hasValidFormat,
+                SecondaryButtonText = t.Message(new("App", "Cancel")),
+                DefaultButton = ContentDialogButton.Primary,
+                OnClosed = result =>
                 {
-                    IsOpen = showAddressDialog,
-                    IsPrimaryButtonEnabled = !isResolvingAddress && hasValidFormat,
-                    SecondaryButtonText = t.Message(new("App", "Cancel")),
-                    DefaultButton = ContentDialogButton.Primary,
-                    OnClosed = result =>
-                    {
-                        setShowAddressDialog(false);
-                        if (result == ContentDialogResult.Primary)
-                            _ = SendToAddressAsync(manualAddress);
-                    },
-                }).Set(dialog => ApplyDialogTheme(dialog, Props.Theme));
+                    setShowAddressDialog(false);
+                    if (result == ContentDialogResult.Primary)
+                        _ = SendToAddressAsync(manualAddress);
+                },
+            }).Set(dialog => ApplyDialogTheme(dialog, Props.Theme));
         }
 
         Element FavoritesDialog()
@@ -546,37 +541,37 @@ sealed class SendPage : Component<SendPageProps>
                         .MaxHeight(420)
                         .MinWidth(420),
                     primaryButtonText: t.Message(new("App", "NewFavorite"))) with
+            {
+                IsOpen = showFavoritesDialog,
+                SecondaryButtonText = t.Message(new("App", "Cancel")),
+                DefaultButton = ContentDialogButton.None,
+                OnClosed = result =>
                 {
-                    IsOpen = showFavoritesDialog,
-                    SecondaryButtonText = t.Message(new("App", "Cancel")),
-                    DefaultButton = ContentDialogButton.None,
-                    OnClosed = result =>
+                    setShowFavoritesDialog(false);
+                    var edit = pendingFavoriteEditRef.Current;
+                    var delete = pendingFavoriteDeleteRef.Current;
+                    pendingFavoriteEditRef.Current = null;
+                    pendingFavoriteDeleteRef.Current = null;
+                    if (result == ContentDialogResult.Primary)
                     {
-                        setShowFavoritesDialog(false);
-                        var edit = pendingFavoriteEditRef.Current;
-                        var delete = pendingFavoriteDeleteRef.Current;
-                        pendingFavoriteEditRef.Current = null;
-                        pendingFavoriteDeleteRef.Current = null;
-                        if (result == ContentDialogResult.Primary)
-                        {
-                            setFavoriteEdit(new FavoriteDeviceEdit(
-                                new FavoriteDevice(
-                                    $"manual:{Guid.NewGuid():N}",
-                                    string.Empty,
-                                    string.Empty,
-                                    LocalSendOptions.DefaultPort),
-                                IsNew: true));
-                        }
-                        else if (edit is not null)
-                        {
-                            setFavoriteEdit(new FavoriteDeviceEdit(edit, IsNew: false));
-                        }
-                        else if (delete is not null)
-                        {
-                            setFavoriteToDelete(delete);
-                        }
-                    },
-                }).Set(dialog => ApplyDialogTheme(dialog, Props.Theme));
+                        setFavoriteEdit(new FavoriteDeviceEdit(
+                            new FavoriteDevice(
+                                $"manual:{Guid.NewGuid():N}",
+                                string.Empty,
+                                string.Empty,
+                                LocalSendOptions.DefaultPort),
+                            IsNew: true));
+                    }
+                    else if (edit is not null)
+                    {
+                        setFavoriteEdit(new FavoriteDeviceEdit(edit, IsNew: false));
+                    }
+                    else if (delete is not null)
+                    {
+                        setFavoriteToDelete(delete);
+                    }
+                },
+            }).Set(dialog => ApplyDialogTheme(dialog, Props.Theme));
         }
 
         Element FavoriteRow(FavoriteDevice favorite) =>
@@ -624,57 +619,16 @@ sealed class SendPage : Component<SendPageProps>
                             ("device", favoriteToDelete?.Name ?? string.Empty)))
                         .TextWrapping(TextWrapping.WrapWholeWords),
                     primaryButtonText: t.Message(new("App", "Delete"))) with
-                {
-                    IsOpen = favoriteToDelete is not null,
-                    SecondaryButtonText = t.Message(new("App", "Cancel")),
-                    DefaultButton = ContentDialogButton.Primary,
-                    OnClosed = result =>
-                    {
-                        var target = favoriteToDelete;
-                        setFavoriteToDelete(null);
-                        if (result == ContentDialogResult.Primary && target is not null)
-                            FavoriteDeviceStore.Remove(target.Fingerprint);
-                    },
-                }).Set(dialog => ApplyDialogTheme(dialog, Props.Theme));
-
-        Element PinDialog() => (ContentDialog(
-                t.Message(new("App", "PinRequiredTitle")),
-                VStack(8,
-                    TextBlock(t.Message(
-                            new("App", "PinRequiredMessage"),
-                            ("device", pinTarget?.Alias ?? t.Message(new("App", "TargetDevice")))))
-                        .TextWrapping(TextWrapping.WrapWholeWords),
-                    PasswordBox(pin, setPin, placeholderText: t.Message(new("App", "PinPlaceholder")))
-                        .Header(t.Message(new("App", "Pin")))
-                        .AutomationName(t.Message(new("App", "Pin")))
-                        .MaxLength(32),
-                    pinError is null
-                        ? null
-                        : TextBlock(pinError).Foreground(Theme.SystemCritical)),
-                primaryButtonText: t.Message(new("App", "Retry"))) with
             {
-                IsOpen = pinTarget is not null,
+                IsOpen = favoriteToDelete is not null,
                 SecondaryButtonText = t.Message(new("App", "Cancel")),
+                DefaultButton = ContentDialogButton.Primary,
                 OnClosed = result =>
                 {
-                    var target = pinTarget;
-                    var targetAddress = pinManualAddress;
-                    setPinTarget(null);
-                    setPinManualAddress(null);
-                    if (result == ContentDialogResult.Primary
-                        && target is not null
-                        && !string.IsNullOrWhiteSpace(pin))
-                    {
-                        var retryPin = pin;
-                        setPin(string.Empty);
-                        setPinError(null);
-                        _ = StartSendAsync(target, retryPin, targetAddress);
-                    }
-                    else
-                    {
-                        setPin(string.Empty);
-                        setPinError(null);
-                    }
+                    var target = favoriteToDelete;
+                    setFavoriteToDelete(null);
+                    if (result == ContentDialogResult.Primary && target is not null)
+                        FavoriteDeviceStore.Remove(target.Fingerprint);
                 },
             }).Set(dialog => ApplyDialogTheme(dialog, Props.Theme));
 
@@ -964,16 +918,22 @@ sealed class SendPage : Component<SendPageProps>
             }
             catch (PinRequiredException exception)
             {
-                Props.SetTransferOverlay(null);
-                setPinError(exception.InvalidPin ? t.Message(new("App", "PinIncorrect")) : null);
-                setPinTarget(device);
-                setPinManualAddress(resolvedManualAddress);
-                updateTransfer(current => current with
+                var waitingState = transfer with
                 {
                     State = TransferState.WaitingForAcceptance,
                     Message = t.Message(new("App", "TargetRequiresPin")),
                     IsError = exception.InvalidPin,
-                });
+                };
+                updateTransfer(_ => waitingState);
+                PublishTransferOverlay(
+                    device,
+                    selectedItems.Select(static item => item.Item).ToArray(),
+                    waitingState,
+                    isPending: false,
+                    new OutgoingPinPrompt(
+                        exception.InvalidPin ? t.Message(new("App", "PinIncorrect")) : null,
+                        enteredPin => _ = StartSendAsync(device, enteredPin, resolvedManualAddress),
+                        () => updateTransfer(_ => TransferUiState.Idle(t.Message(new("App", "SendHint"))))));
             }
             catch (PinRateLimitedException)
             {
@@ -1199,7 +1159,8 @@ sealed class SendPage : Component<SendPageProps>
             LocalSendDevice device,
             IReadOnlyList<SendItem> items,
             TransferUiState state,
-            bool isPending)
+            bool isPending,
+            OutgoingPinPrompt? pinPrompt = null)
         {
             Props.SetTransferOverlay(new(
                 Props.Runtime.Identity,
@@ -1218,7 +1179,8 @@ sealed class SendPage : Component<SendPageProps>
                     {
                         Message = t.Message(new("App", "CancellingTransfer")),
                     });
-                }));
+                },
+                pinPrompt));
         }
     }
 
@@ -1261,11 +1223,11 @@ sealed class SendPage : Component<SendPageProps>
                         : Caption(pickerMessage)
                             .Foreground(Theme.SecondaryText)
                             .TextWrapping(TextWrapping.WrapWholeWords)) with
-                {
-                    RowGap = 12,
-                    AlignItems = FlexAlign.Center,
-                    JustifyContent = FlexJustify.Center,
-                })
+        {
+            RowGap = 12,
+            AlignItems = FlexAlign.Center,
+            JustifyContent = FlexJustify.Center,
+        })
             .MinHeight(280)
             .HAlign(HorizontalAlignment.Stretch)
             .VAlign(VerticalAlignment.Stretch);
@@ -1367,11 +1329,11 @@ sealed class SendPage : Component<SendPageProps>
                             : t.Message(new("App", "SameNetworkHint")))
                     .Foreground(Theme.SecondaryText)
                     .TextWrapping(TextWrapping.WrapWholeWords)) with
-            {
-                RowGap = 12,
-                AlignItems = FlexAlign.Center,
-                JustifyContent = FlexJustify.Center,
-            };
+        {
+            RowGap = 12,
+            AlignItems = FlexAlign.Center,
+            JustifyContent = FlexJustify.Center,
+        };
 
     private static void PlaySearchingAnimation(AnimatedVisualPlayer? player)
     {
@@ -1464,29 +1426,29 @@ sealed class SendPage : Component<SendPageProps>
         TransferResult result,
         string deviceAlias,
         long requestedBytes) => result.State switch
-    {
-        TransferState.Completed => new(
-            result.State,
-            deviceAlias,
-            result.BytesTransferred,
-            result.BytesTransferred,
-            t.Message(new("App", "SentToDevice"), ("device", deviceAlias)),
-            IsError: false),
-        TransferState.Cancelled => new(
-            result.State,
-            deviceAlias,
-            result.BytesTransferred,
-            requestedBytes,
-            t.Message(new("App", "TransferCancelled")),
-            IsError: false),
-        _ => new(
-            result.State,
-            deviceAlias,
-            result.BytesTransferred,
-            requestedBytes,
-            result.Failure?.Message ?? t.Message(new("App", "TransferFailed")),
-            IsError: true),
-    };
+        {
+            TransferState.Completed => new(
+                result.State,
+                deviceAlias,
+                result.BytesTransferred,
+                result.BytesTransferred,
+                t.Message(new("App", "SentToDevice"), ("device", deviceAlias)),
+                IsError: false),
+            TransferState.Cancelled => new(
+                result.State,
+                deviceAlias,
+                result.BytesTransferred,
+                requestedBytes,
+                t.Message(new("App", "TransferCancelled")),
+                IsError: false),
+            _ => new(
+                result.State,
+                deviceAlias,
+                result.BytesTransferred,
+                requestedBytes,
+                result.Failure?.Message ?? t.Message(new("App", "TransferFailed")),
+                IsError: true),
+        };
 
     private static string ProgressMessage(IntlAccessor t, TransferState state, string deviceAlias) => state switch
     {

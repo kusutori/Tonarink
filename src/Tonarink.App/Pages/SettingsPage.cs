@@ -45,6 +45,10 @@ sealed class SettingsPage : Component<SettingsPageProps>
                     Props.Runtime.AppliedMulticastGroup,
                     Props.Settings.ResolvedMulticastAddress.ToString(),
                     StringComparison.Ordinal)
+                || !string.Equals(
+                    Props.Runtime.AppliedReceivePin,
+                    Props.Settings.ResolvedReceivePin,
+                    StringComparison.Ordinal)
                 || !SameStringList(Props.Runtime.AppliedNetworkWhitelist, Props.Settings.NetworkWhitelist)
                 || !SameStringList(Props.Runtime.AppliedNetworkBlacklist, Props.Settings.NetworkBlacklist));
         Element[] deviceTypeOptions =
@@ -202,7 +206,47 @@ sealed class SettingsPage : Component<SettingsPageProps>
                         Icon("\uE8DA").AccessibilityHidden(),
                         TextBlock(t.Message(new("App", "Change")))),
                     () => _ = PickDownloadDirectoryAsync())
-                    .AutomationName(t.Message(new("App", "ChangeSaveLocation")))));
+                    .AutomationName(t.Message(new("App", "ChangeSaveLocation")))),
+            SettingsCard(
+                header: t.Message(new("App", "SettingsSaveReceiveHistory")),
+                description: t.Message(new("App", "SettingsSaveReceiveHistoryDescription")),
+                headerIcon: HeaderGlyph("\uE81C"),
+                isClickEnabled: false,
+                isActionIconVisible: false,
+                content:
+                ToggleSwitch(Props.Settings.SaveReceiveHistory, value =>
+                    Props.UpdateSettings(settings => settings with { SaveReceiveHistory = value }))),
+            SettingsExpander(
+                    headerIcon: HeaderGlyph("\uE72E"),
+                    items:
+                    [
+                        SettingsCard(
+                            header: t.Message(new("App", "SettingsReceivePinEnabled")),
+                            description: t.Message(new("App", "SettingsReceivePinEnabledDescription")),
+                            isClickEnabled: false,
+                            isActionIconVisible: false,
+                            content:
+                            ToggleSwitch(Props.Settings.ReceivePinEnabled, value =>
+                                Props.UpdateSettings(settings => settings with { ReceivePinEnabled = value }))),
+                        SettingsCard(
+                            header: t.Message(new("App", "SettingsReceivePin")),
+                            description: t.Message(new("App", "SettingsReceivePinDescription")),
+                            isClickEnabled: false,
+                            isActionIconVisible: false,
+                            content:
+                            Component<DeferredPasswordSetting, DeferredPasswordSettingProps>(new(
+                                Props.Settings.ReceivePin,
+                                value => Props.UpdateSettings(settings => settings with { ReceivePin = value }),
+                                t.Message(new("App", "SettingsReceivePin")),
+                                t.Message(new("App", "PinPlaceholder")),
+                                MinWidth: 180))
+                                .IsEnabled(Props.Settings.ReceivePinEnabled)),
+                    ])
+                .Set(expander =>
+                {
+                    expander.Header = t.Message(new("App", "SettingsReceivePinProtection"));
+                    expander.Description = t.Message(new("App", "SettingsReceivePinProtectionDescription"));
+                }));
 
         var startOrRestartName = serverOnline
             ? t.Message(new("App", "SettingsRestartServer"))

@@ -277,6 +277,14 @@
   <data name="SettingsMinimizeToTray" xml:space="preserve"><value>关闭时最小化到系统托盘</value></data>
   <data name="SettingsMinimizeToTrayDescription" xml:space="preserve"><value>关闭主窗口时继续在后台接收。</value></data>
   <data name="SettingsReceive" xml:space="preserve"><value>接收</value></data>
+  <data name="SettingsReceivePin" xml:space="preserve"><value>接收 PIN</value></data>
+  <data name="SettingsReceivePinDescription" xml:space="preserve"><value>其他设备向本机发送内容时需要输入此 PIN；更改后需要重启服务器。</value></data>
+  <data name="SettingsReceivePinEnabled" xml:space="preserve"><value>启用 PIN 密码</value></data>
+  <data name="SettingsReceivePinEnabledDescription" xml:space="preserve"><value>要求发送方通过 PIN 验证。</value></data>
+  <data name="SettingsReceivePinProtection" xml:space="preserve"><value>PIN 密码</value></data>
+  <data name="SettingsReceivePinProtectionDescription" xml:space="preserve"><value>保护来自其他设备的接收请求。</value></data>
+  <data name="SettingsSaveReceiveHistory" xml:space="preserve"><value>保存到历史记录</value></data>
+  <data name="SettingsSaveReceiveHistoryDescription" xml:space="preserve"><value>接收完成后在本机历史记录中保留条目。</value></data>
   <data name="SettingsRestartServer" xml:space="preserve"><value>重启服务器</value></data>
   <data name="SettingsSaveLocation" xml:space="preserve"><value>保存位置</value></data>
   <data name="SettingsServerOffline" xml:space="preserve"><value>服务器（已停止）</value></data>
