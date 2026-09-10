@@ -1,14 +1,11 @@
-using System.Net;
 using LocalSendDotNet;
 using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Core;
-using Microsoft.UI.Reactor.Controls.Validation;
 using Microsoft.UI.Reactor.Layout;
 using Microsoft.UI.Reactor.Localization;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
-using static Microsoft.UI.Reactor.Controls.Validation.FormFieldDsl;
 using static Microsoft.UI.Reactor.Factories;
 using static DeviceVisuals;
 
@@ -34,10 +31,7 @@ sealed class DeviceDetailsPage : Component<DeviceDetailsPageProps>
         var favorite = favorites.GetValueOrDefault(currentDevice.Fingerprint);
         var displayName = favorite?.Name ?? currentDevice.Alias;
         var (showVerification, setShowVerification) = UseState(false);
-        var (favoriteTarget, setFavoriteTarget) = UseState<LocalSendDevice?>(null);
-        var (favoriteName, setFavoriteName) = UseState(string.Empty);
-        var (favoriteAddress, setFavoriteAddress) = UseState(string.Empty);
-        var (favoritePort, setFavoritePort) = UseState(string.Empty);
+        var (favoriteDraft, setFavoriteDraft) = UseState<FavoriteDevice?>(null);
         var (showRemoveFavorite, setShowRemoveFavorite) = UseState(false);
         var activity = Props.Runtime.DeviceActivity.GetValueOrDefault(currentDevice.Fingerprint)
             ?? Array.Empty<DeviceActivityEntry>();
@@ -78,7 +72,14 @@ sealed class DeviceDetailsPage : Component<DeviceDetailsPageProps>
                 Props.Theme,
                 showVerification,
                 () => setShowVerification(false))),
-            FavoriteDialog(t),
+            favoriteDraft is null
+                ? null
+                : Component<FavoriteDeviceDialog, FavoriteDeviceDialogProps>(new(
+                    favoriteDraft,
+                    IsNew: true,
+                    Props.Theme,
+                    FavoriteDeviceStore.Upsert,
+                    () => setFavoriteDraft(null))),
             RemoveFavoriteDialog(t, currentDevice, displayName)) with
         {
             RowGap = 20,
@@ -91,65 +92,6 @@ sealed class DeviceDetailsPage : Component<DeviceDetailsPageProps>
                     .HAlign(HorizontalAlignment.Stretch)
                     .Landmark(AutomationLandmarkType.Main))
             .HorizontalContentAlignment(HorizontalAlignment.Stretch);
-
-        Element FavoriteDialog(IntlAccessor intl)
-        {
-            var validAddress = IPAddress.TryParse(favoriteAddress, out _);
-            var validPort = int.TryParse(favoritePort, out var parsedPort)
-                && parsedPort is >= 1 and <= ushort.MaxValue;
-            var canSave = favoriteTarget is not null
-                && !string.IsNullOrWhiteSpace(favoriteName)
-                && validAddress
-                && validPort;
-
-            return (ContentDialog(
-                intl.Message(new("App", "AddFavoriteTitle")),
-                VStack(12,
-                    FormField(
-                        TextBox(favoriteName, setFavoriteName)
-                            .AutomationName(intl.Message(new("App", "FavoriteDeviceName"))),
-                        label: intl.Message(new("App", "Name")),
-                        required: true),
-                    FormField(
-                        TextBox(favoriteAddress, setFavoriteAddress, placeholderText: "192.168.1.72")
-                            .AutomationName(intl.Message(new("App", "FavoriteIpAddress"))),
-                        label: intl.Message(new("App", "IpAddress")),
-                        required: true,
-                        description: validAddress || string.IsNullOrWhiteSpace(favoriteAddress)
-                            ? null
-                            : intl.Message(new("App", "InvalidIpAddress"))),
-                    FormField(
-                        TextBox(favoritePort, setFavoritePort, placeholderText: "53317")
-                            .NumericInput()
-                            .AutomationName(intl.Message(new("App", "FavoritePort"))),
-                        label: intl.Message(new("App", "Port")),
-                        required: true,
-                        description: validPort || string.IsNullOrWhiteSpace(favoritePort)
-                            ? null
-                            : intl.Message(new("App", "InvalidPort")))),
-                primaryButtonText: intl.Message(new("App", "Save"))) with
-            {
-                IsOpen = favoriteTarget is not null,
-                SecondaryButtonText = intl.Message(new("App", "Cancel")),
-                DefaultButton = ContentDialogButton.Primary,
-                OnClosed = result =>
-                {
-                    var target = favoriteTarget;
-                    if (result == ContentDialogResult.Primary && target is not null && canSave)
-                    {
-                        FavoriteDeviceStore.Upsert(new FavoriteDevice(
-                            target.Fingerprint,
-                            favoriteName.Trim(),
-                            IPAddress.Parse(favoriteAddress).ToString(),
-                            parsedPort));
-                    }
-
-                    setFavoriteTarget(null);
-                },
-            })
-                .IsPrimaryButtonEnabled(canSave)
-                .Set(dialog => ApplyDialogTheme(dialog, Props.Theme));
-        }
 
         Element RemoveFavoriteDialog(IntlAccessor intl, LocalSendDevice device, string name) =>
             (ContentDialog(
@@ -174,10 +116,11 @@ sealed class DeviceDetailsPage : Component<DeviceDetailsPageProps>
         void OpenFavoriteDialog(LocalSendDevice device)
         {
             var endpoint = device.PreferredEndpoint;
-            setFavoriteName(device.Alias);
-            setFavoriteAddress(endpoint?.Address.ToString() ?? string.Empty);
-            setFavoritePort(endpoint?.Port.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "53317");
-            setFavoriteTarget(device);
+            setFavoriteDraft(new FavoriteDevice(
+                device.Fingerprint,
+                device.Alias,
+                endpoint?.Address.ToString() ?? string.Empty,
+                endpoint?.Port ?? LocalSendOptions.DefaultPort));
         }
     }
 

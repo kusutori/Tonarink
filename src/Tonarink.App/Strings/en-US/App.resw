@@ -86,6 +86,10 @@
   <data name="FavoriteDeviceName" xml:space="preserve"><value>Favorite device name</value></data>
   <data name="FavoriteIpAddress" xml:space="preserve"><value>Favorite device IP address</value></data>
   <data name="FavoritePort" xml:space="preserve"><value>Favorite device port</value></data>
+  <data name="FavoritesEmpty" xml:space="preserve"><value>There are no devices in your favorites yet.</value></data>
+  <data name="FavoritesTitle" xml:space="preserve"><value>Favorites</value></data>
+  <data name="NewFavorite" xml:space="preserve"><value>New</value></data>
+  <data name="SendToFavorite" xml:space="preserve"><value>Send to favorite device “{device}”</value></data>
   <data name="File" xml:space="preserve"><value>File</value></data>
   <data name="Fingerprint" xml:space="preserve"><value>Fingerprint  {fingerprint}…</value></data>
   <data name="Folder" xml:space="preserve"><value>Folder</value></data>

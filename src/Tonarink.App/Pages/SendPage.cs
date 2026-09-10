@@ -75,6 +75,9 @@ sealed class SendPage : Component<SendPageProps>
         var (text, setText) = UseState(string.Empty);
         var (showTextDialog, setShowTextDialog) = UseState(false);
         var (showAddressDialog, setShowAddressDialog) = UseState(false);
+        var (showFavoritesDialog, setShowFavoritesDialog) = UseState(false);
+        var (favoriteEdit, setFavoriteEdit) = UseState<FavoriteDeviceEdit?>(null);
+        var (favoriteToDelete, setFavoriteToDelete) = UseState<FavoriteDevice?>(null);
         var (manualAddress, setManualAddress) = UseState(string.Empty);
         var (manualAddressError, setManualAddressError) = UseState<string?>(null);
         var (isResolvingAddress, setResolvingAddress) = UseState(false);
@@ -94,6 +97,8 @@ sealed class SendPage : Component<SendPageProps>
             t.Message(new("App", "SendHint"))));
         var sendCancellationRef = UseRef<CancellationTokenSource?>(null);
         var searchingPlayerRef = UseRef<AnimatedVisualPlayer?>(null);
+        var pendingFavoriteEditRef = UseRef<FavoriteDevice?>(null);
+        var pendingFavoriteDeleteRef = UseRef<FavoriteDevice?>(null);
         var shareTargetPayloadId = Props.ShareTargetPayload?.Id ?? Guid.Empty;
 
         UseNavigationLifecycle(onNavigatedTo: _ =>
@@ -310,6 +315,12 @@ sealed class SendPage : Component<SendPageProps>
                                     .IsEnabled(!sendMutation.IsPending
                                                && !isResolvingAddress
                                                && Props.Runtime.NodeState == LocalSendNodeState.Running),
+                                Button(Icon("\uEB52"), OpenFavoritesDialog)
+                                    .AutomationName(t.Message(new("App", "FavoritesTitle")))
+                                    .ToolTip(t.Message(new("App", "FavoritesTitle")))
+                                    .IsEnabled(!sendMutation.IsPending
+                                               && !isResolvingAddress
+                                               && Props.Runtime.NodeState == LocalSendNodeState.Running),
                                 Button(Icon("\uE71B"), () =>
                                     {
                                         if (selectedItems.Count == 0)
@@ -364,6 +375,16 @@ sealed class SendPage : Component<SendPageProps>
                 contentCards,
                 TextDialog(),
                 AddressDialog(),
+                FavoritesDialog(),
+                favoriteEdit is null
+                    ? null
+                    : Component<FavoriteDeviceDialog, FavoriteDeviceDialogProps>(new(
+                        favoriteEdit.Device,
+                        favoriteEdit.IsNew,
+                        Props.Theme,
+                        FavoriteDeviceStore.Upsert,
+                        () => setFavoriteEdit(null))),
+                DeleteFavoriteDialog(),
                 PinDialog()) with
             {
                 RowGap = 20,
@@ -494,6 +515,116 @@ sealed class SendPage : Component<SendPageProps>
                     },
                 }).Set(dialog => ApplyDialogTheme(dialog, Props.Theme));
         }
+
+        Element FavoritesDialog()
+        {
+            var entries = favorites.Values
+                .OrderBy(static favorite => favorite.Name, StringComparer.CurrentCultureIgnoreCase)
+                .ToArray();
+            Element body = entries.Length == 0
+                ? TextBlock(t.Message(new("App", "FavoritesEmpty")))
+                    .Foreground(Theme.SecondaryText)
+                    .HAlign(HorizontalAlignment.Center)
+                    .Margin(0, 28)
+                : VStack(8, entries.Select(FavoriteRow).ToArray<Element?>());
+
+            return (ContentDialog(
+                    t.Message(new("App", "FavoritesTitle")),
+                    ScrollView(body)
+                        .HorizontalContentAlignment(HorizontalAlignment.Stretch)
+                        .MaxHeight(420)
+                        .MinWidth(420),
+                    primaryButtonText: t.Message(new("App", "NewFavorite"))) with
+                {
+                    IsOpen = showFavoritesDialog,
+                    SecondaryButtonText = t.Message(new("App", "Cancel")),
+                    DefaultButton = ContentDialogButton.None,
+                    OnClosed = result =>
+                    {
+                        setShowFavoritesDialog(false);
+                        var edit = pendingFavoriteEditRef.Current;
+                        var delete = pendingFavoriteDeleteRef.Current;
+                        pendingFavoriteEditRef.Current = null;
+                        pendingFavoriteDeleteRef.Current = null;
+                        if (result == ContentDialogResult.Primary)
+                        {
+                            setFavoriteEdit(new FavoriteDeviceEdit(
+                                new FavoriteDevice(
+                                    $"manual:{Guid.NewGuid():N}",
+                                    string.Empty,
+                                    string.Empty,
+                                    LocalSendOptions.DefaultPort),
+                                IsNew: true));
+                        }
+                        else if (edit is not null)
+                        {
+                            setFavoriteEdit(new FavoriteDeviceEdit(edit, IsNew: false));
+                        }
+                        else if (delete is not null)
+                        {
+                            setFavoriteToDelete(delete);
+                        }
+                    },
+                }).Set(dialog => ApplyDialogTheme(dialog, Props.Theme));
+        }
+
+        Element FavoriteRow(FavoriteDevice favorite) =>
+            Card(
+                Grid(
+                        columns: [GridSize.Star(), GridSize.Auto, GridSize.Auto],
+                        rows: [GridSize.Auto],
+                        Button(
+                                VStack(2,
+                                    BodyStrong(favorite.Name)
+                                        .TextTrimming(TextTrimming.CharacterEllipsis),
+                                    TextBlock(favorite.Address)
+                                        .Foreground(Theme.SecondaryText)
+                                        .TextTrimming(TextTrimming.CharacterEllipsis)),
+                                () => SendFavorite(favorite))
+                            .Padding(12, 8)
+                            .HAlign(HorizontalAlignment.Stretch)
+                            .HorizontalContentAlignment(HorizontalAlignment.Left)
+                            .AutomationName(t.Message(
+                                new("App", "SendToFavorite"),
+                                ("device", favorite.Name)))
+                            .GhostButton()
+                            .Grid(column: 0),
+                        Button(Icon("\uE70F"), () => OpenFavoriteEditor(favorite))
+                            .AutomationName(t.Message(
+                                new("App", "EditFavoriteDevice"),
+                                ("device", favorite.Name)))
+                            .ToolTip(t.Message(new("App", "EditFavorite")))
+                            .SubtleButton()
+                            .Grid(column: 1),
+                        Button(Icon("\uE74D"), () => OpenDeleteFavorite(favorite))
+                            .AutomationName(t.Message(
+                                new("App", "RemoveFavoriteDevice"),
+                                ("device", favorite.Name)))
+                            .ToolTip(t.Message(new("App", "Delete")))
+                            .SubtleButton()
+                            .Grid(column: 2))
+                    .HAlign(HorizontalAlignment.Stretch));
+
+        Element DeleteFavoriteDialog() =>
+            (ContentDialog(
+                    t.Message(new("App", "DeleteFavoriteTitle")),
+                    TextBlock(t.Message(
+                            new("App", "DeleteFavoriteConfirm"),
+                            ("device", favoriteToDelete?.Name ?? string.Empty)))
+                        .TextWrapping(TextWrapping.WrapWholeWords),
+                    primaryButtonText: t.Message(new("App", "Delete"))) with
+                {
+                    IsOpen = favoriteToDelete is not null,
+                    SecondaryButtonText = t.Message(new("App", "Cancel")),
+                    DefaultButton = ContentDialogButton.Primary,
+                    OnClosed = result =>
+                    {
+                        var target = favoriteToDelete;
+                        setFavoriteToDelete(null);
+                        if (result == ContentDialogResult.Primary && target is not null)
+                            FavoriteDeviceStore.Remove(target.Fingerprint);
+                    },
+                }).Set(dialog => ApplyDialogTheme(dialog, Props.Theme));
 
         Element PinDialog() => (ContentDialog(
                 t.Message(new("App", "PinRequiredTitle")),
@@ -878,6 +1009,39 @@ sealed class SendPage : Component<SendPageProps>
             setManualAddressError(null);
             setManualAddress(recentManualAddress ?? string.Empty);
             setShowAddressDialog(true);
+        }
+
+        void OpenFavoritesDialog()
+        {
+            if (Props.Node?.State != LocalSendNodeState.Running)
+                return;
+
+            setShowFavoritesDialog(true);
+        }
+
+        void OpenFavoriteEditor(FavoriteDevice favorite)
+        {
+            pendingFavoriteEditRef.Current = favorite;
+            setShowFavoritesDialog(false);
+        }
+
+        void OpenDeleteFavorite(FavoriteDevice favorite)
+        {
+            pendingFavoriteDeleteRef.Current = favorite;
+            setShowFavoritesDialog(false);
+        }
+
+        void SendFavorite(FavoriteDevice favorite)
+        {
+            setShowFavoritesDialog(false);
+            if (selectedItems.Count == 0)
+            {
+                setPickerMessage(t.Message(new("App", "SelectContentFirst")));
+                return;
+            }
+
+            var address = IPAddress.Parse(favorite.Address);
+            _ = SendToAddressAsync(FormatAddress(address, favorite.Port));
         }
 
         void UseRecentAddress()
