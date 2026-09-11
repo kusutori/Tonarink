@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Core;
 using Microsoft.UI.Reactor.Layout;
@@ -43,9 +42,10 @@ sealed class HistoryPage : Component<HistoryPageProps>
                         .Set("ButtonForegroundPressed", Theme.SystemCritical)
                         .Set("ButtonForegroundDisabled", Theme.DisabledText)))
             with
-            {
-                ColumnGap = 8, Wrap = FlexWrap.Wrap
-            };
+        {
+            ColumnGap = 8,
+            Wrap = FlexWrap.Wrap
+        };
 
         Element list = entries.Count == 0
             ? Caption(t.Message(new("App", "HistoryEmpty")))
@@ -65,29 +65,29 @@ sealed class HistoryPage : Component<HistoryPageProps>
                                 TextBlock(t.Message(new("App", "HistoryDeleteAllConfirmMessage")))
                                     .TextWrapping(TextWrapping.WrapWholeWords),
                                 primaryButtonText: t.Message(new("App", "HistoryDeleteAll"))) with
+                        {
+                            IsOpen = confirmClear,
+                            SecondaryButtonText = t.Message(new("App", "Cancel")),
+                            DefaultButton = ContentDialogButton.Primary,
+                            OnClosed = result =>
                             {
-                                IsOpen = confirmClear,
-                                SecondaryButtonText = t.Message(new("App", "Cancel")),
-                                DefaultButton = ContentDialogButton.Primary,
-                                OnClosed = result =>
-                                {
-                                    if (result == ContentDialogResult.Primary)
-                                        ReceiveHistoryStore.Clear();
-                                    setConfirmClear(false);
-                                },
-                            }).Set(dialog => dialog.RequestedTheme = Props.Theme),
+                                if (result == ContentDialogResult.Primary)
+                                    ReceiveHistoryStore.Clear();
+                                setConfirmClear(false);
+                            },
+                        }).Themed(Props.Theme),
                         (ContentDialog(
                                 t.Message(new("App", "HistoryInfoTitle")),
                                 infoEntry is null ? Empty() : HistoryInfoBody(infoEntry, t),
                                 primaryButtonText: t.Message(new("App", "Close"))) with
-                            {
-                                IsOpen = infoEntry is not null,
-                                DefaultButton = ContentDialogButton.Primary,
-                                OnClosed = _ => setInfoEntry(null),
-                            }).Set(dialog => dialog.RequestedTheme = Props.Theme)) with
-                    {
-                        RowGap = 20
-                    }))
+                        {
+                            IsOpen = infoEntry is not null,
+                            DefaultButton = ContentDialogButton.Primary,
+                            OnClosed = _ => setInfoEntry(null),
+                        }).Themed(Props.Theme)) with
+                {
+                    RowGap = 20
+                }))
             .Padding(AppLayout.PagePadding)
             .Landmark(AutomationLandmarkType.Main);
 
@@ -98,7 +98,7 @@ sealed class HistoryPage : Component<HistoryPageProps>
                 return;
 
             Directory.CreateDirectory(directory);
-            OpenPath(directory);
+            ShellLauncher.Open(directory);
         }
     }
 
@@ -148,11 +148,11 @@ sealed class HistoryPage : Component<HistoryPageProps>
                             [
                                 MenuItem(
                                     t.Message(new("App", "HistoryOpenFile")),
-                                    exists ? () => OpenPath(entry.Path) : null,
+                                    exists ? () => ShellLauncher.Open(entry.Path) : null,
                                     icon: "OpenFile"),
                                 MenuItem(
                                     t.Message(new("App", "HistoryShowInFolder")),
-                                    exists ? () => RevealInExplorer(entry.Path) : null,
+                                    exists ? () => ShellLauncher.Reveal(entry.Path) : null,
                                     icon: "Folder"),
                                 MenuItem(
                                     t.Message(new("App", "HistoryInfo")),
@@ -193,40 +193,4 @@ sealed class HistoryPage : Component<HistoryPageProps>
     private static bool PathExists(string path) =>
         !string.IsNullOrWhiteSpace(path) && (File.Exists(path) || Directory.Exists(path));
 
-    private static void OpenPath(string path)
-    {
-        try
-        {
-            Process.Start(new ProcessStartInfo
-            {
-                FileName = path,
-                UseShellExecute = true,
-            });
-        }
-        catch
-        {
-        }
-    }
-
-    private static void RevealInExplorer(string path)
-    {
-        try
-        {
-            if (Directory.Exists(path))
-            {
-                OpenPath(path);
-                return;
-            }
-
-            Process.Start(new ProcessStartInfo
-            {
-                FileName = "explorer.exe",
-                Arguments = $"/select,\"{path}\"",
-                UseShellExecute = true,
-            });
-        }
-        catch
-        {
-        }
-    }
 }

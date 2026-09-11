@@ -188,7 +188,7 @@ sealed class WebSharePage : Component<WebSharePageProps>
 
                         setPinDialogOpen(false);
                     },
-                }).Set(dialog => ApplyDialogTheme(dialog, dialogTheme)),
+                }).Themed(dialogTheme),
                 (ContentDialog(
                     t.Message(new("App", "WebShareQrTitle")),
                     qrUrl is null
@@ -204,7 +204,7 @@ sealed class WebSharePage : Component<WebSharePageProps>
                 {
                     IsOpen = qrUrl is not null,
                     OnClosed = _ => setQrUrl(null),
-                }).Set(dialog => ApplyDialogTheme(dialog, dialogTheme)),
+                }).Themed(dialogTheme),
                 (ContentDialog(
                     t.Message(new("App", "WebShareZoomTitle")),
                     Title(zoomUrl ?? "")
@@ -215,13 +215,10 @@ sealed class WebSharePage : Component<WebSharePageProps>
                 {
                     IsOpen = zoomUrl is not null,
                     OnClosed = _ => setZoomUrl(null),
-                }).Set(dialog => ApplyDialogTheme(dialog, dialogTheme)))
+                }).Themed(dialogTheme))
             .Padding(AppLayout.PagePadding))
             .HorizontalContentAlignment(HorizontalAlignment.Stretch)
             .Landmark(AutomationLandmarkType.Main);
-
-        static void ApplyDialogTheme(ContentDialog dialog, ElementTheme theme) =>
-            dialog.RequestedTheme = theme;
 
         void ShowQr(string url)
         {

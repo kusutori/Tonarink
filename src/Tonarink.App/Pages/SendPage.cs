@@ -96,8 +96,6 @@ sealed class SendPage : Component<SendPageProps>
             t.Message(new("App", "SendHint"))));
         var sendCancellationRef = UseRef<CancellationTokenSource?>(null);
         var searchingPlayerRef = UseRef<AnimatedVisualPlayer?>(null);
-        var pendingFavoriteEditRef = UseRef<FavoriteDevice?>(null);
-        var pendingFavoriteDeleteRef = UseRef<FavoriteDevice?>(null);
         var shareTargetPayloadId = Props.ShareTargetPayload?.Id ?? Guid.Empty;
 
         UseNavigationLifecycle(onNavigatedTo: _ =>
@@ -387,7 +385,21 @@ sealed class SendPage : Component<SendPageProps>
                 contentCards,
                 TextDialog(),
                 AddressDialog(),
-                FavoritesDialog(),
+                Component<FavoriteDevicesDialog, FavoriteDevicesDialogProps>(new(
+                    favorites,
+                    Props.Theme,
+                    showFavoritesDialog,
+                    SendFavorite,
+                    () => setFavoriteEdit(new FavoriteDeviceEdit(
+                        new FavoriteDevice(
+                            $"manual:{Guid.NewGuid():N}",
+                            string.Empty,
+                            string.Empty,
+                            LocalSendOptions.DefaultPort),
+                        IsNew: true)),
+                    favorite => setFavoriteEdit(new FavoriteDeviceEdit(favorite, IsNew: false)),
+                    setFavoriteToDelete,
+                    () => setShowFavoritesDialog(false))),
                 favoriteEdit is null
                     ? null
                     : Component<FavoriteDeviceDialog, FavoriteDeviceDialogProps>(new(
@@ -465,7 +477,7 @@ sealed class SendPage : Component<SendPageProps>
 
                 setShowTextDialog(false);
             },
-        }).Set(dialog => ApplyDialogTheme(dialog, Props.Theme));
+        }).Themed(Props.Theme);
 
         Element AddressDialog()
         {
@@ -524,97 +536,8 @@ sealed class SendPage : Component<SendPageProps>
                     if (result == ContentDialogResult.Primary)
                         _ = SendToAddressAsync(manualAddress);
                 },
-            }).Set(dialog => ApplyDialogTheme(dialog, Props.Theme));
+            }).Themed(Props.Theme);
         }
-
-        Element FavoritesDialog()
-        {
-            var entries = favorites.Values
-                .OrderBy(static favorite => favorite.Name, StringComparer.CurrentCultureIgnoreCase)
-                .ToArray();
-            Element body = entries.Length == 0
-                ? TextBlock(t.Message(new("App", "FavoritesEmpty")))
-                    .Foreground(Theme.SecondaryText)
-                    .HAlign(HorizontalAlignment.Center)
-                    .Margin(0, 28)
-                : VStack(8, entries.Select(FavoriteRow).ToArray<Element?>());
-
-            return (ContentDialog(
-                    t.Message(new("App", "FavoritesTitle")),
-                    ScrollView(body)
-                        .HorizontalContentAlignment(HorizontalAlignment.Stretch)
-                        .MaxHeight(420)
-                        .MinWidth(420),
-                    primaryButtonText: t.Message(new("App", "NewFavorite"))) with
-            {
-                IsOpen = showFavoritesDialog,
-                SecondaryButtonText = t.Message(new("App", "Cancel")),
-                DefaultButton = ContentDialogButton.None,
-                OnClosed = result =>
-                {
-                    setShowFavoritesDialog(false);
-                    var edit = pendingFavoriteEditRef.Current;
-                    var delete = pendingFavoriteDeleteRef.Current;
-                    pendingFavoriteEditRef.Current = null;
-                    pendingFavoriteDeleteRef.Current = null;
-                    if (result == ContentDialogResult.Primary)
-                    {
-                        setFavoriteEdit(new FavoriteDeviceEdit(
-                            new FavoriteDevice(
-                                $"manual:{Guid.NewGuid():N}",
-                                string.Empty,
-                                string.Empty,
-                                LocalSendOptions.DefaultPort),
-                            IsNew: true));
-                    }
-                    else if (edit is not null)
-                    {
-                        setFavoriteEdit(new FavoriteDeviceEdit(edit, IsNew: false));
-                    }
-                    else if (delete is not null)
-                    {
-                        setFavoriteToDelete(delete);
-                    }
-                },
-            }).Set(dialog => ApplyDialogTheme(dialog, Props.Theme));
-        }
-
-        Element FavoriteRow(FavoriteDevice favorite) =>
-            Card(
-                Grid(
-                        columns: [GridSize.Star(), GridSize.Auto, GridSize.Auto],
-                        rows: [GridSize.Auto],
-                        Button(
-                                VStack(2,
-                                    BodyStrong(favorite.Name)
-                                        .TextTrimming(TextTrimming.CharacterEllipsis),
-                                    TextBlock(favorite.Address)
-                                        .Foreground(Theme.SecondaryText)
-                                        .TextTrimming(TextTrimming.CharacterEllipsis)),
-                                () => SendFavorite(favorite))
-                            .Padding(12, 8)
-                            .HAlign(HorizontalAlignment.Stretch)
-                            .HorizontalContentAlignment(HorizontalAlignment.Left)
-                            .AutomationName(t.Message(
-                                new("App", "SendToFavorite"),
-                                ("device", favorite.Name)))
-                            .GhostButton()
-                            .Grid(column: 0),
-                        Button(Icon("\uE70F"), () => OpenFavoriteEditor(favorite))
-                            .AutomationName(t.Message(
-                                new("App", "EditFavoriteDevice"),
-                                ("device", favorite.Name)))
-                            .ToolTip(t.Message(new("App", "EditFavorite")))
-                            .SubtleButton()
-                            .Grid(column: 1),
-                        Button(Icon("\uE74D"), () => OpenDeleteFavorite(favorite))
-                            .AutomationName(t.Message(
-                                new("App", "RemoveFavoriteDevice"),
-                                ("device", favorite.Name)))
-                            .ToolTip(t.Message(new("App", "Delete")))
-                            .SubtleButton()
-                            .Grid(column: 2))
-                    .HAlign(HorizontalAlignment.Stretch));
 
         Element DeleteFavoriteDialog() =>
             (ContentDialog(
@@ -635,10 +558,7 @@ sealed class SendPage : Component<SendPageProps>
                     if (result == ContentDialogResult.Primary && target is not null)
                         FavoriteDeviceStore.Remove(target.Fingerprint);
                 },
-            }).Set(dialog => ApplyDialogTheme(dialog, Props.Theme));
-
-        static void ApplyDialogTheme(ContentDialog dialog, ElementTheme theme) =>
-            dialog.RequestedTheme = theme;
+            }).Themed(Props.Theme);
 
         async Task PickFileAsync()
         {
@@ -996,18 +916,6 @@ sealed class SendPage : Component<SendPageProps>
                 return;
 
             setShowFavoritesDialog(true);
-        }
-
-        void OpenFavoriteEditor(FavoriteDevice favorite)
-        {
-            pendingFavoriteEditRef.Current = favorite;
-            setShowFavoritesDialog(false);
-        }
-
-        void OpenDeleteFavorite(FavoriteDevice favorite)
-        {
-            pendingFavoriteDeleteRef.Current = favorite;
-            setShowFavoritesDialog(false);
         }
 
         void SendFavorite(FavoriteDevice favorite)

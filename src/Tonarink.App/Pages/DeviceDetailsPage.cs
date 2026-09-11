@@ -116,7 +116,7 @@ sealed class DeviceDetailsPage : Component<DeviceDetailsPageProps>
                     if (result == ContentDialogResult.Primary)
                         FavoriteDeviceStore.Remove(device.Fingerprint);
                 },
-            }).Set(dialog => ApplyDialogTheme(dialog, Props.Theme));
+            }).Themed(Props.Theme);
 
         void OpenFavoriteDialog(LocalSendDevice device)
         {
@@ -216,6 +216,4 @@ sealed class DeviceDetailsPage : Component<DeviceDetailsPageProps>
             .Padding(horizontal: 0, vertical: 4);
     }
 
-    private static void ApplyDialogTheme(ContentDialog dialog, ElementTheme theme) =>
-        dialog.RequestedTheme = theme;
 }

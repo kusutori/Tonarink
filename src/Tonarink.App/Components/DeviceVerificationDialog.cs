@@ -76,7 +76,7 @@ sealed class DeviceVerificationDialog : Component<DeviceVerificationDialogProps>
         {
             IsOpen = Props.IsOpen,
             OnClosed = _ => Props.Close(),
-        }).Set(dialog => dialog.RequestedTheme = Props.Theme);
+        }).Themed(Props.Theme);
     }
 
     private static Element VerificationIcons(string combined) =>

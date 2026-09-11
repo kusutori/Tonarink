@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using LocalSendDotNet;
 using Microsoft.UI.Input;
 using Microsoft.UI.Reactor;
@@ -671,11 +670,11 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
                     return;
 
                 case "open-file":
-                    OpenNotificationPath(activation.Path, reveal: false);
+                    ShellLauncher.Open(activation.Path);
                     return;
 
                 case "show-in-folder":
-                    OpenNotificationPath(activation.Path, reveal: true);
+                    ShellLauncher.Reveal(activation.Path);
                     return;
 
                 default:
@@ -954,39 +953,6 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
                     exception.Message,
                     "receive-failed");
                 updateRuntime(current => current with { Error = exception.Message });
-            }
-        }
-
-        static void OpenNotificationPath(string? path, bool reveal)
-        {
-            if (string.IsNullOrWhiteSpace(path))
-                return;
-
-            try
-            {
-                var fullPath = Path.GetFullPath(path);
-                if (Directory.Exists(fullPath))
-                {
-                    Process.Start(new ProcessStartInfo
-                    {
-                        FileName = fullPath,
-                        UseShellExecute = true,
-                    });
-                    return;
-                }
-
-                if (!File.Exists(fullPath))
-                    return;
-
-                Process.Start(new ProcessStartInfo
-                {
-                    FileName = reveal ? "explorer.exe" : fullPath,
-                    Arguments = reveal ? $"/select,\"{fullPath}\"" : string.Empty,
-                    UseShellExecute = true,
-                });
-            }
-            catch
-            {
             }
         }
 

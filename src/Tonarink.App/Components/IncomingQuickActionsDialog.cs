@@ -90,18 +90,18 @@ sealed class IncomingQuickActionsDialog : Component<IncomingQuickActionsDialogPr
                 t.Message(new("App", "QuickActionsTitle")),
                 body,
                 primaryButtonText: t.Message(new("App", "Confirm"))) with
+        {
+            IsOpen = Props.IsOpen,
+            SecondaryButtonText = t.Message(new("App", "Cancel")),
+            DefaultButton = ContentDialogButton.Primary,
+            IsPrimaryButtonEnabled = Props.Files.Count > 0 && (mode == 1 || prefixValid),
+            OnClosed = result =>
             {
-                IsOpen = Props.IsOpen,
-                SecondaryButtonText = t.Message(new("App", "Cancel")),
-                DefaultButton = ContentDialogButton.Primary,
-                IsPrimaryButtonEnabled = Props.Files.Count > 0 && (mode == 1 || prefixValid),
-                OnClosed = result =>
-                {
-                    if (result == ContentDialogResult.Primary && Props.Files.Count > 0 && (mode == 1 || prefixValid))
-                        Props.Apply(BuildNames());
-                    Props.Close();
-                },
-            }).Set(dialog => dialog.RequestedTheme = Props.Theme);
+                if (result == ContentDialogResult.Primary && Props.Files.Count > 0 && (mode == 1 || prefixValid))
+                    Props.Apply(BuildNames());
+                Props.Close();
+            },
+        }).Themed(Props.Theme);
 
         IReadOnlyDictionary<string, string> BuildNames()
         {
