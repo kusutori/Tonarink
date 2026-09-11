@@ -169,6 +169,7 @@
   <data name="PickFolderFailed" xml:space="preserve"><value>Could not select folder: {error}</value></data>
   <data name="PinIncorrect" xml:space="preserve"><value>Incorrect PIN. Try again.</value></data>
   <data name="Pin" xml:space="preserve"><value>PIN</value></data>
+  <data name="PinConfirm" xml:space="preserve"><value>Confirm</value></data>
   <data name="PinPlaceholder" xml:space="preserve"><value>Enter PIN</value></data>
   <data name="PinRateLimited" xml:space="preserve"><value>Too many PIN attempts. Try again later.</value></data>
   <data name="PinRequiredMessage" xml:space="preserve"><value>{device} requires a receive PIN.</value></data>

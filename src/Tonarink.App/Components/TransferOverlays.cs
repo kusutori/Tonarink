@@ -152,7 +152,7 @@ sealed class OutgoingTransferOverlay : Component<OutgoingTransferOverlayProps>
                         prompt?.Error is null
                             ? null
                             : TextBlock(prompt.Error).Foreground(Theme.SystemCritical)),
-                    primaryButtonText: t.Message(new("App", "Retry"))) with
+                    primaryButtonText: t.Message(new("App", "PinConfirm"))) with
             {
                 IsOpen = connectedAnimationReady && prompt is not null,
                 SecondaryButtonText = t.Message(new("App", "Cancel")),
