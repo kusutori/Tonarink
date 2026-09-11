@@ -30,6 +30,7 @@ sealed record SendPageProps(
     Action<Func<IReadOnlyList<SelectedSendItem>, IReadOnlyList<SelectedSendItem>>> UpdateSelectedItems,
     bool KeepItemsForMultipleReceivers,
     Action<bool> SetKeepItemsForMultipleReceivers,
+    bool VerifyChecksums,
     Action<LocalSendDevice> OpenDeviceDetails);
 
 sealed record SelectedSendItem(
@@ -137,7 +138,11 @@ sealed class SendPage : Component<SendPageProps>
             return await Props.Node!.SendAsync(
                 request.Device,
                 request.Items,
-                new SendOptions { Pin = request.Pin },
+                new SendOptions
+                {
+                    Pin = request.Pin,
+                    ComputeSha256 = Props.VerifyChecksums,
+                },
                 progress,
                 linkedCancellation.Token).ConfigureAwait(false);
         });

@@ -278,6 +278,11 @@
   <data name="SettingsMinimizeToTray" xml:space="preserve"><value>Minimize to the system tray when closing</value></data>
   <data name="SettingsMinimizeToTrayDescription" xml:space="preserve"><value>Keep receiving in the background when the main window closes.</value></data>
   <data name="SettingsReceive" xml:space="preserve"><value>Receive</value></data>
+  <data name="SettingsSend" xml:space="preserve"><value>Send</value></data>
+  <data name="SettingsVerifyChecksumsOnReceive" xml:space="preserve"><value>Verify checksums when receiving files</value></data>
+  <data name="SettingsVerifyChecksumsOnReceiveDescription" xml:space="preserve"><value>Use sender-provided SHA-256 checksums to verify file integrity.</value></data>
+  <data name="SettingsVerifyChecksumsOnSend" xml:space="preserve"><value>Verify checksums when sending files</value></data>
+  <data name="SettingsVerifyChecksumsOnSendDescription" xml:space="preserve"><value>Compute SHA-256 checksums before sending so receiving devices can verify file integrity.</value></data>
   <data name="SettingsReceivePin" xml:space="preserve"><value>Receive PIN</value></data>
   <data name="SettingsReceivePinDescription" xml:space="preserve"><value>Other devices must enter this PIN when sending to this device. Restart the server after changing it.</value></data>
   <data name="SettingsReceivePinEnabled" xml:space="preserve"><value>Enable PIN protection</value></data>

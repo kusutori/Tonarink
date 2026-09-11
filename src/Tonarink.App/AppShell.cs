@@ -400,6 +400,7 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
                 {
                     KeepItemsForMultipleReceivers = value,
                 }),
+                settings.VerifyChecksumsOnSend,
                 device =>
                 {
                     setDetailsDevice(device);
@@ -485,6 +486,7 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
                     pendingIncoming,
                     settings.DownloadDirectory,
                     settings.SaveReceiveHistory,
+                    settings.VerifyChecksumsOnReceive,
                     contentTheme,
                     DismissIncoming))
                 .WithKey(pendingIncoming.RequestId.ToString("N"))
@@ -652,6 +654,7 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
                             node,
                             request,
                             currentSettings.DownloadDirectory,
+                            currentSettings.VerifyChecksumsOnReceive,
                             CancellationToken.None).ConfigureAwait(false);
                     }
                     else
@@ -875,6 +878,7 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
                         node,
                         request,
                         currentSettings.DownloadDirectory,
+                        currentSettings.VerifyChecksumsOnReceive,
                         cancellationToken);
                     continue;
                 }
@@ -898,6 +902,7 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
             LocalSendNode node,
             IncomingTransferRequest request,
             string downloadDirectory,
+            bool verifyChecksums,
             CancellationToken cancellationToken)
         {
             try
@@ -907,6 +912,7 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
                     new AcceptTransferOptions
                     {
                         DestinationDirectory = downloadDirectory,
+                        VerifySha256 = verifyChecksums,
                     },
                     cancellationToken: cancellationToken).ConfigureAwait(false);
                 if (!result.IsSuccess)

@@ -24,6 +24,7 @@ internal sealed class IncomingSession
     public required TaskCompletionSource<TransferResult> Completion { get; init; }
     public Dictionary<string, string> Tokens { get; } = new(StringComparer.Ordinal);
     public Dictionary<string, string> Destinations { get; } = new(StringComparer.Ordinal);
+    public bool VerifySha256 { get; set; } = true;
     public CancellationTokenSource Cancellation { get; } = new();
     public IProgress<TransferProgress>? Progress { get; set; }
 

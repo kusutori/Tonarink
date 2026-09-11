@@ -55,7 +55,9 @@ sealed class AppSettingsFile
     public bool? NotificationsEnabled { get; set; }
     public string? NotificationDefaultAction { get; set; }
     public bool? KeepItemsForMultipleReceivers { get; set; }
+    public bool? VerifyChecksumsOnSend { get; set; }
     public bool? SaveReceiveHistory { get; set; }
+    public bool? VerifyChecksumsOnReceive { get; set; }
     public bool? ReceivePinEnabled { get; set; }
     public string? ReceivePin { get; set; }
     public bool? FavoritesOnly { get; set; }
@@ -87,7 +89,9 @@ sealed class AppSettingsFile
         NotificationsEnabled = settings.NotificationsEnabled,
         NotificationDefaultAction = settings.NotificationDefaultAction.ToString(),
         KeepItemsForMultipleReceivers = settings.KeepItemsForMultipleReceivers,
+        VerifyChecksumsOnSend = settings.VerifyChecksumsOnSend,
         SaveReceiveHistory = settings.SaveReceiveHistory,
+        VerifyChecksumsOnReceive = settings.VerifyChecksumsOnReceive,
         ReceivePinEnabled = settings.ReceivePinEnabled,
         ReceivePin = settings.ReceivePin,
         FavoritesOnly = settings.FavoritesOnly,
@@ -128,7 +132,9 @@ sealed class AppSettingsFile
                     ? notificationDefaultAction
                     : defaults.NotificationDefaultAction,
             KeepItemsForMultipleReceivers = KeepItemsForMultipleReceivers ?? defaults.KeepItemsForMultipleReceivers,
+            VerifyChecksumsOnSend = VerifyChecksumsOnSend ?? defaults.VerifyChecksumsOnSend,
             SaveReceiveHistory = SaveReceiveHistory ?? defaults.SaveReceiveHistory,
+            VerifyChecksumsOnReceive = VerifyChecksumsOnReceive ?? defaults.VerifyChecksumsOnReceive,
             ReceivePinEnabled = ReceivePinEnabled ?? defaults.ReceivePinEnabled,
             ReceivePin = string.IsNullOrWhiteSpace(ReceivePin) ? defaults.ReceivePin : ReceivePin.Trim(),
             FavoritesOnly = autoSave == AutoSaveMode.Favorites,

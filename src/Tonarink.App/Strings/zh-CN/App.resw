@@ -278,6 +278,11 @@
   <data name="SettingsMinimizeToTray" xml:space="preserve"><value>关闭时最小化到系统托盘</value></data>
   <data name="SettingsMinimizeToTrayDescription" xml:space="preserve"><value>关闭主窗口时继续在后台接收。</value></data>
   <data name="SettingsReceive" xml:space="preserve"><value>接收</value></data>
+  <data name="SettingsSend" xml:space="preserve"><value>发送</value></data>
+  <data name="SettingsVerifyChecksumsOnReceive" xml:space="preserve"><value>接收文件时验证校验和</value></data>
+  <data name="SettingsVerifyChecksumsOnReceiveDescription" xml:space="preserve"><value>使用发送方提供的 SHA-256 校验和验证文件完整性。</value></data>
+  <data name="SettingsVerifyChecksumsOnSend" xml:space="preserve"><value>发送文件时验证校验和</value></data>
+  <data name="SettingsVerifyChecksumsOnSendDescription" xml:space="preserve"><value>发送前计算 SHA-256 校验和，供接收设备验证文件完整性。</value></data>
   <data name="SettingsReceivePin" xml:space="preserve"><value>接收 PIN</value></data>
   <data name="SettingsReceivePinDescription" xml:space="preserve"><value>其他设备向本机发送内容时需要输入此 PIN；更改后需要重启服务器。</value></data>
   <data name="SettingsReceivePinEnabled" xml:space="preserve"><value>启用 PIN 密码</value></data>

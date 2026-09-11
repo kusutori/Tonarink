@@ -216,6 +216,15 @@ sealed class SettingsPage : Component<SettingsPageProps>
                 content:
                 ToggleSwitch(Props.Settings.SaveReceiveHistory, value =>
                     Props.UpdateSettings(settings => settings with { SaveReceiveHistory = value }))),
+            SettingsCard(
+                header: t.Message(new("App", "SettingsVerifyChecksumsOnReceive")),
+                description: t.Message(new("App", "SettingsVerifyChecksumsOnReceiveDescription")),
+                headerIcon: HeaderGlyph("\uE73E"),
+                isClickEnabled: false,
+                isActionIconVisible: false,
+                content:
+                ToggleSwitch(Props.Settings.VerifyChecksumsOnReceive, value =>
+                    Props.UpdateSettings(settings => settings with { VerifyChecksumsOnReceive = value }))),
             SettingsExpander(
                     headerIcon: HeaderGlyph("\uE72E"),
                     items:
@@ -247,6 +256,18 @@ sealed class SettingsPage : Component<SettingsPageProps>
                     expander.Header = t.Message(new("App", "SettingsReceivePinProtection"));
                     expander.Description = t.Message(new("App", "SettingsReceivePinProtectionDescription"));
                 }));
+
+        var sendCards = SettingsGroup(
+            t.Message(new("App", "SettingsSend")),
+            SettingsCard(
+                header: t.Message(new("App", "SettingsVerifyChecksumsOnSend")),
+                description: t.Message(new("App", "SettingsVerifyChecksumsOnSendDescription")),
+                headerIcon: HeaderGlyph("\uE73E"),
+                isClickEnabled: false,
+                isActionIconVisible: false,
+                content:
+                ToggleSwitch(Props.Settings.VerifyChecksumsOnSend, value =>
+                    Props.UpdateSettings(settings => settings with { VerifyChecksumsOnSend = value }))));
 
         var startOrRestartName = serverOnline
             ? t.Message(new("App", "SettingsRestartServer"))
@@ -489,6 +510,7 @@ sealed class SettingsPage : Component<SettingsPageProps>
                     }).Severity(InfoBarSeverity.Warning),
                 generalCards,
                 receiveCards,
+                sendCards,
                 networkCards,
                 aboutSection,
                 ContentDialog(

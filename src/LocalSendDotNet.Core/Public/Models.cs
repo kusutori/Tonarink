@@ -278,6 +278,8 @@ public sealed class AcceptTransferOptions
     public IReadOnlyCollection<string>? AcceptedItemIds { get; init; }
     /// <summary>Gets optional target filenames keyed by item ID.</summary>
     public IReadOnlyDictionary<string, string>? TargetFileNames { get; init; }
+    /// <summary>Gets whether advertised SHA-256 digests are verified while receiving files.</summary>
+    public bool VerifySha256 { get; init; } = true;
 }
 
 /// <summary>Configures an outgoing transfer.</summary>

@@ -691,6 +691,7 @@ public sealed class LocalSendNode : IAsyncDisposable
             return new(HttpStatusCode.BadRequest, Message: exception.Message);
         }
         session.InitializeAccepted(selected);
+        session.VerifySha256 = decision.Options.VerifySha256;
         _incomingSessions[sessionId] = session;
         _ = ExpireIncomingSessionAsync(session);
         _ = ReleaseIncomingSlotWhenDoneAsync(session);
@@ -717,7 +718,9 @@ public sealed class LocalSendNode : IAsyncDisposable
             var temporary = destination + $".part-{Guid.NewGuid():N}";
             using var linked = CancellationTokenSource.CreateLinkedTokenSource(requestCancellation, session.Cancellation.Token, _lifetime.Token);
             long written = 0;
-            using var sha256 = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+            using var sha256 = session.VerifySha256 && file.Sha256 is not null
+                ? IncrementalHash.CreateHash(HashAlgorithmName.SHA256)
+                : null;
             try
             {
                 await using (var output = new FileStream(temporary, FileMode.CreateNew, FileAccess.Write, FileShare.None, 512 * 1024, FileOptions.Asynchronous | FileOptions.SequentialScan))
@@ -730,7 +733,7 @@ public sealed class LocalSendNode : IAsyncDisposable
                         written += read;
                         if (written > file.Size)
                             throw new LocalSendException("Uploaded content exceeded the declared size.");
-                        sha256.AppendData(buffer, 0, read);
+                        sha256?.AppendData(buffer, 0, read);
                         await output.WriteAsync(buffer.AsMemory(0, read), linked.Token).ConfigureAwait(false);
                         session.ReportProgress(fileId, written);
                     }
@@ -738,7 +741,7 @@ public sealed class LocalSendNode : IAsyncDisposable
                 }
                 if (written != file.Size)
                     throw new LocalSendException($"Uploaded content length mismatch: expected {file.Size}, received {written}.");
-                if (file.Sha256 is not null && !MatchesSha256(sha256.GetHashAndReset(), file.Sha256))
+                if (sha256 is not null && !MatchesSha256(sha256.GetHashAndReset(), file.Sha256!))
                     throw new LocalSendException("Uploaded content failed SHA-256 verification.");
                 File.Move(temporary, destination);
                 RestoreTimestamps(destination, file.Metadata);

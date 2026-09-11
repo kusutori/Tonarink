@@ -208,6 +208,7 @@ sealed record IncomingTransferOverlayProps(
     IncomingTransferRequest Request,
     string DownloadDirectory,
     bool SaveReceiveHistory,
+    bool VerifyChecksums,
     ElementTheme Theme,
     Action<Guid> Dismiss);
 
@@ -307,6 +308,7 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                     DestinationDirectory = configuration.DestinationDirectory,
                     AcceptedItemIds = configuration.AcceptedItemIds,
                     TargetFileNames = configuration.TargetFileNames,
+                    VerifySha256 = Props.VerifyChecksums,
                 },
                 progress,
                 linked.Token).ConfigureAwait(false);
