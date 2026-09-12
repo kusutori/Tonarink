@@ -351,7 +351,7 @@
   <data name="WebShareAutoAccept" xml:space="preserve"><value>Auto accept requests</value></data>
   <data name="WebShareCopy" xml:space="preserve"><value>Copy link</value></data>
   <data name="WebShareEncryption" xml:space="preserve"><value>Encryption</value></data>
-  <data name="WebShareEncryptionHint" xml:space="preserve"><value>HTTPS uses this device's certificate. Browsers will warn that it is not trusted.</value></data>
+  <data name="WebShareEncryptionHint" xml:space="preserve"><value>HTTPS uses this device''s certificate. Browsers will warn that it is not trusted.</value></data>
   <data name="WebShareNoRequests" xml:space="preserve"><value>No requests yet.</value></data>
   <data name="WebShareOpenLink" xml:space="preserve"><value>Open this link in a browser:</value></data>
   <data name="WebSharePinHint" xml:space="preserve"><value>PIN is "{pin}"</value></data>

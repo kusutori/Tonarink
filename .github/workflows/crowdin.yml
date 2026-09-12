@@ -1,0 +1,52 @@
+name: Crowdin
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - crowdin.yml
+      - src/Tonarink.App/Strings/en-US/App.resw
+      - .github/workflows/crowdin.yml
+  workflow_dispatch:
+    inputs:
+      import_existing_chinese:
+        description: Import the existing zh-CN translation into Crowdin once
+        type: boolean
+        required: false
+        default: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: crowdin-localization
+  cancel-in-progress: false
+
+jobs:
+  synchronize:
+    if: github.repository == 'kusutori/Tonarink'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Synchronize localization resources
+        uses: crowdin/github-action@v3
+        with:
+          upload_sources: true
+          # Bootstrap zh-CN when this workflow is first added. Later runs treat
+          # Crowdin as the translation source unless a manual re-import is requested.
+          upload_translations: ${{ (github.event_name == 'push' && contains(github.event.head_commit.added, '.github/workflows/crowdin.yml')) || (github.event_name == 'workflow_dispatch' && inputs.import_existing_chinese) }}
+          upload_language: zh-CN
+          download_translations: true
+          download_language: zh-CN
+          localization_branch_name: l10n_crowdin_translations
+          create_pull_request: true
+          pull_request_base_branch_name: main
+          pull_request_title: Update Crowdin translations
+          pull_request_body: Automated translation update from Crowdin.
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CROWDIN_PROJECT_ID: ${{ secrets.CROWDIN_PROJECT_ID }}
+          CROWDIN_PERSONAL_TOKEN: ${{ secrets.CROWDIN_PERSONAL_TOKEN }}
