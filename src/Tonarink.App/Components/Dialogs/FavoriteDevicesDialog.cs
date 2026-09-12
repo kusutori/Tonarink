@@ -4,7 +4,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using static Microsoft.UI.Reactor.Factories;
 
-namespace Tonarink.Components;
+namespace Tonarink.Components.Dialogs;
 
 sealed record FavoriteDevicesDialogProps(
     IReadOnlyDictionary<string, FavoriteDevice> Devices,

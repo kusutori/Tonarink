@@ -414,7 +414,16 @@ sealed class SendPage : Component<SendPageProps>
                         Props.Theme,
                         FavoriteDeviceStore.Upsert,
                         () => setFavoriteEdit(null))),
-                DeleteFavoriteDialog()) with
+                Component<DeleteFavoriteDialog, DeleteFavoriteDialogProps>(new(
+                    favoriteToDelete?.Name ?? string.Empty,
+                    Props.Theme,
+                    favoriteToDelete is not null,
+                    () =>
+                    {
+                        if (favoriteToDelete is { } target)
+                            FavoriteDeviceStore.Remove(target.Fingerprint);
+                    },
+                    () => setFavoriteToDelete(null)))) with
         {
             RowGap = 20,
         });
@@ -544,27 +553,6 @@ sealed class SendPage : Component<SendPageProps>
                 },
             }).Themed(Props.Theme);
         }
-
-        Element DeleteFavoriteDialog() =>
-            (ContentDialog(
-                    t.Message(new("App", "DeleteFavoriteTitle")),
-                    TextBlock(t.Message(
-                            new("App", "DeleteFavoriteConfirm"),
-                            ("device", favoriteToDelete?.Name ?? string.Empty)))
-                        .TextWrapping(TextWrapping.WrapWholeWords),
-                    primaryButtonText: t.Message(new("App", "Delete"))) with
-            {
-                IsOpen = favoriteToDelete is not null,
-                SecondaryButtonText = t.Message(new("App", "Cancel")),
-                DefaultButton = ContentDialogButton.Primary,
-                OnClosed = result =>
-                {
-                    var target = favoriteToDelete;
-                    setFavoriteToDelete(null);
-                    if (result == ContentDialogResult.Primary && target is not null)
-                        FavoriteDeviceStore.Remove(target.Fingerprint);
-                },
-            }).Themed(Props.Theme);
 
         async Task PickFileAsync()
         {

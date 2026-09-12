@@ -7,7 +7,7 @@ using System.Globalization;
 using static Microsoft.UI.Reactor.Factories;
 using static Tonarink.Controls.SegmentedElement;
 
-namespace Tonarink.Components;
+namespace Tonarink.Components.Dialogs;
 
 sealed record IncomingQuickActionFile(string Id, string FileName);
 

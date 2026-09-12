@@ -8,7 +8,7 @@ using Microsoft.UI.Xaml.Media;
 using static Microsoft.UI.Reactor.Factories;
 using static Tonarink.Controls.SegmentedElement;
 
-namespace Tonarink.Components;
+namespace Tonarink.Components.Dialogs;
 
 sealed record DeviceVerificationDialogProps(
     LocalSendDevice Device,

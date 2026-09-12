@@ -87,7 +87,12 @@ sealed class DeviceDetailsPage : Component<DeviceDetailsPageProps>
                     Props.Theme,
                     FavoriteDeviceStore.Upsert,
                     () => setFavoriteDraft(null))),
-            RemoveFavoriteDialog(t, currentDevice, displayName)) with
+            Component<DeleteFavoriteDialog, DeleteFavoriteDialogProps>(new(
+                displayName,
+                Props.Theme,
+                showRemoveFavorite,
+                () => FavoriteDeviceStore.Remove(currentDevice.Fingerprint),
+                () => setShowRemoveFavorite(false)))) with
         {
             RowGap = 20,
         };
@@ -99,26 +104,6 @@ sealed class DeviceDetailsPage : Component<DeviceDetailsPageProps>
                     .HAlign(HorizontalAlignment.Stretch)
                     .Landmark(AutomationLandmarkType.Main))
             .HorizontalContentAlignment(HorizontalAlignment.Stretch);
-
-        Element RemoveFavoriteDialog(IntlAccessor intl, LocalSendDevice device, string name) =>
-            (ContentDialog(
-                intl.Message(new("App", "DeleteFavoriteTitle")),
-                TextBlock(intl.Message(
-                        new("App", "DeleteFavoriteConfirm"),
-                        ("device", name)))
-                    .TextWrapping(TextWrapping.WrapWholeWords),
-                primaryButtonText: intl.Message(new("App", "Delete"))) with
-            {
-                IsOpen = showRemoveFavorite,
-                SecondaryButtonText = intl.Message(new("App", "Cancel")),
-                DefaultButton = ContentDialogButton.Primary,
-                OnClosed = result =>
-                {
-                    setShowRemoveFavorite(false);
-                    if (result == ContentDialogResult.Primary)
-                        FavoriteDeviceStore.Remove(device.Fingerprint);
-                },
-            }).Themed(Props.Theme);
 
         void OpenFavoriteDialog(LocalSendDevice device)
         {

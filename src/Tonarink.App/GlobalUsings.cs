@@ -1,5 +1,6 @@
 global using Tonarink.Components;
 global using Tonarink.Components.Animations;
+global using Tonarink.Components.Dialogs;
 global using Tonarink.Components.Shell;
 global using Tonarink.Controls;
 global using Tonarink.Models;
