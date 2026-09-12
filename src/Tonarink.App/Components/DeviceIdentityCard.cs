@@ -2,7 +2,6 @@ using LocalSendDotNet;
 using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Core;
 using Microsoft.UI.Reactor.Layout;
-using Microsoft.UI.Reactor.Localization;
 using Microsoft.UI.Xaml;
 using static Microsoft.UI.Reactor.Factories;
 using static Tonarink.Components.DeviceVisuals;
@@ -39,32 +38,32 @@ sealed class DeviceIdentityCard : Component<DeviceIdentityCardProps>
     public override Element Render()
     {
         var t = UseIntl();
-        var cardRef = UseRef<FrameworkElement?>(null);
+        var cardRef = UseRef<FrameworkElement?>();
         var identity = Grid(
             columns: [GridSize.Auto, GridSize.Star()],
             rows: [GridSize.Auto],
             DeviceAvatar(Props.Type).Grid(column: 0),
             VStack(8,
-                (FlexRow(
-                    BodyLarge(Props.Alias)
-                        .TextTrimming(TextTrimming.CharacterEllipsis)
-                        .ToolTip(Props.Alias)
-                        .Flex(shrink: 1),
-                    Props.IsFavorite
-                        ? TextBlock("\uEC61")
-                            .FontFamily("Segoe Fluent Icons")
-                            .FontSize(16)
-                            .Foreground(Theme.AccentText)
-                            .AccessibilityHidden()
-                            .Flex(shrink: 0)
-                        : null) with
-                {
-                    AlignItems = FlexAlign.Center,
-                    ColumnGap = 8,
-                }),
-                HStack(8,
-                    DeviceTag(Props.Number),
-                    DeviceTag(DeviceModel(t, Props.Model, Props.Type))))
+                    (FlexRow(
+                            BodyLarge(Props.Alias)
+                                .TextTrimming(TextTrimming.CharacterEllipsis)
+                                .ToolTip(Props.Alias)
+                                .Flex(shrink: 1),
+                            Props.IsFavorite
+                                ? TextBlock("\uEC61")
+                                    .FontFamily("Segoe Fluent Icons")
+                                    .FontSize(16)
+                                    .Foreground(Theme.AccentText)
+                                    .AccessibilityHidden()
+                                    .Flex(shrink: 0)
+                                : null) with
+                        {
+                            AlignItems = FlexAlign.Center,
+                            ColumnGap = 8,
+                        }),
+                    HStack(8,
+                        DeviceTag(Props.Number),
+                        DeviceTag(DeviceModel(t, Props.Model, Props.Type))))
                 .Margin(horizontal: 16, vertical: 0)
                 .VAlign(VerticalAlignment.Center)
                 .Grid(column: 1));
@@ -95,18 +94,28 @@ sealed class DeviceIdentityCard : Component<DeviceIdentityCardProps>
                 if (Props.ConnectedAnimationKey is not { } key)
                     return;
 
-                if (Props.AnimationRole == DeviceIdentityCardAnimationRole.Source)
-                    DeviceConnectedAnimation.RegisterSource(key, element);
-                else if (Props.AnimationRole == DeviceIdentityCardAnimationRole.Destination)
-                    DeviceConnectedAnimation.StartDestinationWhenReady(
-                        key,
-                        element,
-                        Props.AnimationCompleted);
+                switch (Props.AnimationRole)
+                {
+                    case DeviceIdentityCardAnimationRole.Source:
+
+                        DeviceConnectedAnimation.RegisterSource(key, element);
+                        break;
+                    case DeviceIdentityCardAnimationRole.Destination:
+
+                        DeviceConnectedAnimation.StartDestinationWhenReady(
+                            key,
+                            element,
+                            Props.AnimationCompleted);
+                        break;
+                    case DeviceIdentityCardAnimationRole.None:
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
             })
             .OnUnmountAdd(element =>
             {
-                if (Props.ConnectedAnimationKey is { } key
-                    && Props.AnimationRole == DeviceIdentityCardAnimationRole.Source)
+                if (Props is { ConnectedAnimationKey: { } key, AnimationRole: DeviceIdentityCardAnimationRole.Source })
                 {
                     DeviceConnectedAnimation.UnregisterSource(key, element);
                 }
@@ -121,7 +130,7 @@ sealed class DeviceIdentityCard : Component<DeviceIdentityCardProps>
         return Grid(
                 columns: [GridSize.Star()],
                 rows: [GridSize.Auto],
-                card.Grid(0, 0),
+                card,
                 Button(Icon(Props.SecondaryGlyph), () => Props.OnSecondaryClick(cardRef.Current))
                     .AutomationName(Props.SecondaryAutomationName ?? Props.Alias)
                     .ToolTip(Props.SecondaryAutomationName ?? Props.Alias)
@@ -130,8 +139,7 @@ sealed class DeviceIdentityCard : Component<DeviceIdentityCardProps>
                     .GhostButton()
                     .HAlign(HorizontalAlignment.Right)
                     .VAlign(VerticalAlignment.Center)
-                    .Margin(right: 16)
-                    .Grid(0, 0))
+                    .Margin(right: 16))
             .MinHeight(104)
             .HAlign(HorizontalAlignment.Stretch);
     }

@@ -14,7 +14,8 @@ static class FavoriteDeviceStore
     private static readonly string FilePath = Path.Combine(
         AppPlatform.DataDirectory,
         "favorite-devices.json");
-    private static readonly object Gate = new();
+
+    private static readonly Lock Gate = new();
     private static IReadOnlyDictionary<string, FavoriteDevice>? _cached;
     private static int _revision;
 

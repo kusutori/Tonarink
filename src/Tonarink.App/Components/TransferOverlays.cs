@@ -2,7 +2,6 @@ using LocalSendDotNet;
 using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Animation;
 using Microsoft.UI.Reactor.Core;
-using Microsoft.UI.Reactor.Layout;
 using Microsoft.UI.Reactor.Localization;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
@@ -31,7 +30,7 @@ sealed class OutgoingTransferOverlay : Component<OutgoingTransferOverlayProps>
         var (showVerification, setShowVerification) = UseState(false);
         var (connectedAnimationReady, setConnectedAnimationReady) = UseState(false);
         var (pin, setPin) = UseState(string.Empty);
-        var receiverCardRef = UseRef<FrameworkElement?>(null);
+        var receiverCardRef = UseRef<FrameworkElement?>();
         var connectedAnimationKey = DeviceConnectedKey(transfer.Receiver.Fingerprint);
         var taskbarProgress = new TaskbarTransferProgress(
             transfer.State,
@@ -81,9 +80,11 @@ sealed class OutgoingTransferOverlay : Component<OutgoingTransferOverlayProps>
                     .TextAlignment(TextAlignment.Center)
                     .HAlign(HorizontalAlignment.Center),
                 transfer.State is TransferState.Preparing or TransferState.WaitingForAcceptance
-                    ? ProgressIndeterminate().MaxWidth(AppLayout.OverlayProgressMaxWidth).HAlign(HorizontalAlignment.Stretch)
+                    ? ProgressIndeterminate().MaxWidth(AppLayout.OverlayProgressMaxWidth)
+                        .HAlign(HorizontalAlignment.Stretch)
                     : transfer.TotalBytes > 0
-                        ? Progress(progress).MaxWidth(AppLayout.OverlayProgressMaxWidth).HAlign(HorizontalAlignment.Stretch)
+                        ? Progress(progress).MaxWidth(AppLayout.OverlayProgressMaxWidth)
+                            .HAlign(HorizontalAlignment.Stretch)
                         : null,
                 transfer.TotalBytes > 0
                     ? Caption(progressText)
@@ -155,27 +156,27 @@ sealed class OutgoingTransferOverlay : Component<OutgoingTransferOverlayProps>
                             ? null
                             : TextBlock(prompt.Error).Foreground(Theme.SystemCritical)),
                     primaryButtonText: t.Message(new("App", "PinConfirm"))) with
-            {
-                IsOpen = connectedAnimationReady && prompt is not null,
-                SecondaryButtonText = t.Message(new("App", "Cancel")),
-                DefaultButton = ContentDialogButton.Primary,
-                IsPrimaryButtonEnabled = !string.IsNullOrWhiteSpace(pin),
-                OnClosed = result =>
                 {
-                    var submittedPin = pin.Trim();
-                    setPin(string.Empty);
-                    if (prompt is null)
-                        return;
-
-                    if (result == ContentDialogResult.Primary && submittedPin.Length > 0)
-                        prompt.Submit(submittedPin);
-                    else
+                    IsOpen = connectedAnimationReady && prompt is not null,
+                    SecondaryButtonText = t.Message(new("App", "Cancel")),
+                    DefaultButton = ContentDialogButton.Primary,
+                    IsPrimaryButtonEnabled = !string.IsNullOrWhiteSpace(pin),
+                    OnClosed = result =>
                     {
-                        prompt.Cancel();
-                        CloseOverlay();
-                    }
-                },
-            }).Themed(Props.Theme);
+                        var submittedPin = pin.Trim();
+                        setPin(string.Empty);
+                        if (prompt is null)
+                            return;
+
+                        if (result == ContentDialogResult.Primary && submittedPin.Length > 0)
+                            prompt.Submit(submittedPin);
+                        else
+                        {
+                            prompt.Cancel();
+                            CloseOverlay();
+                        }
+                    },
+                }).Themed(Props.Theme);
         }
 
         void CloseOverlay()
@@ -260,8 +261,8 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
         var (renameFileName, setRenameFileName) = UseState(string.Empty);
         var (showQuickActions, setShowQuickActions) = UseState(false);
         var (folderError, setFolderError) = UseState<string?>(null);
-        var cancellationRef = UseRef<CancellationTokenSource?>(null);
-        var fileCardRef = UseRef<FrameworkElement?>(null);
+        var cancellationRef = UseRef<CancellationTokenSource?>();
+        var fileCardRef = UseRef<FrameworkElement?>();
         var fileOptionsDesiredRef = UseRef(false);
         var fileOptionsActualRef = UseRef(false);
         var fileOptionsAnimatingRef = UseRef(false);
@@ -289,32 +290,33 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
             return () => WidgetAppHost.SetIncoming(null);
         }, view.State, view.BytesTransferred, view.TotalBytes, view.Status, request.RequestId);
 
-        var acceptMutation = UseMutation<IncomingAcceptConfiguration, TransferResult>(async (configuration, mutationToken) =>
-        {
-            using var linked = CancellationTokenSource.CreateLinkedTokenSource(
-                cancellationRef.Current?.Token ?? CancellationToken.None,
-                mutationToken);
-            var progress = new Progress<TransferProgress>(value =>
-                updateView(current => current with
-                {
-                    State = value.State,
-                    BytesTransferred = value.BytesTransferred,
-                    TotalBytes = value.TotalBytes,
-                    Status = t.Message(new("App", "ReceivingContent")),
-                    IsDecided = true,
-                }));
-            return await Props.Node.AcceptAsync(
-                request.RequestId,
-                new AcceptTransferOptions
-                {
-                    DestinationDirectory = configuration.DestinationDirectory,
-                    AcceptedItemIds = configuration.AcceptedItemIds,
-                    TargetFileNames = configuration.TargetFileNames,
-                    VerifySha256 = Props.VerifyChecksums,
-                },
-                progress,
-                linked.Token).ConfigureAwait(false);
-        });
+        var acceptMutation =
+            UseMutation<IncomingAcceptConfiguration, TransferResult>(async (configuration, mutationToken) =>
+            {
+                using var linked = CancellationTokenSource.CreateLinkedTokenSource(
+                    cancellationRef.Current?.Token ?? CancellationToken.None,
+                    mutationToken);
+                var progress = new Progress<TransferProgress>(value =>
+                    updateView(current => current with
+                    {
+                        State = value.State,
+                        BytesTransferred = value.BytesTransferred,
+                        TotalBytes = value.TotalBytes,
+                        Status = t.Message(new("App", "ReceivingContent")),
+                        IsDecided = true,
+                    }));
+                return await Props.Node.AcceptAsync(
+                    request.RequestId,
+                    new AcceptTransferOptions
+                    {
+                        DestinationDirectory = configuration.DestinationDirectory,
+                        AcceptedItemIds = configuration.AcceptedItemIds,
+                        TargetFileNames = configuration.TargetFileNames,
+                        VerifySha256 = Props.VerifyChecksums,
+                    },
+                    progress,
+                    linked.Token).ConfigureAwait(false);
+            });
 
         var declineMutation = UseMutation<bool, bool>(async (_, token) =>
         {
@@ -385,36 +387,36 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
         var fileCardAnimationKey = $"incoming-file-options:{request.RequestId:N}";
         Element fileCard = Card(
                 Grid(
-                    columns: [GridSize.Star()],
-                    rows: [GridSize.Auto, showFileOptions ? GridSize.Star() : GridSize.Auto],
-                    Grid(
-                        columns: [GridSize.Star(), GridSize.Auto],
-                        rows: [GridSize.Auto],
-                        TextBlock(t.Message(
-                                new("App", "SelectedIncomingFiles"),
-                                ("selected", selectedItemIds.Count),
-                                ("count", request.Items.Count)))
-                            .SemiBold()
-                            .VAlign(VerticalAlignment.Center)
-                            .Grid(column: 0),
-                        Button(
-                                Icon(showFileOptions ? "\uE73F" : "\uE740").AccessibilityHidden(),
-                                ToggleFileOptions)
-                            .AutomationName(t.Message(new(
-                                "App",
-                                showFileOptions ? "HideReceiveOptions" : "ShowReceiveOptions")))
-                            .ToolTip(t.Message(new(
-                                "App",
-                                showFileOptions ? "HideReceiveOptions" : "ShowReceiveOptions")))
-                            .IsEnabled(!view.IsDecided && !isPending)
-                            .SubtleButton()
-                            .Grid(column: 1)),
-                    showFileOptions
-                        ? ReceiveOptions().Grid(row: 1)
-                        : VStack(8, itemRows).Grid(row: 1)) with
-                {
-                    RowSpacing = 12,
-                })
+                        columns: [GridSize.Star()],
+                        rows: [GridSize.Auto, showFileOptions ? GridSize.Star() : GridSize.Auto],
+                        Grid(
+                            columns: [GridSize.Star(), GridSize.Auto],
+                            rows: [GridSize.Auto],
+                            TextBlock(t.Message(
+                                    new("App", "SelectedIncomingFiles"),
+                                    ("selected", selectedItemIds.Count),
+                                    ("count", request.Items.Count)))
+                                .SemiBold()
+                                .VAlign(VerticalAlignment.Center)
+                                .Grid(column: 0),
+                            Button(
+                                    Icon(showFileOptions ? "\uE73F" : "\uE740").AccessibilityHidden(),
+                                    ToggleFileOptions)
+                                .AutomationName(t.Message(new(
+                                    "App",
+                                    showFileOptions ? "HideReceiveOptions" : "ShowReceiveOptions")))
+                                .ToolTip(t.Message(new(
+                                    "App",
+                                    showFileOptions ? "HideReceiveOptions" : "ShowReceiveOptions")))
+                                .IsEnabled(!view.IsDecided && !isPending)
+                                .SubtleButton()
+                                .Grid(column: 1)),
+                        showFileOptions
+                            ? ReceiveOptions().Grid(row: 1)
+                            : VStack(8, itemRows).Grid(row: 1)) with
+                    {
+                        RowSpacing = 12,
+                    })
             .Width(fileCardWidth)
             .HAlign(HorizontalAlignment.Center);
         if (showFileOptions)
@@ -448,7 +450,7 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                 TextBox(view.Text ?? t.Message(new("App", "TextAvailableAfterAccept")), _ => { })
                     .IsReadOnly()
                     .AcceptsReturn()
-                    .TextWrapping(TextWrapping.Wrap)
+                    .TextWrapping()
                     .MinHeight(120)
                     .MaxHeight(260)
                     .AutomationName(t.Message(new("App", "ReceivedTextContent"))),
@@ -554,8 +556,10 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
             {
                 return VStack(12,
                         view.State is TransferState.Preparing or TransferState.WaitingForAcceptance
-                            ? ProgressIndeterminate().MaxWidth(AppLayout.OverlayProgressMaxWidth).HAlign(HorizontalAlignment.Stretch)
-                            : Progress(progressValue).MaxWidth(AppLayout.OverlayProgressMaxWidth).HAlign(HorizontalAlignment.Stretch),
+                            ? ProgressIndeterminate().MaxWidth(AppLayout.OverlayProgressMaxWidth)
+                                .HAlign(HorizontalAlignment.Stretch)
+                            : Progress(progressValue).MaxWidth(AppLayout.OverlayProgressMaxWidth)
+                                .HAlign(HorizontalAlignment.Stretch),
                         Caption(progressText)
                             .Foreground(Theme.SecondaryText)
                             .HAlign(HorizontalAlignment.Center),
@@ -697,80 +701,80 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
         {
             var rows = request.Items.Select(item => ReceiveItemRow(item).WithKey(item.Id)).ToArray<Element?>();
             return Grid(
-                columns: [GridSize.Star()],
-                rows: [GridSize.Auto, GridSize.Auto, GridSize.Star()],
-                VStack(4,
-                        Grid(
+                    columns: [GridSize.Star()],
+                    rows: [GridSize.Auto, GridSize.Auto, GridSize.Star()],
+                    VStack(4,
+                            Grid(
+                                columns: [GridSize.Star(), GridSize.Auto],
+                                rows: [GridSize.Auto],
+                                VStack(2,
+                                        Caption(t.Message(new("App", "ReceiveSaveDirectory")))
+                                            .Foreground(Theme.SecondaryText),
+                                        TextBlock(destinationDirectory)
+                                            .TextTrimming(TextTrimming.CharacterEllipsis)
+                                            .ToolTip(destinationDirectory))
+                                    .Grid(column: 0),
+                                Button(
+                                        Icon("\uE8DA").AccessibilityHidden(),
+                                        () => _ = PickDestinationDirectoryAsync())
+                                    .AutomationName(t.Message(new("App", "ChangeSaveLocation")))
+                                    .ToolTip(t.Message(new("App", "ChangeSaveLocation")))
+                                    .IsEnabled(!view.IsDecided && !isPending)
+                                    .Grid(column: 1)),
+                            folderError is null
+                                ? null
+                                : Caption(folderError).Foreground(Theme.SystemCritical))
+                        .Grid(row: 0),
+                    Grid(
                             columns: [GridSize.Star(), GridSize.Auto],
                             rows: [GridSize.Auto],
-                            VStack(2,
-                                    Caption(t.Message(new("App", "ReceiveSaveDirectory")))
-                                        .Foreground(Theme.SecondaryText),
-                                    TextBlock(destinationDirectory)
-                                        .TextTrimming(TextTrimming.CharacterEllipsis)
-                                        .ToolTip(destinationDirectory))
+                            HStack(8,
+                                    TextBlock(t.Message(new("App", "IncomingFiles")))
+                                        .SemiBold()
+                                        .VAlign(VerticalAlignment.Center),
+                                    Button(
+                                            Icon("\uEF60").AccessibilityHidden(),
+                                            () => setShowQuickActions(true))
+                                        .AutomationName(t.Message(new("App", "QuickActionsTitle")))
+                                        .ToolTip(t.Message(new("App", "QuickActionsTitle")))
+                                        .IsEnabled(!view.IsDecided && !isPending)
+                                        .VAlign(VerticalAlignment.Center),
+                                    Button(
+                                            Icon("\uE7A7").AccessibilityHidden(),
+                                            ResetFileOptions)
+                                        .AutomationName(t.Message(new("App", "ResetReceiveOptions")))
+                                        .ToolTip(t.Message(new("App", "ResetReceiveOptions")))
+                                        .IsEnabled(!view.IsDecided && !isPending)
+                                        .VAlign(VerticalAlignment.Center))
+                                .HAlign(HorizontalAlignment.Left)
+                                .VAlign(VerticalAlignment.Center)
                                 .Grid(column: 0),
-                            Button(
-                                    Icon("\uE8DA").AccessibilityHidden(),
-                                    () => _ = PickDestinationDirectoryAsync())
-                                .AutomationName(t.Message(new("App", "ChangeSaveLocation")))
-                                .ToolTip(t.Message(new("App", "ChangeSaveLocation")))
+                            ThreeStateCheckBox(SelectAllState(), _ => ToggleSelectAll())
+                                .AutomationName(t.Message(new(
+                                    "App",
+                                    selectedItemIds.Count == request.Items.Count
+                                        ? "DeselectAllIncomingFiles"
+                                        : "SelectAllIncomingFiles")))
+                                .ToolTip(t.Message(new(
+                                    "App",
+                                    selectedItemIds.Count == request.Items.Count
+                                        ? "DeselectAllIncomingFiles"
+                                        : "SelectAllIncomingFiles")))
                                 .IsEnabled(!view.IsDecided && !isPending)
-                                .Grid(column: 1)),
-                        folderError is null
-                            ? null
-                            : Caption(folderError).Foreground(Theme.SystemCritical))
-                    .Grid(row: 0),
-                Grid(
-                    columns: [GridSize.Star(), GridSize.Auto],
-                    rows: [GridSize.Auto],
-                    HStack(8,
-                            TextBlock(t.Message(new("App", "IncomingFiles")))
-                                .SemiBold()
-                                .VAlign(VerticalAlignment.Center),
-                            Button(
-                                    Icon("\uEF60").AccessibilityHidden(),
-                                    () => setShowQuickActions(true))
-                                .AutomationName(t.Message(new("App", "QuickActionsTitle")))
-                                .ToolTip(t.Message(new("App", "QuickActionsTitle")))
-                                .IsEnabled(!view.IsDecided && !isPending)
-                                .VAlign(VerticalAlignment.Center),
-                            Button(
-                                    Icon("\uE7A7").AccessibilityHidden(),
-                                    ResetFileOptions)
-                                .AutomationName(t.Message(new("App", "ResetReceiveOptions")))
-                                .ToolTip(t.Message(new("App", "ResetReceiveOptions")))
-                                .IsEnabled(!view.IsDecided && !isPending)
-                                .VAlign(VerticalAlignment.Center))
-                        .HAlign(HorizontalAlignment.Left)
-                        .VAlign(VerticalAlignment.Center)
-                        .Grid(column: 0),
-                    ThreeStateCheckBox(SelectAllState(), _ => ToggleSelectAll())
-                        .AutomationName(t.Message(new(
-                            "App",
-                            selectedItemIds.Count == request.Items.Count
-                                ? "DeselectAllIncomingFiles"
-                                : "SelectAllIncomingFiles")))
-                        .ToolTip(t.Message(new(
-                            "App",
-                            selectedItemIds.Count == request.Items.Count
-                                ? "DeselectAllIncomingFiles"
-                                : "SelectAllIncomingFiles")))
-                        .IsEnabled(!view.IsDecided && !isPending)
-                        .Scale(1.3f)
-                        .MinWidth(32)
-                        .MinHeight(32)
-                        .VAlign(VerticalAlignment.Center)
-                        .Grid(column: 1))
-                    .Grid(row: 1),
-                ScrollView(
-                        VStack(8, rows)
-                            .Padding(left: 4, top: 4, right: 16, bottom: 4))
-                    .HorizontalContentAlignment(HorizontalAlignment.Stretch)
-                    .Grid(row: 2)) with
-            {
-                RowSpacing = 12,
-            };
+                                .Scale(1.3f)
+                                .MinWidth(32)
+                                .MinHeight(32)
+                                .VAlign(VerticalAlignment.Center)
+                                .Grid(column: 1))
+                        .Grid(row: 1),
+                    ScrollView(
+                            VStack(8, rows)
+                                .Padding(left: 4, top: 4, right: 16, bottom: 4))
+                        .HorizontalContentAlignment(HorizontalAlignment.Stretch)
+                        .Grid(row: 2)) with
+                {
+                    RowSpacing = 12,
+                };
         }
 
         Element ReceiveItemRow(IncomingItem item)
@@ -788,6 +792,7 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
             var undoRename = canUndoRename
                 ? () => UndoItemRename(item.Id)
                 : (Action?)null;
+
             Element FileRowMenu() => MenuItems(
                 MenuItem(
                     t.Message(new("App", "UndoIncomingFileRename")),
@@ -797,34 +802,37 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                     t.Message(new("App", "Rename")),
                     canEdit ? () => OpenRenameDialog(item.Id, displayName) : null,
                     icon: "\uE70F"));
+
             return Border(
                     Grid(
                         columns: [GridSize.Star(), GridSize.Auto],
                         rows: [GridSize.Auto],
                         Button(
                                 Grid(
-                                    columns: [GridSize.Auto, GridSize.Star()],
-                                    rows: [GridSize.Auto],
-                                    Border(Icon(FileTypeGlyphs.ForFileName(displayName)).AccessibilityHidden())
-                                        .Size(40, 40)
-                                        .CornerRadius(8)
-                                        .Background(Theme.SubtleFill)
-                                        .Grid(column: 0),
-                                    VStack(2,
-                                            TextBlock(displayName)
-                                                .TextTrimming(TextTrimming.CharacterEllipsis)
-                                                .ToolTip(displayName)
-                                                .TextAlignment(TextAlignment.Left)
-                                                .HAlign(HorizontalAlignment.Stretch),
-                                            Caption(isRenamed ? renameHint : FormatBytes(item.Size))
-                                                .Foreground(isRenamed ? Theme.SystemCaution : Theme.SecondaryText)
-                                                .TextAlignment(TextAlignment.Left)
-                                                .HAlign(HorizontalAlignment.Stretch))
-                                        .VAlign(VerticalAlignment.Center)
-                                        .HAlign(HorizontalAlignment.Stretch)
-                                        .Grid(column: 1))
-                                with
-                                { ColumnSpacing = 12 },
+                                        columns: [GridSize.Auto, GridSize.Star()],
+                                        rows: [GridSize.Auto],
+                                        Border(Icon(FileTypeGlyphs.ForFileName(displayName)).AccessibilityHidden())
+                                            .Size(40, 40)
+                                            .CornerRadius(8)
+                                            .Background(Theme.SubtleFill)
+                                            .Grid(column: 0),
+                                        VStack(2,
+                                                TextBlock(displayName)
+                                                    .TextTrimming(TextTrimming.CharacterEllipsis)
+                                                    .ToolTip(displayName)
+                                                    .TextAlignment(TextAlignment.Left)
+                                                    .HAlign(HorizontalAlignment.Stretch),
+                                                Caption(isRenamed ? renameHint : FormatBytes(item.Size))
+                                                    .Foreground(isRenamed ? Theme.SystemCaution : Theme.SecondaryText)
+                                                    .TextAlignment(TextAlignment.Left)
+                                                    .HAlign(HorizontalAlignment.Stretch))
+                                            .VAlign(VerticalAlignment.Center)
+                                            .HAlign(HorizontalAlignment.Stretch)
+                                            .Grid(column: 1))
+                                    with
+                                    {
+                                        ColumnSpacing = 12
+                                    },
                                 () => ToggleItem(item.Id))
                             .AutomationName(t.Message(
                                 new("App", isSelected ? "DeselectIncomingFile" : "SelectIncomingFile"),
@@ -869,32 +877,32 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                         .Header(t.Message(new("App", "Name")))
                         .AutomationName(t.Message(new("App", "Name"))),
                     primaryButtonText: t.Message(new("App", "Save"))) with
-            {
-                IsOpen = renameItemId is not null,
-                SecondaryButtonText = t.Message(new("App", "Cancel")),
-                DefaultButton = ContentDialogButton.Primary,
-                IsPrimaryButtonEnabled = validName,
-                OnClosed = result =>
                 {
-                    var itemId = renameItemId;
-                    if (result == ContentDialogResult.Primary && itemId is not null && validName)
+                    IsOpen = renameItemId is not null,
+                    SecondaryButtonText = t.Message(new("App", "Cancel")),
+                    DefaultButton = ContentDialogButton.Primary,
+                    IsPrimaryButtonEnabled = validName,
+                    OnClosed = result =>
                     {
-                        var originalName = request.Items.First(item => item.Id == itemId).FileName;
-                        updateTargetFileNames(current =>
+                        var itemId = renameItemId;
+                        if (result == ContentDialogResult.Primary && itemId is not null && validName)
                         {
-                            var next = new Dictionary<string, string>(current, StringComparer.Ordinal);
-                            if (string.Equals(renameFileName.Trim(), originalName, StringComparison.Ordinal))
-                                next.Remove(itemId);
-                            else
-                                next[itemId] = renameFileName.Trim();
-                            return next;
-                        });
-                    }
+                            var originalName = request.Items.First(item => item.Id == itemId).FileName;
+                            updateTargetFileNames(current =>
+                            {
+                                var next = new Dictionary<string, string>(current, StringComparer.Ordinal);
+                                if (string.Equals(renameFileName.Trim(), originalName, StringComparison.Ordinal))
+                                    next.Remove(itemId);
+                                else
+                                    next[itemId] = renameFileName.Trim();
+                                return next;
+                            });
+                        }
 
-                    setRenameItemId(null);
-                    setRenameFileName(string.Empty);
-                },
-            }).Themed(Props.Theme);
+                        setRenameItemId(null);
+                        setRenameFileName(string.Empty);
+                    },
+                }).Themed(Props.Theme);
         }
 
         void ToggleItem(string itemId) => updateSelectedItemIds(current =>
@@ -1019,7 +1027,7 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                 };
                 picker.FileTypeFilter.Add("*");
                 var nativeWindow = window?.NativeWindow
-                    ?? throw new InvalidOperationException(t.Message(new("App", "WindowUnavailable")));
+                                   ?? throw new InvalidOperationException(t.Message(new("App", "WindowUnavailable")));
                 WinRT.Interop.InitializeWithWindow.Initialize(
                     picker,
                     WinRT.Interop.WindowNative.GetWindowHandle(nativeWindow));

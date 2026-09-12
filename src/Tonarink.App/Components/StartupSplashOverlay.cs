@@ -22,15 +22,15 @@ sealed class StartupSplashOverlay : Component<StartupSplashOverlayProps>
 
         return Border(
                 (AnimatedVisualPlayer() with { AutoPlay = false })
-                    .Size(256, 256)
-                    .HAlign(HorizontalAlignment.Center)
-                    .VAlign(VerticalAlignment.Center)
-                    .AutomationName("Tonarink")
-                    .OnMountAdd(element =>
-                    {
-                        if (element is AnimatedVisualPlayer player)
-                            _ = PlayThenFadeAsync(player);
-                    }))
+                .Size(256, 256)
+                .HAlign(HorizontalAlignment.Center)
+                .VAlign(VerticalAlignment.Center)
+                .AutomationName("Tonarink")
+                .OnMountAdd(element =>
+                {
+                    if (element is AnimatedVisualPlayer player)
+                        _ = PlayThenFadeAsync(player);
+                }))
             .Background(Theme.SolidBackground)
             .Opacity(opacity)
             .OpacityTransition(FadeDuration)

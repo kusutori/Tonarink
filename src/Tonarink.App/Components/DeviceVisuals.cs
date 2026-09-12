@@ -3,7 +3,6 @@ using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Core;
 using Microsoft.UI.Reactor.Localization;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
 using System.Net.Sockets;
 using static Microsoft.UI.Reactor.Factories;
 

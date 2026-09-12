@@ -30,7 +30,7 @@ sealed class FavoriteDevicesDialog : Component<FavoriteDevicesDialogProps>
     public override Element Render()
     {
         var t = UseIntl();
-        var pendingActionRef = UseRef<PendingAction?>(null);
+        var pendingActionRef = UseRef<PendingAction?>();
         var entries = Props.Devices.Values
             .OrderBy(static favorite => favorite.Name, StringComparer.CurrentCultureIgnoreCase)
             .ToArray();
@@ -40,7 +40,7 @@ sealed class FavoriteDevicesDialog : Component<FavoriteDevicesDialogProps>
                 .Foreground(Theme.SecondaryText)
                 .HAlign(HorizontalAlignment.Center)
                 .Margin(0, 28),
-            _ => VStack(8, entries.Select(FavoriteRow).ToArray<Element?>()),
+            _ => VStack(8, [.. entries.Select(FavoriteRow)]),
         };
 
         return (ContentDialog(
@@ -50,33 +50,33 @@ sealed class FavoriteDevicesDialog : Component<FavoriteDevicesDialogProps>
                     .MaxHeight(420)
                     .MinWidth(420),
                 primaryButtonText: t.Message(new("App", "NewFavorite"))) with
-        {
-            IsOpen = Props.IsOpen,
-            SecondaryButtonText = t.Message(new("App", "Cancel")),
-            DefaultButton = ContentDialogButton.None,
-            OnClosed = result =>
             {
-                var pending = pendingActionRef.Current;
-                pendingActionRef.Current = null;
-                Props.Close();
-
-                if (result == ContentDialogResult.Primary)
+                IsOpen = Props.IsOpen,
+                SecondaryButtonText = t.Message(new("App", "Cancel")),
+                DefaultButton = ContentDialogButton.None,
+                OnClosed = result =>
                 {
-                    Props.Create();
-                    return;
-                }
+                    var pending = pendingActionRef.Current;
+                    pendingActionRef.Current = null;
+                    Props.Close();
 
-                switch (pending)
-                {
-                    case { Action: DialogAction.Edit, Device: var device }:
-                        Props.Edit(device);
-                        break;
-                    case { Action: DialogAction.Delete, Device: var device }:
-                        Props.Delete(device);
-                        break;
-                }
-            },
-        }).Themed(Props.Theme);
+                    if (result == ContentDialogResult.Primary)
+                    {
+                        Props.Create();
+                        return;
+                    }
+
+                    switch (pending)
+                    {
+                        case { Action: DialogAction.Edit, Device: var device }:
+                            Props.Edit(device);
+                            break;
+                        case { Action: DialogAction.Delete, Device: var device }:
+                            Props.Delete(device);
+                            break;
+                    }
+                },
+            }).Themed(Props.Theme);
 
         Element FavoriteRow(FavoriteDevice favorite) =>
             Card(
@@ -121,5 +121,4 @@ sealed class FavoriteDevicesDialog : Component<FavoriteDevicesDialogProps>
             Props.Close();
         }
     }
-
 }

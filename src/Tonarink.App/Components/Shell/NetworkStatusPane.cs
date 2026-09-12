@@ -3,7 +3,6 @@ using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Core;
 using Microsoft.UI.Reactor.Localization;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Automation.Peers;
 using static Microsoft.UI.Reactor.Factories;
 
 namespace Tonarink.Components.Shell;
@@ -44,8 +43,7 @@ sealed class NetworkStatusPane : Component<NetworkStatusPaneProps>
                                 Caption(t.Message(new("App", "NetworkStatus"))).SemiBold(),
                                 Caption(statusText)
                                     .Foreground(Theme.SecondaryText)
-                                    .TextWrapping(TextWrapping.WrapWholeWords)
-                                    .LiveRegion(AutomationLiveSetting.Polite))
+                                    .TextWrapping(TextWrapping.WrapWholeWords))
                             .Margin(horizontal: 12, vertical: 0)
                             .Grid(column: 1),
                         StatusDot(statusColor).Grid(column: 2))
@@ -78,13 +76,13 @@ sealed class NetworkStatusPane : Component<NetworkStatusPaneProps>
         IntlAccessor t,
         LocalSendNodeState state,
         string? discoveryWarning) => state switch
-        {
-            LocalSendNodeState.Starting => t.Message(new("App", "NodeStarting")),
-            LocalSendNodeState.Running when discoveryWarning is not null =>
-                t.Message(new("App", "NodeDiscoveryLimited")),
-            LocalSendNodeState.Running => t.Message(new("App", "NodeRunning")),
-            LocalSendNodeState.Faulted => t.Message(new("App", "NodeFaulted")),
-            LocalSendNodeState.Stopping => t.Message(new("App", "NodeStopping")),
-            _ => t.Message(new("App", "NodeDisconnected")),
-        };
+    {
+        LocalSendNodeState.Starting => t.Message(new("App", "NodeStarting")),
+        LocalSendNodeState.Running when discoveryWarning is not null =>
+            t.Message(new("App", "NodeDiscoveryLimited")),
+        LocalSendNodeState.Running => t.Message(new("App", "NodeRunning")),
+        LocalSendNodeState.Faulted => t.Message(new("App", "NodeFaulted")),
+        LocalSendNodeState.Stopping => t.Message(new("App", "NodeStopping")),
+        _ => t.Message(new("App", "NodeDisconnected")),
+    };
 }

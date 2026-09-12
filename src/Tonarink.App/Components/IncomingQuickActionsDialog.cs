@@ -1,8 +1,6 @@
 using CommunityToolkit.WinUI.Controls;
-using LocalSendDotNet;
 using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Core;
-using Microsoft.UI.Reactor.Localization;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System.Globalization;
@@ -59,32 +57,32 @@ sealed class IncomingQuickActionsDialog : Component<IncomingQuickActionsDialogPr
             : $"{randomExample}{extension}";
 
         Element body = VStack(12,
-            Segmented(
-                    selectedIndex: mode,
-                    onSelectedIndexChanged: setMode,
-                    items: modes)
-                .HAlign(HorizontalAlignment.Stretch),
-            mode == 0
-                ? VStack(8,
-                    TextBox(prefix, setPrefix)
-                        .Header(t.Message(new("App", "QuickActionsPrefix")))
-                        .AutomationName(t.Message(new("App", "QuickActionsPrefix"))),
-                    prefixValid
-                        ? null
-                        : Caption(t.Message(new("App", "QuickActionsInvalidPrefix")))
-                            .Foreground(Theme.SystemCritical),
-                    CheckBox(
-                        (bool?)padZero,
-                        value => setPadZero(value),
-                        t.Message(new("App", "QuickActionsPadZero"))),
-                    CheckBox(
-                        (bool?)sortFirst,
-                        value => setSortFirst(value),
-                        t.Message(new("App", "QuickActionsSortBeforeCount"))),
-                    Caption(t.Message(new("App", "QuickActionsExample"), ("name", exampleName)))
+                Segmented(
+                        selectedIndex: mode,
+                        onSelectedIndexChanged: setMode,
+                        items: modes)
+                    .HAlign(HorizontalAlignment.Stretch),
+                mode == 0
+                    ? VStack(8,
+                        TextBox(prefix, setPrefix)
+                            .Header(t.Message(new("App", "QuickActionsPrefix")))
+                            .AutomationName(t.Message(new("App", "QuickActionsPrefix"))),
+                        prefixValid
+                            ? null
+                            : Caption(t.Message(new("App", "QuickActionsInvalidPrefix")))
+                                .Foreground(Theme.SystemCritical),
+                        CheckBox(
+                            (bool?)padZero,
+                            value => setPadZero(value),
+                            t.Message(new("App", "QuickActionsPadZero"))),
+                        CheckBox(
+                            (bool?)sortFirst,
+                            value => setSortFirst(value),
+                            t.Message(new("App", "QuickActionsSortBeforeCount"))),
+                        Caption(t.Message(new("App", "QuickActionsExample"), ("name", exampleName)))
+                            .Foreground(Theme.SecondaryText))
+                    : Caption(t.Message(new("App", "QuickActionsExample"), ("name", exampleName)))
                         .Foreground(Theme.SecondaryText))
-                : Caption(t.Message(new("App", "QuickActionsExample"), ("name", exampleName)))
-                    .Foreground(Theme.SecondaryText))
             .MinWidth(360)
             .HAlign(HorizontalAlignment.Stretch);
 
@@ -92,18 +90,18 @@ sealed class IncomingQuickActionsDialog : Component<IncomingQuickActionsDialogPr
                 t.Message(new("App", "QuickActionsTitle")),
                 body,
                 primaryButtonText: t.Message(new("App", "Confirm"))) with
-        {
-            IsOpen = Props.IsOpen,
-            SecondaryButtonText = t.Message(new("App", "Cancel")),
-            DefaultButton = ContentDialogButton.Primary,
-            IsPrimaryButtonEnabled = Props.Files.Count > 0 && (mode == 1 || prefixValid),
-            OnClosed = result =>
             {
-                if (result == ContentDialogResult.Primary && Props.Files.Count > 0 && (mode == 1 || prefixValid))
-                    Props.Apply(BuildNames());
-                Props.Close();
-            },
-        }).Themed(Props.Theme);
+                IsOpen = Props.IsOpen,
+                SecondaryButtonText = t.Message(new("App", "Cancel")),
+                DefaultButton = ContentDialogButton.Primary,
+                IsPrimaryButtonEnabled = Props.Files.Count > 0 && (mode == 1 || prefixValid),
+                OnClosed = result =>
+                {
+                    if (result == ContentDialogResult.Primary && Props.Files.Count > 0 && (mode == 1 || prefixValid))
+                        Props.Apply(BuildNames());
+                    Props.Close();
+                },
+            }).Themed(Props.Theme);
 
         IReadOnlyDictionary<string, string> BuildNames()
         {
@@ -117,7 +115,8 @@ sealed class IncomingQuickActionsDialog : Component<IncomingQuickActionsDialogPr
 
             var files = Props.Files.ToList();
             if (sortFirst)
-                files.Sort(static (left, right) => string.Compare(left.FileName, right.FileName, StringComparison.OrdinalIgnoreCase));
+                files.Sort(static (left, right) =>
+                    string.Compare(left.FileName, right.FileName, StringComparison.OrdinalIgnoreCase));
 
             var width = files.Count.ToString(CultureInfo.InvariantCulture).Length;
             var names = new Dictionary<string, string>(files.Count, StringComparer.Ordinal);
