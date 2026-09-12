@@ -510,10 +510,10 @@ sealed class SettingsPage : Component<SettingsPageProps>
                             ? null
                             : (InfoBar(t.Message(new("App", "NodeDiscoveryLimited")),
                                     Props.Runtime.DiscoveryWarning) with
-                                {
-                                    IsOpen = true,
-                                    IsClosable = false,
-                                }).Severity(InfoBarSeverity.Warning),
+                            {
+                                IsOpen = true,
+                                IsClosable = false,
+                            }).Severity(InfoBarSeverity.Warning),
                         generalCards,
                         receiveCards,
                         sendCards,
@@ -524,11 +524,11 @@ sealed class SettingsPage : Component<SettingsPageProps>
                                 TextBlock(t.Message(new("App", "SettingsEncryptionDisabledNotice")))
                                     .TextWrapping(TextWrapping.WrapWholeWords),
                                 primaryButtonText: t.Message(new("App", "Close"))) with
-                            {
-                                IsOpen = encryptionNoticeOpen,
-                                DefaultButton = ContentDialogButton.Close,
-                                OnClosed = _ => setEncryptionNoticeOpen(false),
-                            })
+                        {
+                            IsOpen = encryptionNoticeOpen,
+                            DefaultButton = ContentDialogButton.Close,
+                            OnClosed = _ => setEncryptionNoticeOpen(false),
+                        })
                     .Padding(AppLayout.PagePadding))
             .HorizontalContentAlignment(HorizontalAlignment.Stretch)
             .Landmark(AutomationLandmarkType.Main);
