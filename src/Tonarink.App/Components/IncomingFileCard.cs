@@ -375,9 +375,12 @@ static class IncomingFileCard
 
         Element FileRowMenu() => MenuItems(
             MenuItem(
-                t.Message(new("App", "UndoIncomingFileRename")),
-                undoRename,
-                icon: "\uE7A7"),
+                    t.Message(new("App", "UndoIncomingFileRename")),
+                    undoRename,
+                    icon: "\uE7A7") with
+                {
+                    IsEnabled = canUndoRename,
+                },
             MenuItem(
                 t.Message(new("App", "Rename")),
                 model.CanEdit ? () => model.OpenRename(item.Id, displayName) : null,

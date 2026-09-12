@@ -7,6 +7,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Windows.ApplicationModel.DataTransfer;
+using BasicConnectedAnimationConfiguration = Microsoft.UI.Xaml.Media.Animation.BasicConnectedAnimationConfiguration;
 using static Microsoft.UI.Reactor.Factories;
 using static Tonarink.Utilities.ByteSize;
 using static Tonarink.Components.DeviceVisuals;
@@ -699,7 +700,7 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                 fileCardAnimationKey,
                 source,
                 ApplyState,
-                new Microsoft.UI.Xaml.Media.Animation.BasicConnectedAnimationConfiguration());
+                new BasicConnectedAnimationConfiguration());
         }
 
         void CompleteFileOptionsTransition()
