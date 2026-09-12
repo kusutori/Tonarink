@@ -234,6 +234,7 @@
   <data name="SettingsAboutCopyright" xml:space="preserve"><value>© {year}。保留所有权利。</value></data>
   <data name="SettingsAboutRelationship" xml:space="preserve"><value>Tonarink 是 LocalSend 协议的独立非官方实现，与 LocalSend 项目不存在从属、关联或官方认可关系。感谢 Tien Do Nam 与 LocalSend 贡献者创建并公开这一协议。</value></data>
   <data name="SettingsAboutFeedback" xml:space="preserve"><value>发送反馈</value></data>
+  <data name="SettingsAboutViewLogs" xml:space="preserve"><value>查看日志</value></data>
   <data name="SettingsAboutGitHub" xml:space="preserve"><value>GitHub 仓库</value></data>
   <data name="SettingsAboutIssues" xml:space="preserve"><value>报告问题</value></data>
   <data name="SettingsAboutLocalSend" xml:space="preserve"><value>LocalSend 官网</value></data>

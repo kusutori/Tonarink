@@ -150,7 +150,7 @@ sealed partial class LocalizedAppShell
                     DiscoveryTimeout = TimeSpan.FromMilliseconds(Math.Max(1, settings.DiscoveryTimeoutMs)),
                     NetworkWhitelist = settings.NetworkWhitelist,
                     NetworkBlacklist = settings.NetworkBlacklist,
-                });
+                }, AppDiagnostics.LoggerFactory);
                 nodeRef.Current = node;
                 ownerNodeSession.Current = session;
                 updateRuntime(current => current with

@@ -234,6 +234,7 @@
   <data name="SettingsAboutCopyright" xml:space="preserve"><value>© {year}. All rights reserved.</value></data>
   <data name="SettingsAboutRelationship" xml:space="preserve"><value>Tonarink is an independent, unofficial implementation of the LocalSend protocol. It is not affiliated with or endorsed by the LocalSend project. Thanks to Tien Do Nam and the LocalSend contributors for creating and documenting the protocol.</value></data>
   <data name="SettingsAboutFeedback" xml:space="preserve"><value>Send feedback</value></data>
+  <data name="SettingsAboutViewLogs" xml:space="preserve"><value>View logs</value></data>
   <data name="SettingsAboutGitHub" xml:space="preserve"><value>GitHub repository</value></data>
   <data name="SettingsAboutIssues" xml:space="preserve"><value>Report an issue</value></data>
   <data name="SettingsAboutLocalSend" xml:space="preserve"><value>LocalSend website</value></data>

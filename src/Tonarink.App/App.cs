@@ -1,5 +1,6 @@
 using Microsoft.UI.Reactor;
 
+AppDiagnostics.Initialize();
 var startupSettings = AppSettingsStore.Load();
 try
 {

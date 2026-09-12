@@ -1,6 +1,5 @@
 using System.Collections.Concurrent;
-using System.Diagnostics;
-using System.Text;
+using Microsoft.Extensions.Logging;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Reactor;
 using Microsoft.Windows.AppLifecycle;
@@ -22,7 +21,6 @@ static class ShareTargetActivationBroker
     private static FileSystemWatcher? ExplorerShareWatcher;
     private static EventWaitHandle? ExplorerShareEvent;
     private static RegisteredWaitHandle? ExplorerShareWait;
-    private static string LogFilePath => Path.Combine(AppPlatform.DataDirectory, "share-target.log");
 
     public static event EventHandler? ActivationReceived;
 
@@ -275,22 +273,10 @@ static class ShareTargetActivationBroker
 
     private static void WriteDiagnostic(string message, Exception? exception = null)
     {
-        var text = exception is null
-            ? $"[share-target] {message}"
-            : $"[share-target] {message} {exception}";
-        Trace.WriteLine(text);
-
-        try
-        {
-            Directory.CreateDirectory(AppPlatform.DataDirectory);
-            File.AppendAllText(
-                LogFilePath,
-                $"{DateTimeOffset.Now:O} {text}{Environment.NewLine}",
-                Encoding.UTF8);
-        }
-        catch (Exception diagnosticException)
-        {
-            Debug.WriteLine($"[share-target] Could not write diagnostic log: {diagnosticException.Message}");
-        }
+        AppDiagnostics.Write(
+            exception is null ? LogLevel.Information : LogLevel.Warning,
+            "share-target",
+            message,
+            exception);
     }
 }

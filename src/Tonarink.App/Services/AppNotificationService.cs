@@ -1,5 +1,4 @@
-using System.Diagnostics;
-using System.Text;
+using Microsoft.Extensions.Logging;
 using Microsoft.Windows.AppNotifications;
 using Microsoft.Windows.AppNotifications.Builder;
 
@@ -12,7 +11,6 @@ sealed record AppNotificationActivation(
 static class AppNotificationService
 {
     private static readonly object Gate = new();
-    private static readonly string LogFilePath = Path.Combine(AppPlatform.DataDirectory, "notifications.log");
     private static AppNotificationManager? _manager;
     private static readonly Queue<AppNotificationActivation> PendingActivations = new();
     private static EventHandler? _activated;
@@ -288,22 +286,10 @@ static class AppNotificationService
 
     private static void WriteDiagnostic(string message, Exception? exception = null)
     {
-        var text = exception is null
-            ? $"[notification] {message}"
-            : $"[notification] {message} {exception.GetType().Name}: {exception.Message}";
-        Trace.WriteLine(text);
-
-        try
-        {
-            Directory.CreateDirectory(AppPlatform.DataDirectory);
-            File.AppendAllText(
-                LogFilePath,
-                $"{DateTimeOffset.Now:O} {text}{Environment.NewLine}",
-                Encoding.UTF8);
-        }
-        catch (Exception diagnosticException)
-        {
-            Debug.WriteLine($"[notification] Could not write diagnostic log: {diagnosticException.Message}");
-        }
+        AppDiagnostics.Write(
+            exception is null ? LogLevel.Information : LogLevel.Warning,
+            "notification",
+            message,
+            exception);
     }
 }
