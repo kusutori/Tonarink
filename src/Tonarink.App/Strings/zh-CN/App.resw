@@ -4,366 +4,366 @@
   <resheader name="version"><value>2.0</value></resheader>
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
-  <data name="Accept" xml:space="preserve"><value>接受</value></data>
-  <data name="Add" xml:space="preserve"><value>添加</value></data>
-  <data name="AddFavoriteTitle" xml:space="preserve"><value>添加到收藏夹</value></data>
-  <data name="AddFolder" xml:space="preserve"><value>添加文件夹</value></data>
-  <data name="AutoSaveDescription" xml:space="preserve"><value>选择收到内容时的处理方式。</value></data>
-  <data name="AutoSaveFavorites" xml:space="preserve"><value>收藏设备</value></data>
-  <data name="AutoSaveOff" xml:space="preserve"><value>关闭</value></data>
-  <data name="AutoSaveOn" xml:space="preserve"><value>开启</value></data>
-  <data name="AutoSaveTitle" xml:space="preserve"><value>自动保存</value></data>
-  <data name="Cancel" xml:space="preserve"><value>取消</value></data>
-  <data name="CancelCurrentSend" xml:space="preserve"><value>取消当前发送</value></data>
-  <data name="CancelCurrentTransfer" xml:space="preserve"><value>取消当前传输</value></data>
-  <data name="Cancelled" xml:space="preserve"><value>已取消</value></data>
-  <data name="CancellingTransfer" xml:space="preserve"><value>正在取消传输…</value></data>
-  <data name="Change" xml:space="preserve"><value>更改…</value></data>
-  <data name="ChangeSaveLocation" xml:space="preserve"><value>更改接收文件保存位置</value></data>
-  <data name="ChooseContent" xml:space="preserve"><value>选择内容</value></data>
-  <data name="ChooseItem" xml:space="preserve"><value>选择{item}</value></data>
-  <data name="DropFilesCaption" xml:space="preserve"><value>添加到待发送列表</value></data>
-  <data name="DropFilesOrFolders" xml:space="preserve"><value>拖放文件或文件夹到此处</value></data>
-  <data name="DropItemsFailed" xml:space="preserve"><value>无法添加拖放的项目：{error}</value></data>
-  <data name="DroppedItemsEmpty" xml:space="preserve"><value>拖放的项目中没有可访问的文件。</value></data>
-  <data name="ReleaseFilesToAdd" xml:space="preserve"><value>释放以添加</value></data>
-  <data name="Clear" xml:space="preserve"><value>清空</value></data>
-  <data name="Clipboard" xml:space="preserve"><value>剪贴板</value></data>
-  <data name="ClipboardEmpty" xml:space="preserve"><value>剪贴板中没有可发送的文本、文件或文件夹。</value></data>
-  <data name="ClipboardImage" xml:space="preserve"><value>剪贴板图片</value></data>
-  <data name="ClipboardReadFailed" xml:space="preserve"><value>无法读取剪贴板：{error}</value></data>
-  <data name="ClipboardText" xml:space="preserve"><value>剪贴板文本</value></data>
-  <data name="Close" xml:space="preserve"><value>关闭</value></data>
-  <data name="Confirm" xml:space="preserve"><value>确定</value></data>
-  <data name="ContentManyItems" xml:space="preserve"><value>{count} 个项目</value></data>
-  <data name="ContentOneFile" xml:space="preserve"><value>文件 {file}</value></data>
-  <data name="ContentOneTextMessage" xml:space="preserve"><value>一条文本消息</value></data>
-  <data name="ContentSaved" xml:space="preserve"><value>内容已保存。</value></data>
-  <data name="Copied" xml:space="preserve"><value>已复制</value></data>
-  <data name="Copy" xml:space="preserve"><value>复制</value></data>
-  <data name="CopyReceivedText" xml:space="preserve"><value>复制收到的文本</value></data>
-  <data name="Decline" xml:space="preserve"><value>拒绝</value></data>
-  <data name="Delete" xml:space="preserve"><value>删除</value></data>
-  <data name="DeleteFavoriteConfirm" xml:space="preserve"><value>确定要删除收藏“{device}”吗？</value></data>
-  <data name="DeleteFavoriteTitle" xml:space="preserve"><value>删除收藏</value></data>
-  <data name="DeviceInfo" xml:space="preserve"><value>设备信息</value></data>
-  <data name="DeviceInfoAlias" xml:space="preserve"><value>别名（设备名称）：</value></data>
-  <data name="DeviceInfoIp" xml:space="preserve"><value>IP：</value></data>
-  <data name="DeviceInfoNoAddress" xml:space="preserve"><value>暂无可用地址</value></data>
-  <data name="DeviceInfoPort" xml:space="preserve"><value>端口：</value></data>
-  <data name="DeviceDetailsTitle" xml:space="preserve"><value>设备详情</value></data>
-  <data name="OpenDeviceDetails" xml:space="preserve"><value>查看“{device}”的设备详情</value></data>
-  <data name="DeviceInformation" xml:space="preserve"><value>设备信息</value></data>
-  <data name="DeviceModelLabel" xml:space="preserve"><value>设备型号</value></data>
-  <data name="ProtocolVersion" xml:space="preserve"><value>协议版本</value></data>
-  <data name="Address" xml:space="preserve"><value>地址</value></data>
-  <data name="LastSeen" xml:space="preserve"><value>最后发现</value></data>
-  <data name="FingerprintLabel" xml:space="preserve"><value>指纹</value></data>
-  <data name="FavoriteAction" xml:space="preserve"><value>收藏</value></data>
-  <data name="RemoveFavoriteAction" xml:space="preserve"><value>取消收藏</value></data>
-  <data name="VerifyAction" xml:space="preserve"><value>验证</value></data>
-  <data name="VerificationTitle" xml:space="preserve"><value>验证设备</value></data>
-  <data name="VerificationIcons" xml:space="preserve"><value>图标</value></data>
-  <data name="VerificationText" xml:space="preserve"><value>文本</value></data>
-  <data name="VerificationCompareHint" xml:space="preserve"><value>另一台设备上显示的内容相同吗？</value></data>
-  <data name="VerificationUnencryptedTitle" xml:space="preserve"><value>连接未加密</value></data>
-  <data name="VerificationUnencryptedMessage" xml:space="preserve"><value>设备使用 HTTP 时，此比较结果没有加密身份绑定。</value></data>
-  <data name="DeviceLog" xml:space="preserve"><value>日志</value></data>
-  <data name="DeviceLogEmpty" xml:space="preserve"><value>本次运行中尚未记录设备发现日志。</value></data>
-  <data name="DeviceLogAdded" xml:space="preserve"><value>已发现</value></data>
-  <data name="DeviceLogUpdated" xml:space="preserve"><value>已更新</value></data>
-  <data name="DeviceLogRemoved" xml:space="preserve"><value>已过期</value></data>
-  <data name="DeviceDesktop" xml:space="preserve"><value>桌面设备</value></data>
-  <data name="DeviceHeadless" xml:space="preserve"><value>无界面设备</value></data>
-  <data name="DeviceMobile" xml:space="preserve"><value>移动设备</value></data>
-  <data name="DeviceName" xml:space="preserve"><value>设备名称</value></data>
-  <data name="DeviceServer" xml:space="preserve"><value>服务器</value></data>
-  <data name="DeviceWeb" xml:space="preserve"><value>网页设备</value></data>
-  <data name="EditFavorite" xml:space="preserve"><value>编辑收藏</value></data>
-  <data name="EditFavoriteDevice" xml:space="preserve"><value>编辑收藏 {device}</value></data>
-  <data name="EditFavoriteTitle" xml:space="preserve"><value>编辑收藏设备</value></data>
-  <data name="FavoriteDevice" xml:space="preserve"><value>收藏 {device}</value></data>
-  <data name="FavoriteDeviceName" xml:space="preserve"><value>收藏设备名称</value></data>
-  <data name="FavoriteIpAddress" xml:space="preserve"><value>收藏设备 IP 地址</value></data>
-  <data name="FavoritePort" xml:space="preserve"><value>收藏设备端口</value></data>
-  <data name="FavoritesEmpty" xml:space="preserve"><value>收藏夹中还没有设备。</value></data>
-  <data name="FavoritesTitle" xml:space="preserve"><value>收藏夹</value></data>
-  <data name="NewFavorite" xml:space="preserve"><value>新建</value></data>
-  <data name="MultipleReceivers" xml:space="preserve"><value>发送给多个设备</value></data>
-  <data name="MultipleReceiversDescription" xml:space="preserve"><value>发送完成后保留待发送内容，以便继续选择其他设备。</value></data>
-  <data name="SendToFavorite" xml:space="preserve"><value>发送到收藏设备“{device}”</value></data>
-  <data name="File" xml:space="preserve"><value>文件</value></data>
-  <data name="Fingerprint" xml:space="preserve"><value>指纹  {fingerprint}…</value></data>
-  <data name="Folder" xml:space="preserve"><value>文件夹</value></data>
-  <data name="FolderEmpty" xml:space="preserve"><value>所选文件夹中没有可发送的文件。</value></data>
-  <data name="HistoryBack" xml:space="preserve"><value>返回</value></data>
-  <data name="HistoryDeleteAll" xml:space="preserve"><value>删除历史</value></data>
-  <data name="HistoryDeleteAllConfirm" xml:space="preserve"><value>删除接收历史？</value></data>
-  <data name="HistoryDeleteAllConfirmMessage" xml:space="preserve"><value>这只会清空本机历史列表，不会删除已经保存到磁盘的文件。</value></data>
-  <data name="HistoryDeleteItem" xml:space="preserve"><value>从历史记录中删除</value></data>
-  <data name="HistoryEmpty" xml:space="preserve"><value>还没有收到过文件。</value></data>
-  <data name="HistoryEntryActions" xml:space="preserve"><value>{file} 的操作</value></data>
-  <data name="HistoryInfo" xml:space="preserve"><value>信息</value></data>
-  <data name="HistoryInfoFileName" xml:space="preserve"><value>文件名</value></data>
-  <data name="HistoryInfoPath" xml:space="preserve"><value>路径</value></data>
-  <data name="HistoryInfoSender" xml:space="preserve"><value>发送者</value></data>
-  <data name="HistoryInfoSize" xml:space="preserve"><value>大小</value></data>
-  <data name="HistoryInfoTime" xml:space="preserve"><value>时间</value></data>
-  <data name="HistoryInfoTitle" xml:space="preserve"><value>文件信息</value></data>
-  <data name="HistoryOpenDirectory" xml:space="preserve"><value>打开目录</value></data>
-  <data name="HistoryOpenFile" xml:space="preserve"><value>打开文件</value></data>
-  <data name="HistoryOpenReceiveHistory" xml:space="preserve"><value>接收历史</value></data>
-  <data name="HistoryShowInFolder" xml:space="preserve"><value>在文件管理器中显示</value></data>
+  <data name="Accept" xml:space="preserve"><value>Accept</value></data>
+  <data name="Add" xml:space="preserve"><value>Add</value></data>
+  <data name="AddFavoriteTitle" xml:space="preserve"><value>Add to favorites</value></data>
+  <data name="AddFolder" xml:space="preserve"><value>Add folder</value></data>
+  <data name="AutoSaveDescription" xml:space="preserve"><value>Choose how incoming content is handled.</value></data>
+  <data name="AutoSaveFavorites" xml:space="preserve"><value>Favorites</value></data>
+  <data name="AutoSaveOff" xml:space="preserve"><value>Off</value></data>
+  <data name="AutoSaveOn" xml:space="preserve"><value>On</value></data>
+  <data name="AutoSaveTitle" xml:space="preserve"><value>Auto save</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="CancelCurrentSend" xml:space="preserve"><value>Cancel current send</value></data>
+  <data name="CancelCurrentTransfer" xml:space="preserve"><value>Cancel current transfer</value></data>
+  <data name="Cancelled" xml:space="preserve"><value>Cancelled</value></data>
+  <data name="CancellingTransfer" xml:space="preserve"><value>Cancelling transfer…</value></data>
+  <data name="Change" xml:space="preserve"><value>Change…</value></data>
+  <data name="ChangeSaveLocation" xml:space="preserve"><value>Change the location where received files are saved</value></data>
+  <data name="ChooseContent" xml:space="preserve"><value>Choose content</value></data>
+  <data name="ChooseItem" xml:space="preserve"><value>Choose {item}</value></data>
+  <data name="DropFilesCaption" xml:space="preserve"><value>Add to send list</value></data>
+  <data name="DropFilesOrFolders" xml:space="preserve"><value>Drop files or folders here</value></data>
+  <data name="DropItemsFailed" xml:space="preserve"><value>Could not add dropped items: {error}</value></data>
+  <data name="DroppedItemsEmpty" xml:space="preserve"><value>The dropped items contain no accessible files.</value></data>
+  <data name="ReleaseFilesToAdd" xml:space="preserve"><value>Release to add</value></data>
+  <data name="Clear" xml:space="preserve"><value>Clear</value></data>
+  <data name="Clipboard" xml:space="preserve"><value>Clipboard</value></data>
+  <data name="ClipboardEmpty" xml:space="preserve"><value>The clipboard has no text, files, or folders that can be sent.</value></data>
+  <data name="ClipboardImage" xml:space="preserve"><value>Clipboard image</value></data>
+  <data name="ClipboardReadFailed" xml:space="preserve"><value>Could not read the clipboard: {error}</value></data>
+  <data name="ClipboardText" xml:space="preserve"><value>Clipboard text</value></data>
+  <data name="Close" xml:space="preserve"><value>Close</value></data>
+  <data name="Confirm" xml:space="preserve"><value>OK</value></data>
+  <data name="ContentManyItems" xml:space="preserve"><value>{count} items</value></data>
+  <data name="ContentOneFile" xml:space="preserve"><value>File {file}</value></data>
+  <data name="ContentOneTextMessage" xml:space="preserve"><value>A text message</value></data>
+  <data name="ContentSaved" xml:space="preserve"><value>Content saved.</value></data>
+  <data name="Copied" xml:space="preserve"><value>Copied</value></data>
+  <data name="Copy" xml:space="preserve"><value>Copy</value></data>
+  <data name="CopyReceivedText" xml:space="preserve"><value>Copy received text</value></data>
+  <data name="Decline" xml:space="preserve"><value>Decline</value></data>
+  <data name="Delete" xml:space="preserve"><value>Delete</value></data>
+  <data name="DeleteFavoriteConfirm" xml:space="preserve"><value>Are you sure you want to remove “{device}” from favorites?</value></data>
+  <data name="DeleteFavoriteTitle" xml:space="preserve"><value>Delete favorite</value></data>
+  <data name="DeviceInfo" xml:space="preserve"><value>Device information</value></data>
+  <data name="DeviceInfoAlias" xml:space="preserve"><value>Alias (device name):</value></data>
+  <data name="DeviceInfoIp" xml:space="preserve"><value>IP:</value></data>
+  <data name="DeviceInfoNoAddress" xml:space="preserve"><value>No address available</value></data>
+  <data name="DeviceInfoPort" xml:space="preserve"><value>Port:</value></data>
+  <data name="DeviceDetailsTitle" xml:space="preserve"><value>Device details</value></data>
+  <data name="OpenDeviceDetails" xml:space="preserve"><value>View details for {device}</value></data>
+  <data name="DeviceInformation" xml:space="preserve"><value>Device information</value></data>
+  <data name="DeviceModelLabel" xml:space="preserve"><value>Device model</value></data>
+  <data name="ProtocolVersion" xml:space="preserve"><value>Protocol version</value></data>
+  <data name="Address" xml:space="preserve"><value>Address</value></data>
+  <data name="LastSeen" xml:space="preserve"><value>Last seen</value></data>
+  <data name="FingerprintLabel" xml:space="preserve"><value>Fingerprint</value></data>
+  <data name="FavoriteAction" xml:space="preserve"><value>Favorite</value></data>
+  <data name="RemoveFavoriteAction" xml:space="preserve"><value>Unfavorite</value></data>
+  <data name="VerifyAction" xml:space="preserve"><value>Verify</value></data>
+  <data name="VerificationTitle" xml:space="preserve"><value>Verify device</value></data>
+  <data name="VerificationIcons" xml:space="preserve"><value>Icons</value></data>
+  <data name="VerificationText" xml:space="preserve"><value>Text</value></data>
+  <data name="VerificationCompareHint" xml:space="preserve"><value>Does the other device show the same content?</value></data>
+  <data name="VerificationUnencryptedTitle" xml:space="preserve"><value>Connection is not encrypted</value></data>
+  <data name="VerificationUnencryptedMessage" xml:space="preserve"><value>This comparison is not cryptographically bound when the device uses HTTP.</value></data>
+  <data name="DeviceLog" xml:space="preserve"><value>Activity</value></data>
+  <data name="DeviceLogEmpty" xml:space="preserve"><value>No discovery activity has been recorded in this session.</value></data>
+  <data name="DeviceLogAdded" xml:space="preserve"><value>Discovered</value></data>
+  <data name="DeviceLogUpdated" xml:space="preserve"><value>Updated</value></data>
+  <data name="DeviceLogRemoved" xml:space="preserve"><value>Expired</value></data>
+  <data name="DeviceDesktop" xml:space="preserve"><value>Desktop</value></data>
+  <data name="DeviceHeadless" xml:space="preserve"><value>Headless device</value></data>
+  <data name="DeviceMobile" xml:space="preserve"><value>Mobile device</value></data>
+  <data name="DeviceName" xml:space="preserve"><value>Device name</value></data>
+  <data name="DeviceServer" xml:space="preserve"><value>Server</value></data>
+  <data name="DeviceWeb" xml:space="preserve"><value>Web device</value></data>
+  <data name="EditFavorite" xml:space="preserve"><value>Edit favorite</value></data>
+  <data name="EditFavoriteDevice" xml:space="preserve"><value>Edit favorite {device}</value></data>
+  <data name="EditFavoriteTitle" xml:space="preserve"><value>Edit favorite device</value></data>
+  <data name="FavoriteDevice" xml:space="preserve"><value>Favorite {device}</value></data>
+  <data name="FavoriteDeviceName" xml:space="preserve"><value>Favorite device name</value></data>
+  <data name="FavoriteIpAddress" xml:space="preserve"><value>Favorite device IP address</value></data>
+  <data name="FavoritePort" xml:space="preserve"><value>Favorite device port</value></data>
+  <data name="FavoritesEmpty" xml:space="preserve"><value>There are no devices in your favorites yet.</value></data>
+  <data name="FavoritesTitle" xml:space="preserve"><value>Favorites</value></data>
+  <data name="NewFavorite" xml:space="preserve"><value>New</value></data>
+  <data name="MultipleReceivers" xml:space="preserve"><value>Send to multiple devices</value></data>
+  <data name="MultipleReceiversDescription" xml:space="preserve"><value>Keep the selected content after sending so you can choose another device.</value></data>
+  <data name="SendToFavorite" xml:space="preserve"><value>Send to favorite device “{device}”</value></data>
+  <data name="File" xml:space="preserve"><value>File</value></data>
+  <data name="Fingerprint" xml:space="preserve"><value>Fingerprint  {fingerprint}…</value></data>
+  <data name="Folder" xml:space="preserve"><value>Folder</value></data>
+  <data name="FolderEmpty" xml:space="preserve"><value>The selected folder has no files that can be sent.</value></data>
+  <data name="HistoryBack" xml:space="preserve"><value>Back</value></data>
+  <data name="HistoryDeleteAll" xml:space="preserve"><value>Delete history</value></data>
+  <data name="HistoryDeleteAllConfirm" xml:space="preserve"><value>Delete receive history?</value></data>
+  <data name="HistoryDeleteAllConfirmMessage" xml:space="preserve"><value>This removes the local history list. Files already saved on disk are not deleted.</value></data>
+  <data name="HistoryDeleteItem" xml:space="preserve"><value>Remove from history</value></data>
+  <data name="HistoryEmpty" xml:space="preserve"><value>No received files yet.</value></data>
+  <data name="HistoryEntryActions" xml:space="preserve"><value>Actions for {file}</value></data>
+  <data name="HistoryInfo" xml:space="preserve"><value>Info</value></data>
+  <data name="HistoryInfoFileName" xml:space="preserve"><value>File name</value></data>
+  <data name="HistoryInfoPath" xml:space="preserve"><value>Path</value></data>
+  <data name="HistoryInfoSender" xml:space="preserve"><value>Sender</value></data>
+  <data name="HistoryInfoSize" xml:space="preserve"><value>Size</value></data>
+  <data name="HistoryInfoTime" xml:space="preserve"><value>Time</value></data>
+  <data name="HistoryInfoTitle" xml:space="preserve"><value>File info</value></data>
+  <data name="HistoryOpenDirectory" xml:space="preserve"><value>Open folder</value></data>
+  <data name="HistoryOpenFile" xml:space="preserve"><value>Open file</value></data>
+  <data name="HistoryOpenReceiveHistory" xml:space="preserve"><value>Receive history</value></data>
+  <data name="HistoryShowInFolder" xml:space="preserve"><value>Show in File Explorer</value></data>
   <data name="HistorySubtitle" xml:space="preserve"><value>{date} · {size} · {sender}</value></data>
-  <data name="HistoryTitle" xml:space="preserve"><value>接收历史</value></data>
-  <data name="IdentityLoading" xml:space="preserve"><value>正在载入身份…</value></data>
-  <data name="IncomingFileSummary" xml:space="preserve"><value>想要发送给你文件 {file}。</value></data>
-  <data name="IncomingFiles" xml:space="preserve"><value>文件</value></data>
-  <data name="IncomingItemsSummary" xml:space="preserve"><value>想要发送给你 {count} 个项目。</value></data>
-  <data name="IncomingTextSummary" xml:space="preserve"><value>想要发送给你一条文本消息。</value></data>
-  <data name="InvalidIpAddress" xml:space="preserve"><value>请输入有效的 IP 地址。</value></data>
-  <data name="InvalidPort" xml:space="preserve"><value>端口必须在 1 到 65535 之间。</value></data>
-  <data name="IpAddress" xml:space="preserve"><value>IP 地址</value></data>
+  <data name="HistoryTitle" xml:space="preserve"><value>Receive history</value></data>
+  <data name="IdentityLoading" xml:space="preserve"><value>Loading identity…</value></data>
+  <data name="IncomingFileSummary" xml:space="preserve"><value>Wants to send you the file {file}.</value></data>
+  <data name="IncomingFiles" xml:space="preserve"><value>Files</value></data>
+  <data name="IncomingItemsSummary" xml:space="preserve"><value>Wants to send you {count} items.</value></data>
+  <data name="IncomingTextSummary" xml:space="preserve"><value>Wants to send you a text message.</value></data>
+  <data name="InvalidIpAddress" xml:space="preserve"><value>Enter a valid IP address.</value></data>
+  <data name="InvalidPort" xml:space="preserve"><value>Port must be between 1 and 65535.</value></data>
+  <data name="IpAddress" xml:space="preserve"><value>IP address</value></data>
   <data name="ItemKindAndSize" xml:space="preserve"><value>{kind} · {size}</value></data>
-  <data name="ItemsAdded" xml:space="preserve"><value>已添加 {count} 项</value></data>
+  <data name="ItemsAdded" xml:space="preserve"><value>Added {count} items</value></data>
   <data name="LanguageChinese" xml:space="preserve"><value>简体中文</value></data>
   <data name="LanguageEnglish" xml:space="preserve"><value>English</value></data>
-  <data name="MoreItems" xml:space="preserve"><value>另外 {count} 项…</value></data>
-  <data name="Name" xml:space="preserve"><value>名称</value></data>
-  <data name="NavReceive" xml:space="preserve"><value>接收</value></data>
-  <data name="NavSend" xml:space="preserve"><value>发送</value></data>
-  <data name="NavSettings" xml:space="preserve"><value>设置</value></data>
-  <data name="NotificationIncomingTitle" xml:space="preserve"><value>来自 {device} 的传输请求</value></data>
-  <data name="NotificationReceiveCompleteTitle" xml:space="preserve"><value>接收完成</value></data>
-  <data name="NotificationReceiveCompleteOne" xml:space="preserve"><value>已接收来自 {device} 的 1 个项目。</value></data>
-  <data name="NotificationReceiveCompleteMany" xml:space="preserve"><value>已接收来自 {device} 的 {count} 个项目。</value></data>
-  <data name="NotificationSendCompleteTitle" xml:space="preserve"><value>发送完成</value></data>
-  <data name="NotificationSendCompleteOne" xml:space="preserve"><value>已向 {device} 发送 1 个项目。</value></data>
-  <data name="NotificationSendCompleteMany" xml:space="preserve"><value>已向 {device} 发送 {count} 个项目。</value></data>
-  <data name="NotificationOpenFile" xml:space="preserve"><value>打开文件</value></data>
-  <data name="NotificationShowInFolder" xml:space="preserve"><value>打开文件所在位置</value></data>
-  <data name="NearbyDevices" xml:space="preserve"><value>附近的设备</value></data>
-  <data name="AddressExample" xml:space="preserve"><value>示例：{address}</value></data>
-  <data name="AddressPlaceholder" xml:space="preserve"><value>IP 地址或 IP:端口</value></data>
-  <data name="DeviceAddress" xml:space="preserve"><value>设备地址</value></data>
-  <data name="DeviceAddressNotFound" xml:space="preserve"><value>在 {address} 未找到兼容的设备，请检查地址和网络连接。</value></data>
-  <data name="EnterAddressTitle" xml:space="preserve"><value>输入地址</value></data>
-  <data name="InvalidDeviceAddress" xml:space="preserve"><value>请输入有效的 IP 地址。</value></data>
-  <data name="RecentlyUsedAddress" xml:space="preserve"><value>最近使用：</value></data>
-  <data name="SendToAddress" xml:space="preserve"><value>按地址发送</value></data>
-  <data name="UseRecentAddress" xml:space="preserve"><value>使用最近的地址 {address}</value></data>
-  <data name="NetworkStartFailed" xml:space="preserve"><value>无法启动网络服务</value></data>
-  <data name="DiscoveryScanHint" xml:space="preserve"><value>多播发现不可用。正在通过扫描局域网查找附近设备。</value></data>
-  <data name="NodeDisconnected" xml:space="preserve"><value>未连接</value></data>
-  <data name="NetworkStatus" xml:space="preserve"><value>网络状态</value></data>
-  <data name="NodeDiscoveryLimited" xml:space="preserve"><value>已连接；附近设备通过网络扫描查找</value></data>
-  <data name="NodeFaulted" xml:space="preserve"><value>网络服务不可用</value></data>
-  <data name="NodeRunning" xml:space="preserve"><value>已连接到本地网络</value></data>
-  <data name="NodeStarting" xml:space="preserve"><value>正在启动…</value></data>
-  <data name="NodeStopping" xml:space="preserve"><value>正在停止…</value></data>
-  <data name="NothingSelected" xml:space="preserve"><value>尚未选择内容</value></data>
-  <data name="OptionSystem" xml:space="preserve"><value>跟随系统</value></data>
-  <data name="PageNotFound" xml:space="preserve"><value>找不到此页面。</value></data>
-  <data name="PendingRequests" xml:space="preserve"><value>{count} 个待处理请求</value></data>
-  <data name="PickFileFailed" xml:space="preserve"><value>无法选择文件：{error}</value></data>
-  <data name="PickFolderFailed" xml:space="preserve"><value>无法选择文件夹：{error}</value></data>
-  <data name="PinIncorrect" xml:space="preserve"><value>PIN 不正确，请重试。</value></data>
+  <data name="MoreItems" xml:space="preserve"><value>{count} more…</value></data>
+  <data name="Name" xml:space="preserve"><value>Name</value></data>
+  <data name="NavReceive" xml:space="preserve"><value>Receive</value></data>
+  <data name="NavSend" xml:space="preserve"><value>Send</value></data>
+  <data name="NavSettings" xml:space="preserve"><value>Settings</value></data>
+  <data name="NotificationIncomingTitle" xml:space="preserve"><value>Incoming transfer from {device}</value></data>
+  <data name="NotificationReceiveCompleteTitle" xml:space="preserve"><value>Receive complete</value></data>
+  <data name="NotificationReceiveCompleteOne" xml:space="preserve"><value>Received an item from {device}.</value></data>
+  <data name="NotificationReceiveCompleteMany" xml:space="preserve"><value>Received {count} items from {device}.</value></data>
+  <data name="NotificationSendCompleteTitle" xml:space="preserve"><value>Send complete</value></data>
+  <data name="NotificationSendCompleteOne" xml:space="preserve"><value>Sent an item to {device}.</value></data>
+  <data name="NotificationSendCompleteMany" xml:space="preserve"><value>Sent {count} items to {device}.</value></data>
+  <data name="NotificationOpenFile" xml:space="preserve"><value>Open file</value></data>
+  <data name="NotificationShowInFolder" xml:space="preserve"><value>Show in folder</value></data>
+  <data name="NearbyDevices" xml:space="preserve"><value>Nearby devices</value></data>
+  <data name="AddressExample" xml:space="preserve"><value>Example: {address}</value></data>
+  <data name="AddressPlaceholder" xml:space="preserve"><value>IP address or IP:port</value></data>
+  <data name="DeviceAddress" xml:space="preserve"><value>Device address</value></data>
+  <data name="DeviceAddressNotFound" xml:space="preserve"><value>No compatible device was found at {address}. Check the address and network connection.</value></data>
+  <data name="EnterAddressTitle" xml:space="preserve"><value>Enter address</value></data>
+  <data name="InvalidDeviceAddress" xml:space="preserve"><value>Enter a valid IP address.</value></data>
+  <data name="RecentlyUsedAddress" xml:space="preserve"><value>Recently used:</value></data>
+  <data name="SendToAddress" xml:space="preserve"><value>Send to address</value></data>
+  <data name="UseRecentAddress" xml:space="preserve"><value>Use recent address {address}</value></data>
+  <data name="NetworkStartFailed" xml:space="preserve"><value>Could not start the network service</value></data>
+  <data name="DiscoveryScanHint" xml:space="preserve"><value>Multicast discovery is unavailable. Nearby devices are found by scanning this network.</value></data>
+  <data name="NodeDisconnected" xml:space="preserve"><value>Disconnected</value></data>
+  <data name="NetworkStatus" xml:space="preserve"><value>Network status</value></data>
+  <data name="NodeDiscoveryLimited" xml:space="preserve"><value>Connected; nearby search is using a network scan</value></data>
+  <data name="NodeFaulted" xml:space="preserve"><value>Network service unavailable</value></data>
+  <data name="NodeRunning" xml:space="preserve"><value>Connected to the local network</value></data>
+  <data name="NodeStarting" xml:space="preserve"><value>Starting…</value></data>
+  <data name="NodeStopping" xml:space="preserve"><value>Stopping…</value></data>
+  <data name="NothingSelected" xml:space="preserve"><value>Nothing selected</value></data>
+  <data name="OptionSystem" xml:space="preserve"><value>Use system setting</value></data>
+  <data name="PageNotFound" xml:space="preserve"><value>Page not found.</value></data>
+  <data name="PendingRequests" xml:space="preserve"><value>{count} pending requests</value></data>
+  <data name="PickFileFailed" xml:space="preserve"><value>Could not select file: {error}</value></data>
+  <data name="PickFolderFailed" xml:space="preserve"><value>Could not select folder: {error}</value></data>
+  <data name="PinIncorrect" xml:space="preserve"><value>Incorrect PIN. Try again.</value></data>
   <data name="Pin" xml:space="preserve"><value>PIN</value></data>
-  <data name="PinConfirm" xml:space="preserve"><value>确认</value></data>
-  <data name="PinPlaceholder" xml:space="preserve"><value>输入 PIN</value></data>
-  <data name="PinRateLimited" xml:space="preserve"><value>PIN 尝试次数过多，请稍后再试。</value></data>
-  <data name="PinRequiredMessage" xml:space="preserve"><value>{device} 要求输入接收 PIN。</value></data>
-  <data name="PinRequiredTitle" xml:space="preserve"><value>需要 PIN</value></data>
-  <data name="Port" xml:space="preserve"><value>端口</value></data>
-  <data name="PortInUseHint" xml:space="preserve"><value>请检查 53317 端口是否被 Tonarink 或其他兼容 LocalSend 的应用占用。</value></data>
-  <data name="PreparingForDevice" xml:space="preserve"><value>正在准备发送给 {device}…</value></data>
-  <data name="ReceiveCancelled" xml:space="preserve"><value>接收已取消</value></data>
-  <data name="ReceivedMessage" xml:space="preserve"><value>发送给你了一条消息：</value></data>
-  <data name="ReceivedTextContent" xml:space="preserve"><value>收到的文本内容</value></data>
-  <data name="ReceiveFailed" xml:space="preserve"><value>接收失败。</value></data>
-  <data name="ReceiveSaveDirectory" xml:space="preserve"><value>保存目录</value></data>
-  <data name="ReceiveTitle" xml:space="preserve"><value>接收</value></data>
-  <data name="ReceivingContent" xml:space="preserve"><value>正在接收内容…</value></data>
-  <data name="ReceivingPreparing" xml:space="preserve"><value>正在准备接收…</value></data>
-  <data name="RefreshDevices" xml:space="preserve"><value>刷新附近设备</value></data>
-  <data name="Remove" xml:space="preserve"><value>移除</value></data>
-  <data name="RemoveFavoriteDevice" xml:space="preserve"><value>取消收藏 {device}</value></data>
-  <data name="RemoveItem" xml:space="preserve"><value>移除 {item}</value></data>
-  <data name="Rename" xml:space="preserve"><value>重命名</value></data>
-  <data name="RenameIncomingFile" xml:space="preserve"><value>重命名 {file}</value></data>
-  <data name="RenameSuccess" xml:space="preserve"><value>重命名成功 · {size}</value></data>
-  <data name="ResetReceiveOptions" xml:space="preserve"><value>撤回文件更改</value></data>
-  <data name="QuickActionsTitle" xml:space="preserve"><value>快速操作</value></data>
-  <data name="QuickActionsCounter" xml:space="preserve"><value>计数器</value></data>
-  <data name="QuickActionsRandom" xml:space="preserve"><value>随机</value></data>
-  <data name="QuickActionsPrefix" xml:space="preserve"><value>前缀</value></data>
-  <data name="QuickActionsPadZero" xml:space="preserve"><value>以零填充</value></data>
-  <data name="QuickActionsSortBeforeCount" xml:space="preserve"><value>事先以字母顺序排序</value></data>
-  <data name="QuickActionsExample" xml:space="preserve"><value>示例: {name}</value></data>
-  <data name="QuickActionsInvalidPrefix" xml:space="preserve"><value>前缀包含无效字符。</value></data>
-  <data name="UndoIncomingFileRename" xml:space="preserve"><value>撤回重命名</value></data>
-  <data name="Retry" xml:space="preserve"><value>重试</value></data>
-  <data name="SameNetworkHint" xml:space="preserve"><value>请确保目标设备连接到同一个 Wi-Fi 网络。</value></data>
-  <data name="Save" xml:space="preserve"><value>保存</value></data>
-  <data name="SearchingDevices" xml:space="preserve"><value>正在寻找附近设备</value></data>
-  <data name="SelectContentFirst" xml:space="preserve"><value>请先选择要发送的内容。</value></data>
-  <data name="SelectedItems" xml:space="preserve"><value>已选择 {count} 项 · {size}</value></data>
-  <data name="SelectedIncomingFiles" xml:space="preserve"><value>已选择 {selected}/{count} 个文件</value></data>
-  <data name="SelectIncomingFile" xml:space="preserve"><value>选择 {file}</value></data>
-  <data name="SelectAllIncomingFiles" xml:space="preserve"><value>全选</value></data>
-  <data name="DeselectIncomingFile" xml:space="preserve"><value>取消选择 {file}</value></data>
-  <data name="DeselectAllIncomingFiles" xml:space="preserve"><value>取消全选</value></data>
-  <data name="ShowReceiveOptions" xml:space="preserve"><value>详细设置</value></data>
-  <data name="HideReceiveOptions" xml:space="preserve"><value>收起</value></data>
-  <data name="SendCancelled" xml:space="preserve"><value>发送已取消</value></data>
-  <data name="SendFailed" xml:space="preserve"><value>发送失败</value></data>
-  <data name="SendHint" xml:space="preserve"><value>选择内容后，点击附近设备即可发送。</value></data>
-  <data name="SendingPreparing" xml:space="preserve"><value>正在准备发送…</value></data>
-  <data name="SendingTitle" xml:space="preserve"><value>正在发送</value></data>
-  <data name="SendingToDevice" xml:space="preserve"><value>正在发送给 {device}…</value></data>
-  <data name="SendingTransferring" xml:space="preserve"><value>正在传输…</value></data>
-  <data name="SendingWaiting" xml:space="preserve"><value>等待对方响应…</value></data>
-  <data name="SendTextPlaceholder" xml:space="preserve"><value>输入要发送的文本…</value></data>
-  <data name="SendTextTitle" xml:space="preserve"><value>发送文本</value></data>
-  <data name="SendTitle" xml:space="preserve"><value>发送</value></data>
-  <data name="SendToDevice" xml:space="preserve"><value>向 {device} 发送</value></data>
-  <data name="SentToDevice" xml:space="preserve"><value>已成功发送给 {device}。</value></data>
-  <data name="SettingsAdvanced" xml:space="preserve"><value>高级设置</value></data>
-  <data name="SettingsAdvancedDescription" xml:space="preserve"><value>设备类型、端口、加密等网络选项。</value></data>
-  <data name="SettingsAbout" xml:space="preserve"><value>关于</value></data>
-  <data name="SettingsAboutCopyright" xml:space="preserve"><value>© {year}。保留所有权利。</value></data>
-  <data name="SettingsAboutRelationship" xml:space="preserve"><value>Tonarink 是 LocalSend 协议的独立非官方实现，与 LocalSend 项目不存在从属、关联或官方认可关系。感谢 Tien Do Nam 与 LocalSend 贡献者创建并公开这一协议。</value></data>
-  <data name="SettingsAboutFeedback" xml:space="preserve"><value>发送反馈</value></data>
-  <data name="SettingsAboutViewLogs" xml:space="preserve"><value>查看日志</value></data>
-  <data name="SettingsAboutGitHub" xml:space="preserve"><value>GitHub 仓库</value></data>
-  <data name="SettingsAboutIssues" xml:space="preserve"><value>报告问题</value></data>
-  <data name="SettingsAboutLocalSend" xml:space="preserve"><value>LocalSend 官网</value></data>
-  <data name="SettingsAboutVersion" xml:space="preserve"><value>版本 {version}</value></data>
-  <data name="SettingsAutoSave" xml:space="preserve"><value>自动保存</value></data>
-  <data name="SettingsAutoSaveDescription" xml:space="preserve"><value>自动接受并保存收到的内容。</value></data>
-  <data name="SettingsDeviceModel" xml:space="preserve"><value>设备型号</value></data>
-  <data name="SettingsDeviceModelDescription" xml:space="preserve"><value>向其他设备展示的型号。留空则使用此电脑的名称。</value></data>
-  <data name="SettingsDeviceName" xml:space="preserve"><value>设备名称</value></data>
-  <data name="SettingsDeviceNameDescription" xml:space="preserve"><value>其他设备将看到这个名称。更改后需重启服务器。</value></data>
-  <data name="SettingsDeviceType" xml:space="preserve"><value>设备类型</value></data>
-  <data name="SettingsDeviceTypeDescription" xml:space="preserve"><value>选择其他设备看到的图标，例如电脑或手机。</value></data>
-  <data name="SettingsDiscoveryTimeout" xml:space="preserve"><value>搜索超时</value></data>
-  <data name="SettingsDiscoveryTimeoutDescription" xml:space="preserve"><value>每次用 HTTP 探测附近设备时等待的毫秒数。</value></data>
-  <data name="SettingsEncryption" xml:space="preserve"><value>加密</value></data>
-  <data name="SettingsEncryptionDescription" xml:space="preserve"><value>使用 HTTPS 和证书身份进行传输。</value></data>
-  <data name="SettingsEncryptionDisabledNotice" xml:space="preserve"><value>加密已关闭。附近设备将通过 HTTP 连接，身份校验会变弱。需重启服务器后生效。</value></data>
-  <data name="SettingsEncryptionDisabledTitle" xml:space="preserve"><value>已关闭加密</value></data>
-  <data name="SettingsFavoritesOnly" xml:space="preserve"><value>仅自动接收收藏设备</value></data>
-  <data name="SettingsFavoritesOnlyDescription" xml:space="preserve"><value>自动保存开启时，只信任收藏列表中的设备。</value></data>
-  <data name="SettingsGeneral" xml:space="preserve"><value>通用</value></data>
-  <data name="SettingsLanguage" xml:space="preserve"><value>语言</value></data>
-  <data name="SettingsLanguageDescription" xml:space="preserve"><value>更改界面显示语言。</value></data>
-  <data name="SettingsNeedRestart" xml:space="preserve"><value>设置已更改。重启服务器后生效。</value></data>
-  <data name="SettingsNetwork" xml:space="preserve"><value>名称与网络</value></data>
-  <data name="SettingsNetworkInterfaces" xml:space="preserve"><value>网络接口</value></data>
-  <data name="SettingsNetworkInterfacesAll" xml:space="preserve"><value>全部</value></data>
-  <data name="SettingsNetworkInterfacesBlacklist" xml:space="preserve"><value>黑名单</value></data>
-  <data name="SettingsNetworkInterfacesEmpty" xml:space="preserve"><value>没有找到 IPv4 网络接口。</value></data>
-  <data name="SettingsNetworkInterfacesExample" xml:space="preserve"><value>示例:</value></data>
-  <data name="SettingsNetworkInterfacesInfo" xml:space="preserve"><value>默认情况下，Tonarink 使用所有可用的网络接口。您可以在此处排除不需要的网络。您需要重新启动服务器以应用更改。</value></data>
-  <data name="SettingsNetworkInterfacesPattern" xml:space="preserve"><value>规则 {index}</value></data>
-  <data name="SettingsNetworkInterfacesPreview" xml:space="preserve"><value>预览</value></data>
-  <data name="SettingsNetworkInterfacesRemovePattern" xml:space="preserve"><value>删除规则</value></data>
-  <data name="SettingsNetworkInterfacesWhitelist" xml:space="preserve"><value>白名单</value></data>
-  <data name="SettingsPort" xml:space="preserve"><value>端口</value></data>
-  <data name="SettingsPortDescription" xml:space="preserve"><value>Tonarink 的 LocalSend 兼容服务使用的 TCP 和 UDP 端口。</value></data>
-  <data name="SettingsPortWarning" xml:space="preserve"><value>正在使用自定义端口。其他设备默认仍会查找 {port}，除非也改成相同值。</value></data>
-  <data name="SettingsMulticast" xml:space="preserve"><value>多播</value></data>
-  <data name="SettingsMulticastDescription" xml:space="preserve"><value>用于宣告本机的 IPv4 多播组。</value></data>
-  <data name="SettingsMulticastWarning" xml:space="preserve"><value>正在使用自定义多播组。其他兼容 LocalSend 的设备默认使用 {group}，除非也改成相同值。</value></data>
-  <data name="SettingsMinimizeToTray" xml:space="preserve"><value>关闭时最小化到系统托盘</value></data>
-  <data name="SettingsMinimizeToTrayDescription" xml:space="preserve"><value>关闭主窗口时继续在后台接收。</value></data>
-  <data name="SettingsReceive" xml:space="preserve"><value>接收</value></data>
-  <data name="SettingsSend" xml:space="preserve"><value>发送</value></data>
-  <data name="SettingsVerifyChecksumsOnReceive" xml:space="preserve"><value>接收文件时验证校验和</value></data>
-  <data name="SettingsVerifyChecksumsOnReceiveDescription" xml:space="preserve"><value>使用发送方提供的 SHA-256 校验和验证文件完整性。</value></data>
-  <data name="SettingsVerifyChecksumsOnSend" xml:space="preserve"><value>发送文件时验证校验和</value></data>
-  <data name="SettingsVerifyChecksumsOnSendDescription" xml:space="preserve"><value>发送前计算 SHA-256 校验和，供接收设备验证文件完整性。</value></data>
-  <data name="SettingsReceivePin" xml:space="preserve"><value>接收 PIN</value></data>
-  <data name="SettingsReceivePinDescription" xml:space="preserve"><value>其他设备向本机发送内容时需要输入此 PIN；更改后需要重启服务器。</value></data>
-  <data name="SettingsReceivePinEnabled" xml:space="preserve"><value>启用 PIN 密码</value></data>
-  <data name="SettingsReceivePinEnabledDescription" xml:space="preserve"><value>要求发送方通过 PIN 验证。</value></data>
-  <data name="SettingsReceivePinProtection" xml:space="preserve"><value>PIN 密码</value></data>
-  <data name="SettingsReceivePinProtectionDescription" xml:space="preserve"><value>保护来自其他设备的接收请求。</value></data>
-  <data name="SettingsSaveReceiveHistory" xml:space="preserve"><value>保存到历史记录</value></data>
-  <data name="SettingsSaveReceiveHistoryDescription" xml:space="preserve"><value>接收完成后在本机历史记录中保留条目。</value></data>
-  <data name="SettingsRestartServer" xml:space="preserve"><value>重启服务器</value></data>
-  <data name="SettingsSaveLocation" xml:space="preserve"><value>保存位置</value></data>
-  <data name="SettingsServerOffline" xml:space="preserve"><value>服务器（已停止）</value></data>
-  <data name="SettingsServerRunning" xml:space="preserve"><value>接收服务正在运行。</value></data>
-  <data name="SettingsServerStopped" xml:space="preserve"><value>接收服务已停止。</value></data>
-  <data name="SettingsStartServer" xml:space="preserve"><value>启动服务器</value></data>
-  <data name="SettingsStopServer" xml:space="preserve"><value>停止服务器</value></data>
-  <data name="SettingsStartWithWindows" xml:space="preserve"><value>登录系统后自动启动</value></data>
-  <data name="SettingsStartWithWindowsDescription" xml:space="preserve"><value>登录 Windows 后自动运行 Tonarink。</value></data>
-  <data name="SettingsNotifications" xml:space="preserve"><value>系统通知</value></data>
-  <data name="SettingsNotificationsDescription" xml:space="preserve"><value>在收到传输请求以及发送或接收完成时显示 Windows 通知。</value></data>
-  <data name="SettingsNotificationsEnabled" xml:space="preserve"><value>启用通知</value></data>
-  <data name="SettingsNotificationsEnabledDescription" xml:space="preserve"><value>允许 Tonarink 发送 Windows 系统通知。</value></data>
-  <data name="SettingsNotificationsDefaultAction" xml:space="preserve"><value>点击完成通知时</value></data>
-  <data name="SettingsNotificationsDefaultActionDescription" xml:space="preserve"><value>选择点击传输完成通知本身时执行的默认操作。</value></data>
-  <data name="SettingsNotificationsDefaultOpenFile" xml:space="preserve"><value>打开文件</value></data>
-  <data name="SettingsNotificationsDefaultShowInFolder" xml:space="preserve"><value>打开文件所在位置</value></data>
-  <data name="SettingsNotificationsTest" xml:space="preserve"><value>测试通知</value></data>
-  <data name="SettingsNotificationsTestDescription" xml:space="preserve"><value>发送一条系统通知，检查当前 Windows 通知配置。</value></data>
-  <data name="SettingsNotificationsSendTest" xml:space="preserve"><value>发送测试通知</value></data>
-  <data name="SettingsNotificationsTestTitle" xml:space="preserve"><value>Tonarink 测试通知</value></data>
-  <data name="SettingsNotificationsTestMessage" xml:space="preserve"><value>系统通知已经可以正常显示。</value></data>
-  <data name="SettingsNotificationsTestFailed" xml:space="preserve"><value>测试通知发送失败，请检查 notifications.log 或 Windows 通知设置。</value></data>
-  <data name="ExplorerCommandTitle" xml:space="preserve"><value>使用 Tonarink 发送</value></data>
-  <data name="SettingsExplorerContextMenu" xml:space="preserve"><value>在文件资源管理器中显示</value></data>
-  <data name="SettingsExplorerContextMenuDescription" xml:space="preserve"><value>在 Windows 11 右键菜单中加入“使用 Tonarink 发送”。安装打包版本后生效。</value></data>
-  <data name="StartupDisabledByPolicy" xml:space="preserve"><value>当前 Windows 策略禁止 Tonarink 在登录后自动启动。</value></data>
-  <data name="StartupDisabledByUser" xml:space="preserve"><value>已在 Windows 设置中关闭开机启动。请先在系统设置里启用 Tonarink，然后再试。</value></data>
-  <data name="StartupFailed" xml:space="preserve"><value>无法更新登录后自动启动：{error}</value></data>
-  <data name="TrayExit" xml:space="preserve"><value>退出</value></data>
-  <data name="TrayOpen" xml:space="preserve"><value>打开 Tonarink</value></data>
+  <data name="PinConfirm" xml:space="preserve"><value>Confirm</value></data>
+  <data name="PinPlaceholder" xml:space="preserve"><value>Enter PIN</value></data>
+  <data name="PinRateLimited" xml:space="preserve"><value>Too many PIN attempts. Try again later.</value></data>
+  <data name="PinRequiredMessage" xml:space="preserve"><value>{device} requires a receive PIN.</value></data>
+  <data name="PinRequiredTitle" xml:space="preserve"><value>PIN required</value></data>
+  <data name="Port" xml:space="preserve"><value>Port</value></data>
+  <data name="PortInUseHint" xml:space="preserve"><value>Check whether port 53317 is in use by Tonarink or another LocalSend-compatible app.</value></data>
+  <data name="PreparingForDevice" xml:space="preserve"><value>Preparing to send to {device}…</value></data>
+  <data name="ReceiveCancelled" xml:space="preserve"><value>Receive cancelled</value></data>
+  <data name="ReceivedMessage" xml:space="preserve"><value>Sent you a message:</value></data>
+  <data name="ReceivedTextContent" xml:space="preserve"><value>Received text content</value></data>
+  <data name="ReceiveFailed" xml:space="preserve"><value>Receive failed.</value></data>
+  <data name="ReceiveSaveDirectory" xml:space="preserve"><value>Save directory</value></data>
+  <data name="ReceiveTitle" xml:space="preserve"><value>Receive</value></data>
+  <data name="ReceivingContent" xml:space="preserve"><value>Receiving content…</value></data>
+  <data name="ReceivingPreparing" xml:space="preserve"><value>Preparing to receive…</value></data>
+  <data name="RefreshDevices" xml:space="preserve"><value>Refresh nearby devices</value></data>
+  <data name="Remove" xml:space="preserve"><value>Remove</value></data>
+  <data name="RemoveFavoriteDevice" xml:space="preserve"><value>Remove {device} from favorites</value></data>
+  <data name="RemoveItem" xml:space="preserve"><value>Remove {item}</value></data>
+  <data name="Rename" xml:space="preserve"><value>Rename</value></data>
+  <data name="RenameIncomingFile" xml:space="preserve"><value>Rename {file}</value></data>
+  <data name="RenameSuccess" xml:space="preserve"><value>Renamed · {size}</value></data>
+  <data name="ResetReceiveOptions" xml:space="preserve"><value>Reset file choices</value></data>
+  <data name="QuickActionsTitle" xml:space="preserve"><value>Quick actions</value></data>
+  <data name="QuickActionsCounter" xml:space="preserve"><value>Counter</value></data>
+  <data name="QuickActionsRandom" xml:space="preserve"><value>Random</value></data>
+  <data name="QuickActionsPrefix" xml:space="preserve"><value>Prefix</value></data>
+  <data name="QuickActionsPadZero" xml:space="preserve"><value>Pad with zeros</value></data>
+  <data name="QuickActionsSortBeforeCount" xml:space="preserve"><value>Sort alphabetically beforehand</value></data>
+  <data name="QuickActionsExample" xml:space="preserve"><value>Example: {name}</value></data>
+  <data name="QuickActionsInvalidPrefix" xml:space="preserve"><value>The prefix contains invalid characters.</value></data>
+  <data name="UndoIncomingFileRename" xml:space="preserve"><value>Undo rename</value></data>
+  <data name="Retry" xml:space="preserve"><value>Retry</value></data>
+  <data name="SameNetworkHint" xml:space="preserve"><value>Make sure the target device is connected to the same Wi-Fi network.</value></data>
+  <data name="Save" xml:space="preserve"><value>Save</value></data>
+  <data name="SearchingDevices" xml:space="preserve"><value>Looking for nearby devices</value></data>
+  <data name="SelectContentFirst" xml:space="preserve"><value>Choose something to send first.</value></data>
+  <data name="SelectedItems" xml:space="preserve"><value>{count} items selected · {size}</value></data>
+  <data name="SelectedIncomingFiles" xml:space="preserve"><value>{selected} of {count} files selected</value></data>
+  <data name="SelectIncomingFile" xml:space="preserve"><value>Select {file}</value></data>
+  <data name="SelectAllIncomingFiles" xml:space="preserve"><value>Select all</value></data>
+  <data name="DeselectIncomingFile" xml:space="preserve"><value>Deselect {file}</value></data>
+  <data name="DeselectAllIncomingFiles" xml:space="preserve"><value>Deselect all</value></data>
+  <data name="ShowReceiveOptions" xml:space="preserve"><value>Details</value></data>
+  <data name="HideReceiveOptions" xml:space="preserve"><value>Collapse</value></data>
+  <data name="SendCancelled" xml:space="preserve"><value>Send cancelled</value></data>
+  <data name="SendFailed" xml:space="preserve"><value>Send failed</value></data>
+  <data name="SendHint" xml:space="preserve"><value>Choose content, then select a nearby device to send it.</value></data>
+  <data name="SendingPreparing" xml:space="preserve"><value>Preparing to send…</value></data>
+  <data name="SendingTitle" xml:space="preserve"><value>Sending</value></data>
+  <data name="SendingToDevice" xml:space="preserve"><value>Sending to {device}…</value></data>
+  <data name="SendingTransferring" xml:space="preserve"><value>Transferring…</value></data>
+  <data name="SendingWaiting" xml:space="preserve"><value>Waiting for a response…</value></data>
+  <data name="SendTextPlaceholder" xml:space="preserve"><value>Enter text to send…</value></data>
+  <data name="SendTextTitle" xml:space="preserve"><value>Send text</value></data>
+  <data name="SendTitle" xml:space="preserve"><value>Send</value></data>
+  <data name="SendToDevice" xml:space="preserve"><value>Send to {device}</value></data>
+  <data name="SentToDevice" xml:space="preserve"><value>Successfully sent to {device}.</value></data>
+  <data name="SettingsAdvanced" xml:space="preserve"><value>Advanced settings</value></data>
+  <data name="SettingsAdvancedDescription" xml:space="preserve"><value>Device type, port, encryption, and other network options.</value></data>
+  <data name="SettingsAbout" xml:space="preserve"><value>About</value></data>
+  <data name="SettingsAboutCopyright" xml:space="preserve"><value>© {year}. All rights reserved.</value></data>
+  <data name="SettingsAboutRelationship" xml:space="preserve"><value>Tonarink is an independent, unofficial implementation of the LocalSend protocol. It is not affiliated with or endorsed by the LocalSend project. Thanks to Tien Do Nam and the LocalSend contributors for creating and documenting the protocol.</value></data>
+  <data name="SettingsAboutFeedback" xml:space="preserve"><value>Send feedback</value></data>
+  <data name="SettingsAboutViewLogs" xml:space="preserve"><value>View logs</value></data>
+  <data name="SettingsAboutGitHub" xml:space="preserve"><value>GitHub repository</value></data>
+  <data name="SettingsAboutIssues" xml:space="preserve"><value>Report an issue</value></data>
+  <data name="SettingsAboutLocalSend" xml:space="preserve"><value>LocalSend website</value></data>
+  <data name="SettingsAboutVersion" xml:space="preserve"><value>Version {version}</value></data>
+  <data name="SettingsAutoSave" xml:space="preserve"><value>Auto save</value></data>
+  <data name="SettingsAutoSaveDescription" xml:space="preserve"><value>Automatically accept and save incoming content.</value></data>
+  <data name="SettingsDeviceModel" xml:space="preserve"><value>Device model</value></data>
+  <data name="SettingsDeviceModelDescription" xml:space="preserve"><value>Optional model name advertised to other devices. Leave empty to use this computer''s name.</value></data>
+  <data name="SettingsDeviceName" xml:space="preserve"><value>Device name</value></data>
+  <data name="SettingsDeviceNameDescription" xml:space="preserve"><value>Other devices see this name. Restart the server to apply a change.</value></data>
+  <data name="SettingsDeviceType" xml:space="preserve"><value>Device type</value></data>
+  <data name="SettingsDeviceTypeDescription" xml:space="preserve"><value>Choose the icon other devices show for this computer.</value></data>
+  <data name="SettingsDiscoveryTimeout" xml:space="preserve"><value>Discovery timeout</value></data>
+  <data name="SettingsDiscoveryTimeoutDescription" xml:space="preserve"><value>How long each HTTP nearby-device probe waits, in milliseconds.</value></data>
+  <data name="SettingsEncryption" xml:space="preserve"><value>Encryption</value></data>
+  <data name="SettingsEncryptionDescription" xml:space="preserve"><value>Use HTTPS and certificate identity for transfers.</value></data>
+  <data name="SettingsEncryptionDisabledNotice" xml:space="preserve"><value>Encryption is off. Nearby devices will connect over HTTP, and identity checks are weaker. Restart the server to apply this.</value></data>
+  <data name="SettingsEncryptionDisabledTitle" xml:space="preserve"><value>Encryption disabled</value></data>
+  <data name="SettingsFavoritesOnly" xml:space="preserve"><value>Only auto-receive from favorites</value></data>
+  <data name="SettingsFavoritesOnlyDescription" xml:space="preserve"><value>When auto save is on, trust only devices in your favorites.</value></data>
+  <data name="SettingsGeneral" xml:space="preserve"><value>General</value></data>
+  <data name="SettingsLanguage" xml:space="preserve"><value>Language</value></data>
+  <data name="SettingsLanguageDescription" xml:space="preserve"><value>Change the language used by the interface.</value></data>
+  <data name="SettingsNeedRestart" xml:space="preserve"><value>Settings changed. Restart the server to apply them.</value></data>
+  <data name="SettingsNetwork" xml:space="preserve"><value>Network</value></data>
+  <data name="SettingsNetworkInterfaces" xml:space="preserve"><value>Network interfaces</value></data>
+  <data name="SettingsNetworkInterfacesAll" xml:space="preserve"><value>All</value></data>
+  <data name="SettingsNetworkInterfacesBlacklist" xml:space="preserve"><value>Blacklist</value></data>
+  <data name="SettingsNetworkInterfacesEmpty" xml:space="preserve"><value>No IPv4 network interfaces were found.</value></data>
+  <data name="SettingsNetworkInterfacesExample" xml:space="preserve"><value>Example:</value></data>
+  <data name="SettingsNetworkInterfacesInfo" xml:space="preserve"><value>By default, Tonarink uses every available network interface. You can exclude networks you do not need. Restart the server to apply changes.</value></data>
+  <data name="SettingsNetworkInterfacesPattern" xml:space="preserve"><value>Pattern {index}</value></data>
+  <data name="SettingsNetworkInterfacesPreview" xml:space="preserve"><value>Preview</value></data>
+  <data name="SettingsNetworkInterfacesRemovePattern" xml:space="preserve"><value>Remove pattern</value></data>
+  <data name="SettingsNetworkInterfacesWhitelist" xml:space="preserve"><value>Whitelist</value></data>
+  <data name="SettingsPort" xml:space="preserve"><value>Port</value></data>
+  <data name="SettingsPortDescription" xml:space="preserve"><value>TCP and UDP port used by Tonarink''s LocalSend-compatible service.</value></data>
+  <data name="SettingsPortWarning" xml:space="preserve"><value>Custom port. Other devices still look for {port} unless they are changed too.</value></data>
+  <data name="SettingsMulticast" xml:space="preserve"><value>Multicast</value></data>
+  <data name="SettingsMulticastDescription" xml:space="preserve"><value>IPv4 multicast group used to announce this device.</value></data>
+  <data name="SettingsMulticastWarning" xml:space="preserve"><value>Custom multicast group. Other LocalSend-compatible devices expect {group} unless they are changed too.</value></data>
+  <data name="SettingsMinimizeToTray" xml:space="preserve"><value>Minimize to the system tray when closing</value></data>
+  <data name="SettingsMinimizeToTrayDescription" xml:space="preserve"><value>Keep receiving in the background when the main window closes.</value></data>
+  <data name="SettingsReceive" xml:space="preserve"><value>Receive</value></data>
+  <data name="SettingsSend" xml:space="preserve"><value>Send</value></data>
+  <data name="SettingsVerifyChecksumsOnReceive" xml:space="preserve"><value>Verify checksums when receiving files</value></data>
+  <data name="SettingsVerifyChecksumsOnReceiveDescription" xml:space="preserve"><value>Use sender-provided SHA-256 checksums to verify file integrity.</value></data>
+  <data name="SettingsVerifyChecksumsOnSend" xml:space="preserve"><value>Verify checksums when sending files</value></data>
+  <data name="SettingsVerifyChecksumsOnSendDescription" xml:space="preserve"><value>Compute SHA-256 checksums before sending so receiving devices can verify file integrity.</value></data>
+  <data name="SettingsReceivePin" xml:space="preserve"><value>Receive PIN</value></data>
+  <data name="SettingsReceivePinDescription" xml:space="preserve"><value>Other devices must enter this PIN when sending to this device. Restart the server after changing it.</value></data>
+  <data name="SettingsReceivePinEnabled" xml:space="preserve"><value>Enable PIN protection</value></data>
+  <data name="SettingsReceivePinEnabledDescription" xml:space="preserve"><value>Require senders to authenticate with a PIN.</value></data>
+  <data name="SettingsReceivePinProtection" xml:space="preserve"><value>PIN protection</value></data>
+  <data name="SettingsReceivePinProtectionDescription" xml:space="preserve"><value>Protect incoming requests from other devices.</value></data>
+  <data name="SettingsSaveReceiveHistory" xml:space="preserve"><value>Save to history</value></data>
+  <data name="SettingsSaveReceiveHistoryDescription" xml:space="preserve"><value>Keep an entry in local history after a transfer is received.</value></data>
+  <data name="SettingsRestartServer" xml:space="preserve"><value>Restart server</value></data>
+  <data name="SettingsSaveLocation" xml:space="preserve"><value>Save location</value></data>
+  <data name="SettingsServerOffline" xml:space="preserve"><value>Server (offline)</value></data>
+  <data name="SettingsServerRunning" xml:space="preserve"><value>The receive service is running.</value></data>
+  <data name="SettingsServerStopped" xml:space="preserve"><value>The receive service is stopped.</value></data>
+  <data name="SettingsStartServer" xml:space="preserve"><value>Start server</value></data>
+  <data name="SettingsStopServer" xml:space="preserve"><value>Stop server</value></data>
+  <data name="SettingsStartWithWindows" xml:space="preserve"><value>Start after signing in</value></data>
+  <data name="SettingsStartWithWindowsDescription" xml:space="preserve"><value>Run Tonarink automatically after signing in to Windows.</value></data>
+  <data name="SettingsNotifications" xml:space="preserve"><value>System notifications</value></data>
+  <data name="SettingsNotificationsDescription" xml:space="preserve"><value>Show Windows notifications for incoming requests and completed transfers.</value></data>
+  <data name="SettingsNotificationsEnabled" xml:space="preserve"><value>Enable notifications</value></data>
+  <data name="SettingsNotificationsEnabledDescription" xml:space="preserve"><value>Allow Tonarink to send Windows system notifications.</value></data>
+  <data name="SettingsNotificationsDefaultAction" xml:space="preserve"><value>When a completion notification is clicked</value></data>
+  <data name="SettingsNotificationsDefaultActionDescription" xml:space="preserve"><value>Choose the default action when you click a completed transfer notification.</value></data>
+  <data name="SettingsNotificationsDefaultOpenFile" xml:space="preserve"><value>Open file</value></data>
+  <data name="SettingsNotificationsDefaultShowInFolder" xml:space="preserve"><value>Show in folder</value></data>
+  <data name="SettingsNotificationsTest" xml:space="preserve"><value>Test notification</value></data>
+  <data name="SettingsNotificationsTestDescription" xml:space="preserve"><value>Send a system notification to check the current Windows notification configuration.</value></data>
+  <data name="SettingsNotificationsSendTest" xml:space="preserve"><value>Send test notification</value></data>
+  <data name="SettingsNotificationsTestTitle" xml:space="preserve"><value>Tonarink test notification</value></data>
+  <data name="SettingsNotificationsTestMessage" xml:space="preserve"><value>System notifications are working correctly.</value></data>
+  <data name="SettingsNotificationsTestFailed" xml:space="preserve"><value>The test notification failed. Check notifications.log or Windows notification settings.</value></data>
+  <data name="ExplorerCommandTitle" xml:space="preserve"><value>Send with Tonarink</value></data>
+  <data name="SettingsExplorerContextMenu" xml:space="preserve"><value>Show in File Explorer</value></data>
+  <data name="SettingsExplorerContextMenuDescription" xml:space="preserve"><value>Add “Send with Tonarink” to the Windows 11 context menu. Applies to the packaged app.</value></data>
+  <data name="StartupDisabledByPolicy" xml:space="preserve"><value>Windows policy is blocking Tonarink from starting at sign-in.</value></data>
+  <data name="StartupDisabledByUser" xml:space="preserve"><value>Startup was turned off in Windows Settings. Enable Tonarink there, then try again.</value></data>
+  <data name="StartupFailed" xml:space="preserve"><value>Could not update sign-in startup: {error}</value></data>
+  <data name="TrayExit" xml:space="preserve"><value>Exit</value></data>
+  <data name="TrayOpen" xml:space="preserve"><value>Open Tonarink</value></data>
   <data name="TrayTooltip" xml:space="preserve"><value>Tonarink</value></data>
-  <data name="SettingsTheme" xml:space="preserve"><value>主题</value></data>
-  <data name="SettingsThemeDescription" xml:space="preserve"><value>选择应用的明暗外观。</value></data>
-  <data name="SettingsTitle" xml:space="preserve"><value>设置</value></data>
-  <data name="ShareTargetEmpty" xml:space="preserve"><value>分享内容中没有可访问的文件或文本。</value></data>
-  <data name="ShareTargetFailed" xml:space="preserve"><value>无法添加分享内容：{error}</value></data>
-  <data name="Tagline" xml:space="preserve"><value>LocalSend 协议的非官方兼容实现</value></data>
-  <data name="TargetDevice" xml:space="preserve"><value>目标设备</value></data>
-  <data name="TargetRequiresPin" xml:space="preserve"><value>目标设备要求 PIN。</value></data>
-  <data name="Text" xml:space="preserve"><value>文本</value></data>
-  <data name="TextAvailableAfterAccept" xml:space="preserve"><value>接受后将显示完整文本。</value></data>
-  <data name="TextContent" xml:space="preserve"><value>文本内容</value></data>
-  <data name="TextMessage" xml:space="preserve"><value>文本消息</value></data>
-  <data name="TextReceived" xml:space="preserve"><value>文本接收完成。</value></data>
-  <data name="ThemeDark" xml:space="preserve"><value>深色</value></data>
-  <data name="ThemeLight" xml:space="preserve"><value>浅色</value></data>
-  <data name="ThisDevice" xml:space="preserve"><value>本机</value></data>
-  <data name="TransferCancelled" xml:space="preserve"><value>传输已取消</value></data>
-  <data name="TransferComplete" xml:space="preserve"><value>发送完成</value></data>
-  <data name="TransferFailed" xml:space="preserve"><value>传输失败。</value></data>
-  <data name="TransferPreparing" xml:space="preserve"><value>正在准备</value></data>
-  <data name="TransferTransferring" xml:space="preserve"><value>正在传输</value></data>
-  <data name="TransferWaiting" xml:space="preserve"><value>等待接受</value></data>
-  <data name="WaitingForDevice" xml:space="preserve"><value>正在等待 {device} 接受…</value></data>
-  <data name="WebShareAccepted" xml:space="preserve"><value>已接受</value></data>
-  <data name="WebShareAutoAccept" xml:space="preserve"><value>自动接受请求</value></data>
-  <data name="WebShareCopy" xml:space="preserve"><value>复制链接</value></data>
-  <data name="WebShareEncryption" xml:space="preserve"><value>加密</value></data>
-  <data name="WebShareEncryptionHint" xml:space="preserve"><value>HTTPS 使用此设备的证书。浏览器会提示该证书不受信任。</value></data>
-  <data name="WebShareNoRequests" xml:space="preserve"><value>尚无请求。</value></data>
-  <data name="WebShareOpenLink" xml:space="preserve"><value>在浏览器中打开链接：</value></data>
-  <data name="WebSharePinHint" xml:space="preserve"><value>PIN 为 “{pin}”</value></data>
+  <data name="SettingsTheme" xml:space="preserve"><value>Theme</value></data>
+  <data name="SettingsThemeDescription" xml:space="preserve"><value>Choose the app''s light or dark appearance.</value></data>
+  <data name="SettingsTitle" xml:space="preserve"><value>Settings</value></data>
+  <data name="ShareTargetEmpty" xml:space="preserve"><value>The share did not contain any accessible files or text.</value></data>
+  <data name="ShareTargetFailed" xml:space="preserve"><value>Could not add the shared content: {error}</value></data>
+  <data name="Tagline" xml:space="preserve"><value>An unofficial LocalSend-compatible app</value></data>
+  <data name="TargetDevice" xml:space="preserve"><value>Target device</value></data>
+  <data name="TargetRequiresPin" xml:space="preserve"><value>The target device requires a PIN.</value></data>
+  <data name="Text" xml:space="preserve"><value>Text</value></data>
+  <data name="TextAvailableAfterAccept" xml:space="preserve"><value>The complete text will appear after you accept.</value></data>
+  <data name="TextContent" xml:space="preserve"><value>Text content</value></data>
+  <data name="TextMessage" xml:space="preserve"><value>Text message</value></data>
+  <data name="TextReceived" xml:space="preserve"><value>Text received.</value></data>
+  <data name="ThemeDark" xml:space="preserve"><value>Dark</value></data>
+  <data name="ThemeLight" xml:space="preserve"><value>Light</value></data>
+  <data name="ThisDevice" xml:space="preserve"><value>This device</value></data>
+  <data name="TransferCancelled" xml:space="preserve"><value>Transfer cancelled</value></data>
+  <data name="TransferComplete" xml:space="preserve"><value>Transfer complete</value></data>
+  <data name="TransferFailed" xml:space="preserve"><value>Transfer failed.</value></data>
+  <data name="TransferPreparing" xml:space="preserve"><value>Preparing</value></data>
+  <data name="TransferTransferring" xml:space="preserve"><value>Transferring</value></data>
+  <data name="TransferWaiting" xml:space="preserve"><value>Waiting for acceptance</value></data>
+  <data name="WaitingForDevice" xml:space="preserve"><value>Waiting for {device} to accept…</value></data>
+  <data name="WebShareAccepted" xml:space="preserve"><value>Accepted</value></data>
+  <data name="WebShareAutoAccept" xml:space="preserve"><value>Auto accept requests</value></data>
+  <data name="WebShareCopy" xml:space="preserve"><value>Copy link</value></data>
+  <data name="WebShareEncryption" xml:space="preserve"><value>Encryption</value></data>
+  <data name="WebShareEncryptionHint" xml:space="preserve"><value>HTTPS uses this device''s certificate. Browsers will warn that it is not trusted.</value></data>
+  <data name="WebShareNoRequests" xml:space="preserve"><value>No requests yet.</value></data>
+  <data name="WebShareOpenLink" xml:space="preserve"><value>Open this link in a browser:</value></data>
+  <data name="WebSharePinHint" xml:space="preserve"><value>PIN is "{pin}"</value></data>
   <data name="WebSharePinTitle" xml:space="preserve"><value>PIN</value></data>
-  <data name="WebShareQr" xml:space="preserve"><value>二维码</value></data>
-  <data name="WebShareQrTitle" xml:space="preserve"><value>二维码</value></data>
-  <data name="WebShareRequests" xml:space="preserve"><value>请求</value></data>
-  <data name="WebShareRequirePin" xml:space="preserve"><value>需要一个 PIN</value></data>
-  <data name="WebShareTitle" xml:space="preserve"><value>分享为链接</value></data>
-  <data name="WebReceiveTitle" xml:space="preserve"><value>通过链接接收</value></data>
-  <data name="WebShareZoom" xml:space="preserve"><value>放大显示链接</value></data>
-  <data name="WebShareZoomTitle" xml:space="preserve"><value>链接</value></data>
-  <data name="WantsToSendMessage" xml:space="preserve"><value>想要发送给你一条消息：</value></data>
-  <data name="WindowUnavailable" xml:space="preserve"><value>当前 Reactor 窗口不可用。</value></data>
+  <data name="WebShareQr" xml:space="preserve"><value>QR code</value></data>
+  <data name="WebShareQrTitle" xml:space="preserve"><value>QR code</value></data>
+  <data name="WebShareRequests" xml:space="preserve"><value>Requests</value></data>
+  <data name="WebShareRequirePin" xml:space="preserve"><value>Require a PIN</value></data>
+  <data name="WebShareTitle" xml:space="preserve"><value>Share via link</value></data>
+  <data name="WebReceiveTitle" xml:space="preserve"><value>Receive via link</value></data>
+  <data name="WebShareZoom" xml:space="preserve"><value>Show large link</value></data>
+  <data name="WebShareZoomTitle" xml:space="preserve"><value>Link</value></data>
+  <data name="WantsToSendMessage" xml:space="preserve"><value>Wants to send you a message:</value></data>
+  <data name="WindowUnavailable" xml:space="preserve"><value>The current Reactor window is unavailable.</value></data>
 </root>
