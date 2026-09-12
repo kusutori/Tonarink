@@ -238,6 +238,7 @@
   <data name="SettingsAboutGitHub" xml:space="preserve"><value>GitHub 仓库</value></data>
   <data name="SettingsAboutIssues" xml:space="preserve"><value>报告问题</value></data>
   <data name="SettingsAboutLocalSend" xml:space="preserve"><value>LocalSend 官网</value></data>
+  <data name="SettingsAboutThirdPartyLicenses" xml:space="preserve"><value>第三方许可证</value></data>
   <data name="SettingsAboutVersion" xml:space="preserve"><value>版本 {version}</value></data>
   <data name="SettingsAutoSave" xml:space="preserve"><value>自动保存</value></data>
   <data name="SettingsAutoSaveDescription" xml:space="preserve"><value>自动接受并保存收到的内容。</value></data>

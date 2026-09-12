@@ -1,0 +1,23 @@
+{
+  "shortDescription": "Fast, private file and text transfers across your local network.",
+  "description": "Tonarink is an independent Windows app for transferring files, folders, text, and clipboard content directly between nearby devices on your local network. No account or cloud upload is required.\n\nDiscover LocalSend-compatible devices automatically, review incoming files before accepting them, or send directly to a saved address. Tonarink also integrates with Windows sharing, File Explorer, notifications, the taskbar, and the system tray.\n\nWeb sharing and web receiving let another device use a browser when installing an app is not convenient. Optional PIN protection, checksum verification, favorites, transfer history, and selective receiving give you control over each transfer.\n\nTonarink is an unofficial implementation of the LocalSend protocol. It is not affiliated with or endorsed by the official LocalSend project.",
+  "features": [
+    "Send and receive files, folders, text, and clipboard content over your local network",
+    "Discover nearby LocalSend-compatible devices automatically",
+    "Review, rename, select, and choose a destination for incoming files",
+    "Share or receive through a temporary local web page",
+    "Use optional PIN protection and checksum verification",
+    "Integrate with Windows Share, File Explorer, notifications, the taskbar, and the system tray",
+    "Save favorite devices, manual addresses, and optional receive history",
+    "Choose English or Simplified Chinese and follow the Windows light or dark theme"
+  ],
+  "releaseNotes": "Tonarink is ready for its first Microsoft Store release, with local file and text transfer, Windows integration, web sharing and receiving, device verification, and configurable privacy controls.",
+  "searchTerms": [
+    "local file transfer",
+    "nearby sharing",
+    "LAN sharing",
+    "LocalSend",
+    "file sharing",
+    "clipboard transfer"
+  ]
+}

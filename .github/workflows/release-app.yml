@@ -767,4 +767,6 @@ jobs:
 
             解压 MSIX ZIP 后运行 `Install.ps1`；安装脚本会导入随附的自签名证书。
 
+            [Code signing policy](https://github.com/${{ github.repository }}/blob/main/CODE_SIGNING_POLICY.md) · [Privacy policy](https://github.com/${{ github.repository }}/blob/main/PRIVACY.md) · [Security](https://github.com/${{ github.repository }}/security/policy)
+
           files: packages/*

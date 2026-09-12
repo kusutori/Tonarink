@@ -156,27 +156,27 @@ sealed class OutgoingTransferOverlay : Component<OutgoingTransferOverlayProps>
                             ? null
                             : TextBlock(prompt.Error).Foreground(Theme.SystemCritical)),
                     primaryButtonText: t.Message(new("App", "PinConfirm"))) with
+            {
+                IsOpen = connectedAnimationReady && prompt is not null,
+                SecondaryButtonText = t.Message(new("App", "Cancel")),
+                DefaultButton = ContentDialogButton.Primary,
+                IsPrimaryButtonEnabled = !string.IsNullOrWhiteSpace(pin),
+                OnClosed = result =>
                 {
-                    IsOpen = connectedAnimationReady && prompt is not null,
-                    SecondaryButtonText = t.Message(new("App", "Cancel")),
-                    DefaultButton = ContentDialogButton.Primary,
-                    IsPrimaryButtonEnabled = !string.IsNullOrWhiteSpace(pin),
-                    OnClosed = result =>
-                    {
-                        var submittedPin = pin.Trim();
-                        setPin(string.Empty);
-                        if (prompt is null)
-                            return;
+                    var submittedPin = pin.Trim();
+                    setPin(string.Empty);
+                    if (prompt is null)
+                        return;
 
-                        if (result == ContentDialogResult.Primary && submittedPin.Length > 0)
-                            prompt.Submit(submittedPin);
-                        else
-                        {
-                            prompt.Cancel();
-                            CloseOverlay();
-                        }
-                    },
-                }).Themed(Props.Theme);
+                    if (result == ContentDialogResult.Primary && submittedPin.Length > 0)
+                        prompt.Submit(submittedPin);
+                    else
+                    {
+                        prompt.Cancel();
+                        CloseOverlay();
+                    }
+                },
+            }).Themed(Props.Theme);
         }
 
         void CloseOverlay()

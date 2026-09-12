@@ -58,6 +58,11 @@ Their architecture and current platform boundary are documented in
 for the Windows app are documented in [docs/packaging.md](docs/packaging.md) and
 [docs/app-release-ci.md](docs/app-release-ci.md).
 
+Microsoft Store, WinGet, Crowdin, and production-signing preparation is tracked
+in [the distribution guide](docs/distribution.md). The repository also contains
+the project's [privacy policy](PRIVACY.md), [security policy](SECURITY.md), and
+[Code signing policy](CODE_SIGNING_POLICY.md).
+
 ## Relationship to LocalSend
 
 LocalSend established the open protocol and ecosystem that make Tonarink's

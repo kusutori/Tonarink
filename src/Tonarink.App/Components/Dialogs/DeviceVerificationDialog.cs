@@ -40,10 +40,10 @@ sealed class DeviceVerificationDialog : Component<DeviceVerificationDialogProps>
                     var fingerprint => VerifiedContent(fingerprint),
                 },
                 primaryButtonText: t.Message(new("App", "Close"))) with
-            {
-                IsOpen = Props.IsOpen,
-                OnClosed = _ => Props.Close(),
-            }).Themed(Props.Theme);
+        {
+            IsOpen = Props.IsOpen,
+            OnClosed = _ => Props.Close(),
+        }).Themed(Props.Theme);
 
         Element VerifiedContent(string fingerprint)
         {
@@ -72,10 +72,10 @@ sealed class DeviceVerificationDialog : Component<DeviceVerificationDialogProps>
                         : InfoBar(
                                 t.Message(new("App", "VerificationUnencryptedTitle")),
                                 t.Message(new("App", "VerificationUnencryptedMessage"))) with
-                            {
-                                Severity = InfoBarSeverity.Warning,
-                                IsOpen = true,
-                            })
+                        {
+                            Severity = InfoBarSeverity.Warning,
+                            IsOpen = true,
+                        })
                 .MinWidth(200)
                 .HAlign(HorizontalAlignment.Stretch)
                 .VAlign(VerticalAlignment.Center);
@@ -97,10 +97,10 @@ sealed class DeviceVerificationDialog : Component<DeviceVerificationDialogProps>
                             .Grid(row: index / 4, column: index % 4)
                             .WithKey(index.ToString(System.Globalization.CultureInfo.InvariantCulture)))
                 ]) with
-            {
-                RowSpacing = 8,
-                ColumnSpacing = 8,
-            })
+        {
+            RowSpacing = 8,
+            ColumnSpacing = 8,
+        })
         .Size(224, 224)
         .HAlign(HorizontalAlignment.Center);
 

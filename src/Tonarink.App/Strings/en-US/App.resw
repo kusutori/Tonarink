@@ -238,6 +238,7 @@
   <data name="SettingsAboutGitHub" xml:space="preserve"><value>GitHub repository</value></data>
   <data name="SettingsAboutIssues" xml:space="preserve"><value>Report an issue</value></data>
   <data name="SettingsAboutLocalSend" xml:space="preserve"><value>LocalSend website</value></data>
+  <data name="SettingsAboutThirdPartyLicenses" xml:space="preserve"><value>Third-party licenses</value></data>
   <data name="SettingsAboutVersion" xml:space="preserve"><value>Version {version}</value></data>
   <data name="SettingsAutoSave" xml:space="preserve"><value>Auto save</value></data>
   <data name="SettingsAutoSaveDescription" xml:space="preserve"><value>Automatically accept and save incoming content.</value></data>

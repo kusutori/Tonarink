@@ -72,9 +72,9 @@ static class IncomingFileCard
                         model.Expanded
                             ? ReceiveOptions(model).Grid(row: 1)
                             : VStack(8, CollapsedRows(model)).Grid(row: 1)) with
-                    {
-                        RowSpacing = 12,
-                    })
+                {
+                    RowSpacing = 12,
+                })
             .Width(model.Width)
             .HAlign(HorizontalAlignment.Center);
         if (model.Height is { } height)
@@ -113,28 +113,28 @@ static class IncomingFileCard
                     .Header(t.Message(new("App", "Name")))
                     .AutomationName(t.Message(new("App", "Name"))),
                 primaryButtonText: t.Message(new("App", "Save"))) with
+        {
+            IsOpen = renameItemId is not null,
+            SecondaryButtonText = t.Message(new("App", "Cancel")),
+            DefaultButton = ContentDialogButton.Primary,
+            IsPrimaryButtonEnabled = validName,
+            OnClosed = result =>
             {
-                IsOpen = renameItemId is not null,
-                SecondaryButtonText = t.Message(new("App", "Cancel")),
-                DefaultButton = ContentDialogButton.Primary,
-                IsPrimaryButtonEnabled = validName,
-                OnClosed = result =>
+                var itemId = renameItemId;
+                if (result == ContentDialogResult.Primary && itemId is not null && validName)
                 {
-                    var itemId = renameItemId;
-                    if (result == ContentDialogResult.Primary && itemId is not null && validName)
-                    {
-                        var originalName = request.Items.First(item => item.Id == itemId).FileName;
-                        updateTargetFileNames(current => CommitRename(
-                            current,
-                            itemId,
-                            renameFileName.Trim(),
-                            originalName));
-                    }
+                    var originalName = request.Items.First(item => item.Id == itemId).FileName;
+                    updateTargetFileNames(current => CommitRename(
+                        current,
+                        itemId,
+                        renameFileName.Trim(),
+                        originalName));
+                }
 
-                    setRenameItemId(null);
-                    setRenameFileName(string.Empty);
-                },
-            }).Themed(theme);
+                setRenameItemId(null);
+                setRenameFileName(string.Empty);
+            },
+        }).Themed(theme);
     }
 
     public static async Task PickDestinationDirectoryAsync(
@@ -352,9 +352,9 @@ static class IncomingFileCard
                             .Padding(left: 4, top: 4, right: 16, bottom: 4))
                     .HorizontalContentAlignment(HorizontalAlignment.Stretch)
                     .Grid(row: 2)) with
-            {
-                RowSpacing = 12,
-            };
+        {
+            RowSpacing = 12,
+        };
     }
 
     private static Element ReceiveItemRow(IncomingFileCardModel model, IncomingItem item)
@@ -378,9 +378,9 @@ static class IncomingFileCard
                     t.Message(new("App", "UndoIncomingFileRename")),
                     undoRename,
                     icon: "\uE7A7") with
-                {
-                    IsEnabled = canUndoRename,
-                },
+            {
+                IsEnabled = canUndoRename,
+            },
             MenuItem(
                 t.Message(new("App", "Rename")),
                 model.CanEdit ? () => model.OpenRename(item.Id, displayName) : null,
@@ -413,9 +413,9 @@ static class IncomingFileCard
                                         .HAlign(HorizontalAlignment.Stretch)
                                         .Grid(column: 1))
                                 with
-                                {
-                                    ColumnSpacing = 12
-                                },
+                            {
+                                ColumnSpacing = 12
+                            },
                             () => model.ToggleItem(item.Id))
                         .AutomationName(t.Message(
                             new("App", isSelected ? "DeselectIncomingFile" : "SelectIncomingFile"),

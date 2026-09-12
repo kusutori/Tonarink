@@ -59,27 +59,27 @@ sealed class FavoriteDeviceDialog : Component<FavoriteDeviceDialogProps>
                                 : t.Message(new("App", "InvalidPort"))))
                     .MinWidth(340),
                 primaryButtonText: t.Message(new("App", "Save"))) with
+        {
+            IsOpen = true,
+            IsPrimaryButtonEnabled = canSave,
+            SecondaryButtonText = t.Message(new("App", "Cancel")),
+            DefaultButton = ContentDialogButton.Primary,
+            OnClosed = result =>
             {
-                IsOpen = true,
-                IsPrimaryButtonEnabled = canSave,
-                SecondaryButtonText = t.Message(new("App", "Cancel")),
-                DefaultButton = ContentDialogButton.Primary,
-                OnClosed = result =>
+                if (result == ContentDialogResult.Primary
+                    && canSave
+                    && parsedAddress is not null)
                 {
-                    if (result == ContentDialogResult.Primary
-                        && canSave
-                        && parsedAddress is not null)
+                    Props.Save(Props.Device with
                     {
-                        Props.Save(Props.Device with
-                        {
-                            Name = name.Trim(),
-                            Address = parsedAddress.ToString(),
-                            Port = parsedPort,
-                        });
-                    }
+                        Name = name.Trim(),
+                        Address = parsedAddress.ToString(),
+                        Port = parsedPort,
+                    });
+                }
 
-                    Props.Close();
-                },
-            }).Themed(Props.Theme);
+                Props.Close();
+            },
+        }).Themed(Props.Theme);
     }
 }

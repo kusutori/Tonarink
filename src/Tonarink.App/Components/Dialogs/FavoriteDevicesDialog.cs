@@ -50,33 +50,33 @@ sealed class FavoriteDevicesDialog : Component<FavoriteDevicesDialogProps>
                     .MaxHeight(420)
                     .MinWidth(420),
                 primaryButtonText: t.Message(new("App", "NewFavorite"))) with
+        {
+            IsOpen = Props.IsOpen,
+            SecondaryButtonText = t.Message(new("App", "Cancel")),
+            DefaultButton = ContentDialogButton.None,
+            OnClosed = result =>
             {
-                IsOpen = Props.IsOpen,
-                SecondaryButtonText = t.Message(new("App", "Cancel")),
-                DefaultButton = ContentDialogButton.None,
-                OnClosed = result =>
+                var pending = pendingActionRef.Current;
+                pendingActionRef.Current = null;
+                Props.Close();
+
+                if (result == ContentDialogResult.Primary)
                 {
-                    var pending = pendingActionRef.Current;
-                    pendingActionRef.Current = null;
-                    Props.Close();
+                    Props.Create();
+                    return;
+                }
 
-                    if (result == ContentDialogResult.Primary)
-                    {
-                        Props.Create();
-                        return;
-                    }
-
-                    switch (pending)
-                    {
-                        case { Action: DialogAction.Edit, Device: var device }:
-                            Props.Edit(device);
-                            break;
-                        case { Action: DialogAction.Delete, Device: var device }:
-                            Props.Delete(device);
-                            break;
-                    }
-                },
-            }).Themed(Props.Theme);
+                switch (pending)
+                {
+                    case { Action: DialogAction.Edit, Device: var device }:
+                        Props.Edit(device);
+                        break;
+                    case { Action: DialogAction.Delete, Device: var device }:
+                        Props.Delete(device);
+                        break;
+                }
+            },
+        }).Themed(Props.Theme);
 
         Element FavoriteRow(FavoriteDevice favorite) =>
             Card(

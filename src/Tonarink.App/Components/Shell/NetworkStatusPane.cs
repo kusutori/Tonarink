@@ -76,13 +76,13 @@ sealed class NetworkStatusPane : Component<NetworkStatusPaneProps>
         IntlAccessor t,
         LocalSendNodeState state,
         string? discoveryWarning) => state switch
-    {
-        LocalSendNodeState.Starting => t.Message(new("App", "NodeStarting")),
-        LocalSendNodeState.Running when discoveryWarning is not null =>
-            t.Message(new("App", "NodeDiscoveryLimited")),
-        LocalSendNodeState.Running => t.Message(new("App", "NodeRunning")),
-        LocalSendNodeState.Faulted => t.Message(new("App", "NodeFaulted")),
-        LocalSendNodeState.Stopping => t.Message(new("App", "NodeStopping")),
-        _ => t.Message(new("App", "NodeDisconnected")),
-    };
+        {
+            LocalSendNodeState.Starting => t.Message(new("App", "NodeStarting")),
+            LocalSendNodeState.Running when discoveryWarning is not null =>
+                t.Message(new("App", "NodeDiscoveryLimited")),
+            LocalSendNodeState.Running => t.Message(new("App", "NodeRunning")),
+            LocalSendNodeState.Faulted => t.Message(new("App", "NodeFaulted")),
+            LocalSendNodeState.Stopping => t.Message(new("App", "NodeStopping")),
+            _ => t.Message(new("App", "NodeDisconnected")),
+        };
 }

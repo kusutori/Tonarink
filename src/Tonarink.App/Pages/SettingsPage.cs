@@ -456,7 +456,10 @@ sealed class SettingsPage : Component<SettingsPageProps>
                     new Uri("https://localsend.org")),
                 HyperlinkButton(
                     t.Message(new("App", "SettingsAboutIssues")),
-                    new Uri("https://github.com/kusutori/Tonarink/issues"))));
+                    new Uri("https://github.com/kusutori/Tonarink/issues")),
+                HyperlinkButton(
+                    t.Message(new("App", "SettingsAboutThirdPartyLicenses")),
+                    new Uri("https://github.com/kusutori/Tonarink/blob/main/NOTICE"))));
         var aboutSection = VStack(4,
             Subtitle(t.Message(new("App", "SettingsAbout")))
                 .HeadingLevel(AutomationHeadingLevel.Level2)

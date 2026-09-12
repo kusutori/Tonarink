@@ -1239,11 +1239,11 @@ sealed class SendPage : Component<SendPageProps>
                     _ => t.Message(new("App", "SearchingDevices")),
                 }),
                 TextBlock(state switch
-                    {
-                        LocalSendNodeState.Faulted => t.Message(new("App", "PortInUseHint")),
-                        _ when discoveryWarning is not null => t.Message(new("App", "DiscoveryScanHint")),
-                        _ => t.Message(new("App", "SameNetworkHint")),
-                    })
+                {
+                    LocalSendNodeState.Faulted => t.Message(new("App", "PortInUseHint")),
+                    _ when discoveryWarning is not null => t.Message(new("App", "DiscoveryScanHint")),
+                    _ => t.Message(new("App", "SameNetworkHint")),
+                })
                     .Foreground(Theme.SecondaryText)
                     .TextWrapping(TextWrapping.WrapWholeWords)) with
         {

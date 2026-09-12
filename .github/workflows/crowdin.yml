@@ -6,6 +6,7 @@ on:
     paths:
       - crowdin.yml
       - src/Tonarink.App/Strings/en-US/App.resw
+      - store-listing/en-US/listing.json
       - .github/workflows/crowdin.yml
   workflow_dispatch:
     inputs:

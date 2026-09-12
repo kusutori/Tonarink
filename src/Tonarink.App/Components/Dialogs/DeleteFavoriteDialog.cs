@@ -25,16 +25,16 @@ sealed class DeleteFavoriteDialog : Component<DeleteFavoriteDialogProps>
                         ("device", Props.DeviceName)))
                     .TextWrapping(TextWrapping.WrapWholeWords),
                 primaryButtonText: t.Message(new("App", "Delete"))) with
+        {
+            IsOpen = Props.IsOpen,
+            SecondaryButtonText = t.Message(new("App", "Cancel")),
+            DefaultButton = ContentDialogButton.Primary,
+            OnClosed = result =>
             {
-                IsOpen = Props.IsOpen,
-                SecondaryButtonText = t.Message(new("App", "Cancel")),
-                DefaultButton = ContentDialogButton.Primary,
-                OnClosed = result =>
-                {
-                    if (result == ContentDialogResult.Primary)
-                        Props.Confirm();
-                    Props.Close();
-                },
-            }).Themed(Props.Theme);
+                if (result == ContentDialogResult.Primary)
+                    Props.Confirm();
+                Props.Close();
+            },
+        }).Themed(Props.Theme);
     }
 }

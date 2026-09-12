@@ -6,3 +6,5 @@ preserve_hierarchy: true
 files:
   - source: /src/Tonarink.App/Strings/en-US/App.resw
     translation: /src/Tonarink.App/Strings/%locale%/App.resw
+  - source: /store-listing/en-US/listing.json
+    translation: /store-listing/%locale%/listing.json

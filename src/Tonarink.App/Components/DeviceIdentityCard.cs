@@ -57,10 +57,10 @@ sealed class DeviceIdentityCard : Component<DeviceIdentityCardProps>
                                     .AccessibilityHidden()
                                     .Flex(shrink: 0)
                                 : null) with
-                        {
-                            AlignItems = FlexAlign.Center,
-                            ColumnGap = 8,
-                        },
+                    {
+                        AlignItems = FlexAlign.Center,
+                        ColumnGap = 8,
+                    },
                     HStack(8,
                         DeviceTag(Props.Number),
                         DeviceTag(DeviceModel(t, Props.Model, Props.Type))))
