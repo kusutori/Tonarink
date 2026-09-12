@@ -62,27 +62,12 @@ sealed class IncomingQuickActionsDialog : Component<IncomingQuickActionsDialogPr
                         onSelectedIndexChanged: setMode,
                         items: modes)
                     .HAlign(HorizontalAlignment.Stretch),
-                mode == 0
-                    ? VStack(8,
-                        TextBox(prefix, setPrefix)
-                            .Header(t.Message(new("App", "QuickActionsPrefix")))
-                            .AutomationName(t.Message(new("App", "QuickActionsPrefix"))),
-                        prefixValid
-                            ? null
-                            : Caption(t.Message(new("App", "QuickActionsInvalidPrefix")))
-                                .Foreground(Theme.SystemCritical),
-                        CheckBox(
-                            (bool?)padZero,
-                            value => setPadZero(value),
-                            t.Message(new("App", "QuickActionsPadZero"))),
-                        CheckBox(
-                            (bool?)sortFirst,
-                            value => setSortFirst(value),
-                            t.Message(new("App", "QuickActionsSortBeforeCount"))),
-                        Caption(t.Message(new("App", "QuickActionsExample"), ("name", exampleName)))
-                            .Foreground(Theme.SecondaryText))
-                    : Caption(t.Message(new("App", "QuickActionsExample"), ("name", exampleName)))
-                        .Foreground(Theme.SecondaryText))
+                mode switch
+                {
+                    0 => CounterModeContent(),
+                    _ => Caption(t.Message(new("App", "QuickActionsExample"), ("name", exampleName)))
+                        .Foreground(Theme.SecondaryText),
+                })
             .MinWidth(360)
             .HAlign(HorizontalAlignment.Stretch);
 
@@ -103,16 +88,37 @@ sealed class IncomingQuickActionsDialog : Component<IncomingQuickActionsDialogPr
                 },
             }).Themed(Props.Theme);
 
-        IReadOnlyDictionary<string, string> BuildNames()
-        {
-            if (mode == 1)
-            {
-                return Props.Files.ToDictionary(
-                    file => file.Id,
-                    file => KeepExtension(file.FileName, Guid.NewGuid().ToString()),
-                    StringComparer.Ordinal);
-            }
+        Element CounterModeContent() =>
+            VStack(8,
+                TextBox(prefix, setPrefix)
+                    .Header(t.Message(new("App", "QuickActionsPrefix")))
+                    .AutomationName(t.Message(new("App", "QuickActionsPrefix"))),
+                prefixValid
+                    ? null
+                    : Caption(t.Message(new("App", "QuickActionsInvalidPrefix")))
+                        .Foreground(Theme.SystemCritical),
+                CheckBox(
+                    (bool?)padZero,
+                    value => setPadZero(value),
+                    t.Message(new("App", "QuickActionsPadZero"))),
+                CheckBox(
+                    (bool?)sortFirst,
+                    value => setSortFirst(value),
+                    t.Message(new("App", "QuickActionsSortBeforeCount"))),
+                Caption(t.Message(new("App", "QuickActionsExample"), ("name", exampleName)))
+                    .Foreground(Theme.SecondaryText));
 
+        IReadOnlyDictionary<string, string> BuildNames() => mode switch
+        {
+            1 => Props.Files.ToDictionary(
+                file => file.Id,
+                file => KeepExtension(file.FileName, Guid.NewGuid().ToString()),
+                StringComparer.Ordinal),
+            _ => BuildCounterNames(),
+        };
+
+        IReadOnlyDictionary<string, string> BuildCounterNames()
+        {
             var files = Props.Files.ToList();
             if (sortFirst)
                 files.Sort(static (left, right) =>

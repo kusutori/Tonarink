@@ -39,19 +39,15 @@ static class FileTypeGlyphs
             return "Document";
 
         var extension = Path.GetExtension(fileName);
-        if (ArchiveExtensions.Contains(extension))
-            return ArchiveGlyph;
-        if (extension.Equals(".pdf", StringComparison.OrdinalIgnoreCase))
-            return PdfGlyph;
-        if (extension.Equals(".txt", StringComparison.OrdinalIgnoreCase))
-            return TextGlyph;
-        if (VideoExtensions.Contains(extension))
-            return VideoGlyph;
-        if (ImageExtensions.Contains(extension))
-            return ImageGlyph;
-        if (AudioExtensions.Contains(extension))
-            return AudioGlyph;
-
-        return "Document";
+        return extension.ToLowerInvariant() switch
+        {
+            ".pdf" => PdfGlyph,
+            ".txt" => TextGlyph,
+            var ext when ArchiveExtensions.Contains(ext) => ArchiveGlyph,
+            var ext when VideoExtensions.Contains(ext) => VideoGlyph,
+            var ext when ImageExtensions.Contains(ext) => ImageGlyph,
+            var ext when AudioExtensions.Contains(ext) => AudioGlyph,
+            _ => "Document",
+        };
     }
 }

@@ -175,19 +175,21 @@ sealed class SendPage : Component<SendPageProps>
                 ("count", selectedItems.Count),
                 ("size", FormatBytes(selectedItems.Sum(static item => item.Length))));
 
-        Element selectedItemsBody = selectedItems.Count == 0
-            ? EmptySelection(
+        Element selectedItemsBody = selectedItems switch
+        {
+            [] => EmptySelection(
                 isFileDropActive,
                 pickerMessage,
-                t)
-            : VStack(8,
+                t),
+            _ => VStack(8,
                 selectedItems.Select(item => SelectedItemRow(
                             item,
                             () => updateSelectedItems(current =>
                                 current.Where(candidate => candidate.Id != item.Id).ToArray()),
                             t)
                         .WithKey(item.Id.ToString("N")))
-                    .ToArray<Element?>());
+                    .ToArray<Element?>()),
+        };
 
         Element selectedItemsContent = isWideLayout
             ? ScrollView(selectedItemsBody)
@@ -197,7 +199,7 @@ sealed class SendPage : Component<SendPageProps>
             : selectedItemsBody;
 
         var selectedItemsCard = Card(
-                (FlexColumn(
+                FlexColumn(
                         FlexRow(
                                 BodyStrong(selectedHeader).Flex(grow: 1, basis: 0),
                                 selectedItems.Count == 0
@@ -214,7 +216,7 @@ sealed class SendPage : Component<SendPageProps>
                         selectedItemsContent) with
                 {
                     RowGap = 12,
-                }))
+                })
             .VAlign(VerticalAlignment.Stretch);
         if (isWideLayout)
             selectedItemsCard = selectedItemsCard.Flex(grow: 1, shrink: 1, basis: 320);
@@ -254,14 +256,15 @@ sealed class SendPage : Component<SendPageProps>
         }
 
         var devices = Props.Runtime.Devices;
-        Element deviceBody = devices.Count == 0
-            ? EmptyDevices(
+        Element deviceBody = devices switch
+        {
+            [] => EmptyDevices(
                     t,
                     Props.Runtime.NodeState,
                     Props.Runtime.DiscoveryWarning,
                     SearchingDevicesAnimation())
-                .VAlign(VerticalAlignment.Stretch)
-            : VStack(8,
+                .VAlign(VerticalAlignment.Stretch),
+            _ => VStack(8,
                 devices.Select((device, index) =>
                     {
                         var favorite = favorites.GetValueOrDefault(device.Fingerprint);
@@ -294,7 +297,8 @@ sealed class SendPage : Component<SendPageProps>
                             .PositionInSet(index + 1, devices.Count)
                             .WithKey(device.Fingerprint);
                     })
-                    .ToArray<Element?>());
+                    .ToArray<Element?>()),
+        };
 
         Element deviceContent = isWideLayout
             ? ScrollView(deviceBody)
@@ -304,7 +308,7 @@ sealed class SendPage : Component<SendPageProps>
             : deviceBody;
 
         var nearbyDevicesCard = Card(
-                (FlexColumn(
+                FlexColumn(
                         FlexRow(
                                 BodyStrong(t.Message(new("App", "NearbyDevices")))
                                     .Flex(grow: 1, basis: 0),
@@ -357,7 +361,7 @@ sealed class SendPage : Component<SendPageProps>
                         deviceContent) with
                 {
                     RowGap = 12,
-                }))
+                })
             .VAlign(VerticalAlignment.Stretch);
         if (isWideLayout)
             nearbyDevicesCard = nearbyDevicesCard.Flex(grow: 1, shrink: 1, basis: 320);
@@ -1236,17 +1240,22 @@ sealed class SendPage : Component<SendPageProps>
         string? discoveryWarning,
         Element searchingAnimation) =>
         FlexColumn(
-                state == LocalSendNodeState.Faulted
-                    ? Icon("\uE783").AccessibilityHidden()
-                    : searchingAnimation,
-                Subtitle(state == LocalSendNodeState.Faulted
-                    ? t.Message(new("App", "NetworkStartFailed"))
-                    : t.Message(new("App", "SearchingDevices"))),
-                TextBlock(state == LocalSendNodeState.Faulted
-                        ? t.Message(new("App", "PortInUseHint"))
-                        : discoveryWarning is not null
-                            ? t.Message(new("App", "DiscoveryScanHint"))
-                            : t.Message(new("App", "SameNetworkHint")))
+                state switch
+                {
+                    LocalSendNodeState.Faulted => Icon("\uE783").AccessibilityHidden(),
+                    _ => searchingAnimation,
+                },
+                Subtitle(state switch
+                {
+                    LocalSendNodeState.Faulted => t.Message(new("App", "NetworkStartFailed")),
+                    _ => t.Message(new("App", "SearchingDevices")),
+                }),
+                TextBlock(state switch
+                    {
+                        LocalSendNodeState.Faulted => t.Message(new("App", "PortInUseHint")),
+                        _ when discoveryWarning is not null => t.Message(new("App", "DiscoveryScanHint")),
+                        _ => t.Message(new("App", "SameNetworkHint")),
+                    })
                     .Foreground(Theme.SecondaryText)
                     .TextWrapping(TextWrapping.WrapWholeWords)) with
         {

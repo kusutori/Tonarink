@@ -44,7 +44,7 @@ sealed class DeviceIdentityCard : Component<DeviceIdentityCardProps>
             rows: [GridSize.Auto],
             DeviceAvatar(Props.Type).Grid(column: 0),
             VStack(8,
-                    (FlexRow(
+                    FlexRow(
                             BodyLarge(Props.Alias)
                                 .TextTrimming(TextTrimming.CharacterEllipsis)
                                 .ToolTip(Props.Alias)
@@ -60,7 +60,7 @@ sealed class DeviceIdentityCard : Component<DeviceIdentityCardProps>
                         {
                             AlignItems = FlexAlign.Center,
                             ColumnGap = 8,
-                        }),
+                        },
                     HStack(8,
                         DeviceTag(Props.Number),
                         DeviceTag(DeviceModel(t, Props.Model, Props.Type))))

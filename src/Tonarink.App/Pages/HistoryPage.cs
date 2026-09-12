@@ -1,6 +1,7 @@
 using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Core;
 using Microsoft.UI.Reactor.Layout;
+using Microsoft.UI.Reactor.Localization;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
@@ -49,14 +50,16 @@ sealed class HistoryPage : Component<HistoryPageProps>
             Wrap = FlexWrap.Wrap
         };
 
-        Element list = entries.Count == 0
-            ? Caption(t.Message(new("App", "HistoryEmpty")))
-                .Foreground(Theme.SecondaryText)
-            : VStack(8, entries.Select(entry =>
-                HistoryRow(entry, t, setInfoEntry).WithKey(entry.Id.ToString("N"))).ToArray<Element?>());
+        Element list = entries switch
+        {
+            [] => Caption(t.Message(new("App", "HistoryEmpty")))
+                .Foreground(Theme.SecondaryText),
+            _ => VStack(8, entries.Select(entry =>
+                HistoryRow(entry, t, setInfoEntry).WithKey(entry.Id.ToString("N"))).ToArray<Element?>()),
+        };
 
         return Border(
-                (FlexColumn(
+                FlexColumn(
                         header,
                         actions,
                         ScrollView(list)
@@ -89,7 +92,7 @@ sealed class HistoryPage : Component<HistoryPageProps>
                         }).Themed(Props.Theme)) with
                 {
                     RowGap = 20
-                }))
+                })
             .Padding(AppLayout.PagePadding)
             .Landmark(AutomationLandmarkType.Main);
 
@@ -106,7 +109,7 @@ sealed class HistoryPage : Component<HistoryPageProps>
 
     private static Element HistoryRow(
         ReceiveHistoryEntry entry,
-        Microsoft.UI.Reactor.Localization.IntlAccessor t,
+        IntlAccessor t,
         Action<ReceiveHistoryEntry?> setInfoEntry)
     {
         var exists = PathExists(entry.Path);
@@ -174,7 +177,7 @@ sealed class HistoryPage : Component<HistoryPageProps>
 
     private static Element HistoryInfoBody(
         ReceiveHistoryEntry entry,
-        Microsoft.UI.Reactor.Localization.IntlAccessor t) =>
+        IntlAccessor t) =>
         VStack(12,
             HistoryInfoRow(t.Message(new("App", "HistoryInfoFileName")), entry.FileName),
             HistoryInfoRow(t.Message(new("App", "HistoryInfoPath")), entry.Path),

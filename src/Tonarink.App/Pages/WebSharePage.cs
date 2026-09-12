@@ -107,11 +107,13 @@ sealed class WebSharePage : Component<WebSharePageProps>
         if (urls.Length == 0)
             urls = [$"{(https ? "https" : "http")}://127.0.0.1:{port}"];
 
-        Element requestBody = share.Requests.Count == 0
-            ? TextBlock(t.Message(new("App", "WebShareNoRequests")))
-                .Foreground(Theme.SecondaryText)
-            : VStack(8, share.Requests.Select(request =>
-                RequestCard(t, request, node).WithKey(request.SessionId)).ToArray<Element?>());
+        Element requestBody = share.Requests switch
+        {
+            [] => TextBlock(t.Message(new("App", "WebShareNoRequests")))
+                .Foreground(Theme.SecondaryText),
+            _ => VStack(8, share.Requests.Select(request =>
+                RequestCard(t, request, node).WithKey(request.SessionId)).ToArray<Element?>()),
+        };
 
         return ScrollView(
             VStack(24,

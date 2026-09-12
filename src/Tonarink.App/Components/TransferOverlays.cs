@@ -7,7 +7,6 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Windows.ApplicationModel.DataTransfer;
-using Windows.Storage.Pickers;
 using static Microsoft.UI.Reactor.Factories;
 using static Tonarink.Utilities.ByteSize;
 using static Tonarink.Components.DeviceVisuals;
@@ -254,7 +253,7 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
         var (showFileOptions, setShowFileOptions) = UseState(false);
         var (destinationDirectory, setDestinationDirectory) = UseState(Props.DownloadDirectory);
         var (selectedItemIds, updateSelectedItemIds) = UseReducer<IReadOnlySet<string>>(
-            request.Items.Select(static item => item.Id).ToHashSet(StringComparer.Ordinal));
+            IncomingFileCard.AllItemIds(request.Items));
         var (targetFileNames, updateTargetFileNames) = UseReducer<IReadOnlyDictionary<string, string>>(
             new Dictionary<string, string>(StringComparer.Ordinal));
         var (renameItemId, setRenameItemId) = UseState<string?>(null);
@@ -329,41 +328,8 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
             : Math.Clamp(view.BytesTransferred * 100d / view.TotalBytes, 0, 100);
         var progressText = $"{FormatBytes(view.BytesTransferred)} / {FormatBytes(view.TotalBytes)}";
         var isPending = acceptMutation.IsPending || declineMutation.IsPending;
+        var canEdit = !view.IsDecided && !isPending;
         var showText = request.Items.Count == 1 && IsText(request.Items[0]);
-        var itemRows = request.Items.Take(5).Select(item =>
-                Grid(
-                        columns: [GridSize.Star(), GridSize.Auto],
-                        rows: [GridSize.Auto],
-                        TextBlock(item.FileName)
-                            .TextTrimming(TextTrimming.CharacterEllipsis)
-                            .ToolTip(item.FileName)
-                            .Grid(column: 0),
-                        Caption(FormatBytes(item.Size))
-                            .Foreground(Theme.SecondaryText)
-                            .Grid(column: 1))
-                    .WithKey(item.Id))
-            .Cast<Element?>()
-            .Append(request.Items.Count > 5
-                ? Caption(t.Message(
-                        new("App", "MoreItems"),
-                        ("count", request.Items.Count - 5)))
-                    .Foreground(Theme.SecondaryText)
-                : null)
-            .ToArray<Element?>();
-
-        var sender = VStack(16,
-                DeviceAvatar(request.Sender.DeviceType, OverlayAvatarSize)
-                    .HAlign(HorizontalAlignment.Center),
-                Title(request.Sender.Alias)
-                    .TextAlignment(TextAlignment.Center)
-                    .HAlign(HorizontalAlignment.Center),
-                HStack(8,
-                        DeviceTag(RemoteDeviceNumber(request.Sender)),
-                        DeviceTag(DeviceModel(t, request.Sender.DeviceModel, request.Sender.DeviceType)))
-                    .HAlign(HorizontalAlignment.Center))
-            .HAlign(HorizontalAlignment.Center)
-            .Transition(Transition.Enter(new FadeTransition()));
-
         var verificationButton = VerificationButton(
             t,
             () => setShowVerification(true),
@@ -385,99 +351,61 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                 AppLayout.OverlayExpandedHeightMax)
             : AppLayout.OverlayExpandedHeightFallback;
         var fileCardAnimationKey = $"incoming-file-options:{request.RequestId:N}";
-        Element fileCard = Card(
-                Grid(
-                        columns: [GridSize.Star()],
-                        rows: [GridSize.Auto, showFileOptions ? GridSize.Star() : GridSize.Auto],
-                        Grid(
-                            columns: [GridSize.Star(), GridSize.Auto],
-                            rows: [GridSize.Auto],
-                            TextBlock(t.Message(
-                                    new("App", "SelectedIncomingFiles"),
-                                    ("selected", selectedItemIds.Count),
-                                    ("count", request.Items.Count)))
-                                .SemiBold()
-                                .VAlign(VerticalAlignment.Center)
-                                .Grid(column: 0),
-                            Button(
-                                    Icon(showFileOptions ? "\uE73F" : "\uE740").AccessibilityHidden(),
-                                    ToggleFileOptions)
-                                .AutomationName(t.Message(new(
-                                    "App",
-                                    showFileOptions ? "HideReceiveOptions" : "ShowReceiveOptions")))
-                                .ToolTip(t.Message(new(
-                                    "App",
-                                    showFileOptions ? "HideReceiveOptions" : "ShowReceiveOptions")))
-                                .IsEnabled(!view.IsDecided && !isPending)
-                                .SubtleButton()
-                                .Grid(column: 1)),
-                        showFileOptions
-                            ? ReceiveOptions().Grid(row: 1)
-                            : VStack(8, itemRows).Grid(row: 1)) with
-                    {
-                        RowSpacing = 12,
-                    })
-            .Width(fileCardWidth)
-            .HAlign(HorizontalAlignment.Center);
-        if (showFileOptions)
-            fileCard = fileCard.Height(expandedFileCardHeight);
-        fileCard = fileCard
-            .WithKey(showFileOptions ? "incoming-file-options-expanded" : "incoming-file-options-collapsed")
-            .OnMountAdd(element =>
-            {
-                fileCardRef.Current = element;
-                if (!reduceMotion && fileOptionsAnimatingRef.Current)
-                {
-                    DeviceConnectedAnimation.StartDestinationAfterLayout(
-                        fileCardAnimationKey,
-                        element,
-                        _ => CompleteFileOptionsTransition());
-                }
-            })
-            .OnUnmountAdd(element =>
+        var fileCard = IncomingFileCard.Build(new(
+            request,
+            t,
+            showFileOptions,
+            canEdit,
+            reduceMotion,
+            fileOptionsAnimatingRef.Current,
+            fileCardWidth,
+            showFileOptions ? expandedFileCardHeight : null,
+            fileCardAnimationKey,
+            destinationDirectory,
+            selectedItemIds,
+            targetFileNames,
+            folderError,
+            Props.Theme,
+            ToggleFileOptions,
+            CompleteFileOptionsTransition,
+            element => fileCardRef.Current = element,
+            element =>
             {
                 if (ReferenceEquals(fileCardRef.Current, element))
                     fileCardRef.Current = null;
-            });
+            },
+            itemId => updateSelectedItemIds(current => IncomingFileCard.ToggleItem(current, itemId)),
+            () => updateSelectedItemIds(current => IncomingFileCard.ToggleSelectAll(current, request.Items)),
+            ResetFileOptions,
+            () => setShowQuickActions(true),
+            OpenRenameDialog,
+            itemId => updateTargetFileNames(current => IncomingFileCard.UndoRename(current, itemId)),
+            () => IncomingFileCard.PickDestinationDirectoryAsync(
+                window,
+                t,
+                setDestinationDirectory,
+                setFolderError)));
 
-        Element content = showText
-            ? VStack(12,
-                TextBlock(view.IsDecided
-                        ? t.Message(new("App", "ReceivedMessage"))
-                        : t.Message(new("App", "WantsToSendMessage")))
+        var sender = VStack(16,
+                DeviceAvatar(request.Sender.DeviceType, OverlayAvatarSize)
+                    .HAlign(HorizontalAlignment.Center),
+                Title(request.Sender.Alias)
                     .TextAlignment(TextAlignment.Center)
                     .HAlign(HorizontalAlignment.Center),
-                TextBox(view.Text ?? t.Message(new("App", "TextAvailableAfterAccept")), _ => { })
-                    .IsReadOnly()
-                    .AcceptsReturn()
-                    .TextWrapping()
-                    .MinHeight(120)
-                    .MaxHeight(260)
-                    .AutomationName(t.Message(new("App", "ReceivedTextContent"))),
-                HStack(12,
-                        verificationButton,
-                        Button(
-                                HStack(8,
-                                    Icon("\uE8C8").AccessibilityHidden(),
-                                    TextBlock(copied
-                                        ? t.Message(new("App", "Copied"))
-                                        : t.Message(new("App", "Copy")))),
-                                CopyText)
-                            .AutomationName(t.Message(new("App", "CopyReceivedText")))
-                            .IsEnabled(!string.IsNullOrEmpty(view.Text))
-                            .MinWidth(120))
+                HStack(8,
+                        DeviceTag(RemoteDeviceNumber(request.Sender)),
+                        DeviceTag(DeviceModel(t, request.Sender.DeviceModel, request.Sender.DeviceType)))
                     .HAlign(HorizontalAlignment.Center))
-            : VStack(12,
-                BodyLarge(view.Status)
-                    .TextAlignment(TextAlignment.Center)
-                    .HAlign(HorizontalAlignment.Center)
-                    .Transition(Transition.Enter(new FadeTransition())),
-                showFileOptions ? null : fileCard,
-                verificationButton
-                    .HAlign(HorizontalAlignment.Center)
-                    .Transition(Transition.Enter(new FadeTransition())));
+            .HAlign(HorizontalAlignment.Center)
+            .Transition(Transition.Enter(new FadeTransition()));
 
-        var actions = RenderActions();
+        Element content = showText ? TextContent() : FileContent();
+        var actions = (view.IsDecided, acceptMutation.IsPending) switch
+        {
+            (false, _) => UndecidedActions(),
+            (true, true) => ReceivingActions(),
+            (true, false) => FinishedActions(),
+        };
 
         return Grid(
                 columns: [GridSize.Star()],
@@ -520,62 +448,104 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                     Props.Theme,
                     showQuickActions,
                     () => setShowQuickActions(false),
-                    ApplyQuickActionNames)),
-                RenameDialog())
+                    names => updateTargetFileNames(current =>
+                        IncomingFileCard.ApplyQuickActionNames(current, request.Items, names)))),
+                IncomingFileCard.RenameDialog(
+                    t,
+                    request,
+                    Props.Theme,
+                    renameItemId,
+                    renameFileName,
+                    setRenameFileName,
+                    setRenameItemId,
+                    updateTargetFileNames))
             .Transition(Transition.Enter(new FadeTransition()))
             .Landmark(AutomationLandmarkType.Main);
 
-        Element RenderActions()
-        {
-            if (!view.IsDecided)
-            {
-                return HStack(12,
+        Element TextContent() =>
+            VStack(12,
+                TextBlock(view.IsDecided
+                        ? t.Message(new("App", "ReceivedMessage"))
+                        : t.Message(new("App", "WantsToSendMessage")))
+                    .TextAlignment(TextAlignment.Center)
+                    .HAlign(HorizontalAlignment.Center),
+                TextBox(view.Text ?? t.Message(new("App", "TextAvailableAfterAccept")), _ => { })
+                    .IsReadOnly()
+                    .AcceptsReturn()
+                    .TextWrapping()
+                    .MinHeight(120)
+                    .MaxHeight(260)
+                    .AutomationName(t.Message(new("App", "ReceivedTextContent"))),
+                HStack(12,
+                        verificationButton,
                         Button(
                                 HStack(8,
-                                    Icon("\uE711").AccessibilityHidden(),
-                                    TextBlock(t.Message(new("App", "Decline")))),
-                                () => _ = DeclineAsync())
-                            .AutomationName(t.Message(new("App", "Decline")))
-                            .IsEnabled(!isPending)
-                            .MinWidth(120)
-                            .CriticalButton(),
-                        Button(
-                                HStack(8,
-                                    Icon("\uE8FB").AccessibilityHidden(),
-                                    TextBlock(t.Message(new("App", "Accept")))),
-                                () => _ = AcceptAsync())
-                            .AutomationName(t.Message(new("App", "Accept")))
-                            .IsEnabled(!isPending && (showText || selectedItemIds.Count > 0))
-                            .MinWidth(120)
-                            .AccentButton()
-                    )
-                    .HAlign(HorizontalAlignment.Center);
-            }
+                                    Icon("\uE8C8").AccessibilityHidden(),
+                                    TextBlock(copied
+                                        ? t.Message(new("App", "Copied"))
+                                        : t.Message(new("App", "Copy")))),
+                                CopyText)
+                            .AutomationName(t.Message(new("App", "CopyReceivedText")))
+                            .IsEnabled(!string.IsNullOrEmpty(view.Text))
+                            .MinWidth(120))
+                    .HAlign(HorizontalAlignment.Center));
 
-            if (acceptMutation.IsPending)
-            {
-                return VStack(12,
-                        view.State is TransferState.Preparing or TransferState.WaitingForAcceptance
-                            ? ProgressIndeterminate().MaxWidth(AppLayout.OverlayProgressMaxWidth)
-                                .HAlign(HorizontalAlignment.Stretch)
-                            : Progress(progressValue).MaxWidth(AppLayout.OverlayProgressMaxWidth)
-                                .HAlign(HorizontalAlignment.Stretch),
-                        Caption(progressText)
-                            .Foreground(Theme.SecondaryText)
-                            .HAlign(HorizontalAlignment.Center),
-                        Button(
-                                HStack(8,
-                                    Icon("\uE711").AccessibilityHidden(),
-                                    TextBlock(t.Message(new("App", "Cancel")))),
-                                CancelReceive)
-                            .AutomationName(t.Message(new("App", "Cancel")))
-                            .MinWidth(120)
-                            .HAlign(HorizontalAlignment.Center))
-                    .MaxWidth(AppLayout.OverlayIncomingActionsMaxWidth)
-                    .HAlign(HorizontalAlignment.Stretch);
-            }
+        Element FileContent() =>
+            VStack(12,
+                BodyLarge(view.Status)
+                    .TextAlignment(TextAlignment.Center)
+                    .HAlign(HorizontalAlignment.Center)
+                    .Transition(Transition.Enter(new FadeTransition())),
+                showFileOptions ? null : fileCard,
+                verificationButton
+                    .HAlign(HorizontalAlignment.Center)
+                    .Transition(Transition.Enter(new FadeTransition())));
 
-            return VStack(8,
+        Element UndecidedActions() =>
+            HStack(12,
+                    Button(
+                            HStack(8,
+                                Icon("\uE711").AccessibilityHidden(),
+                                TextBlock(t.Message(new("App", "Decline")))),
+                            () => _ = DeclineAsync())
+                        .AutomationName(t.Message(new("App", "Decline")))
+                        .IsEnabled(!isPending)
+                        .MinWidth(120)
+                        .CriticalButton(),
+                    Button(
+                            HStack(8,
+                                Icon("\uE8FB").AccessibilityHidden(),
+                                TextBlock(t.Message(new("App", "Accept")))),
+                            () => _ = AcceptAsync())
+                        .AutomationName(t.Message(new("App", "Accept")))
+                        .IsEnabled(!isPending && (showText || selectedItemIds.Count > 0))
+                        .MinWidth(120)
+                        .AccentButton())
+                .HAlign(HorizontalAlignment.Center);
+
+        Element ReceivingActions() =>
+            VStack(12,
+                    view.State is TransferState.Preparing or TransferState.WaitingForAcceptance
+                        ? ProgressIndeterminate().MaxWidth(AppLayout.OverlayProgressMaxWidth)
+                            .HAlign(HorizontalAlignment.Stretch)
+                        : Progress(progressValue).MaxWidth(AppLayout.OverlayProgressMaxWidth)
+                            .HAlign(HorizontalAlignment.Stretch),
+                    Caption(progressText)
+                        .Foreground(Theme.SecondaryText)
+                        .HAlign(HorizontalAlignment.Center),
+                    Button(
+                            HStack(8,
+                                Icon("\uE711").AccessibilityHidden(),
+                                TextBlock(t.Message(new("App", "Cancel")))),
+                            CancelReceive)
+                        .AutomationName(t.Message(new("App", "Cancel")))
+                        .MinWidth(120)
+                        .HAlign(HorizontalAlignment.Center))
+                .MaxWidth(AppLayout.OverlayIncomingActionsMaxWidth)
+                .HAlign(HorizontalAlignment.Stretch);
+
+        Element FinishedActions() =>
+            VStack(8,
                     TextBlock(view.Status)
                         .Foreground(view.IsError ? Theme.SystemCritical : Theme.SecondaryText)
                         .TextAlignment(TextAlignment.Center)
@@ -589,7 +559,6 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                         .MinWidth(120)
                         .HAlign(HorizontalAlignment.Center))
                 .HAlign(HorizontalAlignment.Center);
-        }
 
         async Task AcceptAsync()
         {
@@ -697,244 +666,6 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
             setCopied(true);
         }
 
-        Element ReceiveOptions()
-        {
-            var rows = request.Items.Select(item => ReceiveItemRow(item).WithKey(item.Id)).ToArray<Element?>();
-            return Grid(
-                    columns: [GridSize.Star()],
-                    rows: [GridSize.Auto, GridSize.Auto, GridSize.Star()],
-                    VStack(4,
-                            Grid(
-                                columns: [GridSize.Star(), GridSize.Auto],
-                                rows: [GridSize.Auto],
-                                VStack(2,
-                                        Caption(t.Message(new("App", "ReceiveSaveDirectory")))
-                                            .Foreground(Theme.SecondaryText),
-                                        TextBlock(destinationDirectory)
-                                            .TextTrimming(TextTrimming.CharacterEllipsis)
-                                            .ToolTip(destinationDirectory))
-                                    .Grid(column: 0),
-                                Button(
-                                        Icon("\uE8DA").AccessibilityHidden(),
-                                        () => _ = PickDestinationDirectoryAsync())
-                                    .AutomationName(t.Message(new("App", "ChangeSaveLocation")))
-                                    .ToolTip(t.Message(new("App", "ChangeSaveLocation")))
-                                    .IsEnabled(!view.IsDecided && !isPending)
-                                    .Grid(column: 1)),
-                            folderError is null
-                                ? null
-                                : Caption(folderError).Foreground(Theme.SystemCritical))
-                        .Grid(row: 0),
-                    Grid(
-                            columns: [GridSize.Star(), GridSize.Auto],
-                            rows: [GridSize.Auto],
-                            HStack(8,
-                                    TextBlock(t.Message(new("App", "IncomingFiles")))
-                                        .SemiBold()
-                                        .VAlign(VerticalAlignment.Center),
-                                    Button(
-                                            Icon("\uEF60").AccessibilityHidden(),
-                                            () => setShowQuickActions(true))
-                                        .AutomationName(t.Message(new("App", "QuickActionsTitle")))
-                                        .ToolTip(t.Message(new("App", "QuickActionsTitle")))
-                                        .IsEnabled(!view.IsDecided && !isPending)
-                                        .VAlign(VerticalAlignment.Center),
-                                    Button(
-                                            Icon("\uE7A7").AccessibilityHidden(),
-                                            ResetFileOptions)
-                                        .AutomationName(t.Message(new("App", "ResetReceiveOptions")))
-                                        .ToolTip(t.Message(new("App", "ResetReceiveOptions")))
-                                        .IsEnabled(!view.IsDecided && !isPending)
-                                        .VAlign(VerticalAlignment.Center))
-                                .HAlign(HorizontalAlignment.Left)
-                                .VAlign(VerticalAlignment.Center)
-                                .Grid(column: 0),
-                            ThreeStateCheckBox(SelectAllState(), _ => ToggleSelectAll())
-                                .AutomationName(t.Message(new(
-                                    "App",
-                                    selectedItemIds.Count == request.Items.Count
-                                        ? "DeselectAllIncomingFiles"
-                                        : "SelectAllIncomingFiles")))
-                                .ToolTip(t.Message(new(
-                                    "App",
-                                    selectedItemIds.Count == request.Items.Count
-                                        ? "DeselectAllIncomingFiles"
-                                        : "SelectAllIncomingFiles")))
-                                .IsEnabled(!view.IsDecided && !isPending)
-                                .Scale(1.3f)
-                                .MinWidth(32)
-                                .MinHeight(32)
-                                .VAlign(VerticalAlignment.Center)
-                                .Grid(column: 1))
-                        .Grid(row: 1),
-                    ScrollView(
-                            VStack(8, rows)
-                                .Padding(left: 4, top: 4, right: 16, bottom: 4))
-                        .HorizontalContentAlignment(HorizontalAlignment.Stretch)
-                        .Grid(row: 2)) with
-                {
-                    RowSpacing = 12,
-                };
-        }
-
-        Element ReceiveItemRow(IncomingItem item)
-        {
-            var isSelected = selectedItemIds.Contains(item.Id);
-            var isRenamed = targetFileNames.ContainsKey(item.Id);
-            var displayName = isRenamed
-                ? targetFileNames[item.Id]
-                : item.FileName;
-            var renameHint = t.Message(
-                new("App", "RenameSuccess"),
-                ("size", FormatBytes(item.Size)));
-            var canEdit = !view.IsDecided && !isPending;
-            var canUndoRename = isRenamed && canEdit;
-            var undoRename = canUndoRename
-                ? () => UndoItemRename(item.Id)
-                : (Action?)null;
-
-            Element FileRowMenu() => MenuItems(
-                MenuItem(
-                    t.Message(new("App", "UndoIncomingFileRename")),
-                    undoRename,
-                    icon: "\uE7A7"),
-                MenuItem(
-                    t.Message(new("App", "Rename")),
-                    canEdit ? () => OpenRenameDialog(item.Id, displayName) : null,
-                    icon: "\uE70F"));
-
-            return Border(
-                    Grid(
-                        columns: [GridSize.Star(), GridSize.Auto],
-                        rows: [GridSize.Auto],
-                        Button(
-                                Grid(
-                                        columns: [GridSize.Auto, GridSize.Star()],
-                                        rows: [GridSize.Auto],
-                                        Border(Icon(FileTypeGlyphs.ForFileName(displayName)).AccessibilityHidden())
-                                            .Size(40, 40)
-                                            .CornerRadius(8)
-                                            .Background(Theme.SubtleFill)
-                                            .Grid(column: 0),
-                                        VStack(2,
-                                                TextBlock(displayName)
-                                                    .TextTrimming(TextTrimming.CharacterEllipsis)
-                                                    .ToolTip(displayName)
-                                                    .TextAlignment(TextAlignment.Left)
-                                                    .HAlign(HorizontalAlignment.Stretch),
-                                                Caption(isRenamed ? renameHint : FormatBytes(item.Size))
-                                                    .Foreground(isRenamed ? Theme.SystemCaution : Theme.SecondaryText)
-                                                    .TextAlignment(TextAlignment.Left)
-                                                    .HAlign(HorizontalAlignment.Stretch))
-                                            .VAlign(VerticalAlignment.Center)
-                                            .HAlign(HorizontalAlignment.Stretch)
-                                            .Grid(column: 1))
-                                    with
-                                    {
-                                        ColumnSpacing = 12
-                                    },
-                                () => ToggleItem(item.Id))
-                            .AutomationName(t.Message(
-                                new("App", isSelected ? "DeselectIncomingFile" : "SelectIncomingFile"),
-                                ("file", displayName)))
-                            .HAlign(HorizontalAlignment.Stretch)
-                            .HorizontalContentAlignment(HorizontalAlignment.Stretch)
-                            .GhostButton()
-                            .WithContextFlyout(FileRowMenu())
-                            .Grid(column: 0),
-                        HStack(
-                                Button(
-                                        Icon("\uE7A7").AccessibilityHidden(),
-                                        () => UndoItemRename(item.Id))
-                                    .AutomationName(t.Message(new("App", "UndoIncomingFileRename")))
-                                    .ToolTip(t.Message(new("App", "UndoIncomingFileRename")))
-                                    .IsEnabled(canUndoRename)
-                                    .WithContextFlyout(FileRowMenu()),
-                                Button(
-                                        Icon("\uE70F").AccessibilityHidden(),
-                                        () => OpenRenameDialog(item.Id, displayName))
-                                    .AutomationName(t.Message(
-                                        new("App", "RenameIncomingFile"),
-                                        ("file", displayName)))
-                                    .ToolTip(t.Message(new("App", "Rename")))
-                                    .IsEnabled(canEdit)
-                                    .WithContextFlyout(FileRowMenu()))
-                            .Margin(8)
-                            .VAlign(VerticalAlignment.Center)
-                            .Grid(column: 1)))
-                .CornerRadius(8)
-                .Background(Theme.CardBackground)
-                .WithBorder(isSelected ? Theme.Accent : Theme.CardStroke, 2)
-                .WithContextFlyout(FileRowMenu());
-        }
-
-        Element RenameDialog()
-        {
-            var validName = IsValidTargetFileName(renameFileName);
-            return (ContentDialog(
-                    t.Message(new("App", "Rename")),
-                    TextBox(renameFileName, setRenameFileName)
-                        .Header(t.Message(new("App", "Name")))
-                        .AutomationName(t.Message(new("App", "Name"))),
-                    primaryButtonText: t.Message(new("App", "Save"))) with
-                {
-                    IsOpen = renameItemId is not null,
-                    SecondaryButtonText = t.Message(new("App", "Cancel")),
-                    DefaultButton = ContentDialogButton.Primary,
-                    IsPrimaryButtonEnabled = validName,
-                    OnClosed = result =>
-                    {
-                        var itemId = renameItemId;
-                        if (result == ContentDialogResult.Primary && itemId is not null && validName)
-                        {
-                            var originalName = request.Items.First(item => item.Id == itemId).FileName;
-                            updateTargetFileNames(current =>
-                            {
-                                var next = new Dictionary<string, string>(current, StringComparer.Ordinal);
-                                if (string.Equals(renameFileName.Trim(), originalName, StringComparison.Ordinal))
-                                    next.Remove(itemId);
-                                else
-                                    next[itemId] = renameFileName.Trim();
-                                return next;
-                            });
-                        }
-
-                        setRenameItemId(null);
-                        setRenameFileName(string.Empty);
-                    },
-                }).Themed(Props.Theme);
-        }
-
-        void ToggleItem(string itemId) => updateSelectedItemIds(current =>
-        {
-            var next = new HashSet<string>(current, StringComparer.Ordinal);
-            if (!next.Remove(itemId))
-                next.Add(itemId);
-            return next;
-        });
-
-        bool? SelectAllState()
-        {
-            if (selectedItemIds.Count == 0)
-                return false;
-            if (selectedItemIds.Count == request.Items.Count)
-                return true;
-            return null;
-        }
-
-        void ToggleSelectAll()
-        {
-            if (selectedItemIds.Count == request.Items.Count)
-            {
-                updateSelectedItemIds(_ => new HashSet<string>(StringComparer.Ordinal));
-                return;
-            }
-
-            updateSelectedItemIds(_ => request.Items
-                .Select(static item => item.Id)
-                .ToHashSet(StringComparer.Ordinal));
-        }
-
         void ToggleFileOptions()
         {
             var desired = !fileOptionsDesiredRef.Current;
@@ -985,76 +716,11 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
             setRenameItemId(itemId);
         }
 
-        void UndoItemRename(string itemId) => updateTargetFileNames(current =>
-        {
-            var next = new Dictionary<string, string>(current, StringComparer.Ordinal);
-            next.Remove(itemId);
-            return next;
-        });
-
-        void ApplyQuickActionNames(IReadOnlyDictionary<string, string> names) =>
-            updateTargetFileNames(current =>
-            {
-                var next = new Dictionary<string, string>(current, StringComparer.Ordinal);
-                foreach (var (itemId, fileName) in names)
-                {
-                    var originalName = request.Items.First(item => item.Id == itemId).FileName;
-                    if (string.Equals(fileName, originalName, StringComparison.Ordinal))
-                        next.Remove(itemId);
-                    else
-                        next[itemId] = fileName;
-                }
-
-                return next;
-            });
-
         void ResetFileOptions()
         {
-            updateSelectedItemIds(_ => request.Items
-                .Select(static item => item.Id)
-                .ToHashSet(StringComparer.Ordinal));
+            updateSelectedItemIds(_ => IncomingFileCard.AllItemIds(request.Items));
             updateTargetFileNames(_ => new Dictionary<string, string>(StringComparer.Ordinal));
         }
-
-        async Task PickDestinationDirectoryAsync()
-        {
-            try
-            {
-                var picker = new FolderPicker
-                {
-                    SuggestedStartLocation = PickerLocationId.Downloads,
-                    CommitButtonText = t.Message(new("App", "Change")),
-                };
-                picker.FileTypeFilter.Add("*");
-                var nativeWindow = window?.NativeWindow
-                                   ?? throw new InvalidOperationException(t.Message(new("App", "WindowUnavailable")));
-                WinRT.Interop.InitializeWithWindow.Initialize(
-                    picker,
-                    WinRT.Interop.WindowNative.GetWindowHandle(nativeWindow));
-                var folder = await picker.PickSingleFolderAsync();
-                if (folder is not null)
-                {
-                    setDestinationDirectory(folder.Path);
-                    setFolderError(null);
-                }
-            }
-            catch (Exception exception)
-            {
-                setFolderError(t.Message(
-                    new("App", "PickFolderFailed"),
-                    ("error", exception.Message)));
-            }
-        }
-    }
-
-    private static bool IsValidTargetFileName(string value)
-    {
-        var name = value.Trim();
-        return name.Length > 0
-               && !name.EndsWith('.')
-               && !name.EndsWith(' ')
-               && name.IndexOfAny(Path.GetInvalidFileNameChars()) < 0
-               && !name.Contains(':', StringComparison.Ordinal);
     }
 
     private static async Task<string?> ReadReceivedTextAsync(TransferResult result)
