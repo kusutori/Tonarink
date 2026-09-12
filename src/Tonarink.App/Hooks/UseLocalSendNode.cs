@@ -74,9 +74,11 @@ sealed partial class LocalizedAppShell
         {
             updateRuntime(current => current with
             {
-                IncomingTransfers = current.IncomingTransfers
-                    .Where(request => request.RequestId != requestId)
-                    .ToArray(),
+                IncomingTransfers =
+                [
+                    .. current.IncomingTransfers
+                        .Where(request => request.RequestId != requestId)
+                ],
             });
         }
 
@@ -107,7 +109,7 @@ sealed partial class LocalizedAppShell
         void Stop()
         {
             if (!serverDesired && runtime.NodeState is LocalSendNodeState.Stopped
-                or LocalSendNodeState.Created or LocalSendNodeState.Disposed)
+                    or LocalSendNodeState.Created or LocalSendNodeState.Disposed)
                 return;
 
             updateRuntime(current => current with
@@ -201,7 +203,7 @@ sealed partial class LocalizedAppShell
                 nodeLifecycle.Release();
             }
 
-            if (node is null || cancellationToken.IsCancellationRequested)
+            if (cancellationToken.IsCancellationRequested)
                 return;
 
             try
@@ -354,8 +356,8 @@ sealed partial class LocalizedAppShell
         async Task<bool> HandleIncomingActivationAsync(string action, Guid requestId)
         {
             if (nodeRef.Current is not { } node
-                || runtimeRef.Current.IncomingTransfers.FirstOrDefault(
-                    request => request.RequestId == requestId) is not { } request)
+                || runtimeRef.Current.IncomingTransfers.FirstOrDefault(request => request.RequestId == requestId) is not
+                    { } request)
                 return false;
 
             DismissIncoming(requestId);
@@ -416,11 +418,13 @@ sealed partial class LocalizedAppShell
             static pair => pair.Value,
             StringComparer.Ordinal);
         var existing = updated.GetValueOrDefault(change.Device.Fingerprint)
-            ?? Array.Empty<DeviceActivityEntry>();
-        updated[change.Device.Fingerprint] = existing
-            .Append(new DeviceActivityEntry(change.Kind, DateTimeOffset.Now, change.Device.Endpoints))
-            .TakeLast(100)
-            .ToArray();
+                       ?? [];
+        updated[change.Device.Fingerprint] =
+        [
+            .. existing
+                .Append(new DeviceActivityEntry(change.Kind, DateTimeOffset.Now, change.Device.Endpoints))
+                .TakeLast(100)
+        ];
         return updated;
     }
 }

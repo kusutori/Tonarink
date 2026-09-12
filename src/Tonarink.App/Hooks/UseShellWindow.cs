@@ -2,7 +2,6 @@
 
 using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Localization;
-using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml.Controls;
 
 // ReSharper disable once CheckNamespace
@@ -17,7 +16,7 @@ sealed partial class LocalizedAppShell
         bool minimizeToTray,
         IntlAccessor t)
     {
-        var trayIcon = UseRef<WinUIEx.TrayIcon?>(null);
+        var trayIcon = UseRef<WinUIEx.TrayIcon?>();
 
         UseEffect(() =>
         {
