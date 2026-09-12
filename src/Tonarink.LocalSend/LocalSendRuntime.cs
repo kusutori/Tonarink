@@ -97,7 +97,10 @@ public sealed class LocalSendRuntime : ITonarinkRuntime
                 await lifetime.CancelAsync().ConfigureAwait(false);
             await node.StopAsync(cancellationToken).ConfigureAwait(false);
             try { await Task.WhenAll(_watchers).ConfigureAwait(false); }
-            catch (OperationCanceledException) { }
+            catch (OperationCanceledException)
+            {
+                // Watchers are cancelled before the node is disposed.
+            }
             await node.DisposeAsync().ConfigureAwait(false);
             lifetime?.Dispose();
             _watchers = [];
@@ -202,7 +205,10 @@ public sealed class LocalSendRuntime : ITonarinkRuntime
             await foreach (var _ in node.WatchDeviceChangesAsync(cancellationToken).ConfigureAwait(false))
                 ReplaceDevices(node.GetDevices());
         }
-        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            // Device watching ended with the runtime session.
+        }
     }
 
     private async Task WatchIncomingAsync(LocalSendNode node, CancellationToken cancellationToken)
@@ -218,7 +224,10 @@ public sealed class LocalSendRuntime : ITonarinkRuntime
                     _ = AutoAcceptAsync(ToOffer(request), cancellationToken);
             }
         }
-        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            // Incoming transfer watching ended with the runtime session.
+        }
     }
 
     private void ReplaceDevices(IReadOnlyList<LocalSendDevice> devices)
@@ -247,7 +256,10 @@ public sealed class LocalSendRuntime : ITonarinkRuntime
         {
             await AcceptAsync(offer, offer.Items.Select(static item => item.Id).ToHashSet(), cancellationToken).ConfigureAwait(false);
         }
-        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            // Automatic acceptance was cancelled with the runtime session.
+        }
         catch (Exception exception)
         {
             _logger.LogError(exception, "Automatically accepting transfer {TransferId} failed", offer.Id);

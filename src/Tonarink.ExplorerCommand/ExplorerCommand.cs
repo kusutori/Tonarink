@@ -22,8 +22,9 @@ internal sealed partial class ExplorerCommand : IExplorerCommand, IObjectWithSit
             ppszName = AppPaths.Dup(AppPaths.MenuTitle());
             return Ok;
         }
-        catch
+        catch (Exception exception)
         {
+            AppPaths.Report("Could not provide the Explorer command title", exception);
             return Fail;
         }
     }
@@ -41,8 +42,9 @@ internal sealed partial class ExplorerCommand : IExplorerCommand, IObjectWithSit
             ppszIcon = AppPaths.Dup(path);
             return Ok;
         }
-        catch
+        catch (Exception exception)
         {
+            AppPaths.Report("Could not provide the Explorer command icon", exception);
             return Fail;
         }
     }
@@ -83,8 +85,9 @@ internal sealed partial class ExplorerCommand : IExplorerCommand, IObjectWithSit
             AppPaths.LaunchApp();
             return Ok;
         }
-        catch
+        catch (Exception exception)
         {
+            AppPaths.Report("Could not invoke the Explorer share command", exception);
             return Fail;
         }
     }

@@ -72,8 +72,14 @@ internal sealed class V2Server(
                 }, (_connections, id), CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
             }
         }
-        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { }
-        catch (ObjectDisposedException) when (cancellationToken.IsCancellationRequested) { }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            // Expected when the portable server stops accepting clients.
+        }
+        catch (ObjectDisposedException) when (cancellationToken.IsCancellationRequested)
+        {
+            // Stopping the listener closes the socket used by AcceptTcpClientAsync.
+        }
     }
 
     private async Task HandleClientAsync(TcpClient client, CancellationToken cancellationToken)
@@ -437,10 +443,16 @@ internal sealed class V2Server(
         if (_acceptLoop is not null)
         {
             try { await _acceptLoop.ConfigureAwait(false); }
-            catch (OperationCanceledException) { }
+            catch (OperationCanceledException)
+            {
+                // The accept loop is cancelled during normal disposal.
+            }
         }
         try { await Task.WhenAll(_connections.Values).WaitAsync(TimeSpan.FromSeconds(5)).ConfigureAwait(false); }
-        catch (Exception exception) when (exception is OperationCanceledException or TimeoutException) { }
+        catch (Exception exception) when (exception is OperationCanceledException or TimeoutException)
+        {
+            logger.LogDebug(exception, "Portable HTTP connections did not all finish before shutdown");
+        }
         lifetime.Dispose();
         _acceptLoop = null;
     }

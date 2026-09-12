@@ -41,8 +41,9 @@ sealed class StartupSplashOverlay : Component<StartupSplashOverlayProps>
                 player.Source = new Tonarink.SplashLogo();
                 await player.PlayAsync(fromProgress: 0, toProgress: 1, looped: false);
             }
-            catch
+            catch (Exception exception)
             {
+                AppDiagnostics.Report("Could not play the startup animation", exception);
             }
 
             if (!alive.Current || completionStarted.Current)

@@ -41,8 +41,13 @@ sealed class AppShell : Component
                         return;
                     updateSettings(current => current with { StartWithWindows = enabled });
                 }
-                catch
+                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
                 {
+                    // The effect was disposed before the startup state query completed.
+                }
+                catch (Exception exception)
+                {
+                    AppDiagnostics.Report("Could not synchronize the Windows startup state", exception);
                 }
             }
         });

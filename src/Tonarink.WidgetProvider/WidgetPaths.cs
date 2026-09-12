@@ -56,8 +56,10 @@ internal static class WidgetPaths
                 package.Id.FamilyName,
                 "LocalState");
         }
-        catch
+        catch (Exception exception) when (exception is InvalidOperationException or COMException)
         {
+            // The widget provider can also run without package identity.
+            WidgetLog.Write($"Package data path is unavailable; using unpackaged storage: {exception.Message}");
         }
 
         if (!string.IsNullOrWhiteSpace(packaged))

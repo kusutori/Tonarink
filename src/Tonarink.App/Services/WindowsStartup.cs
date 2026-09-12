@@ -1,4 +1,5 @@
 using Microsoft.Win32;
+using System.Runtime.InteropServices;
 using Windows.ApplicationModel;
 using Windows.System;
 
@@ -16,8 +17,9 @@ static class WindowsStartup
                 var task = await StartupTask.GetAsync(AppPlatform.StartupTaskId);
                 return task.State is StartupTaskState.Enabled or StartupTaskState.EnabledByPolicy;
             }
-            catch
+            catch (Exception exception) when (exception is COMException or InvalidOperationException)
             {
+                AppDiagnostics.Report("Could not read the packaged startup task; using the registry fallback", exception);
             }
         }
 
@@ -37,8 +39,9 @@ static class WindowsStartup
             {
                 throw;
             }
-            catch
+            catch (Exception exception) when (exception is COMException or InvalidOperationException)
             {
+                AppDiagnostics.Report("Could not update the packaged startup task", exception);
                 if (enabled)
                     throw;
             }
@@ -76,8 +79,9 @@ static class WindowsStartup
                 {
                     await Launcher.LaunchUriAsync(new Uri("ms-settings:startupapps"));
                 }
-                catch
+                catch (Exception exception) when (exception is COMException or InvalidOperationException)
                 {
+                    AppDiagnostics.Report("Could not open Windows startup app settings", exception);
                 }
 
                 throw new StartupDisabledException("StartupDisabledByUser");

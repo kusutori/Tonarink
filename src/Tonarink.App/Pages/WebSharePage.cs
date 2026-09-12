@@ -92,6 +92,7 @@ sealed class WebSharePage : Component<WebSharePageProps>
                 }
                 catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
                 {
+                    // Expected when leaving the page or restarting the web-share service.
                 }
             }
         }, node, Props.Runtime.NodeState, Props.Mode);
@@ -331,21 +332,24 @@ sealed class WebSharePage : Component<WebSharePageProps>
                 {
                     Clipboard.Flush();
                 }
-                catch
+                catch (Exception exception)
                 {
                     // The text is already available for this app lifetime. Flush only
                     // keeps it available after exit and may fail if another process
                     // briefly locks the clipboard.
+                    AppDiagnostics.Report("Could not persist clipboard text after copying a share link", exception);
                 }
 
                 return true;
             }
-            catch when (attempt < maximumAttempts)
+            catch (Exception exception) when (attempt < maximumAttempts)
             {
+                AppDiagnostics.Report($"Clipboard copy attempt {attempt} failed", exception);
                 await Task.Delay(50).ConfigureAwait(true);
             }
-            catch
+            catch (Exception exception)
             {
+                AppDiagnostics.Report("Could not copy the share link", exception);
                 return false;
             }
         }

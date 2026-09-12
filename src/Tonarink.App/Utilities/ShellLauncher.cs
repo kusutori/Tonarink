@@ -22,8 +22,12 @@ static class ShellLauncher
                 _ => false,
             };
         }
-        catch
+        catch (Exception exception) when (exception is ArgumentException
+            or IOException
+            or UnauthorizedAccessException
+            or System.ComponentModel.Win32Exception)
         {
+            AppDiagnostics.Report(reveal ? "Could not reveal a shell item" : "Could not open a shell item", exception);
             return false;
         }
     }

@@ -79,7 +79,10 @@ internal sealed class V2MulticastDiscovery(
             if (oldLoop is not null)
             {
                 try { await oldLoop.ConfigureAwait(false); }
-                catch (ObjectDisposedException) { }
+                catch (ObjectDisposedException)
+                {
+                    // Replacing the receiver disposes the socket observed by the old loop.
+                }
             }
             oldStop?.Dispose();
             logger.LogInformation("LocalSend discovery is listening on {Count} IPv4 interface(s)", joinedAddresses.Count);
@@ -172,7 +175,10 @@ internal sealed class V2MulticastDiscovery(
     private async Task ObserveAnnouncementAsync(DeviceInfoDto message, IPAddress source, CancellationToken cancellationToken)
     {
         try { await onAnnouncement(message, source, cancellationToken).ConfigureAwait(false); }
-        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            // Announcement observation ended with discovery shutdown.
+        }
         catch (Exception exception) { logger.LogDebug(exception, "Could not register with announced LocalSend peer {Address}", source); }
         finally { _registrations.TryRemove(source, out _); }
     }
@@ -212,7 +218,10 @@ internal sealed class V2MulticastDiscovery(
             await Task.Delay(TimeSpan.FromMilliseconds(500), _stop.Token).ConfigureAwait(false);
             await RefreshInterfacesAsync(force: true, _stop.Token).ConfigureAwait(false);
         }
-        catch (OperationCanceledException) when (_stop.IsCancellationRequested) { }
+        catch (OperationCanceledException) when (_stop.IsCancellationRequested)
+        {
+            // A pending recovery was cancelled during shutdown.
+        }
         catch (Exception exception) { logger.LogWarning(exception, "LocalSend discovery network recovery failed"); }
         finally { Interlocked.Exchange(ref _refreshScheduled, 0); }
     }
@@ -231,7 +240,10 @@ internal sealed class V2MulticastDiscovery(
             if (_receiveLoop is not null)
             {
                 try { await _receiveLoop.ConfigureAwait(false); }
-                catch (ObjectDisposedException) { }
+                catch (ObjectDisposedException)
+                {
+                    // Disposing discovery closes the receiver before its loop completes.
+                }
             }
             _receiverStop?.Dispose();
         }

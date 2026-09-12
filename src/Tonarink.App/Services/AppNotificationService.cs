@@ -301,8 +301,9 @@ static class AppNotificationService
                 $"{DateTimeOffset.Now:O} {text}{Environment.NewLine}",
                 Encoding.UTF8);
         }
-        catch
+        catch (Exception diagnosticException)
         {
+            Debug.WriteLine($"[notification] Could not write diagnostic log: {diagnosticException.Message}");
         }
     }
 }

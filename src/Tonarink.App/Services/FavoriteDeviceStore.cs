@@ -96,8 +96,9 @@ static class FavoriteDeviceStore
                 ? Empty()
                 : new Dictionary<string, FavoriteDevice>(entries, StringComparer.Ordinal);
         }
-        catch
+        catch (Exception exception) when (exception is JsonException or IOException or UnauthorizedAccessException)
         {
+            AppDiagnostics.Report("Could not load favorite devices", exception);
             return Empty();
         }
     }

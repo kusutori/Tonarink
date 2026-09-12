@@ -25,8 +25,9 @@ static class AppSettingsStore
             var file = JsonSerializer.Deserialize(json, AppSettingsJsonContext.Default.AppSettingsFile);
             return _cached = file?.ToSettings() ?? AppSettings.Default;
         }
-        catch
+        catch (Exception exception) when (exception is JsonException or IOException or UnauthorizedAccessException)
         {
+            AppDiagnostics.Report("Could not load application settings; defaults will be used", exception);
             return _cached = AppSettings.Default;
         }
     }

@@ -178,6 +178,7 @@ sealed partial class LocalizedAppShell
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
+                // Expected when the node session is replaced or the app shuts down.
                 return;
             }
             catch (Exception exception)
@@ -206,6 +207,7 @@ sealed partial class LocalizedAppShell
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
+                // Expected when the node session is replaced or the app shuts down.
             }
         }
 
@@ -236,8 +238,9 @@ sealed partial class LocalizedAppShell
             {
                 await node.DisposeAsync().ConfigureAwait(false);
             }
-            catch
+            catch (Exception exception)
             {
+                AppDiagnostics.Report("Could not dispose the LocalSend node", exception);
             }
         }
 
@@ -331,6 +334,7 @@ sealed partial class LocalizedAppShell
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
+                // Expected when automatic receiving is cancelled with the node session.
             }
             catch (Exception exception)
             {

@@ -1,5 +1,6 @@
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using System.Diagnostics;
 
 namespace LocalSendDotNet;
 
@@ -111,8 +112,10 @@ internal static class DeviceIdentityStore
     private static void TryDelete(string path)
     {
         try { File.Delete(path); }
-        catch (IOException) { }
-        catch (UnauthorizedAccessException) { }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            Debug.WriteLine($"Could not delete temporary identity file '{path}': {exception.Message}");
+        }
     }
 
     private static void RestrictPermissions(string path, bool privateKey)

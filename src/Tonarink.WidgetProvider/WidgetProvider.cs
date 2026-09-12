@@ -199,8 +199,9 @@ public sealed partial class WidgetProvider : IWidgetProvider
                 {
                     Work.Set();
                 }
-                catch
+                catch (ObjectDisposedException exception)
                 {
+                    WidgetLog.Write($"Widget work signal was already disposed: {exception.Message}");
                 }
             },
             null,

@@ -152,7 +152,10 @@ public sealed class LocalSendNode : IAsyncDisposable
             if (_maintenance is not null)
             {
                 try { await _maintenance.ConfigureAwait(false); }
-                catch (OperationCanceledException) { }
+                catch (OperationCanceledException)
+                {
+                    // The maintenance loop is cancelled as part of normal shutdown.
+                }
             }
             if (_discovery is not null)
                 await _discovery.DisposeAsync().ConfigureAwait(false);
@@ -548,7 +551,10 @@ public sealed class LocalSendNode : IAsyncDisposable
         }
 
         try { await Task.WhenAll(probes).ConfigureAwait(false); }
-        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            // Subnet probing was cancelled by the caller.
+        }
     }
 
     private async Task ProbeScannedHostAsync(IPAddress address, SemaphoreSlim gate, CancellationToken cancellationToken)
@@ -570,6 +576,7 @@ public sealed class LocalSendNode : IAsyncDisposable
         }
         catch (Exception exception) when (exception is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
         {
+            _logger.LogDebug(exception, "Could not probe LocalSend host {Address}", address);
         }
         finally { gate.Release(); }
     }
@@ -799,7 +806,10 @@ public sealed class LocalSendNode : IAsyncDisposable
                 session.Fail(TransferFailureCodes.TransferTimeout, "The sender did not finish the accepted transfer before its timeout.");
             }
         }
-        catch (OperationCanceledException) when (_lifetime.IsCancellationRequested) { }
+        catch (OperationCanceledException) when (_lifetime.IsCancellationRequested)
+        {
+            // Incoming request publication ended with node shutdown.
+        }
     }
 
     private static FileDto ToFileDto(string id, SendItem item, long length, string? sha256, bool includeTextPreview)
@@ -882,7 +892,10 @@ public sealed class LocalSendNode : IAsyncDisposable
                 catch (Exception exception) { _logger.LogWarning(exception, "LocalSend maintenance iteration failed"); }
             }
         }
-        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            // The maintenance loop was cancelled by its owner.
+        }
     }
 
     private void SetState(LocalSendNodeState state, Exception? error = null)
@@ -898,11 +911,13 @@ public sealed class LocalSendNode : IAsyncDisposable
         _stateChanges.Publish(new(previous, state, error));
     }
 
-    private static void TryDelete(string path)
+    private void TryDelete(string path)
     {
         try { if (File.Exists(path)) File.Delete(path); }
-        catch (IOException) { }
-        catch (UnauthorizedAccessException) { }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            _logger.LogDebug(exception, "Could not delete temporary transfer file {Path}", path);
+        }
     }
 
     private static IncomingItem ToIncomingItem(FileDto file) => new(file.Id, file.FileName, file.Size, file.FileType, file.Sha256, file.Preview,

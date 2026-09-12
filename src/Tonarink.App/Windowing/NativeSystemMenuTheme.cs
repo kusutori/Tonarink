@@ -22,11 +22,13 @@ static class NativeSystemMenuTheme
             });
             FlushMenuThemes();
         }
-        catch (DllNotFoundException)
+        catch (DllNotFoundException exception)
         {
+            AppDiagnostics.Report("Native menu theming is unavailable", exception);
         }
-        catch (EntryPointNotFoundException)
+        catch (EntryPointNotFoundException exception)
         {
+            AppDiagnostics.Report("Native menu theme exports are unavailable", exception);
         }
     }
 

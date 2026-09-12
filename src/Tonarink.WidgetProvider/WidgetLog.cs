@@ -1,3 +1,5 @@
+using System.Diagnostics;
+
 namespace Tonarink.WidgetProvider;
 
 internal static class WidgetLog
@@ -17,8 +19,9 @@ internal static class WidgetLog
             Directory.CreateDirectory(System.IO.Path.GetDirectoryName(Path)!);
             File.AppendAllText(Path, $"{DateTime.Now:HH:mm:ss.fff} {message}{Environment.NewLine}");
         }
-        catch
+        catch (Exception exception)
         {
+            Debug.WriteLine($"[widget-provider] Could not write log: {exception.Message}");
         }
     }
 }

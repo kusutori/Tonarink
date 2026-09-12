@@ -57,8 +57,9 @@ public sealed class ShareViewController : SLComposeServiceViewController
                 await context.CompleteRequestAsync([]);
             }
         }
-        catch
+        catch (Exception exception)
         {
+            System.Diagnostics.Debug.WriteLine($"Tonarink share extension failed: {exception}");
             ExtensionContext?.CancelRequest(new NSError(new NSString("Tonarink.ShareExtension"), 1));
         }
     }

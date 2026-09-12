@@ -14,8 +14,9 @@ static class RecentManualAddressStore
             var address = File.ReadAllText(FilePath).Trim();
             return address.Length == 0 ? null : address;
         }
-        catch
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
+            AppDiagnostics.Report("Could not load the recent manual address", exception);
             return null;
         }
     }
@@ -27,9 +28,10 @@ static class RecentManualAddressStore
             Directory.CreateDirectory(AppPlatform.DataDirectory);
             File.WriteAllText(FilePath, address);
         }
-        catch
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
             // A recent-address shortcut must never turn a successful transfer into a failure.
+            AppDiagnostics.Report("Could not save the recent manual address", exception);
         }
     }
 }

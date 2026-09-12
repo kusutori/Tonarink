@@ -94,8 +94,9 @@ static class ShareTargetActivationBroker
             {
                 Ingested.Set();
             }
-            catch
+            catch (ObjectDisposedException exception)
             {
+                WriteDiagnostic("Share activation completion signal was already disposed.", exception);
             }
 
             ActivationReceived?.Invoke(null, EventArgs.Empty);
@@ -167,8 +168,9 @@ static class ShareTargetActivationBroker
                     PendingPayloads.Enqueue(new ShareTargetPayload(Guid.NewGuid(), items));
                     ingested = true;
                 }
-                catch
+                catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
                 {
+                    WriteDiagnostic($"Could not ingest explorer share file '{file}'.", exception);
                 }
             }
         }
@@ -221,16 +223,18 @@ static class ShareTargetActivationBroker
             operation.ReportCompleted();
             return payload;
         }
-        catch
+        catch (Exception exception)
         {
             try
             {
                 operation.ReportError("The shared content could not be read.");
             }
-            catch
+            catch (Exception reportException)
             {
+                WriteDiagnostic("Could not report a share-target error to Windows.", reportException);
             }
 
+            WriteDiagnostic("Could not capture shared content.", exception);
             throw;
         }
     }
@@ -284,8 +288,9 @@ static class ShareTargetActivationBroker
                 $"{DateTimeOffset.Now:O} {text}{Environment.NewLine}",
                 Encoding.UTF8);
         }
-        catch
+        catch (Exception diagnosticException)
         {
+            Debug.WriteLine($"[share-target] Could not write diagnostic log: {diagnosticException.Message}");
         }
     }
 }

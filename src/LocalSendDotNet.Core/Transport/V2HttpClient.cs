@@ -72,7 +72,11 @@ internal sealed class V2HttpClient(DeviceIdentity identity, LocalSendOptions opt
         {
             ErrorResponseDto? error = null;
             try { error = await response.Content.ReadFromJsonAsync(V2JsonContext.Default.ErrorResponseDto, cancellationToken).ConfigureAwait(false); }
-            catch (System.Text.Json.JsonException) { }
+            catch (System.Text.Json.JsonException)
+            {
+                // Some peers return an empty or plain-text 429 response. The status code
+                // is sufficient to classify it as rate limiting below.
+            }
             if (error?.Message.Contains("maximum", StringComparison.OrdinalIgnoreCase) == true)
                 throw new PeerBusyException();
             throw new PinRateLimitedException();

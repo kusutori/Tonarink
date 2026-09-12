@@ -111,16 +111,18 @@ static class WidgetAppHost
                 {
                     File.Delete(path);
                 }
-                catch
+                catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
                 {
+                    AppDiagnostics.Report("Could not delete a consumed widget command", exception);
                 }
 
                 var command = JsonSerializer.Deserialize(json, WidgetHostJsonContext.Default.WidgetCommandFile);
                 verb = command?.Verb?.Trim();
             }
         }
-        catch
+        catch (Exception exception) when (exception is JsonException or IOException or UnauthorizedAccessException)
         {
+            AppDiagnostics.Report("Could not read the widget command", exception);
         }
 
         if (string.IsNullOrWhiteSpace(verb))
@@ -193,8 +195,9 @@ static class WidgetAppHost
                 JsonSerializer.Serialize(snapshot, WidgetHostJsonContext.Default.WidgetSnapshotFile));
             File.Move(temp, path, overwrite: true);
         }
-        catch
+        catch (Exception exception) when (exception is JsonException or IOException or UnauthorizedAccessException)
         {
+            AppDiagnostics.Report("Could not write the widget snapshot", exception);
         }
     }
 
@@ -306,8 +309,10 @@ static class WidgetLocale
             return Windows.System.UserProfile.GlobalizationPreferences.Languages.Any(static language =>
                 language.StartsWith("zh", StringComparison.OrdinalIgnoreCase));
         }
-        catch
+        catch (Exception exception) when (exception is InvalidOperationException
+            or System.Runtime.InteropServices.COMException)
         {
+            AppDiagnostics.Report("Could not resolve the system language for the widget", exception);
             return false;
         }
     }

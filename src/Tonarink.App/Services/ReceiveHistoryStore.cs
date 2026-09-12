@@ -79,8 +79,9 @@ static class ReceiveHistoryStore
                 ReceiveHistoryJsonContext.Default.ReceiveHistoryFile);
             return file?.ToEntries() ?? [];
         }
-        catch
+        catch (Exception exception) when (exception is JsonException or IOException or UnauthorizedAccessException)
         {
+            AppDiagnostics.Report("Could not load receive history", exception);
             return [];
         }
     }

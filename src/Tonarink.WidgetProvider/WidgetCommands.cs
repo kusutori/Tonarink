@@ -15,8 +15,9 @@ internal static class WidgetCommands
                 return true;
             }
         }
-        catch
+        catch (Exception exception)
         {
+            WidgetLog.Write($"Could not inspect the app mutex: {exception.Message}");
         }
 
         return false;
@@ -32,8 +33,9 @@ internal static class WidgetCommands
                 UseShellExecute = true,
             });
         }
-        catch
+        catch (Exception exception)
         {
+            WidgetLog.Write($"Could not launch Tonarink: {exception.Message}");
         }
     }
 
@@ -59,8 +61,9 @@ internal static class WidgetCommands
             using var handle = EventWaitHandle.OpenExisting(WidgetPaths.CommandEventName);
             handle.Set();
         }
-        catch
+        catch (Exception exception)
         {
+            WidgetLog.Write($"Could not send widget command '{verb}': {exception.Message}");
             OpenApp();
         }
     }

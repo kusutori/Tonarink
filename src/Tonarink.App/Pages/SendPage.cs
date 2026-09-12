@@ -753,6 +753,7 @@ sealed class SendPage : Component<SendPageProps>
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
+                // The page or share activation was replaced while files were being imported.
             }
             catch (Exception exception)
             {
@@ -1161,8 +1162,12 @@ sealed class SendPage : Component<SendPageProps>
             var attributes = System.IO.File.GetAttributes(path);
             return (attributes & System.IO.FileAttributes.ReparsePoint) == 0;
         }
-        catch
+        catch (Exception exception) when (exception is ArgumentException
+            or IOException
+            or UnauthorizedAccessException
+            or NotSupportedException)
         {
+            AppDiagnostics.Report("Could not inspect a dropped storage item", exception);
             return false;
         }
     }

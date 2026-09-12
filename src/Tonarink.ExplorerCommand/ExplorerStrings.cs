@@ -74,8 +74,9 @@ internal static partial class ExplorerStrings
                 break;
             }
         }
-        catch
+        catch (Exception exception) when (exception is JsonException or IOException or UnauthorizedAccessException)
         {
+            AppPaths.Report("Could not read the preferred Explorer command language", exception);
         }
 
         return UserLocale();
@@ -135,8 +136,9 @@ internal static partial class ExplorerStrings
                 }
             }
         }
-        catch
+        catch (Exception exception) when (exception is XmlException or IOException or UnauthorizedAccessException)
         {
+            AppPaths.Report($"Could not read Explorer resource '{path}'", exception);
         }
 
         return false;

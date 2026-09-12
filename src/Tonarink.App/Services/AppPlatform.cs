@@ -78,8 +78,11 @@ static class AppPlatform
             if (!string.IsNullOrWhiteSpace(path))
                 return path;
         }
-        catch
+        catch (Exception exception) when (exception is InvalidOperationException
+            or COMException
+            or UnauthorizedAccessException)
         {
+            AppDiagnostics.Report("Could not resolve the Windows downloads directory", exception);
         }
 
         return Path.Combine(
@@ -114,8 +117,9 @@ static class AppPlatform
             return AppInstance.GetCurrent().GetActivatedEventArgs()?.Kind
                 == ExtendedActivationKind.StartupTask;
         }
-        catch
+        catch (Exception exception) when (exception is InvalidOperationException or COMException)
         {
+            AppDiagnostics.Report("Could not inspect startup activation", exception);
             return false;
         }
     }

@@ -119,8 +119,9 @@ internal static class WidgetSnapshot
                 File.ReadAllText(path),
                 WidgetJsonContext.Default.WidgetSnapshotFile);
         }
-        catch
+        catch (Exception exception) when (exception is JsonException or IOException or UnauthorizedAccessException)
         {
+            WidgetLog.Write($"Could not read widget snapshot: {exception.Message}");
             return null;
         }
     }
@@ -152,8 +153,9 @@ internal static class WidgetSnapshot
                 })
                 .ToArray();
         }
-        catch
+        catch (Exception exception) when (exception is JsonException or IOException or UnauthorizedAccessException)
         {
+            WidgetLog.Write($"Could not read receive history for the widget: {exception.Message}");
             return [];
         }
     }

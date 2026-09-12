@@ -43,8 +43,9 @@ internal static partial class AppPaths
                 return value.ValueKind != JsonValueKind.False;
             }
         }
-        catch
+        catch (Exception exception) when (exception is JsonException or IOException or UnauthorizedAccessException)
         {
+            Report("Could not read the Explorer menu setting", exception);
         }
 
         return true;
@@ -79,8 +80,9 @@ internal static partial class AppPaths
             if (modulePath is not null && File.Exists(modulePath))
                 return modulePath + ",0";
         }
-        catch
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
+            Report("Could not prepare the Explorer command icon", exception);
         }
 
         return null;
@@ -110,8 +112,9 @@ internal static partial class AppPaths
             using var signal = new EventWaitHandle(false, EventResetMode.AutoReset, ShareEventName);
             signal.Set();
         }
-        catch
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or WaitHandleCannotBeOpenedException)
         {
+            Report("Could not signal the running app about an Explorer share", exception);
         }
     }
 
@@ -132,8 +135,10 @@ internal static partial class AppPaths
                 WorkingDirectory = AppContext.BaseDirectory,
             });
         }
-        catch
+        catch (Exception exception) when (exception is InvalidOperationException
+            or System.ComponentModel.Win32Exception)
         {
+            Report("Could not launch Tonarink from Explorer", exception);
         }
     }
 
@@ -230,8 +235,9 @@ internal static partial class AppPaths
             family = match;
             return true;
         }
-        catch
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
+            Report("Could not resolve the Tonarink package family", exception);
             return false;
         }
     }
@@ -293,6 +299,9 @@ internal static partial class AppPaths
         path = buffer[..Math.Max(0, (int)length - 1)].ToString();
         return path.Length > 0;
     }
+
+    internal static void Report(string operation, Exception exception) =>
+        Trace.WriteLine($"[Tonarink.ExplorerCommand] {operation}: {exception.GetType().Name}: {exception.Message}");
 
     [LibraryImport("kernel32.dll")]
     private static unsafe partial int GetCurrentPackageFamilyName(ref uint packageFamilyNameLength, char* packageFamilyName);
