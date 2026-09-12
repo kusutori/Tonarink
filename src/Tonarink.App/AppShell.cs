@@ -11,6 +11,8 @@ using Microsoft.UI.Xaml.Input;
 using static Microsoft.UI.Reactor.Factories;
 using Windows.System.UserProfile;
 
+namespace Tonarink;
+
 sealed class AppShell : Component
 {
     private static readonly ReswResourceProvider Resources = new(defaultLocale: "en-US");

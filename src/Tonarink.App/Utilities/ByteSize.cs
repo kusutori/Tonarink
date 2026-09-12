@@ -1,3 +1,5 @@
+namespace Tonarink.Utilities;
+
 static class ByteSize
 {
     public static string FormatBytes(long bytes)

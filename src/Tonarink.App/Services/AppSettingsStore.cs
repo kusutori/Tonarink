@@ -4,6 +4,8 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using LocalSendDotNet;
 
+namespace Tonarink.Services;
+
 static class AppSettingsStore
 {
     private static readonly string FilePath = Path.Combine(AppPlatform.DataDirectory, "settings.json");

@@ -12,6 +12,8 @@ using Tonarink.Components.Animations;
 using Windows.ApplicationModel.DataTransfer;
 using static Microsoft.UI.Reactor.Factories;
 
+namespace Tonarink.Pages;
+
 sealed record WebSharePageProps(
     LocalSendNode? Node,
     AppRuntimeState Runtime,

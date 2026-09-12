@@ -6,6 +6,8 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
 using static Microsoft.UI.Reactor.Factories;
 
+namespace Tonarink.Components.Shell;
+
 sealed record NetworkStatusPaneProps(
     bool IsPaneOpen,
     LocalSendNodeState NodeState,

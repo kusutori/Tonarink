@@ -1,5 +1,10 @@
+// This file supplies partial hook members for LocalizedAppShell in the root namespace.
+
 using LocalSendDotNet;
 using Microsoft.UI.Reactor.Localization;
+
+// ReSharper disable once CheckNamespace
+namespace Tonarink;
 
 sealed record LocalSendNodeSession(
     AppRuntimeState Runtime,

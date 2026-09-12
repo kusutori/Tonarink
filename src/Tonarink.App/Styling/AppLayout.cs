@@ -1,3 +1,5 @@
+namespace Tonarink.Styling;
+
 static class AppLayout
 {
     public const double CompactBreakpoint = 640;

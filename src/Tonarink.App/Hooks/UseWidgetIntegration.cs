@@ -1,3 +1,7 @@
+// This file supplies partial hook members for LocalizedAppShell in the root namespace.
+// ReSharper disable once CheckNamespace
+namespace Tonarink;
+
 sealed partial class LocalizedAppShell
 {
     private void UseWidgetIntegration(

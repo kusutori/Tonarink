@@ -1,3 +1,5 @@
+namespace Tonarink.Styling;
+
 static class TonarinkThemeResources
 {
     public const string CriticalFill = "#C50F1F";

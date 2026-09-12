@@ -7,6 +7,8 @@ using Windows.ApplicationModel.Activation;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage;
 
+namespace Tonarink.Services;
+
 static class ShareTargetActivationBroker
 {
     private const string InstanceKey = "Tonarink.Primary";

@@ -5,6 +5,8 @@ using Package = Windows.ApplicationModel.Package;
 using WinAppStorage = Microsoft.Windows.Storage;
 using WinRtStorage = Windows.Storage;
 
+namespace Tonarink.Services;
+
 static class AppPlatform
 {
     public const string MinimizedArgument = "--minimized";

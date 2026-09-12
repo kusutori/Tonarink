@@ -1,6 +1,8 @@
 using System.Runtime.InteropServices;
 using Windows.UI.ViewManagement;
 
+namespace Tonarink.Windowing;
+
 static class NativeSystemMenuTheme
 {
     public static void Apply(int themeIndex)

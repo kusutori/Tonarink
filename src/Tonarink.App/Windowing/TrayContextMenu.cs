@@ -1,6 +1,8 @@
 using System.Runtime.InteropServices;
 using Microsoft.UI.Xaml;
 
+namespace Tonarink.Windowing;
+
 static class TrayContextMenu
 {
     private const uint MfString = 0x0000;

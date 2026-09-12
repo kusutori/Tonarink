@@ -10,9 +10,11 @@ using Microsoft.UI.Xaml.Controls;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage.Pickers;
 using static Microsoft.UI.Reactor.Factories;
-using static ByteSize;
-using static DeviceVisuals;
-using static TransferOverlayVisuals;
+using static Tonarink.Utilities.ByteSize;
+using static Tonarink.Components.DeviceVisuals;
+using static Tonarink.Components.TransferOverlayVisuals;
+
+namespace Tonarink.Components;
 
 sealed record OutgoingTransferOverlayProps(
     OutgoingTransferViewState Transfer,

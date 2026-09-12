@@ -1,5 +1,7 @@
 using Microsoft.UI.Reactor;
 
+namespace Tonarink.Windowing;
+
 static class AppWindows
 {
     public static ReactorWindow OpenMain(bool startHidden)

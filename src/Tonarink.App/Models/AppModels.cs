@@ -3,6 +3,8 @@ using System.Net.Sockets;
 using LocalSendDotNet;
 using Microsoft.UI.Reactor.Navigation;
 
+namespace Tonarink.Models;
+
 enum AppRoute
 {
     Receive,

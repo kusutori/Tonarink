@@ -7,7 +7,9 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using static Microsoft.UI.Reactor.Factories;
-using static DeviceVisuals;
+using static Tonarink.Components.DeviceVisuals;
+
+namespace Tonarink.Pages;
 
 sealed record DeviceDetailsPageProps(
     AppRuntimeState Runtime,

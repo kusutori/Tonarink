@@ -7,6 +7,8 @@ using Microsoft.UI.Xaml.Controls;
 using static Microsoft.UI.Reactor.Controls.Validation.FormFieldDsl;
 using static Microsoft.UI.Reactor.Factories;
 
+namespace Tonarink.Components;
+
 sealed record FavoriteDeviceDialogProps(
     FavoriteDevice Device,
     bool IsNew,

@@ -1,7 +1,7 @@
 using CommunityToolkit.WinUI.Controls;
 using Microsoft.UI.Reactor.Wrappers;
 
-namespace Tonarink.Controls.Toolkit;
+namespace Tonarink.Controls;
 
 [GenerateReactorWrapper(typeof(SettingsCard), RegisterAssembly = false)]
 [WrapElementSlot("HeaderIcon")]

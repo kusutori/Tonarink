@@ -2,6 +2,8 @@ using System.Numerics;
 using System.Security.Cryptography;
 using System.Text;
 
+namespace Tonarink.Utilities;
+
 static class DeviceVerification
 {
     // Keep this order aligned with LocalSend's fingerprint_alphabet.dart.

@@ -3,6 +3,8 @@ using System.Runtime.InteropServices;
 using Windows.ApplicationModel;
 using Windows.System;
 
+namespace Tonarink.Services;
+
 static class WindowsStartup
 {
     private const string RunKeyPath = @"Software\Microsoft\Windows\CurrentVersion\Run";

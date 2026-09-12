@@ -1,6 +1,8 @@
 using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Core;
 
+namespace Tonarink.Styling;
+
 static class ButtonStyleExtensions
 {
     public static ButtonElement GhostButton(this ButtonElement button) =>

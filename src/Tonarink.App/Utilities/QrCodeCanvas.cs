@@ -8,6 +8,8 @@ using Net.Codecrete.QrCodeGenerator;
 using System.Numerics;
 using static Microsoft.UI.Reactor.Advanced.Factories;
 
+namespace Tonarink.Utilities;
+
 static class QrCodeCanvas
 {
     private const float CanvasSize = 240;

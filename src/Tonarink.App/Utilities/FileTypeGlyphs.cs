@@ -1,3 +1,5 @@
+namespace Tonarink.Utilities;
+
 static class FileTypeGlyphs
 {
     private const string ArchiveGlyph = "\uF012";

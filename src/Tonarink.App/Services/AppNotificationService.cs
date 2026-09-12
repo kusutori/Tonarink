@@ -2,6 +2,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Windows.AppNotifications;
 using Microsoft.Windows.AppNotifications.Builder;
 
+namespace Tonarink.Services;
+
 sealed record AppNotificationActivation(
     string Action,
     string Kind,

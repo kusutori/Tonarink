@@ -4,6 +4,8 @@ using LocalSendDotNet;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Reactor;
 
+namespace Tonarink.Services;
+
 static class WidgetAppHost
 {
     public const string MutexName = @"Local\Tonarink.App.Running";

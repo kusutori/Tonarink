@@ -7,6 +7,8 @@ using Microsoft.UI.Xaml.Controls;
 using System.Net.Sockets;
 using static Microsoft.UI.Reactor.Factories;
 
+namespace Tonarink.Components;
+
 static class DeviceVisuals
 {
     public const double AvatarSize = 64;

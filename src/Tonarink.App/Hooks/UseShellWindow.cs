@@ -1,7 +1,12 @@
+// This file supplies partial hook members for LocalizedAppShell in the root namespace.
+
 using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Localization;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml.Controls;
+
+// ReSharper disable once CheckNamespace
+namespace Tonarink;
 
 sealed record ShellWindowController(Action Restore, Action Hide);
 

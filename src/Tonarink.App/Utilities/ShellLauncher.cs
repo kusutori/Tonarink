@@ -1,5 +1,7 @@
 using System.Diagnostics;
 
+namespace Tonarink.Utilities;
+
 static class ShellLauncher
 {
     public static bool Open(string? path) => Launch(path, reveal: false);

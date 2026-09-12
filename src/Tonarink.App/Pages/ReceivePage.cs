@@ -10,7 +10,9 @@ using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using static Microsoft.UI.Reactor.Factories;
-using static Tonarink.Controls.Toolkit.SegmentedElement;
+using static Tonarink.Controls.SegmentedElement;
+
+namespace Tonarink.Pages;
 
 sealed record ReceivePageProps(
     AppRuntimeState Runtime,

@@ -3,6 +3,8 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Animation;
 using System.Runtime.InteropServices;
 
+namespace Tonarink.Services;
+
 internal static class DeviceConnectedAnimation
 {
     private static readonly Dictionary<string, WeakReference<UIElement>> Sources =

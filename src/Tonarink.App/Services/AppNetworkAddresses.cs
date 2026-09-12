@@ -3,6 +3,8 @@ using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using LocalSendDotNet;
 
+namespace Tonarink.Services;
+
 static class AppNetworkAddresses
 {
     public static IReadOnlyList<string> ListIpv4(AppSettings settings)

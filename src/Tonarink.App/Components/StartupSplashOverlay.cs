@@ -4,6 +4,8 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using static Microsoft.UI.Reactor.Factories;
 
+namespace Tonarink.Components;
+
 sealed record StartupSplashOverlayProps(Action<bool> SetVisible);
 
 sealed class StartupSplashOverlay : Component<StartupSplashOverlayProps>

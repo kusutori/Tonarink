@@ -14,9 +14,11 @@ using Windows.Storage;
 using Windows.Storage.Pickers;
 using Tonarink.Components.Animations;
 using static Microsoft.UI.Reactor.Factories;
-using static ByteSize;
-using static DeviceVisuals;
-using static TransferOverlayVisuals;
+using static Tonarink.Utilities.ByteSize;
+using static Tonarink.Components.DeviceVisuals;
+using static Tonarink.Components.TransferOverlayVisuals;
+
+namespace Tonarink.Pages;
 
 sealed record SendPageProps(
     AppRuntimeState Runtime,

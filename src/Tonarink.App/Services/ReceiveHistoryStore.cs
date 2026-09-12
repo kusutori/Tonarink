@@ -2,6 +2,8 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using LocalSendDotNet;
 
+namespace Tonarink.Services;
+
 static class ReceiveHistoryStore
 {
     private const int MaxEntries = 500;

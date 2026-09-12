@@ -1,6 +1,8 @@
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 
+namespace Tonarink.Services;
+
 static class AppDiagnostics
 {
     private static readonly object Gate = new();

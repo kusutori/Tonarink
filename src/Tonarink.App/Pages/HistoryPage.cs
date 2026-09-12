@@ -6,7 +6,9 @@ using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using static Microsoft.UI.Reactor.Factories;
-using static ByteSize;
+using static Tonarink.Utilities.ByteSize;
+
+namespace Tonarink.Pages;
 
 sealed record HistoryPageProps(string DownloadDirectory, ElementTheme Theme);
 

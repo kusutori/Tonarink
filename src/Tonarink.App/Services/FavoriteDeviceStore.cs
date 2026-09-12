@@ -1,6 +1,8 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
+namespace Tonarink.Services;
+
 sealed record FavoriteDevice(
     string Fingerprint,
     string Name,

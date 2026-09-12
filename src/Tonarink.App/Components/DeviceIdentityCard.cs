@@ -5,7 +5,9 @@ using Microsoft.UI.Reactor.Layout;
 using Microsoft.UI.Reactor.Localization;
 using Microsoft.UI.Xaml;
 using static Microsoft.UI.Reactor.Factories;
-using static DeviceVisuals;
+using static Tonarink.Components.DeviceVisuals;
+
+namespace Tonarink.Components;
 
 sealed record DeviceIdentityCardProps(
     string Alias,

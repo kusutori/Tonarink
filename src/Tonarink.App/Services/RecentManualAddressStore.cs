@@ -1,3 +1,5 @@
+namespace Tonarink.Services;
+
 static class RecentManualAddressStore
 {
     private static readonly string FilePath = Path.Combine(

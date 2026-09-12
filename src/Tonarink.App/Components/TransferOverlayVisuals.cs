@@ -4,6 +4,8 @@ using Microsoft.UI.Reactor.Core;
 using Microsoft.UI.Reactor.Localization;
 using static Microsoft.UI.Reactor.Factories;
 
+namespace Tonarink.Components;
+
 static class TransferOverlayVisuals
 {
     public static string DeviceConnectedKey(string fingerprint) => $"device:{fingerprint}";

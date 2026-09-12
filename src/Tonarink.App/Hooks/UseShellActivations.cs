@@ -1,5 +1,10 @@
+// This file supplies partial hook members for LocalizedAppShell in the root namespace.
+
 using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Navigation;
+
+// ReSharper disable once CheckNamespace
+namespace Tonarink;
 
 sealed record ShellActivationState(
     ShareTargetPayload? ShareTargetPayload,
