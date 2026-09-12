@@ -70,6 +70,9 @@ jobs:
           test "$(curl -s -u user:ci-secret -o /dev/null -w '%{http_code}' http://127.0.0.1:5199/manifest.webmanifest)" = "200"
 
   hybrid-android:
+    # The MAUI/Hybrid app is still under development. Keep the CI recipe ready,
+    # but do not make Reactor app maintenance and releases depend on it yet.
+    if: ${{ false }}
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
