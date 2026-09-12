@@ -2,26 +2,44 @@
 @inherits StatefulComponentBase
 
 <PageTitle>@L("历史", "History") · Tonarink</PageTitle>
-<header class="page-header"><div><span class="eyebrow">@L("传输记录", "Transfer log")</span><h1>@L("历史", "History")</h1><p>@L("当前会话中的发送和接收活动。", "Send and receive activity from this session.")</p></div></header>
-<section class="panel-card full-panel">
-    @if (AppState.Transfers.Count == 0)
-    {
-        <div class="empty-card searching"><span>◷</span><p>@L("暂无传输记录", "No transfers yet")</p></div>
-    }
-    else
-    {
-        <div class="card-list">
-            @foreach (var transfer in AppState.Transfers)
-            {
-                <article class="history-card">
-                    <div class="device-icon">@(transfer.Direction == TransferDirection.Send ? "↑" : "↓")</div>
-                    <div class="history-content"><strong>@transfer.PeerAlias</strong><small>@transfer.Summary · @StatusText(transfer.Status)</small><progress value="@transfer.Progress" max="1"></progress></div>
-                    <time>@transfer.UpdatedAt.ToLocalTime().ToString("g")</time>
-                </article>
-            }
+
+<div class="page">
+    <header class="page-header">
+        <div>
+            <h1>@L("历史", "History")</h1>
+            <p>@L("当前会话中的发送和接收活动。", "Send and receive activity from this session.")</p>
         </div>
-    }
-</section>
+        <BbButton Variant="ButtonVariant.Outline" Href="/">@L("返回接收", "Back to receive")</BbButton>
+    </header>
+
+    <BbCard>
+        <BbCardContent>
+            @if (AppState.Transfers.Count == 0)
+            {
+                <BbEmpty Title="@L("暂无传输记录", "No transfers yet")" Description="@L("完成一次发送或接收后会显示在这里。", "Completed sends and receives will appear here.")">
+                    <Icon><LucideIcon Name="history" /></Icon>
+                </BbEmpty>
+            }
+            else
+            {
+                <div class="list-stack">
+                    @foreach (var transfer in AppState.Transfers)
+                    {
+                        <div class="row-item">
+                            <LucideIcon Name="@(transfer.Direction == TransferDirection.Send ? "arrow-up" : "arrow-down")" Class="h-4 w-4" />
+                            <div>
+                                <strong>@transfer.PeerAlias</strong>
+                                <small>@transfer.Summary · @StatusText(transfer.Status)</small>
+                                <BbProgress Value="@(transfer.Progress * 100)" />
+                            </div>
+                            <time class="text-xs text-muted-foreground">@transfer.UpdatedAt.ToLocalTime().ToString("g")</time>
+                        </div>
+                    }
+                </div>
+            }
+        </BbCardContent>
+    </BbCard>
+</div>
 
 @code {
     private string StatusText(TransferStatus status) => status switch

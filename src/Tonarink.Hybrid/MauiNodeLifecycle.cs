@@ -26,6 +26,7 @@ public sealed class MauiNodeLifecycle
         try
         {
             await _state.InitializeAsync(cancellationToken);
+            _state.Platform.ReleaseUnreferencedShareItems(_state.SendItems);
             await _networkAccess.EnsureAsync(cancellationToken);
 #if ANDROID
             await MauiNotificationService.EnsureBackgroundPermissionAsync(cancellationToken);

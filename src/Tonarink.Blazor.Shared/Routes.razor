@@ -5,11 +5,15 @@
     </Found>
     <NotFound>
         <LayoutView Layout="typeof(MainLayout)">
-            <section class="empty-state">
-                <span class="empty-icon">?</span>
-                <h1>@(System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "zh" ? "找不到页面" : "Page not found")</h1>
-                <a class="button primary" href="/">@(System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "zh" ? "返回接收页" : "Back to receive")</a>
-            </section>
+            <div class="page">
+                <BbEmpty Title="@(System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "zh" ? "找不到页面" : "Page not found")"
+                         Description="@(System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "zh" ? "这个地址没有对应的页面。" : "This address does not match a page.")">
+                    <Icon><LucideIcon Name="circle-question-mark" /></Icon>
+                    <ChildContent>
+                        <BbButton Href="/">@(System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "zh" ? "返回接收页" : "Back to receive")</BbButton>
+                    </ChildContent>
+                </BbEmpty>
+            </div>
         </LayoutView>
     </NotFound>
 </Router>

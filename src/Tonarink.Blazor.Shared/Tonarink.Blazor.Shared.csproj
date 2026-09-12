@@ -13,6 +13,8 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.Web" />
+    <PackageReference Include="BlazorBlueprint.Components" />
+    <PackageReference Include="BlazorBlueprint.Icons.Lucide" />
     <ProjectReference Include="..\Tonarink.Application\Tonarink.Application.csproj" />
   </ItemGroup>
 

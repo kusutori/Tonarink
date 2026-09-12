@@ -1,0 +1,7 @@
+[mcp_servers.blazorblueprint]
+command = "bunx"
+args = [
+    "@blazorblueprint/mcp@latest",
+]
+enabled = true
+startup_timeout_sec = 60

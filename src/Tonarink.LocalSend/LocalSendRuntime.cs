@@ -57,23 +57,33 @@ public sealed class LocalSendRuntime : ITonarinkRuntime
                 },
                 DataDirectory = Path.Combine(_platform.DataDirectory, "identity"),
                 DownloadDirectory = settings.DownloadDirectory,
+                Port = settings.Port,
+                EnableHttps = true,
+                ReceivePin = settings.ResolvedReceivePin,
             }, _loggerFactory);
             var lifetime = new CancellationTokenSource();
+            Task[] watchers = [];
             try
             {
                 await node.StartAsync(cancellationToken).ConfigureAwait(false);
+                ReplaceDevices(node.GetDevices());
+                var incomingReady = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+                watchers = [WatchDevicesAsync(node, lifetime.Token), WatchIncomingAsync(node, lifetime.Token, incomingReady)];
+                await incomingReady.Task.WaitAsync(cancellationToken).ConfigureAwait(false);
             }
             catch
             {
-                lifetime.Dispose();
+                await lifetime.CancelAsync().ConfigureAwait(false);
+                try { await Task.WhenAll(watchers).ConfigureAwait(false); }
+                catch (OperationCanceledException) { }
                 await node.DisposeAsync().ConfigureAwait(false);
+                lifetime.Dispose();
                 throw;
             }
 
             _node = node;
             _lifetime = lifetime;
-            ReplaceDevices(node.GetDevices());
-            _watchers = [WatchDevicesAsync(node, lifetime.Token), WatchIncomingAsync(node, lifetime.Token)];
+            _watchers = watchers;
         }
         finally
         {
@@ -131,7 +141,7 @@ public sealed class LocalSendRuntime : ITonarinkRuntime
         TransferResult result;
         try
         {
-            result = await RequiredNode().SendAsync(target, coreItems, new SendOptions { Pin = pin }, reporter, cancellationToken).ConfigureAwait(false);
+            result = await RequiredNode().SendAsync(target, coreItems, new SendOptions { Pin = pin, ComputeSha256 = true }, reporter, cancellationToken).ConfigureAwait(false);
         }
         catch (PinRequiredException exception)
         {
@@ -145,6 +155,47 @@ public sealed class LocalSendRuntime : ITonarinkRuntime
             $"{items.Count} 项", MapStatus(result.State), result.Items.Sum(static item => item.BytesTransferred), items.Sum(static item => item.Size), DateTimeOffset.UtcNow));
         if (result.IsSuccess)
             await _platform.NotifyAsync("发送完成", $"已成功发送给 {target.Alias}", cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task SendToAddressAsync(string address, IReadOnlyList<ShareItem> items, string? pin = null, IProgress<TransferActivity>? progress = null, CancellationToken cancellationToken = default)
+    {
+        if (!DeviceAddress.TryParse(address, out var ip, out var port))
+            throw new ArgumentException("目标地址无效，请使用 IP 或 IP:端口。", nameof(address));
+
+        Exception? lastError = null;
+        foreach (var protocol in new[] { LocalSendProtocol.Https, LocalSendProtocol.Http })
+        {
+            try
+            {
+                var endpoint = new DeviceEndpoint(ip, port, protocol);
+                var probe = await RequiredNode().ProbeDeviceAsync(endpoint, cancellationToken).ConfigureAwait(false);
+                var device = await RequiredNode().AddKnownDeviceAsync(endpoint, probe.Device.Fingerprint, cancellationToken).ConfigureAwait(false);
+                _devices[device.Fingerprint] = device;
+                ReplaceDevices(RequiredNode().GetDevices());
+                var nearby = new NearbyDevice(device.Fingerprint, device.Alias, device.DeviceModel ?? device.DeviceType.ToString(),
+                    device.DeviceType.ToString(), endpoint.Address.ToString(), endpoint.Port, device.LastSeen);
+                await SendAsync(nearby, items, pin, progress, cancellationToken).ConfigureAwait(false);
+                return;
+            }
+            catch (TransferPinRequiredException)
+            {
+                throw;
+            }
+            catch (TransferPinRateLimitedException)
+            {
+                throw;
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (Exception exception)
+            {
+                lastError = exception;
+            }
+        }
+
+        throw lastError ?? new InvalidOperationException("无法连接到该地址。");
     }
 
     public async Task AcceptAsync(IncomingOffer offer, IReadOnlySet<Guid> acceptedItems, CancellationToken cancellationToken = default)
@@ -211,22 +262,39 @@ public sealed class LocalSendRuntime : ITonarinkRuntime
         }
     }
 
-    private async Task WatchIncomingAsync(LocalSendNode node, CancellationToken cancellationToken)
+    private async Task WatchIncomingAsync(LocalSendNode node, CancellationToken cancellationToken, TaskCompletionSource ready)
     {
         try
         {
-            await foreach (var request in node.WatchIncomingTransfersAsync(cancellationToken).ConfigureAwait(false))
+            var enumerator = node.WatchIncomingTransfersAsync(cancellationToken).GetAsyncEnumerator(cancellationToken);
+            await using (enumerator.ConfigureAwait(false))
             {
-                _offers[request.RequestId.ToString("N")] = request;
-                PublishOffers();
-                await _platform.NotifyAsync("收到发送请求", $"{request.Sender.Alias} 想要发送 {request.Items.Count} 项内容", cancellationToken).ConfigureAwait(false);
-                if (_state.Settings.AutoAccept)
-                    _ = AutoAcceptAsync(ToOffer(request), cancellationToken);
+                var pending = enumerator.MoveNextAsync();
+                ready.TrySetResult();
+                while (await pending.ConfigureAwait(false))
+                {
+                    var request = enumerator.Current;
+                    _offers[request.RequestId.ToString("N")] = request;
+                    PublishOffers();
+                    await _platform.NotifyAsync("收到发送请求", $"{request.Sender.Alias} 想要发送 {request.Items.Count} 项内容", cancellationToken).ConfigureAwait(false);
+                    if (_state.Settings.AutoAccept)
+                        _ = AutoAcceptAsync(ToOffer(request), cancellationToken);
+                    pending = enumerator.MoveNextAsync();
+                }
             }
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
             // Incoming transfer watching ended with the runtime session.
+        }
+        catch (Exception exception)
+        {
+            ready.TrySetException(exception);
+            throw;
+        }
+        finally
+        {
+            ready.TrySetCanceled(cancellationToken);
         }
     }
 

@@ -5,80 +5,205 @@
 @inject IJSRuntime JS
 
 <PageTitle>@L("发送", "Send") · Tonarink</PageTitle>
-<header class="page-header">
-    <div><span class="eyebrow">@L("分享内容", "Share content")</span><h1>@L("发送", "Send")</h1><p>@L("选择文件或文本，然后选择附近设备。", "Choose files or text, then select a nearby device.")</p></div>
-    <button class="icon-button" title="@L("刷新设备", "Refresh devices")" @onclick="RefreshAsync" disabled="@_busy">↻</button>
-</header>
 
-<section class="action-grid">
-    @if (Platform.Capabilities.IsNative)
-    {
-        <button class="action-card" @onclick="PickFilesAsync" disabled="@(!Platform.Capabilities.CanPickFiles || _busy)"><span>▱</span><strong>@L("文件", "Files")</strong><small>@L("选择一个或多个文件", "Choose one or more files")</small></button>
-    }
-    else
-    {
-        <label class="action-card file-picker"><InputFile OnChange="BrowserFilesSelected" multiple /><span>▱</span><strong>@L("文件", "Files")</strong><small>@L("选择一个或多个文件", "Choose one or more files")</small></label>
-    }
-    <button class="action-card" @onclick="ToggleText"><span>✎</span><strong>@L("文本", "Text")</strong><small>@L("输入一段消息", "Enter a message")</small></button>
-    <button class="action-card" @onclick="PasteAsync" disabled="@(!Platform.Capabilities.CanUseClipboard || _busy)"><span>▣</span><strong>@L("剪贴板", "Clipboard")</strong><small>@L("读取当前文本", "Read clipboard text")</small></button>
-</section>
+<div class="page">
+    <header class="page-header">
+        <div>
+            <h1>@L("发送", "Send")</h1>
+            <p>@L("选择文件或文本，然后选择附近设备。", "Choose files or text, then select a nearby device.")</p>
+        </div>
+        <div class="flex items-center gap-2">
+            @if (_sendCancellation is not null)
+            {
+                <BbButton Variant="ButtonVariant.Destructive" Size="ButtonSize.Small" OnClick="CancelSend">@L("取消发送", "Cancel transfer")</BbButton>
+            }
+            <BbButton Variant="ButtonVariant.Outline" Size="ButtonSize.Icon" AriaLabel="@L("刷新设备", "Refresh devices")" OnClick="RefreshAsync" Disabled="@_busy">
+                <LucideIcon Name="refresh-cw" Class="h-4 w-4" />
+            </BbButton>
+            <BbButton Variant="ButtonVariant.Outline" Size="ButtonSize.Small" OnClick="() => _showAddress = true" Disabled="@(AppState.SendItems.Count == 0 || _busy)">
+                <LucideIcon Name="laptop" Class="h-4 w-4" />
+                @L("发送到地址", "Send to address")
+            </BbButton>
+        </div>
+    </header>
 
-@if (_showText)
-{
-    <section class="composer-card"><textarea @bind="_text" placeholder="@L("输入要发送的文本…", "Enter text to send…")"></textarea><button class="button primary" @onclick="AddText" disabled="@(string.IsNullOrWhiteSpace(_text))">@L("添加文本", "Add text")</button></section>
-}
-@if (_pinRequested)
-{
-    <section class="composer-card"><input type="password" inputmode="numeric" autocomplete="one-time-code" @bind="_pin" placeholder="@L("输入接收设备的 PIN", "Enter the receiving device PIN")" /><button class="button" @onclick="() => _pinRequested = false">@L("隐藏", "Hide")</button></section>
-}
-@if (_error is not null) { <div class="error-banner">@_error</div> }
-@if (_sendCancellation is not null) { <button class="button danger" @onclick="CancelSend">@L("取消发送", "Cancel transfer")</button> }
-
-<div class="split-grid">
-    <section class="panel-card">
-        <div class="section-title"><h2>@L("待发送", "Ready to send")</h2><button class="text-button" @onclick="AppState.ClearSendItems" disabled="@(AppState.SendItems.Count == 0)">@L("清空", "Clear")</button></div>
-        @if (AppState.SendItems.Count == 0)
+    <section class="action-grid">
+        @if (Platform.Capabilities.IsNative)
         {
-            <div class="empty-card compact"><span>＋</span><p>@L("尚未选择内容", "No content selected")</p></div>
+            <BbButton Variant="ButtonVariant.Outline" Class="h-24 flex-col gap-2" OnClick="PickFilesAsync" Disabled="@(!Platform.Capabilities.CanPickFiles || _busy)">
+                <LucideIcon Name="file" Class="h-5 w-5" />
+                <span>@L("文件", "Files")</span>
+            </BbButton>
+            <BbButton Variant="ButtonVariant.Outline" Class="h-24 flex-col gap-2" OnClick="PickFoldersAsync" Disabled="@(!Platform.Capabilities.CanPickFolders || _busy)">
+                <LucideIcon Name="folder" Class="h-5 w-5" />
+                <span>@L("文件夹", "Folder")</span>
+            </BbButton>
         }
         else
         {
-            <div class="card-list scroll-list">
-                @foreach (var item in AppState.SendItems)
-                {
-                    <article class="list-card"><div class="file-icon">@FileGlyph(item.ContentType)</div><div><strong>@item.Name</strong><small>@item.ContentType · @FormatBytes(item.Size)</small></div><button class="icon-button subtle" title="@L("移除", "Remove")" @onclick="() => AppState.RemoveSendItem(item.Id)">×</button></article>
-                }
-            </div>
+            <label class="file-picker">
+                <InputFile OnChange="BrowserFilesSelected" multiple />
+                <BbButton Variant="ButtonVariant.Outline" Class="h-24 flex-col gap-2 w-full">
+                    <LucideIcon Name="file" Class="h-5 w-5" />
+                    <span>@L("文件", "Files")</span>
+                </BbButton>
+            </label>
         }
+        <BbButton Variant="ButtonVariant.Outline" Class="h-24 flex-col gap-2" OnClick="() => _showText = true">
+            <LucideIcon Name="text" Class="h-5 w-5" />
+            <span>@L("文本", "Text")</span>
+        </BbButton>
+        <BbButton Variant="ButtonVariant.Outline" Class="h-24 flex-col gap-2" OnClick="PasteAsync" Disabled="@(!Platform.Capabilities.CanUseClipboard || _busy)">
+            <LucideIcon Name="clipboard" Class="h-5 w-5" />
+            <span>@L("剪贴板", "Clipboard")</span>
+        </BbButton>
     </section>
-    <section class="panel-card">
-        <div class="section-title"><h2>@L("附近设备", "Nearby devices")</h2><span>@AppState.Devices.Count</span></div>
-        @if (AppState.Devices.Count == 0)
-        {
-            <div class="empty-card searching"><span>⌕</span><p>@L("正在寻找附近设备", "Looking for nearby devices")</p><small>@L("确保设备位于同一局域网", "Make sure devices are on the same local network")</small></div>
-        }
-        else
-        {
-            <div class="card-list scroll-list">
-                @foreach (var device in AppState.Devices)
+
+    @if (_error is not null)
+    {
+        <BbAlert Variant="AlertVariant.Danger" AccentBorder Dismissible OnDismiss="() => _error = null">
+            <BbAlertTitle>@L("发送失败", "Send failed")</BbAlertTitle>
+            <BbAlertDescription>@_error</BbAlertDescription>
+        </BbAlert>
+    }
+
+    <div class="split-panes">
+        <BbCard>
+            <BbCardHeader>
+                <BbCardTitle>@L("待发送", "Ready to send")</BbCardTitle>
+                <BbCardDescription>
+                    @(AppState.SendItems.Count == 0
+                        ? L("尚未选择内容", "No content selected")
+                        : L($"{AppState.SendItems.Count} 项 · {FormatBytes(AppState.SendItems.Sum(static item => item.Size))}", $"{AppState.SendItems.Count} items · {FormatBytes(AppState.SendItems.Sum(static item => item.Size))}"))
+                </BbCardDescription>
+                <BbCardAction>
+                    <BbButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Small" OnClick="AppState.ClearSendItems" Disabled="@(AppState.SendItems.Count == 0)">@L("清空", "Clear")</BbButton>
+                </BbCardAction>
+            </BbCardHeader>
+            <BbCardContent>
+                @if (AppState.SendItems.Count == 0)
                 {
-                    <button class="list-card device-button" @onclick="() => SendAsync(device)" disabled="@(AppState.SendItems.Count == 0 || _busy)"><div class="device-icon">@DeviceInitial(device.Alias)</div><div><strong>@device.Alias</strong><small>@device.Model · @device.Address:@device.Port</small></div><span>→</span></button>
+                    <BbEmpty Title="@L("尚未选择内容", "No content selected")" Description="@L("使用上方四个操作添加文件、文件夹、文本或剪贴板。", "Use the four actions above to add files, folders, text, or clipboard content.")" Size="EmptySize.Small">
+                        <Icon><LucideIcon Name="plus" /></Icon>
+                    </BbEmpty>
                 }
-            </div>
-        }
-    </section>
+                else
+                {
+                    <div class="list-stack">
+                        @foreach (var item in AppState.SendItems)
+                        {
+                            <div class="row-item">
+                                <LucideIcon Name="@(item.TextContent is null ? "file" : "file-text")" Class="h-4 w-4" />
+                                <div>
+                                    <strong>@item.Name</strong>
+                                    <small>@item.ContentType · @FormatBytes(item.Size)</small>
+                                </div>
+                                <BbButton Variant="ButtonVariant.Ghost" Size="ButtonSize.IconSmall" AriaLabel="@L("移除", "Remove")" OnClick="() => AppState.RemoveSendItem(item.Id)">
+                                    <LucideIcon Name="x" Class="h-4 w-4" />
+                                </BbButton>
+                            </div>
+                        }
+                    </div>
+                }
+            </BbCardContent>
+        </BbCard>
+
+        <BbCard>
+            <BbCardHeader>
+                <BbCardTitle>@L("附近设备", "Nearby devices")</BbCardTitle>
+                <BbCardDescription>@L("点选设备即可发送当前队列。", "Tap a device to send the current queue.")</BbCardDescription>
+                <BbCardAction>
+                    <BbBadge Variant="BadgeVariant.Secondary">@AppState.Devices.Count</BbBadge>
+                </BbCardAction>
+            </BbCardHeader>
+            <BbCardContent>
+                @if (AppState.Devices.Count == 0)
+                {
+                    <BbEmpty Title="@L("正在寻找附近设备", "Looking for nearby devices")" Description="@L("确保设备位于同一局域网。", "Make sure devices are on the same local network.")" Size="EmptySize.Small">
+                        <Icon><LucideIcon Name="radar" /></Icon>
+                    </BbEmpty>
+                }
+                else
+                {
+                    <div class="list-stack">
+                        @foreach (var device in AppState.Devices)
+                        {
+                            <BbButton Variant="ButtonVariant.Outline" Class="row-item h-auto py-3" OnClick="() => SendAsync(device)" Disabled="@(AppState.SendItems.Count == 0 || _busy)">
+                                <BbAvatar Size="AvatarSize.Small"><BbAvatarFallback>@DeviceInitial(device.Alias)</BbAvatarFallback></BbAvatar>
+                                <div>
+                                    <strong>@device.Alias</strong>
+                                    <small>@device.Model · @device.Address:@device.Port</small>
+                                </div>
+                                <LucideIcon Name="arrow-right" Class="h-4 w-4" />
+                            </BbButton>
+                        }
+                    </div>
+                }
+            </BbCardContent>
+        </BbCard>
+    </div>
 </div>
+
+<BbDialog Open="_showText" OpenChanged="value => _showText = value">
+    <BbDialogContent>
+        <BbDialogHeader>
+            <BbDialogTitle>@L("添加文本", "Add text")</BbDialogTitle>
+            <BbDialogDescription>@L("输入要发送的消息。", "Enter a message to send.")</BbDialogDescription>
+        </BbDialogHeader>
+        <BbTextarea @bind-Value="_text" Placeholder="@L("输入要发送的文本…", "Enter text to send…")" Class="min-h-32" />
+        <BbDialogFooter>
+            <BbDialogClose>
+                <BbButton Variant="ButtonVariant.Outline">@L("取消", "Cancel")</BbButton>
+            </BbDialogClose>
+            <BbButton OnClick="AddText" Disabled="@(string.IsNullOrWhiteSpace(_text))">@L("添加到队列", "Add to queue")</BbButton>
+        </BbDialogFooter>
+    </BbDialogContent>
+</BbDialog>
+
+<BbDialog Open="_pinRequested" OpenChanged="value => _pinRequested = value">
+    <BbDialogContent>
+        <BbDialogHeader>
+            <BbDialogTitle>@L("需要 PIN", "PIN required")</BbDialogTitle>
+            <BbDialogDescription>@L("接收设备需要 PIN 才能接收。", "The receiving device requires a PIN.")</BbDialogDescription>
+        </BbDialogHeader>
+        <BbInput Type="InputType.Password" @bind-Value="_pin" Placeholder="@L("输入接收设备的 PIN", "Enter the receiving device PIN")" />
+        <BbDialogFooter>
+            <BbDialogClose>
+                <BbButton Variant="ButtonVariant.Outline">@L("关闭", "Close")</BbButton>
+            </BbDialogClose>
+        </BbDialogFooter>
+    </BbDialogContent>
+</BbDialog>
+
+<BbDialog Open="_showAddress" OpenChanged="value => _showAddress = value">
+    <BbDialogContent>
+        <BbDialogHeader>
+            <BbDialogTitle>@L("发送到已知地址", "Send to a known address")</BbDialogTitle>
+            <BbDialogDescription>@L("当设备未出现在附近列表时，使用 IP 或 IP:端口。", "Use IP or IP:port when the device is not in the nearby list.")</BbDialogDescription>
+        </BbDialogHeader>
+        <BbInput @bind-Value="_manualAddress" Placeholder="192.168.1.8:53317" />
+        <BbDialogFooter>
+            <BbDialogClose>
+                <BbButton Variant="ButtonVariant.Outline">@L("取消", "Cancel")</BbButton>
+            </BbDialogClose>
+            <BbButton OnClick="SendToManualAddressAsync" Disabled="@(AppState.SendItems.Count == 0 || _busy)">@L("发送", "Send")</BbButton>
+        </BbDialogFooter>
+    </BbDialogContent>
+</BbDialog>
 
 @code {
     private bool _busy;
     private bool _showText;
+    private bool _showAddress;
     private string _text = string.Empty;
     private string _pin = string.Empty;
+    private string _manualAddress = string.Empty;
     private string? _error;
     private bool _pinRequested;
     private CancellationTokenSource? _sendCancellation;
-    private void ToggleText() => _showText = !_showText;
+
     private async Task PickFilesAsync() => await RunAsync(async () => AppState.AddSendItems(await Platform.PickFilesAsync()));
+    private async Task PickFoldersAsync() => await RunAsync(async () => AppState.AddSendItems(await Platform.PickFoldersAsync()));
     private void BrowserFilesSelected(InputFileChangeEventArgs args)
     {
         var items = args.GetMultipleFiles(100).Select(static file => new ShareItem(
@@ -98,17 +223,32 @@
         var value = _text.Trim();
         if (value.Length == 0) return;
         AppState.AddSendItems([new ShareItem(Guid.NewGuid(), "message.txt", System.Text.Encoding.UTF8.GetByteCount(value), "text/plain", TextContent: value)]);
-        _text = string.Empty; _showText = false;
+        _text = string.Empty;
+        _showText = false;
     }
     private async Task RefreshAsync() => await RunAsync(() => Runtime.RefreshAsync());
-    private async Task SendAsync(NearbyDevice device)
+    private async Task SendAsync(NearbyDevice device) =>
+        await SendCoreAsync((pin, token) => Runtime.SendAsync(device, AppState.SendItems, pin, cancellationToken: token));
+
+    private async Task SendToManualAddressAsync()
+    {
+        if (!DeviceAddress.TryParse(_manualAddress, out _, out _))
+        {
+            _error = L("地址格式无效，请使用 IP 或 IP:端口。", "Invalid address. Use IP or IP:port.");
+            return;
+        }
+        _showAddress = false;
+        await SendCoreAsync((pin, token) => Runtime.SendToAddressAsync(_manualAddress, AppState.SendItems, pin, cancellationToken: token));
+    }
+
+    private async Task SendCoreAsync(Func<string?, CancellationToken, Task> send)
     {
         _sendCancellation = new CancellationTokenSource();
         await RunAsync(async () =>
         {
             try
             {
-                await Runtime.SendAsync(device, AppState.SendItems, string.IsNullOrWhiteSpace(_pin) ? null : _pin, cancellationToken: _sendCancellation.Token);
+                await send(string.IsNullOrWhiteSpace(_pin) ? null : _pin, _sendCancellation.Token);
             }
             catch (TransferPinRequiredException exception)
             {
@@ -132,5 +272,4 @@
         try { await action(); } catch (Exception exception) { _error = exception.Message; } finally { _busy = false; }
     }
     private static string DeviceInitial(string alias) => string.IsNullOrWhiteSpace(alias) ? "?" : alias[..1].ToUpperInvariant();
-    private static string FileGlyph(string contentType) => contentType.StartsWith("text/", StringComparison.OrdinalIgnoreCase) ? "T" : "▱";
 }

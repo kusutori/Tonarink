@@ -4,37 +4,142 @@
 @inject IJSRuntime JS
 
 <PageTitle>@L("设置", "Settings") · Tonarink</PageTitle>
-<header class="page-header"><div><span class="eyebrow">@L("偏好设置", "Preferences")</span><h1>@L("设置", "Settings")</h1><p>@L("在这台设备上保存 Tonarink 的偏好设置。", "Tonarink preferences saved on this device.")</p></div></header>
-@if (_error is not null) { <div class="error-banner">@_error</div> }
-<section class="settings-card">
-    <label><span><strong>@L("设备名称", "Device name")</strong><small>@L("附近设备会看到这个名称", "Visible to nearby devices")</small></span><input value="@AppState.Settings.Alias" @onchange="ChangeAlias" /></label>
-    <label><span><strong>@L("下载目录", "Download directory")</strong><small>@L("接收的文件保存到这里", "Received files are saved here")</small></span><input value="@AppState.Settings.DownloadDirectory" disabled /></label>
-    <label><span><strong>@L("主题", "Theme")</strong><small>@L("跟随系统或固定外观", "Follow the system or use a fixed appearance")</small></span><select value="@AppState.Settings.Theme" @onchange="ChangeTheme"><option value="System">@L("跟随系统", "System")</option><option value="Light">@L("浅色", "Light")</option><option value="Dark">@L("深色", "Dark")</option></select></label>
-    <label><span><strong>@L("语言", "Language")</strong><small>@L("共享界面的显示语言", "Language used by the shared interface")</small></span><select value="@AppState.Settings.Language" @onchange="ChangeLanguage"><option value="System">@L("跟随系统", "System")</option><option value="SimplifiedChinese">简体中文</option><option value="English">English</option></select></label>
-    @if (!AppState.Platform.Capabilities.IsNative)
+
+<div class="page">
+    <header class="page-header">
+        <div>
+            <h1>@L("设置", "Settings")</h1>
+            <p>@L("在这台设备上保存 Tonarink 的偏好设置。", "Tonarink preferences saved on this device.")</p>
+        </div>
+    </header>
+
+    @if (_error is not null)
     {
-        <label><span><strong>@L("浏览器通知", "Browser notifications")</strong><small>@L("在收到请求和完成传输时显示系统通知", "Show system notifications for requests and completed transfers")</small></span><button class="button" @onclick="EnableBrowserNotificationsAsync">@L("启用通知", "Enable notifications")</button></label>
+        <BbAlert Variant="AlertVariant.Danger" AccentBorder Dismissible OnDismiss="() => _error = null">
+            <BbAlertTitle>@L("无法保存", "Could not save")</BbAlertTitle>
+            <BbAlertDescription>@_error</BbAlertDescription>
+        </BbAlert>
     }
-</section>
-<section class="section-block">
-    <div class="section-title"><h2>@L("平台能力", "Platform capabilities")</h2></div>
-    <div class="capability-grid">
-        <div class="capability @(AppState.Platform.Capabilities.CanRunLocalSendNode ? "available" : "unavailable")"><span>@Mark(AppState.Platform.Capabilities.CanRunLocalSendNode)</span>@L("完整节点", "Full node")</div>
-        <div class="capability @(AppState.Platform.Capabilities.CanReceiveInBackground ? "available" : "unavailable")"><span>@Mark(AppState.Platform.Capabilities.CanReceiveInBackground)</span>@L("后台接收", "Background receive")</div>
-        <div class="capability @(AppState.Platform.Capabilities.CanPickFiles ? "available" : "unavailable")"><span>@Mark(AppState.Platform.Capabilities.CanPickFiles)</span>@L("文件选择", "File picker")</div>
-        <div class="capability @(AppState.Platform.Capabilities.CanUseSystemShare ? "available" : "unavailable")"><span>@Mark(AppState.Platform.Capabilities.CanUseSystemShare)</span>@L("系统分享", "System share")</div>
-    </div>
-</section>
+
+    <BbCard>
+        <BbCardHeader>
+            <BbCardTitle>@L("设备身份", "Device identity")</BbCardTitle>
+            <BbCardDescription>@L("附近设备看到的名称和保存位置。", "The name nearby devices see and where files are saved.")</BbCardDescription>
+        </BbCardHeader>
+        <BbCardContent>
+            <div class="settings-row">
+                <div>
+                    <strong>@L("设备名称", "Device name")</strong>
+                    <small>@L("附近设备会看到这个名称", "Visible to nearby devices")</small>
+                </div>
+                <BbInput Value="@AppState.Settings.Alias" ValueChanged="ChangeAlias" />
+            </div>
+            <div class="settings-row">
+                <div>
+                    <strong>@L("下载目录", "Download directory")</strong>
+                    <small>@L("接收的文件保存到这里", "Received files are saved here")</small>
+                </div>
+                <BbInput Value="@AppState.Settings.DownloadDirectory" Disabled="true" />
+            </div>
+        </BbCardContent>
+    </BbCard>
+
+    <BbCard>
+        <BbCardHeader>
+            <BbCardTitle>@L("外观", "Appearance")</BbCardTitle>
+            <BbCardDescription>@L("主题和界面语言。", "Theme and interface language.")</BbCardDescription>
+        </BbCardHeader>
+        <BbCardContent>
+            <div class="settings-row">
+                <div>
+                    <strong>@L("主题", "Theme")</strong>
+                    <small>@L("跟随系统或固定外观", "Follow the system or use a fixed appearance")</small>
+                </div>
+                <BbSelect TValue="string" Value="@AppState.Settings.Theme.ToString()" ValueChanged="ChangeTheme" Options="@_themeOptions" />
+            </div>
+            <div class="settings-row">
+                <div>
+                    <strong>@L("语言", "Language")</strong>
+                    <small>@L("共享界面的显示语言", "Language used by the shared interface")</small>
+                </div>
+                <BbSelect TValue="string" Value="@AppState.Settings.Language.ToString()" ValueChanged="ChangeLanguage" Options="@_languageOptions" />
+            </div>
+        </BbCardContent>
+    </BbCard>
+
+    <BbCard>
+        <BbCardHeader>
+            <BbCardTitle>@L("接收", "Receive")</BbCardTitle>
+            <BbCardDescription>@L("控制入站传输如何处理。", "Control how incoming transfers are handled.")</BbCardDescription>
+        </BbCardHeader>
+        <BbCardContent>
+            <div class="settings-row">
+                <div>
+                    <strong>@L("自动接收", "Auto accept")</strong>
+                    <small>@L("收到请求后直接保存到下载目录", "Save incoming requests directly to the download directory")</small>
+                </div>
+                <BbSwitch Checked="@AppState.Settings.AutoAccept" CheckedChanged="ChangeAutoAccept" AriaLabel="@L("自动接收", "Auto accept")" />
+            </div>
+            <div class="settings-row">
+                <div>
+                    <strong>@L("接收 PIN", "Receive PIN")</strong>
+                    <small>@L("留空则不要求 PIN；更改后附近设备需要新 PIN", "Leave empty to disable. Nearby senders must use the new PIN.")</small>
+                </div>
+                <BbInput Type="InputType.Password" Value="@AppState.Settings.ReceivePin" ValueChanged="ChangeReceivePin" Placeholder="@L("可选", "Optional")" />
+            </div>
+            @if (!AppState.Platform.Capabilities.IsNative)
+            {
+                <div class="settings-row">
+                    <div>
+                        <strong>@L("浏览器通知", "Browser notifications")</strong>
+                        <small>@L("在收到请求和完成传输时显示系统通知", "Show system notifications for requests and completed transfers")</small>
+                    </div>
+                    <BbButton Variant="ButtonVariant.Outline" OnClick="EnableBrowserNotificationsAsync">@L("启用通知", "Enable notifications")</BbButton>
+                </div>
+            }
+        </BbCardContent>
+    </BbCard>
+</div>
 
 @code {
     private string? _error;
+    private readonly List<SelectOption<string>> _themeOptions =
+    [
+        new("System", "System"),
+        new("Light", "Light"),
+        new("Dark", "Dark"),
+    ];
+    private readonly List<SelectOption<string>> _languageOptions =
+    [
+        new("System", "System"),
+        new("SimplifiedChinese", "简体中文"),
+        new("English", "English"),
+    ];
 
-    private async Task ChangeAlias(ChangeEventArgs args)
+    private async Task ChangeAlias(string? alias)
     {
-        var alias = args.Value?.ToString()?.Trim();
+        alias = alias?.Trim();
         if (string.IsNullOrWhiteSpace(alias) || string.Equals(alias, AppState.Settings.Alias, StringComparison.Ordinal))
             return;
         await AppState.UpdateSettingsAsync(settings => settings with { Alias = alias });
+        await RestartRuntimeIfRunningAsync();
+    }
+    private async Task ChangeReceivePin(string? pin)
+    {
+        var normalized = string.IsNullOrWhiteSpace(pin) ? null : pin.Trim();
+        if (string.Equals(normalized, AppState.Settings.ReceivePin, StringComparison.Ordinal))
+            return;
+        await AppState.UpdateSettingsAsync(settings => settings with { ReceivePin = normalized });
+        await RestartRuntimeIfRunningAsync();
+    }
+    private Task ChangeAutoAccept(bool enabled) =>
+        AppState.UpdateSettingsAsync(settings => settings with { AutoAccept = enabled });
+    private Task ChangeTheme(string? value) =>
+        AppState.UpdateSettingsAsync(settings => settings with { Theme = Enum.TryParse<TonarinkTheme>(value, out var parsed) ? parsed : TonarinkTheme.System });
+    private Task ChangeLanguage(string? value) =>
+        AppState.UpdateSettingsAsync(settings => settings with { Language = Enum.TryParse<TonarinkLanguage>(value, out var parsed) ? parsed : TonarinkLanguage.System });
+    private async Task RestartRuntimeIfRunningAsync()
+    {
         if (!Runtime.IsRunning)
             return;
         try
@@ -42,6 +147,7 @@
             await Runtime.StopAsync();
             await Runtime.StartAsync();
             AppState.SetRuntimeStatus(running: true);
+            _error = null;
         }
         catch (Exception exception)
         {
@@ -49,8 +155,6 @@
             AppState.SetRuntimeStatus(running: false, _error);
         }
     }
-    private Task ChangeTheme(ChangeEventArgs args) => AppState.UpdateSettingsAsync(settings => settings with { Theme = Enum.TryParse<TonarinkTheme>(args.Value?.ToString(), out var value) ? value : TonarinkTheme.System });
-    private Task ChangeLanguage(ChangeEventArgs args) => AppState.UpdateSettingsAsync(settings => settings with { Language = Enum.TryParse<TonarinkLanguage>(args.Value?.ToString(), out var value) ? value : TonarinkLanguage.System });
     private async Task EnableBrowserNotificationsAsync()
     {
         var permission = await JS.InvokeAsync<string>("tonarink.requestNotifications");
@@ -59,5 +163,4 @@
         else
             _error = null;
     }
-    private static string Mark(bool available) => available ? "✓" : "—";
 }

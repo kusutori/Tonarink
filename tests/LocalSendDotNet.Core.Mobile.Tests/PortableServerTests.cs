@@ -27,7 +27,9 @@ public sealed class PortableServerTests
             Assert.True(sent.IsSuccess, sent.Failure?.Message);
             var received = await receiveTask;
             Assert.True(received.IsSuccess, received.Failure?.Message);
-            Assert.Equal("portable hello", await File.ReadAllTextAsync(Path.Combine(downloads, "message.txt")));
+            var item = Assert.Single(received.Items);
+            Assert.Equal("message.txt", item.FileName);
+            Assert.Null(item.SavedPath);
         }
         finally
         {

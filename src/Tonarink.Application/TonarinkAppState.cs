@@ -84,9 +84,29 @@ public sealed class TonarinkAppState
         Mutate(() => _sendItems = [.. _sendItems, .. items]);
     }
 
-    public void RemoveSendItem(Guid id) => Mutate(() => _sendItems = _sendItems.Where(item => item.Id != id).ToArray());
+    public void RemoveSendItem(Guid id)
+    {
+        ShareItem? removed = null;
+        Mutate(() =>
+        {
+            removed = _sendItems.FirstOrDefault(item => item.Id == id);
+            _sendItems = _sendItems.Where(item => item.Id != id).ToArray();
+        });
+        if (removed is not null)
+            Platform.ReleaseShareItem(removed);
+    }
 
-    public void ClearSendItems() => Mutate(() => _sendItems = []);
+    public void ClearSendItems()
+    {
+        IReadOnlyList<ShareItem> previous = [];
+        Mutate(() =>
+        {
+            previous = _sendItems;
+            _sendItems = [];
+        });
+        foreach (var item in previous)
+            Platform.ReleaseShareItem(item);
+    }
 
     public void ReplaceIncomingOffers(IEnumerable<IncomingOffer> offers)
     {
@@ -133,5 +153,7 @@ public sealed class TonarinkAppState
     {
         Alias = string.IsNullOrWhiteSpace(settings.Alias) ? "Tonarink" : settings.Alias.Trim(),
         DownloadDirectory = string.IsNullOrWhiteSpace(settings.DownloadDirectory) ? Platform.DownloadDirectory : settings.DownloadDirectory,
+        ReceivePin = string.IsNullOrWhiteSpace(settings.ReceivePin) ? null : settings.ReceivePin.Trim(),
+        Port = settings.Port is >= 1 and <= ushort.MaxValue ? settings.Port : DeviceAddress.DefaultPort,
     };
 }

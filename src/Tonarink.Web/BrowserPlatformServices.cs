@@ -6,7 +6,7 @@ namespace Tonarink.Web;
 internal sealed class BrowserPlatformServices : IPlatformServices
 {
     public PlatformCapabilities Capabilities { get; } = new(
-        "Web Host", false, true, true, true, true, true,
+        "Web Host", false, true, true, true, false, true, true,
         ["浏览器页面控制 Web 服务器所在设备上的 LocalSend 节点，而不是浏览器沙箱本身。"]);
     public string DataDirectory => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Tonarink", "Web");
     public string DownloadDirectory => Path.Combine(DataDirectory, "downloads");
@@ -35,6 +35,16 @@ internal sealed class BrowserPlatformServices : IPlatformServices
 
     public Task<IReadOnlyList<ShareItem>> PickFilesAsync(CancellationToken cancellationToken = default) =>
         Task.FromException<IReadOnlyList<ShareItem>>(new PlatformNotSupportedException("Web 文件选择由浏览器 InputFile 组件提供。"));
+
+    public Task<IReadOnlyList<ShareItem>> PickFoldersAsync(CancellationToken cancellationToken = default) =>
+        Task.FromException<IReadOnlyList<ShareItem>>(new PlatformNotSupportedException("Web 文件夹选择由浏览器文件选择提供。"));
+
+    public Task<ShareItem> ImportSharedFileAsync(string fileName, Stream source, string contentType, CancellationToken cancellationToken = default) =>
+        Task.FromException<ShareItem>(new PlatformNotSupportedException("Web 宿主不导入系统分享文件。"));
+
+    public void ReleaseShareItem(ShareItem item) { }
+
+    public void ReleaseUnreferencedShareItems(IReadOnlyList<ShareItem> stillHeld) { }
 
     public ValueTask<Stream> OpenReadAsync(ShareItem item, CancellationToken cancellationToken = default) =>
         ValueTask.FromException<Stream>(new PlatformNotSupportedException("浏览器文件流必须在当前浏览器会话中读取。"));

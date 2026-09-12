@@ -41,7 +41,9 @@ public sealed record TonarinkSettings(
     string DownloadDirectory,
     TonarinkTheme Theme,
     TonarinkLanguage Language,
-    bool AutoAccept)
+    bool AutoAccept,
+    string? ReceivePin = null,
+    int Port = DeviceAddress.DefaultPort)
 {
     public static TonarinkSettings CreateDefault(string downloadDirectory, string? alias = null) => new(
         string.IsNullOrWhiteSpace(alias) ? (string.IsNullOrWhiteSpace(Environment.UserName) ? "Tonarink" : Environment.UserName) : alias.Trim(),
@@ -49,6 +51,8 @@ public sealed record TonarinkSettings(
         TonarinkTheme.System,
         TonarinkLanguage.System,
         AutoAccept: false);
+
+    public string? ResolvedReceivePin => string.IsNullOrWhiteSpace(ReceivePin) ? null : ReceivePin.Trim();
 }
 
 public sealed record PlatformCapabilities(
@@ -57,6 +61,7 @@ public sealed record PlatformCapabilities(
     bool CanRunLocalSendNode,
     bool CanReceiveInBackground,
     bool CanPickFiles,
+    bool CanPickFolders,
     bool CanUseClipboard,
     bool CanUseSystemShare,
     IReadOnlyList<string> Limitations)
@@ -67,6 +72,7 @@ public sealed record PlatformCapabilities(
         CanRunLocalSendNode: false,
         CanReceiveInBackground: false,
         CanPickFiles: true,
+        CanPickFolders: false,
         CanUseClipboard: true,
         CanUseSystemShare: true,
         ["浏览器沙箱不能监听 LocalSend 的 UDP 多播和入站 TCP 端口。", "Web 版将连接到一个正在运行的 Tonarink 节点，或使用浏览器分享模式。"]);

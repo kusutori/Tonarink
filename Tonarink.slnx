@@ -16,6 +16,8 @@
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Tonarink.Application.Tests/Tonarink.Application.Tests.csproj" />
+    <Project Path="tests/Tonarink.Blazor.Shared.Tests/Tonarink.Blazor.Shared.Tests.csproj" />
+    <Project Path="tests/Tonarink.LocalSend.Tests/Tonarink.LocalSend.Tests.csproj" />
     <Project Path="tests/LocalSendDotNet.Core.Mobile.Tests/LocalSendDotNet.Core.Mobile.Tests.csproj" />
     <Project Path="tests/LocalSendDotNet.Core.Tests/LocalSendDotNet.Core.Tests.csproj" />
     <Project Path="tests/LocalSendDotNet.InteropTests/LocalSendDotNet.InteropTests.csproj" />

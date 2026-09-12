@@ -1,3 +1,4 @@
+using BlazorBlueprint.Components;
 using Microsoft.Extensions.Logging;
 using Tonarink.Application;
 using Tonarink.LocalSend;
@@ -14,6 +15,14 @@ public static class MauiProgram
             .ConfigureFonts(fonts => fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular"));
 
         builder.Services.AddMauiBlazorWebView();
+        builder.Services.AddBlazorBlueprintComponents(configureTheme: options =>
+        {
+            options.DefaultBaseColor = BaseColor.Zinc;
+            options.DefaultPrimaryColor = PrimaryColor.Teal;
+            options.DetectSystemPreference = true;
+            options.DefaultRadius = 0.5;
+            options.PersistToLocalStorage = true;
+        });
         builder.Services.AddSingleton<IPlatformServices, MauiPlatformServices>();
         builder.Services.AddSingleton<TonarinkAppState>();
         builder.Services.AddSingleton<ITonarinkRuntime, LocalSendRuntime>();

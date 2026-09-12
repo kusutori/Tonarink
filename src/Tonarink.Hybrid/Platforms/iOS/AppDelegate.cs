@@ -35,15 +35,23 @@ public class AppDelegate : MauiUIApplicationDelegate
             var payload = await JsonSerializer.DeserializeAsync(stream, TonarinkJsonContext.Default.IosSharePayload);
             if (payload is null)
                 return;
-            var items = payload.Files.Select(file => new ShareItem(Guid.NewGuid(), file.Name, file.Size, file.ContentType, file.Path,
-                OpenRead: _ => ValueTask.FromResult<Stream>(File.OpenRead(file.Path)))).ToList();
+            var services = IPlatformApplication.Current?.Services;
+            var state = services?.GetService<TonarinkAppState>();
+            var platform = services?.GetService<IPlatformServices>();
+            if (state is null || platform is null)
+                return;
+            var items = new List<ShareItem>();
+            foreach (var file in payload.Files)
+            {
+                await using var fileStream = File.OpenRead(file.Path);
+                items.Add(await platform.ImportSharedFileAsync(file.Name, fileStream, file.ContentType));
+            }
             if (payload.Text is { Length: > 0 } text)
                 items.Add(new ShareItem(Guid.NewGuid(), "message.txt", Encoding.UTF8.GetByteCount(text), "text/plain", TextContent: text));
             if (items.Count == 0)
                 return;
-            var state = IPlatformApplication.Current?.Services.GetService<TonarinkAppState>();
-            state?.AddSendItems(items);
-            state?.RequestNavigation("/send");
+            state.AddSendItems(items);
+            state.RequestNavigation("/send");
         }
         catch (Exception exception)
         {

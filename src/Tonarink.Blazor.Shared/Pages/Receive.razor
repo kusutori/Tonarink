@@ -3,59 +3,128 @@
 
 <PageTitle>@L("接收", "Receive") · Tonarink</PageTitle>
 
-<header class="page-header">
-    <div><span class="eyebrow">@L("本机设备", "This device")</span><h1>@AppState.Settings.Alias</h1><p>@L("安全、快速的局域网传输", "Fast, secure local network transfers")</p></div>
-    <span class="status-pill @(AppState.RuntimeRunning ? "online" : "limited")">
-        @(AppState.RuntimeRunning ? L("可以接收", "Ready to receive") : L("尚未连接", "Not connected"))
-    </span>
-</header>
-
-@if (!AppState.Platform.Capabilities.CanRunLocalSendNode)
-{
-    <section class="notice-card"><strong>@L("浏览器能力受限", "Browser limitations")</strong><p>@L("浏览器页面控制服务器上运行的 Tonarink 节点。", "This browser controls the Tonarink node running on the server.")</p></section>
-}
-else if (AppState.RuntimeError is { } runtimeError)
-{
-    <section class="notice-card"><strong>@L("节点启动失败", "Node failed to start")</strong><p>@runtimeError</p></section>
-}
-
-<section class="hero-card">
-    <div class="pulse-logo"><span>T</span></div>
-    <h2>@L("等待附近设备", "Waiting for nearby devices")</h2>
-    <p>@L($"其他 LocalSend 兼容设备可以发现“{AppState.Settings.Alias}”并向这里发送内容。", $"Other LocalSend-compatible devices can discover “{AppState.Settings.Alias}” and send content here.")</p>
-    <label class="toggle-row">
-        <input type="checkbox" checked="@AppState.Settings.AutoAccept" @onchange="ToggleAutoAccept" />
-        <span><strong>@L("自动接收", "Auto accept")</strong><small>@L("收到请求后直接保存到下载目录", "Save incoming requests directly to the download directory")</small></span>
-    </label>
-</section>
-
-<section class="section-block">
-    <div class="section-title"><h2>@L("接收请求", "Incoming requests")</h2><span>@AppState.IncomingOffers.Count</span></div>
-    @if (AppState.IncomingOffers.Count == 0)
-    {
-        <div class="empty-card"><span>↓</span><p>@L("暂无待处理请求", "No pending requests")</p></div>
-    }
-    else
-    {
-        <div class="card-list">
-            @foreach (var offer in AppState.IncomingOffers)
-            {
-                <article class="list-card">
-                    <div class="device-icon">@DeviceInitial(offer.SenderAlias)</div>
-                    <div><strong>@offer.SenderAlias</strong><small>@offer.SenderModel · @offer.Items.Count @L("项", "items")</small></div>
-                    <a class="button" href="@($"/receive/{offer.Id}")">@L("查看", "View")</a>
-                </article>
-            }
+<div class="page">
+    <header class="page-header">
+        <div>
+            <h1>@AppState.Settings.Alias</h1>
+            <p>@L("其他 LocalSend 设备可以发现这台设备并向这里发送内容。", "Other LocalSend devices can discover this device and send content here.")</p>
         </div>
+        <BbBadge Variant="@(AppState.RuntimeRunning ? BadgeVariant.Default : BadgeVariant.Secondary)">
+            @(AppState.RuntimeRunning ? L("可以接收", "Ready to receive") : L("尚未连接", "Not connected"))
+        </BbBadge>
+    </header>
+
+    @if (!AppState.Platform.Capabilities.CanRunLocalSendNode)
+    {
+        <BbAlert Variant="AlertVariant.Warning" AccentBorder>
+            <Icon><LucideIcon Name="info" Class="h-4 w-4" /></Icon>
+            <ChildContent>
+                <BbAlertTitle>@L("浏览器能力受限", "Browser limitations")</BbAlertTitle>
+                <BbAlertDescription>@L("浏览器页面控制服务器上运行的 Tonarink 节点。", "This browser controls the Tonarink node running on the server.")</BbAlertDescription>
+            </ChildContent>
+        </BbAlert>
     }
-</section>
+    else if (AppState.RuntimeError is { } runtimeError)
+    {
+        <BbAlert Variant="AlertVariant.Danger" AccentBorder>
+            <Icon><LucideIcon Name="circle-alert" Class="h-4 w-4" /></Icon>
+            <ChildContent>
+                <BbAlertTitle>@L("节点启动失败", "Node failed to start")</BbAlertTitle>
+                <BbAlertDescription>@runtimeError</BbAlertDescription>
+            </ChildContent>
+        </BbAlert>
+    }
+
+    <BbCard>
+        <BbCardHeader>
+            <BbCardTitle>@L("等待附近设备", "Waiting for nearby devices")</BbCardTitle>
+            <BbCardDescription>@L($"“{AppState.Settings.Alias}”已在局域网中广播。", $"“{AppState.Settings.Alias}” is advertised on the local network.")</BbCardDescription>
+        </BbCardHeader>
+        <BbCardContent>
+            <div class="settings-row" style="border:0;padding:0">
+                <div>
+                    <strong>@L("自动接收", "Auto accept")</strong>
+                    <small>@L("收到请求后直接保存到下载目录", "Save incoming requests directly to the download directory")</small>
+                </div>
+                <BbSwitch Checked="@AppState.Settings.AutoAccept" CheckedChanged="ToggleAutoAccept" AriaLabel="@L("自动接收", "Auto accept")" />
+            </div>
+        </BbCardContent>
+    </BbCard>
+
+    <BbCard>
+        <BbCardHeader>
+            <BbCardTitle>@L("接收请求", "Incoming requests")</BbCardTitle>
+            <BbCardDescription>@L("查看并选择要保存的内容。", "Review and choose what to save.")</BbCardDescription>
+            <BbCardAction>
+                <BbBadge Variant="BadgeVariant.Secondary">@AppState.IncomingOffers.Count</BbBadge>
+            </BbCardAction>
+        </BbCardHeader>
+        <BbCardContent>
+            @if (AppState.IncomingOffers.Count == 0)
+            {
+                <BbEmpty Title="@L("暂无待处理请求", "No pending requests")"
+                         Description="@L("有人向你发送内容时会显示在这里。", "Incoming transfers will appear here.")"
+                         Size="EmptySize.Small">
+                    <Icon><LucideIcon Name="inbox" /></Icon>
+                </BbEmpty>
+            }
+            else
+            {
+                <div class="list-stack">
+                    @foreach (var offer in AppState.IncomingOffers)
+                    {
+                        <BbButton Variant="ButtonVariant.Outline" Class="row-item h-auto py-3" Href="@($"/receive/{offer.Id}")">
+                            <BbAvatar Size="AvatarSize.Small"><BbAvatarFallback>@DeviceInitial(offer.SenderAlias)</BbAvatarFallback></BbAvatar>
+                            <div>
+                                <strong>@offer.SenderAlias</strong>
+                                <small>@offer.SenderModel · @offer.Items.Count @L("项", "items")</small>
+                            </div>
+                            <LucideIcon Name="chevron-right" Class="h-4 w-4" />
+                        </BbButton>
+                    }
+                </div>
+            }
+        </BbCardContent>
+    </BbCard>
+
+    <BbCard>
+        <BbCardHeader>
+            <BbCardTitle>@L("最近活动", "Recent activity")</BbCardTitle>
+            <BbCardDescription>@L("当前会话中的发送和接收记录。", "Send and receive activity from this session.")</BbCardDescription>
+            <BbCardAction>
+                <BbButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Small" Href="/history">@L("查看全部", "View all")</BbButton>
+            </BbCardAction>
+        </BbCardHeader>
+        <BbCardContent>
+            @if (AppState.Transfers.Count == 0)
+            {
+                <BbEmpty Title="@L("暂无传输记录", "No transfers yet")" Size="EmptySize.Small">
+                    <Icon><LucideIcon Name="history" /></Icon>
+                </BbEmpty>
+            }
+            else
+            {
+                <div class="list-stack">
+                    @foreach (var transfer in AppState.Transfers.Take(5))
+                    {
+                        <div class="row-item">
+                            <LucideIcon Name="@(transfer.Direction == TransferDirection.Send ? "arrow-up" : "arrow-down")" Class="h-4 w-4" />
+                            <div>
+                                <strong>@transfer.PeerAlias</strong>
+                                <small>@transfer.Summary</small>
+                            </div>
+                            <BbBadge Variant="BadgeVariant.Outline">@transfer.Status</BbBadge>
+                        </div>
+                    }
+                </div>
+            }
+        </BbCardContent>
+    </BbCard>
+</div>
 
 @code {
-    private Task ToggleAutoAccept(ChangeEventArgs args)
-    {
-        var enabled = args.Value is true || string.Equals(args.Value?.ToString(), "true", StringComparison.OrdinalIgnoreCase);
-        return AppState.UpdateSettingsAsync(settings => settings with { AutoAccept = enabled });
-    }
+    private Task ToggleAutoAccept(bool enabled) =>
+        AppState.UpdateSettingsAsync(settings => settings with { AutoAccept = enabled });
 
     private static string DeviceInitial(string alias) => string.IsNullOrWhiteSpace(alias) ? "?" : alias[..1].ToUpperInvariant();
 }

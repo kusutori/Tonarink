@@ -26,6 +26,18 @@ public class MainActivity : MauiAppCompatActivity
         HandleShareIntent(intent);
     }
 
+#pragma warning disable CA1422, CS0618
+    protected override void OnActivityResult(int requestCode, Result resultCode, Intent? data)
+    {
+        base.OnActivityResult(requestCode, resultCode, data);
+        if (requestCode != MauiFolderPicker.RequestCode)
+            return;
+        var pending = MauiFolderPicker.Pending;
+        MauiFolderPicker.Pending = null;
+        pending?.TrySetResult(resultCode == Result.Ok ? data?.Data : null);
+    }
+#pragma warning restore CA1422, CS0618
+
     private void HandleShareIntent(Intent? intent)
     {
         if (intent?.Action is not (Intent.ActionSend or Intent.ActionSendMultiple))
@@ -37,8 +49,10 @@ public class MainActivity : MauiAppCompatActivity
     {
         try
         {
-            var state = IPlatformApplication.Current?.Services.GetService<TonarinkAppState>();
-            if (state is null)
+            var services = IPlatformApplication.Current?.Services;
+            var state = services?.GetService<TonarinkAppState>();
+            var platform = services?.GetService<IPlatformServices>();
+            if (state is null || platform is null)
                 return;
             var items = new List<ShareItem>();
             if (intent.GetStringExtra(Intent.ExtraText) is { Length: > 0 } text)
@@ -46,7 +60,7 @@ public class MainActivity : MauiAppCompatActivity
 
             foreach (var uri in GetSharedUris(intent))
             {
-                var item = await CacheSharedFileAsync(uri);
+                var item = await CacheSharedFileAsync(platform, uri);
                 if (item is not null)
                     items.Add(item);
             }
@@ -87,7 +101,7 @@ public class MainActivity : MauiAppCompatActivity
     private static bool TryRemember(Android.Net.Uri uri, HashSet<string> seen) =>
         uri.ToString() is { } value && seen.Add(value);
 
-    private async Task<ShareItem?> CacheSharedFileAsync(Android.Net.Uri uri)
+    private async Task<ShareItem?> CacheSharedFileAsync(IPlatformServices platform, Android.Net.Uri uri)
     {
         var resolver = ContentResolver;
         var fileName = uri.LastPathSegment ?? "shared-file";
@@ -97,19 +111,10 @@ public class MainActivity : MauiAppCompatActivity
         fileName = Path.GetFileName(fileName);
         if (string.IsNullOrWhiteSpace(fileName))
             fileName = "shared-file";
-        var directory = Path.Combine(FileSystem.CacheDirectory, "shared");
-        Directory.CreateDirectory(directory);
-        var path = Path.Combine(directory, $"{Guid.NewGuid():N}-{fileName}");
-        await using (var source = resolver?.OpenInputStream(uri))
-        {
-            if (source is null)
-                return null;
-            await using var target = File.Create(path);
-            await source.CopyToAsync(target);
-        }
-        var size = new FileInfo(path).Length;
+        await using var source = resolver?.OpenInputStream(uri);
+        if (source is null)
+            return null;
         var contentType = resolver?.GetType(uri) ?? "application/octet-stream";
-        return new ShareItem(Guid.NewGuid(), fileName, size, contentType, path,
-            OpenRead: _ => ValueTask.FromResult<Stream>(File.OpenRead(path)));
+        return await platform.ImportSharedFileAsync(fileName, source, contentType);
     }
 }

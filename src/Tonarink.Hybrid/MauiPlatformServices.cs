@@ -7,6 +7,7 @@ namespace Tonarink.Hybrid;
 internal sealed class MauiPlatformServices : IPlatformServices
 {
     private readonly ConcurrentDictionary<Guid, FileResult> _files = new();
+    private readonly ImportedShareStore _imports = new(Path.Combine(FileSystem.Current.CacheDirectory, "shared"));
 
     public PlatformCapabilities Capabilities { get; } = CreateCapabilities();
 
@@ -58,8 +59,27 @@ internal sealed class MauiPlatformServices : IPlatformServices
         return items;
     }
 
+    public Task<IReadOnlyList<ShareItem>> PickFoldersAsync(CancellationToken cancellationToken = default) =>
+        MauiFolderPicker.PickAsync(_imports, cancellationToken);
+
+    public Task<ShareItem> ImportSharedFileAsync(string fileName, Stream source, string contentType, CancellationToken cancellationToken = default) =>
+        _imports.ImportAsync(fileName, source, contentType, cancellationToken);
+
+    public void ReleaseShareItem(ShareItem item)
+    {
+        _files.TryRemove(item.Id, out _);
+        _imports.Release(item);
+    }
+
+    public void ReleaseUnreferencedShareItems(IReadOnlyList<ShareItem> stillHeld) =>
+        _imports.CleanupUnreferenced(stillHeld);
+
     public async ValueTask<Stream> OpenReadAsync(ShareItem item, CancellationToken cancellationToken = default)
     {
+        if (item.OpenRead is not null)
+            return await item.OpenRead(cancellationToken).ConfigureAwait(false);
+        if (item.NativePath is { Length: > 0 } path && File.Exists(path))
+            return File.OpenRead(path);
         if (!_files.TryGetValue(item.Id, out var file))
             throw new FileNotFoundException("所选文件已不在当前会话中。", item.Name);
         return await file.OpenReadAsync().WaitAsync(cancellationToken);
@@ -122,16 +142,23 @@ internal sealed class MauiPlatformServices : IPlatformServices
     private static PlatformCapabilities CreateCapabilities()
     {
         var android = OperatingSystem.IsAndroid();
+        var ios = OperatingSystem.IsIOS();
+        var mac = OperatingSystem.IsMacCatalyst();
+        var windows = OperatingSystem.IsWindows();
         var limitations = new List<string>();
-        if (OperatingSystem.IsIOS())
+        if (ios)
             limitations.Add("iOS suspends arbitrary listening sockets after the app enters the background.");
-        return new(DeviceInfo.Current.Platform.ToString(), true, true, android || OperatingSystem.IsMacCatalyst(), true, true,
-            android || OperatingSystem.IsIOS(), limitations);
+        if (windows)
+            limitations.Add("Windows Hybrid is a preview host; the production Windows client remains Tonarink.App.");
+        return new(DeviceInfo.Current.Platform.ToString(), true, true, android || mac || windows, true,
+            android || ios || mac || windows, true, android || ios, limitations);
     }
 
     private static string GetDownloadDirectory()
     {
-#if IOS || MACCATALYST
+#if WINDOWS
+        return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads", "Tonarink");
+#elif IOS || MACCATALYST
         return Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
 #else
         return Path.Combine(FileSystem.Current.AppDataDirectory, "Downloads");

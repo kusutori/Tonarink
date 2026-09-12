@@ -20,6 +20,14 @@ public interface IPlatformServices
 
     Task<IReadOnlyList<ShareItem>> PickFilesAsync(CancellationToken cancellationToken = default);
 
+    Task<IReadOnlyList<ShareItem>> PickFoldersAsync(CancellationToken cancellationToken = default);
+
+    Task<ShareItem> ImportSharedFileAsync(string fileName, Stream source, string contentType, CancellationToken cancellationToken = default);
+
+    void ReleaseShareItem(ShareItem item);
+
+    void ReleaseUnreferencedShareItems(IReadOnlyList<ShareItem> stillHeld);
+
     ValueTask<Stream> OpenReadAsync(ShareItem item, CancellationToken cancellationToken = default);
 
     Task<string?> ReadClipboardTextAsync(CancellationToken cancellationToken = default);
@@ -43,6 +51,8 @@ public interface ITonarinkRuntime : IAsyncDisposable
 
     Task SendAsync(NearbyDevice device, IReadOnlyList<ShareItem> items, string? pin = null, IProgress<TransferActivity>? progress = null, CancellationToken cancellationToken = default);
 
+    Task SendToAddressAsync(string address, IReadOnlyList<ShareItem> items, string? pin = null, IProgress<TransferActivity>? progress = null, CancellationToken cancellationToken = default);
+
     Task AcceptAsync(IncomingOffer offer, IReadOnlySet<Guid> acceptedItems, CancellationToken cancellationToken = default);
 
     Task DeclineAsync(IncomingOffer offer, CancellationToken cancellationToken = default);
@@ -63,6 +73,8 @@ public sealed class CapabilityOnlyRuntime : ITonarinkRuntime
     public Task RefreshAsync(CancellationToken cancellationToken = default) => Unsupported();
 
     public Task SendAsync(NearbyDevice device, IReadOnlyList<ShareItem> items, string? pin = null, IProgress<TransferActivity>? progress = null, CancellationToken cancellationToken = default) => Unsupported();
+
+    public Task SendToAddressAsync(string address, IReadOnlyList<ShareItem> items, string? pin = null, IProgress<TransferActivity>? progress = null, CancellationToken cancellationToken = default) => Unsupported();
 
     public Task AcceptAsync(IncomingOffer offer, IReadOnlySet<Guid> acceptedItems, CancellationToken cancellationToken = default) => Unsupported();
 

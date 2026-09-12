@@ -25,5 +25,7 @@
     <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="10.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.0" />
     <PackageVersion Include="Microsoft.Maui.Controls" Version="10.0.20" />
+    <PackageVersion Include="BlazorBlueprint.Components" Version="3.16.0" />
+    <PackageVersion Include="BlazorBlueprint.Icons.Lucide" Version="2.0.2" />
   </ItemGroup>
 </Project>
