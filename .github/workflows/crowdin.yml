@@ -35,9 +35,9 @@ jobs:
         uses: crowdin/github-action@v3
         with:
           upload_sources: true
-          # Bootstrap zh-CN when this workflow is first added. Later runs treat
-          # Crowdin as the translation source unless a manual re-import is requested.
-          upload_translations: ${{ (github.event_name == 'push' && contains(github.event.head_commit.added, '.github/workflows/crowdin.yml')) || (github.event_name == 'workflow_dispatch' && inputs.import_existing_chinese) }}
+          # Crowdin is the translation source of truth. Use the manual input only
+          # when the existing zh-CN resources intentionally need to be re-imported.
+          upload_translations: ${{ github.event_name == 'workflow_dispatch' && inputs.import_existing_chinese }}
           upload_language: zh-CN
           download_translations: true
           download_language: zh-CN
