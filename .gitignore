@@ -11,3 +11,5 @@ coverage/
 *.pfx
 identity-certificate.pem
 identity-private-key.pem
+
+.env
