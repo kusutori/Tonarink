@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <defs>
+    <linearGradient id="plate" x1="0.18" y1="0" x2="0.82" y2="1">
+      <stop offset="0%" stop-color="#14C4C2"/>
+      <stop offset="48%" stop-color="#009BA3"/>
+      <stop offset="100%" stop-color="#0B6570"/>
+    </linearGradient>
+    <radialGradient id="spot" cx="28%" cy="18%" r="70%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity=".16"/>
+      <stop offset="40%" stop-color="#FFFFFF" stop-opacity=".04"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="rim" x1="0.5" y1="0" x2="0.5" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity=".36"/>
+      <stop offset="52%" stop-color="#FFFFFF" stop-opacity=".10"/>
+      <stop offset="100%" stop-color="#002E34" stop-opacity=".20"/>
+    </linearGradient>
+    <linearGradient id="glyph" x1="0.5" y1="0" x2="0.5" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#E7FFFC"/>
+    </linearGradient>
+    <filter id="lift" x="-25%" y="-25%" width="150%" height="150%">
+      <feDropShadow dx="0" dy="3" stdDeviation="2.4" flood-color="#014247" flood-opacity=".28"/>
+    </filter>
+    <clipPath id="clip"><rect width="256" height="256" rx="56"/></clipPath>
+  </defs>
+  <g clip-path="url(#clip)">
+    <rect width="256" height="256" rx="56" fill="url(#plate)"/>
+    <rect width="256" height="256" fill="url(#spot)"/>
+  </g>
+  <rect x="1.25" y="1.25" width="253.5" height="253.5" rx="54.75" fill="none" stroke="url(#rim)" stroke-width="2.5"/>
+  <g fill="none" stroke="url(#glyph)" stroke-width="18" stroke-linecap="round" stroke-linejoin="round" filter="url(#lift)">
+    <path d="M204 128a76 76 0 0 1-40.109 66.991"/>
+    <path d="M143.276 202.449a76 76 0 0 1-73.686-25.825"/>
+    <path d="M58.141 157.928a76 76 0 0 1 10.487-77.373"/>
+    <path d="M84.641 65.582a76 76 0 0 1 77.902-5.278"/>
+    <path d="M180.429 72.98A76 76 0 0 1 204 128"/>
+    <path d="M79 128h98m-27-29 29 29-29 29"/>
+  </g>
+</svg>
