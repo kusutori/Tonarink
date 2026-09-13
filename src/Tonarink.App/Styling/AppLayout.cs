@@ -11,7 +11,7 @@ static class AppLayout
 
     public const double WindowWidth = 1120;
     public const double WindowHeight = 760;
-    public const double WindowMinWidth = 360;
+    public const double WindowMinWidth = 580;
     public const double WindowMinHeight = 520;
 
     public const double PagePadding = 36;
