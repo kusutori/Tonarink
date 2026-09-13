@@ -1,83 +1,90 @@
 import { defineConfig } from 'vitepress'
+import enUS from '../locales/en-US.json'
+import zhCN from '../locales/zh-CN.json'
 
 const repository = 'https://github.com/kusutori/Tonarink'
 const base = process.env.VITEPRESS_BASE ?? '/Tonarink/'
 
 export default defineConfig({
   title: 'Tonarink',
-  description: 'Fast, private local sharing for Windows',
+  description: enUS.description,
   lang: 'zh-CN',
   base,
   cleanUrls: true,
+  srcDir: './content',
   srcExclude: ['README.md'],
+  rewrites: {
+    'zh-CN/:path*': ':path*',
+    'en-US/:path*': 'en/:path*'
+  },
   head: [
     ['link', { rel: 'icon', type: 'image/svg+xml', href: `${base}logo.svg` }],
     ['meta', { name: 'theme-color', content: '#009ba3' }],
     ['meta', { property: 'og:type', content: 'website' }],
     ['meta', { property: 'og:title', content: 'Tonarink' }],
-    ['meta', { property: 'og:description', content: '让附近的设备，自然连起来。' }]
+    ['meta', { property: 'og:description', content: zhCN.openGraphDescription }]
   ],
   locales: {
     root: {
-      label: '简体中文',
+      label: zhCN.languageLabel,
       lang: 'zh-CN',
       title: 'Tonarink',
-      description: '安全、快速的局域网传输工具',
+      description: zhCN.description,
       themeConfig: {
         nav: [
-          { text: '首页', link: '/' },
-          { text: '功能展示', link: '/showcase' },
-          { text: '使用指南', link: '/guide/getting-started' },
-          { text: '下载', link: `${repository}/releases/latest` }
+          { text: zhCN.nav.home, link: '/' },
+          { text: zhCN.nav.showcase, link: '/showcase' },
+          { text: zhCN.nav.guide, link: '/guide/getting-started' },
+          { text: zhCN.nav.download, link: `${repository}/releases/latest` }
         ],
         sidebar: {
           '/guide/': [
             {
-              text: '使用指南',
+              text: zhCN.sidebar.guide,
               items: [
-                { text: '开始使用', link: '/guide/getting-started' },
-                { text: '选择下载版本', link: '/guide/downloads' }
+                { text: zhCN.sidebar.gettingStarted, link: '/guide/getting-started' },
+                { text: zhCN.sidebar.downloads, link: '/guide/downloads' }
               ]
             }
           ]
         },
-        outline: { label: '本页内容' },
-        docFooter: { prev: '上一页', next: '下一页' },
+        outline: { label: zhCN.outline },
+        docFooter: { prev: zhCN.previousPage, next: zhCN.nextPage },
         footer: {
-          message: '基于 Apache-2.0 许可证发布 · LocalSend 协议的非官方兼容实现',
-          copyright: 'Copyright © 2026 Tonarink contributors'
+          message: zhCN.footer.message,
+          copyright: zhCN.footer.copyright
         }
       }
     },
     en: {
-      label: 'English',
+      label: enUS.languageLabel,
       lang: 'en-US',
       link: '/en/',
       title: 'Tonarink',
-      description: 'Fast, private local sharing for Windows',
+      description: enUS.description,
       themeConfig: {
         nav: [
-          { text: 'Home', link: '/en/' },
-          { text: 'Showcase', link: '/en/showcase' },
-          { text: 'Guide', link: '/en/guide/getting-started' },
-          { text: 'Download', link: `${repository}/releases/latest` }
+          { text: enUS.nav.home, link: '/en/' },
+          { text: enUS.nav.showcase, link: '/en/showcase' },
+          { text: enUS.nav.guide, link: '/en/guide/getting-started' },
+          { text: enUS.nav.download, link: `${repository}/releases/latest` }
         ],
         sidebar: {
           '/en/guide/': [
             {
-              text: 'Guide',
+              text: enUS.sidebar.guide,
               items: [
-                { text: 'Getting started', link: '/en/guide/getting-started' },
-                { text: 'Choose a download', link: '/en/guide/downloads' }
+                { text: enUS.sidebar.gettingStarted, link: '/en/guide/getting-started' },
+                { text: enUS.sidebar.downloads, link: '/en/guide/downloads' }
               ]
             }
           ]
         },
-        outline: { label: 'On this page' },
-        docFooter: { prev: 'Previous page', next: 'Next page' },
+        outline: { label: enUS.outline },
+        docFooter: { prev: enUS.previousPage, next: enUS.nextPage },
         footer: {
-          message: 'Released under Apache-2.0 · An unofficial LocalSend protocol implementation',
-          copyright: 'Copyright © 2026 Tonarink contributors'
+          message: enUS.footer.message,
+          copyright: enUS.footer.copyright
         }
       }
     }

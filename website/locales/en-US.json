@@ -1,0 +1,23 @@
+{
+  "languageLabel": "English",
+  "description": "Fast, private local sharing for Windows",
+  "openGraphDescription": "Bring nearby devices naturally together.",
+  "nav": {
+    "home": "Home",
+    "showcase": "Showcase",
+    "guide": "Guide",
+    "download": "Download"
+  },
+  "sidebar": {
+    "guide": "Guide",
+    "gettingStarted": "Getting started",
+    "downloads": "Choose a download"
+  },
+  "outline": "On this page",
+  "previousPage": "Previous page",
+  "nextPage": "Next page",
+  "footer": {
+    "message": "Released under Apache-2.0 · An unofficial LocalSend protocol implementation",
+    "copyright": "Copyright © 2026 Tonarink contributors"
+  }
+}

@@ -7,6 +7,8 @@ on:
       - crowdin.yml
       - src/Tonarink.App/Strings/en-US/App.resw
       - store-listing/en-US/listing.json
+      - website/content/en-US/**/*.md
+      - website/locales/en-US.json
       - .github/workflows/crowdin.yml
   workflow_dispatch:
     inputs:

@@ -1,0 +1,23 @@
+{
+  "languageLabel": "简体中文",
+  "description": "安全、快速的局域网传输工具",
+  "openGraphDescription": "让附近的设备，自然连起来。",
+  "nav": {
+    "home": "首页",
+    "showcase": "功能展示",
+    "guide": "使用指南",
+    "download": "下载"
+  },
+  "sidebar": {
+    "guide": "使用指南",
+    "gettingStarted": "开始使用",
+    "downloads": "选择下载版本"
+  },
+  "outline": "本页内容",
+  "previousPage": "上一页",
+  "nextPage": "下一页",
+  "footer": {
+    "message": "基于 Apache-2.0 许可证发布 · LocalSend 协议的非官方兼容实现",
+    "copyright": "Copyright © 2026 Tonarink contributors"
+  }
+}

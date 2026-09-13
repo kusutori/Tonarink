@@ -8,3 +8,9 @@ files:
     translation: /src/Tonarink.App/Strings/%locale%/App.resw
   - source: /store-listing/en-US/listing.json
     translation: /store-listing/%locale%/listing.json
+  - source: /website/content/en-US/**/*.md
+    dest: /website/**/%original_file_name%
+    translation: /website/content/%locale%/**/%original_file_name%
+  - source: /website/locales/en-US.json
+    dest: /website/site.json
+    translation: /website/locales/%locale%.json
