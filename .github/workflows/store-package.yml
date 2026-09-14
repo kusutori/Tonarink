@@ -176,7 +176,7 @@ jobs:
           }
           "version=$version" >> $env:GITHUB_OUTPUT
 
-      - name: Create and validate MSIX bundle
+      - name: Create and inspect MSIX bundle
         shell: pwsh
         run: |
           $sdkBinRoot = Join-Path ${env:ProgramFiles(x86)} 'Windows Kits\10\bin'
@@ -194,9 +194,35 @@ jobs:
           if ($LASTEXITCODE -ne 0) {
             throw 'makeappx failed to create the Store MSIX bundle.'
           }
-          & $makeAppx validate /p $bundle
-          if ($LASTEXITCODE -ne 0) {
-            throw 'The Store MSIX bundle failed validation.'
+
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          $archive = [IO.Compression.ZipFile]::OpenRead($bundle)
+          try {
+            $entry = $archive.GetEntry('AppxMetadata/AppxBundleManifest.xml')
+            if ($null -eq $entry) {
+              throw 'The generated bundle has no AppxBundleManifest.xml.'
+            }
+            $reader = [IO.StreamReader]::new($entry.Open())
+            try {
+              [xml]$manifest = $reader.ReadToEnd()
+            }
+            finally {
+              $reader.Dispose()
+            }
+          }
+          finally {
+            $archive.Dispose()
+          }
+
+          $identity = $manifest.Bundle.Identity
+          $architectures = @($manifest.Bundle.Packages.Package.Architecture | Sort-Object -Unique)
+          if ($identity.Name -ne $env:STORE_IDENTITY_NAME -or
+              $identity.Publisher -ne $env:STORE_PUBLISHER -or
+              $identity.Version -ne '${{ steps.package.outputs.version }}' -or
+              $architectures.Count -ne 2 -or
+              'x64' -notin $architectures -or
+              'arm64' -notin $architectures) {
+            throw "Generated bundle is invalid: identity=$($identity.OuterXml), architectures=$($architectures -join ',')."
           }
 
       - name: Upload Store submission artifact
