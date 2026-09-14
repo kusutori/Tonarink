@@ -1,0 +1,209 @@
+name: Build Microsoft Store package
+
+on:
+  push:
+    tags:
+      - "app-v[0-9]+.[0-9]+.[0-9]+"
+      - "app-v[0-9]+.[0-9]+.[0-9]+.[0-9]+"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "MSIX version, for example 1.0.5.1"
+        required: true
+        type: string
+      source_ref:
+        description: "Git ref to package; defaults to the selected workflow ref"
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+env:
+  APP_PROJECT: src/Tonarink.App/Tonarink.App.csproj
+  APP_MANIFEST: src/Tonarink.App/Package.appxmanifest
+  STORE_IDENTITY_NAME: kusutori.Tonarink
+  STORE_PUBLISHER: CN=90217693-C2B0-4C16-BFEE-57A2BD9A719F
+  STORE_PUBLISHER_DISPLAY_NAME: kusutori
+
+jobs:
+  build:
+    name: Build Store MSIX ${{ matrix.platform }}
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: x64
+            rid: win-x64
+          - platform: ARM64
+            rid: win-arm64
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.source_ref || github.ref }}
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Resolve Store package version
+        id: package
+        shell: pwsh
+        env:
+          REQUESTED_VERSION: ${{ github.event_name == 'workflow_dispatch' && inputs.version || github.ref_name }}
+        run: |
+          $version = $env:REQUESTED_VERSION.Trim() -replace '^app-', '' -replace '^v', ''
+          if ($version -notmatch '^\d+\.\d+\.\d+(?:\.\d+)?$') {
+            throw "Version '$version' must use MAJOR.MINOR.PATCH or MAJOR.MINOR.PATCH.REVISION."
+          }
+          if (($version.Split('.')).Count -eq 3) {
+            $version = "$version.0"
+          }
+          if ($version.Split('.') | Where-Object { [int]$_ -gt 65535 }) {
+            throw "Every MSIX version component must be between 0 and 65535: '$version'."
+          }
+          "version=$version" >> $env:GITHUB_OUTPUT
+
+      - name: Stamp Microsoft Store identity
+        shell: pwsh
+        run: |
+          ./build/Set-PackageIdentity.ps1 `
+            -ManifestPath $env:APP_MANIFEST `
+            -Tag '${{ steps.package.outputs.version }}' `
+            -IdentityName $env:STORE_IDENTITY_NAME `
+            -Publisher $env:STORE_PUBLISHER `
+            -PublisherDisplayName $env:STORE_PUBLISHER_DISPLAY_NAME
+
+      - name: Restore
+        shell: pwsh
+        run: |
+          dotnet restore $env:APP_PROJECT `
+            -p:Platform=${{ matrix.platform }} `
+            -p:RuntimeIdentifier=${{ matrix.rid }} `
+            -p:TonarinkPackaged=true
+          dotnet restore src/Tonarink.ExplorerCommand/Tonarink.ExplorerCommand.csproj `
+            -p:Platform=${{ matrix.platform }} `
+            -r ${{ matrix.rid }}
+
+      - name: Build unsigned Store MSIX
+        id: build
+        shell: pwsh
+        run: |
+          $packageDir = Join-Path $env:RUNNER_TEMP 'AppPackages\'
+          dotnet build $env:APP_PROJECT --no-restore -c Release `
+            -p:Platform=${{ matrix.platform }} `
+            -p:RuntimeIdentifier=${{ matrix.rid }} `
+            -p:TonarinkPackaged=true `
+            -p:TonarinkWidgets=false `
+            -p:GenerateAppxPackageOnBuild=true `
+            -p:GenerateTestArtifacts=false `
+            -p:AppxBundle=Never `
+            -p:AppxSymbolPackageEnabled=false `
+            -p:AppxPackageIncludePrivateSymbols=false `
+            -p:AppxPackageSigningEnabled=false `
+            -p:AppxPackageDir=$packageDir
+          if ($LASTEXITCODE -ne 0) {
+            throw 'Store packaging failed for ${{ matrix.platform }}.'
+          }
+
+          $packages = @(Get-ChildItem -LiteralPath $packageDir -Recurse -File -Filter '*.msix')
+          if ($packages.Count -ne 1) {
+            throw "Expected one MSIX for ${{ matrix.platform }}, found $($packages.Count)."
+          }
+
+          $destination = Join-Path $env:RUNNER_TEMP 'Tonarink-Store-${{ steps.package.outputs.version }}-${{ matrix.platform }}.msix'
+          Copy-Item -LiteralPath $packages[0].FullName -Destination $destination
+
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          $archive = [IO.Compression.ZipFile]::OpenRead($destination)
+          try {
+            $entry = $archive.GetEntry('AppxManifest.xml')
+            if ($null -eq $entry) {
+              throw 'The generated package has no AppxManifest.xml.'
+            }
+            $reader = [IO.StreamReader]::new($entry.Open())
+            try {
+              [xml]$manifest = $reader.ReadToEnd()
+            }
+            finally {
+              $reader.Dispose()
+            }
+          }
+          finally {
+            $archive.Dispose()
+          }
+
+          $identity = $manifest.Package.Identity
+          if ($identity.Name -ne $env:STORE_IDENTITY_NAME -or
+              $identity.Publisher -ne $env:STORE_PUBLISHER -or
+              $identity.Version -ne '${{ steps.package.outputs.version }}' -or
+              $identity.ProcessorArchitecture -ne '${{ matrix.platform }}') {
+            throw "Generated package identity is invalid: $($identity.OuterXml)"
+          }
+
+      - name: Upload architecture package
+        uses: actions/upload-artifact@v4
+        with:
+          name: store-msix-${{ matrix.platform }}
+          path: ${{ runner.temp }}/Tonarink-Store-${{ steps.package.outputs.version }}-${{ matrix.platform }}.msix
+          if-no-files-found: error
+
+  bundle:
+    name: Create Store submission bundle
+    needs: build
+    runs-on: windows-latest
+    steps:
+      - name: Download architecture packages
+        uses: actions/download-artifact@v4
+        with:
+          pattern: store-msix-*
+          path: packages
+          merge-multiple: true
+
+      - name: Resolve Store package version
+        id: package
+        shell: pwsh
+        env:
+          REQUESTED_VERSION: ${{ github.event_name == 'workflow_dispatch' && inputs.version || github.ref_name }}
+        run: |
+          $version = $env:REQUESTED_VERSION.Trim() -replace '^app-', '' -replace '^v', ''
+          if (($version.Split('.')).Count -eq 3) {
+            $version = "$version.0"
+          }
+          "version=$version" >> $env:GITHUB_OUTPUT
+
+      - name: Create and validate MSIX bundle
+        shell: pwsh
+        run: |
+          $sdkBinRoot = Join-Path ${env:ProgramFiles(x86)} 'Windows Kits\10\bin'
+          $sdkTools = Get-ChildItem -LiteralPath $sdkBinRoot -Directory |
+            Where-Object { Test-Path (Join-Path $_.FullName 'x64\makeappx.exe') } |
+            Sort-Object { [Version]$_.Name } -Descending |
+            Select-Object -First 1
+          if ($null -eq $sdkTools) {
+            throw 'A Windows SDK containing makeappx.exe was not found.'
+          }
+
+          $makeAppx = Join-Path $sdkTools.FullName 'x64\makeappx.exe'
+          $bundle = Join-Path $env:RUNNER_TEMP 'Tonarink-Store-${{ steps.package.outputs.version }}.msixbundle'
+          & $makeAppx bundle /o /d packages /p $bundle /bv '${{ steps.package.outputs.version }}'
+          if ($LASTEXITCODE -ne 0) {
+            throw 'makeappx failed to create the Store MSIX bundle.'
+          }
+          & $makeAppx validate /p $bundle
+          if ($LASTEXITCODE -ne 0) {
+            throw 'The Store MSIX bundle failed validation.'
+          }
+
+      - name: Upload Store submission artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Tonarink-Store-${{ steps.package.outputs.version }}
+          path: |
+            ${{ runner.temp }}/Tonarink-Store-${{ steps.package.outputs.version }}.msixbundle
+            packages/*.msix
+          if-no-files-found: error
