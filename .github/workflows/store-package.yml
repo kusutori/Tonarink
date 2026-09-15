@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "MSIX version, for example 1.0.5.1"
+        description: "Store MSIX version, for example 1.0.5 or 1.0.5.0"
         required: true
         type: string
       source_ref:
@@ -63,8 +63,12 @@ jobs:
           if (($version.Split('.')).Count -eq 3) {
             $version = "$version.0"
           }
-          if ($version.Split('.') | Where-Object { [int]$_ -gt 65535 }) {
+          $parts = @($version.Split('.') | ForEach-Object { [int]$_ })
+          if ($parts | Where-Object { $_ -gt 65535 }) {
             throw "Every MSIX version component must be between 0 and 65535: '$version'."
+          }
+          if ($parts[3] -ne 0) {
+            throw "Microsoft Store packages require a zero revision component: '$version'."
           }
           "version=$version" >> $env:GITHUB_OUTPUT
 
@@ -173,6 +177,9 @@ jobs:
           $version = $env:REQUESTED_VERSION.Trim() -replace '^app-', '' -replace '^v', ''
           if (($version.Split('.')).Count -eq 3) {
             $version = "$version.0"
+          }
+          if ([int]$version.Split('.')[3] -ne 0) {
+            throw "Microsoft Store packages require a zero revision component: '$version'."
           }
           "version=$version" >> $env:GITHUB_OUTPUT
 
