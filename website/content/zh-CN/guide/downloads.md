@@ -1,11 +1,11 @@
 # 选择下载版本
 
-| 版本 | 推荐场景 |
-| --- | --- |
-| Native AOT MSIX | 推荐优先尝试。启动更快、占用更低，并包含 Windows 系统集成。 |
-| 普通 MSIX | 如果 AOT 版本在设备上出现明显卡顿，使用此稳定版本。 |
-| Portable | 无需安装，但不支持依赖打包身份的分享菜单与右键菜单。 |
-| Widgets | 仅供测试，Windows 11 小组件功能仍在开发中。 |
+| Build           | 推荐场景                                                                                                                       |
+| --------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| Native AOT MSIX | Try this first. It starts faster, uses fewer resources, and includes Windows integrations. |
+| 普通 MSIX         | The stable fallback if Native AOT stutters noticeably on your device.                                      |
+| Portable        | No installation, but packaged integrations such as Windows Share are unavailable.                          |
+| Widgets         | 仅供测试，Windows 11 小组件功能仍在开发中。                                                                                                |
 
 默认下载 x64；Windows on Arm 设备请选择 ARM64。
 
