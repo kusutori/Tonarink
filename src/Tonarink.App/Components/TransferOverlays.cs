@@ -26,6 +26,7 @@ sealed class OutgoingTransferOverlay : Component<OutgoingTransferOverlayProps>
     {
         var t = UseIntl();
         var window = UseWindow();
+        var reduceMotion = UseReducedMotion();
         var transfer = Props.Transfer;
         var (showVerification, setShowVerification) = UseState(false);
         var (connectedAnimationReady, setConnectedAnimationReady) = UseState(false);
@@ -181,17 +182,16 @@ sealed class OutgoingTransferOverlay : Component<OutgoingTransferOverlayProps>
 
         void CloseOverlay()
         {
-            if (receiverCardRef.Current is { } receiverCard)
+            if (!reduceMotion && receiverCardRef.Current is { } receiverCard)
             {
                 DeviceConnectedAnimation.ReturnToSource(
                     connectedAnimationKey,
                     receiverCard,
                     Props.Close);
+                return;
             }
-            else
-            {
-                Props.Close();
-            }
+
+            Props.Close();
         }
     }
 
@@ -243,6 +243,8 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
     {
         var t = UseIntl();
         var window = UseWindow();
+        var storagePicker = new StoragePicker(window, t);
+        var highContrast = UseHighContrast();
         var (windowWidth, windowHeight) = UseWindowSize();
         var reduceMotion = UseReducedMotion();
         var request = Props.Request;
@@ -381,11 +383,7 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
             () => setShowQuickActions(true),
             OpenRenameDialog,
             itemId => updateTargetFileNames(current => IncomingFileCard.UndoRename(current, itemId)),
-            () => IncomingFileCard.PickDestinationDirectoryAsync(
-                window,
-                t,
-                setDestinationDirectory,
-                setFolderError)));
+            PickDestinationDirectoryAsync));
 
         var sender = VStack(16,
                 DeviceAvatar(request.Sender.DeviceType, OverlayAvatarSize)
@@ -512,7 +510,7 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                         .AutomationName(t.Message(new("App", "Decline")))
                         .IsEnabled(!isPending)
                         .MinWidth(120)
-                        .CriticalButton(),
+                        .CriticalButton(highContrast),
                     Button(
                             HStack(8,
                                 Icon("\uE8FB").AccessibilityHidden(),
@@ -721,6 +719,25 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
         {
             updateSelectedItemIds(_ => IncomingFileCard.AllItemIds(request.Items));
             updateTargetFileNames(_ => new Dictionary<string, string>(StringComparer.Ordinal));
+        }
+
+        async Task PickDestinationDirectoryAsync()
+        {
+            try
+            {
+                var folder = await storagePicker.PickFolderAsync(t.Message(new("App", "Change")));
+                if (folder is null)
+                    return;
+
+                setDestinationDirectory(folder.Path);
+                setFolderError(null);
+            }
+            catch (Exception exception)
+            {
+                setFolderError(t.Message(
+                    new("App", "PickFolderFailed"),
+                    ("error", exception.Message)));
+            }
         }
     }
 

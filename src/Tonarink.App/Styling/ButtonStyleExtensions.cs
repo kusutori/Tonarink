@@ -15,18 +15,32 @@ static class ButtonStyleExtensions
             .Set("ButtonBorderBrushPressed", Theme.Ref("SubtleFillColorTransparentBrush"))
             .Set("ButtonBorderBrushDisabled", Theme.Ref("SubtleFillColorTransparentBrush")));
 
-    public static ButtonElement CriticalButton(this ButtonElement button) =>
-        button.Resources(static resources => resources
-            .Set("ButtonBackground", TonarinkThemeResources.CriticalFill)
-            .Set("ButtonBackgroundPointerOver", TonarinkThemeResources.CriticalFillPointerOver)
-            .Set("ButtonBackgroundPressed", TonarinkThemeResources.CriticalFillPressed)
-            .Set("ButtonBackgroundDisabled", Theme.ControlFillDisabled)
-            .Set("ButtonForeground", TonarinkThemeResources.CriticalForeground)
-            .Set("ButtonForegroundPointerOver", TonarinkThemeResources.CriticalForeground)
-            .Set("ButtonForegroundPressed", TonarinkThemeResources.CriticalForeground)
-            .Set("ButtonForegroundDisabled", Theme.DisabledText)
-            .Set("ButtonBorderBrush", TonarinkThemeResources.CriticalFill)
-            .Set("ButtonBorderBrushPointerOver", TonarinkThemeResources.CriticalFillPointerOver)
-            .Set("ButtonBorderBrushPressed", TonarinkThemeResources.CriticalFillPressed)
-            .Set("ButtonBorderBrushDisabled", Theme.Ref("ControlFillColorTransparentBrush")));
+    public static ButtonElement CriticalButton(this ButtonElement button, bool highContrast) =>
+        highContrast
+            ? button.Resources(static resources => resources
+                .Set("ButtonBackground", Theme.Ref("SystemColorButtonFaceColorBrush"))
+                .Set("ButtonBackgroundPointerOver", Theme.Ref("SystemColorHighlightColorBrush"))
+                .Set("ButtonBackgroundPressed", Theme.Ref("SystemColorHighlightColorBrush"))
+                .Set("ButtonBackgroundDisabled", Theme.Ref("SystemColorButtonFaceColorBrush"))
+                .Set("ButtonForeground", Theme.Ref("SystemColorButtonTextColorBrush"))
+                .Set("ButtonForegroundPointerOver", Theme.Ref("SystemColorHighlightTextColorBrush"))
+                .Set("ButtonForegroundPressed", Theme.Ref("SystemColorHighlightTextColorBrush"))
+                .Set("ButtonForegroundDisabled", Theme.Ref("SystemColorGrayTextColorBrush"))
+                .Set("ButtonBorderBrush", Theme.Ref("SystemColorButtonTextColorBrush"))
+                .Set("ButtonBorderBrushPointerOver", Theme.Ref("SystemColorHighlightColorBrush"))
+                .Set("ButtonBorderBrushPressed", Theme.Ref("SystemColorHighlightColorBrush"))
+                .Set("ButtonBorderBrushDisabled", Theme.Ref("SystemColorGrayTextColorBrush")))
+            : button.Resources(static resources => resources
+                .Set("ButtonBackground", TonarinkThemeResources.CriticalFill)
+                .Set("ButtonBackgroundPointerOver", TonarinkThemeResources.CriticalFillPointerOver)
+                .Set("ButtonBackgroundPressed", TonarinkThemeResources.CriticalFillPressed)
+                .Set("ButtonBackgroundDisabled", Theme.ControlFillDisabled)
+                .Set("ButtonForeground", TonarinkThemeResources.CriticalForeground)
+                .Set("ButtonForegroundPointerOver", TonarinkThemeResources.CriticalForeground)
+                .Set("ButtonForegroundPressed", TonarinkThemeResources.CriticalForeground)
+                .Set("ButtonForegroundDisabled", Theme.DisabledText)
+                .Set("ButtonBorderBrush", TonarinkThemeResources.CriticalFill)
+                .Set("ButtonBorderBrushPointerOver", TonarinkThemeResources.CriticalFillPointerOver)
+                .Set("ButtonBorderBrushPressed", TonarinkThemeResources.CriticalFillPressed)
+                .Set("ButtonBorderBrushDisabled", Theme.Ref("ControlFillColorTransparentBrush")));
 }

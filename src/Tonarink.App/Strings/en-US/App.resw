@@ -330,7 +330,6 @@
   <data name="SettingsTitle" xml:space="preserve"><value>Settings</value></data>
   <data name="ShareTargetEmpty" xml:space="preserve"><value>The share did not contain any accessible files or text.</value></data>
   <data name="ShareTargetFailed" xml:space="preserve"><value>Could not add the shared content: {error}</value></data>
-  <data name="Tagline" xml:space="preserve"><value>An unofficial LocalSend-compatible app</value></data>
   <data name="TargetDevice" xml:space="preserve"><value>Target device</value></data>
   <data name="TargetRequiresPin" xml:space="preserve"><value>The target device requires a PIN.</value></data>
   <data name="Text" xml:space="preserve"><value>Text</value></data>

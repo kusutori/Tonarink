@@ -24,6 +24,7 @@ sealed class ReceivePage : Component<ReceivePageProps>
     public override Element Render()
     {
         var t = UseIntl();
+        var reduceMotion = UseReducedMotion();
         var navigation = UseNavigation<AppRoute>();
         var autoSaveItems = UseMemo(() => new object[]
         {
@@ -39,7 +40,7 @@ sealed class ReceivePage : Component<ReceivePageProps>
         {
             var current = AppSettingsStore.Load();
             setAlias(current.ResolvedAlias);
-            PlayIdleLogoAnimation(idleLogoPlayerRef.Current);
+            PlayIdleLogoAnimation(idleLogoPlayerRef.Current, play: !reduceMotion);
         });
         var fingerprint = identity?.Fingerprint;
         var fingerprintPreview = fingerprint is null ? null : fingerprint[..12];
@@ -60,7 +61,7 @@ sealed class ReceivePage : Component<ReceivePageProps>
                         return;
 
                     idleLogoPlayerRef.Current = player;
-                    PlayIdleLogoAnimation(player);
+                    PlayIdleLogoAnimation(player, play: !reduceMotion);
                 })
                 .OnUnmountAdd(element =>
                 {
@@ -202,12 +203,13 @@ sealed class ReceivePage : Component<ReceivePageProps>
             .HAlign(HorizontalAlignment.Right)
             .VAlign(VerticalAlignment.Center);
 
-    private static void PlayIdleLogoAnimation(AnimatedVisualPlayer? player)
+    private static void PlayIdleLogoAnimation(AnimatedVisualPlayer? player, bool play)
     {
         if (player is null)
             return;
 
         player.Source = new Tonarink.IdleLogo();
-        _ = player.PlayAsync(fromProgress: 0, toProgress: 1, looped: true);
+        if (play)
+            _ = player.PlayAsync(fromProgress: 0, toProgress: 1, looped: true);
     }
 }

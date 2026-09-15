@@ -14,9 +14,7 @@ sealed class ShellTitleBar : Component<ShellTitleBarProps>
 {
     public override Element Render()
     {
-        var t = UseIntl();
         return TitleBar("Tonarink")
-            .Subtitle(t.Message(new("App", "Tagline")))
             .WithNavigation(Props.Navigation)
             .PaneToggleButtonVisible(Props.PaneToggleVisible)
             .PaneToggleRequested(Props.TogglePane)

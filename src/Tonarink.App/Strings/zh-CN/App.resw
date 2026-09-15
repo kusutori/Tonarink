@@ -330,7 +330,6 @@
   <data name="SettingsTitle" xml:space="preserve"><value>设置</value></data>
   <data name="ShareTargetEmpty" xml:space="preserve"><value>分享内容中没有可访问的文件或文本。</value></data>
   <data name="ShareTargetFailed" xml:space="preserve"><value>无法添加分享内容：{error}</value></data>
-  <data name="Tagline" xml:space="preserve"><value>LocalSend 协议的非官方兼容实现</value></data>
   <data name="TargetDevice" xml:space="preserve"><value>目标设备</value></data>
   <data name="TargetRequiresPin" xml:space="preserve"><value>目标设备要求 PIN。</value></data>
   <data name="Text" xml:space="preserve"><value>文本</value></data>

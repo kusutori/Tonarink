@@ -1,4 +1,5 @@
 using Microsoft.UI.Reactor;
+using Microsoft.UI.Xaml;
 
 AppDiagnostics.Initialize();
 var startupSettings = AppSettingsStore.Load();
@@ -17,6 +18,7 @@ try
     {
         ReactorApp.Run(_ =>
         {
+            Application.Current.HighContrastAdjustment = ApplicationHighContrastAdjustment.None;
             ReactorApp.ShutdownPolicy = ShutdownPolicy.OnLastSurfaceClosed;
             AppWindows.OpenMain(
                 startHidden: (AppPlatform.StartHidden && startupSettings.MinimizeToTray)

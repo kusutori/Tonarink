@@ -8,7 +8,6 @@ using Microsoft.UI.Reactor.Navigation;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
-using Windows.Storage.Pickers;
 using static Microsoft.UI.Reactor.Factories;
 using static Tonarink.Controls.SettingsCardElement;
 using static Tonarink.Controls.SettingsExpanderElement;
@@ -27,7 +26,7 @@ sealed class SettingsPage : Component<SettingsPageProps>
     public override Element Render()
     {
         var t = UseIntl();
-        var window = UseWindow();
+        var storagePicker = new StoragePicker(UseWindow(), t);
         var navigation = UseNavigation<AppRoute>();
         var (statusMessage, setStatusMessage) = UseState<string?>(null);
         var (encryptionNoticeOpen, setEncryptionNoticeOpen) = UseState(false);
@@ -571,18 +570,7 @@ sealed class SettingsPage : Component<SettingsPageProps>
         {
             try
             {
-                var picker = new FolderPicker
-                {
-                    SuggestedStartLocation = PickerLocationId.Downloads,
-                    CommitButtonText = t.Message(new("App", "Change")),
-                };
-                picker.FileTypeFilter.Add("*");
-                var nativeWindow = window?.NativeWindow
-                                   ?? throw new InvalidOperationException(t.Message(new("App", "WindowUnavailable")));
-                WinRT.Interop.InitializeWithWindow.Initialize(
-                    picker,
-                    WinRT.Interop.WindowNative.GetWindowHandle(nativeWindow));
-                var folder = await picker.PickSingleFolderAsync();
+                var folder = await storagePicker.PickFolderAsync(t.Message(new("App", "Change")));
                 if (folder is null)
                     return;
 

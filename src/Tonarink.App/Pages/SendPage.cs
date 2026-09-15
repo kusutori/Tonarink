@@ -11,7 +11,6 @@ using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage;
-using Windows.Storage.Pickers;
 using Tonarink.Components.Animations;
 using static Microsoft.UI.Reactor.Factories;
 using static Tonarink.Utilities.ByteSize;
@@ -70,7 +69,8 @@ sealed class SendPage : Component<SendPageProps>
     public override Element Render()
     {
         var t = UseIntl();
-        var window = UseWindow();
+        var storagePicker = new StoragePicker(UseWindow(), t);
+        var reduceMotion = UseReducedMotion();
         var isWideLayout = UseBreakpoint(AppLayout.WideBreakpoint);
         var navigation = UseNavigation<AppRoute>();
         var selectedItems = Props.SelectedItems;
@@ -101,7 +101,7 @@ sealed class SendPage : Component<SendPageProps>
         var shareTargetPayloadId = Props.ShareTargetPayload?.Id ?? Guid.Empty;
 
         UseNavigationLifecycle(onNavigatedTo: _ =>
-            PlaySearchingAnimation(searchingPlayerRef.Current));
+            PlaySearchingAnimation(searchingPlayerRef.Current, play: !reduceMotion));
 
         UseEffect(() =>
         {
@@ -281,7 +281,7 @@ sealed class SendPage : Component<SendPageProps>
                                         return;
                                     }
 
-                                    if (source is null)
+                                    if (source is null || reduceMotion)
                                     {
                                         _ = StartSendAsync(device, pin: null);
                                         return;
@@ -451,7 +451,7 @@ sealed class SendPage : Component<SendPageProps>
                     return;
 
                 searchingPlayerRef.Current = player;
-                PlaySearchingAnimation(player);
+                PlaySearchingAnimation(player, play: !reduceMotion);
             })
             .OnUnmountAdd(element =>
             {
@@ -558,14 +558,7 @@ sealed class SendPage : Component<SendPageProps>
         {
             try
             {
-                var picker = new FileOpenPicker
-                {
-                    SuggestedStartLocation = PickerLocationId.Downloads,
-                    CommitButtonText = t.Message(new("App", "Add")),
-                };
-                picker.FileTypeFilter.Add("*");
-                InitializePicker(picker);
-                var files = await picker.PickMultipleFilesAsync();
+                var files = await storagePicker.PickFilesAsync(t.Message(new("App", "Add")));
                 if (files.Count == 0)
                     return;
 
@@ -586,14 +579,7 @@ sealed class SendPage : Component<SendPageProps>
         {
             try
             {
-                var picker = new FolderPicker
-                {
-                    SuggestedStartLocation = PickerLocationId.Downloads,
-                    CommitButtonText = t.Message(new("App", "AddFolder")),
-                };
-                picker.FileTypeFilter.Add("*");
-                InitializePicker(picker);
-                var folder = await picker.PickSingleFolderAsync();
+                var folder = await storagePicker.PickFolderAsync(t.Message(new("App", "AddFolder")));
                 if (folder is null)
                     return;
 
@@ -612,14 +598,6 @@ sealed class SendPage : Component<SendPageProps>
                     new("App", "PickFolderFailed"),
                     ("error", exception.Message)));
             }
-        }
-
-        void InitializePicker(object picker)
-        {
-            var nativeWindow = window?.NativeWindow
-                               ?? throw new InvalidOperationException(t.Message(new("App", "WindowUnavailable")));
-            var windowHandle = WinRT.Interop.WindowNative.GetWindowHandle(nativeWindow);
-            WinRT.Interop.InitializeWithWindow.Initialize(picker, windowHandle);
         }
 
         async Task AddClipboardAsync()
@@ -1252,13 +1230,14 @@ sealed class SendPage : Component<SendPageProps>
             JustifyContent = FlexJustify.Center,
         };
 
-    private static void PlaySearchingAnimation(AnimatedVisualPlayer? player)
+    private static void PlaySearchingAnimation(AnimatedVisualPlayer? player, bool play)
     {
         if (player is null)
             return;
 
         player.Source = new Tonarink.SearchingDevices();
-        _ = player.PlayAsync(fromProgress: 0, toProgress: 1, looped: true);
+        if (play)
+            _ = player.PlayAsync(fromProgress: 0, toProgress: 1, looped: true);
     }
 
     private static async Task<SelectedSendItem> FromStorageFileAsync(

@@ -4,7 +4,6 @@ using Microsoft.UI.Reactor.Core;
 using Microsoft.UI.Reactor.Localization;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Windows.Storage.Pickers;
 using static Microsoft.UI.Reactor.Factories;
 using static Tonarink.Utilities.ByteSize;
 
@@ -135,40 +134,6 @@ static class IncomingFileCard
                 setRenameFileName(string.Empty);
             },
         }).Themed(theme);
-    }
-
-    public static async Task PickDestinationDirectoryAsync(
-        ReactorWindow? window,
-        IntlAccessor t,
-        Action<string> setDestinationDirectory,
-        Action<string?> setFolderError)
-    {
-        try
-        {
-            var picker = new FolderPicker
-            {
-                SuggestedStartLocation = PickerLocationId.Downloads,
-                CommitButtonText = t.Message(new("App", "Change")),
-            };
-            picker.FileTypeFilter.Add("*");
-            var nativeWindow = window?.NativeWindow
-                               ?? throw new InvalidOperationException(t.Message(new("App", "WindowUnavailable")));
-            WinRT.Interop.InitializeWithWindow.Initialize(
-                picker,
-                WinRT.Interop.WindowNative.GetWindowHandle(nativeWindow));
-            var folder = await picker.PickSingleFolderAsync();
-            if (folder is not null)
-            {
-                setDestinationDirectory(folder.Path);
-                setFolderError(null);
-            }
-        }
-        catch (Exception exception)
-        {
-            setFolderError(t.Message(
-                new("App", "PickFolderFailed"),
-                ("error", exception.Message)));
-        }
     }
 
     public static IReadOnlySet<string> ToggleItem(IReadOnlySet<string> current, string itemId)
