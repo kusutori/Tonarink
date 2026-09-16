@@ -39,8 +39,10 @@ sealed class WebSharePage : Component<WebSharePageProps>
         var (copyFeedbackVersions, updateCopyFeedbackVersions) =
             UseReducer(ImmutableDictionary<string, int>.Empty);
         var nextCopyFeedbackVersion = UseRef(0);
+        var shareSource = UseRef<WindowsShareSource?>(null);
         var alive = UseRef(true);
         var node = Props.Node;
+        var window = UseWindow();
         var dialogTheme = Props.Settings.ThemeIndex switch
         {
             1 => ElementTheme.Light,
@@ -52,6 +54,8 @@ sealed class WebSharePage : Component<WebSharePageProps>
         {
             alive.Current = false;
             nextCopyFeedbackVersion.Current++;
+            shareSource.Current?.Dispose();
+            shareSource.Current = null;
         });
 
         UseNavigationLifecycle(
@@ -62,6 +66,8 @@ sealed class WebSharePage : Component<WebSharePageProps>
             },
             onNavigatedFrom: _ =>
             {
+                shareSource.Current?.Dispose();
+                shareSource.Current = null;
                 node?.StopWebShare();
                 Props.SetHttpsOverride(null);
             });
@@ -128,7 +134,8 @@ sealed class WebSharePage : Component<WebSharePageProps>
                         copyFeedbackVersions.TryGetValue(url, out var version) ? version : 0,
                         () => _ = CopyWithFeedbackAsync(url),
                         ShowQr,
-                        setZoomUrl).WithKey(url)).ToArray<Element?>()),
+                        setZoomUrl,
+                        () => ShareLink(url)).WithKey(url)).ToArray<Element?>()),
                 VStack(8,
                     BodyStrong(t.Message(new("App", "WebShareRequests"))),
                     requestBody),
@@ -230,6 +237,27 @@ sealed class WebSharePage : Component<WebSharePageProps>
             setQrUrl(url);
         }
 
+        void ShareLink(string url)
+        {
+            try
+            {
+                var nativeWindow = window?.NativeWindow
+                                   ?? throw new InvalidOperationException(
+                                       t.Message(new("App", "WindowUnavailable")));
+                (shareSource.Current ??= new WindowsShareSource(
+                    nativeWindow,
+                    t.Message(new("App", "WebShareNoLinkAvailable")))).ShareLink(
+                    url,
+                    t.Message(new("App", Props.Mode == WebShareMode.Receive
+                        ? "WebReceiveTitle"
+                        : "WebShareTitle")));
+            }
+            catch (Exception exception)
+            {
+                AppDiagnostics.Report("Could not open the Windows share sheet for a web link", exception);
+            }
+        }
+
         async Task CopyWithFeedbackAsync(string url)
         {
             if (!await CopyAsync(url).ConfigureAwait(true) || !alive.Current)
@@ -246,10 +274,11 @@ sealed class WebSharePage : Component<WebSharePageProps>
         int copySuccessVersion,
         Action copy,
         Action<string> showQr,
-        Action<string?> setZoom) =>
+        Action<string?> setZoom,
+        Action share) =>
         Border(
             Grid(
-                columns: [GridSize.Star(), GridSize.Auto, GridSize.Auto, GridSize.Auto],
+                columns: [GridSize.Star(), GridSize.Auto, GridSize.Auto, GridSize.Auto, GridSize.Auto],
                 rows: [GridSize.Auto],
                 TextBlock(url)
                     .TextTrimming(TextTrimming.CharacterEllipsis)
@@ -267,7 +296,9 @@ sealed class WebSharePage : Component<WebSharePageProps>
                 IconButton("\uED14", t.Message(new("App", "WebShareQr")), () => showQr(url))
                     .Grid(column: 2),
                 IconButton("\uE7F4", t.Message(new("App", "WebShareZoom")), () => setZoom(url))
-                    .Grid(column: 3)) with
+                    .Grid(column: 3),
+                IconButton("\uE72D", t.Message(new("App", "WebShareSystemShare")), share)
+                    .Grid(column: 4)) with
             {
                 ColumnSpacing = 4,
             })

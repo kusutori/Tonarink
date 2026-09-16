@@ -243,7 +243,9 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
     {
         var t = UseIntl();
         var window = UseWindow();
-        var storagePicker = new StoragePicker(window, t);
+        var storagePicker = new StoragePicker(
+            window?.NativeWindow,
+            t.Message(new("App", "WindowUnavailable")));
         var highContrast = UseHighContrast();
         var (windowWidth, windowHeight) = UseWindowSize();
         var reduceMotion = UseReducedMotion();

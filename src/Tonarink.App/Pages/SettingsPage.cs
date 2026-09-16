@@ -26,7 +26,10 @@ sealed class SettingsPage : Component<SettingsPageProps>
     public override Element Render()
     {
         var t = UseIntl();
-        var storagePicker = new StoragePicker(UseWindow(), t);
+        var window = UseWindow();
+        var storagePicker = new StoragePicker(
+            window?.NativeWindow,
+            t.Message(new("App", "WindowUnavailable")));
         var navigation = UseNavigation<AppRoute>();
         var (statusMessage, setStatusMessage) = UseState<string?>(null);
         var (encryptionNoticeOpen, setEncryptionNoticeOpen) = UseState(false);

@@ -353,12 +353,14 @@
   <data name="WebShareEncryption" xml:space="preserve"><value>加密</value></data>
   <data name="WebShareEncryptionHint" xml:space="preserve"><value>HTTPS 使用此设备的证书。浏览器会提示该证书不受信任。</value></data>
   <data name="WebShareNoRequests" xml:space="preserve"><value>尚无请求。</value></data>
+  <data name="WebShareNoLinkAvailable" xml:space="preserve"><value>当前没有可分享的链接。</value></data>
   <data name="WebShareOpenLink" xml:space="preserve"><value>在浏览器中打开链接：</value></data>
   <data name="WebSharePinHint" xml:space="preserve"><value>PIN 为 “{pin}”</value></data>
   <data name="WebSharePinTitle" xml:space="preserve"><value>PIN</value></data>
   <data name="WebShareQr" xml:space="preserve"><value>二维码</value></data>
   <data name="WebShareQrTitle" xml:space="preserve"><value>二维码</value></data>
   <data name="WebShareRequests" xml:space="preserve"><value>请求</value></data>
+  <data name="WebShareSystemShare" xml:space="preserve"><value>通过 Windows 分享链接</value></data>
   <data name="WebShareRequirePin" xml:space="preserve"><value>需要一个 PIN</value></data>
   <data name="WebShareTitle" xml:space="preserve"><value>分享为链接</value></data>
   <data name="WebReceiveTitle" xml:space="preserve"><value>通过链接接收</value></data>

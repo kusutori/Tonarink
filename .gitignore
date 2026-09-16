@@ -1,15 +1,26 @@
+# .NET builds and package output
 **/bin/
 **/obj/
-artifacts/
 **/AppPackages/
+artifacts/
+
+# IDE and test output
 .vs/
 .vscode/
 *.user
 *.suo
 TestResults/
 coverage/
+
+# Local credentials
 *.pfx
 identity-certificate.pem
 identity-private-key.pem
-
 .env
+.env.*
+!.env.example
+
+# Local browser automation and Store submission media
+/.playwright-cli/
+/image.png
+/store-listing/media/

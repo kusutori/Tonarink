@@ -69,7 +69,10 @@ sealed class SendPage : Component<SendPageProps>
     public override Element Render()
     {
         var t = UseIntl();
-        var storagePicker = new StoragePicker(UseWindow(), t);
+        var window = UseWindow();
+        var storagePicker = new StoragePicker(
+            window?.NativeWindow,
+            t.Message(new("App", "WindowUnavailable")));
         var reduceMotion = UseReducedMotion();
         var isWideLayout = UseBreakpoint(AppLayout.WideBreakpoint);
         var navigation = UseNavigation<AppRoute>();
