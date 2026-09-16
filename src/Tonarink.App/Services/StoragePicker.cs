@@ -2,7 +2,7 @@ using Microsoft.UI.Xaml;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 
-namespace Tonarink;
+namespace Tonarink.Services;
 
 sealed class StoragePicker(Window? window, string windowUnavailableMessage)
 {

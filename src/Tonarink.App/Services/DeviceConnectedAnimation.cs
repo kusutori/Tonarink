@@ -9,6 +9,7 @@ internal static class DeviceConnectedAnimation
 {
     private static readonly Dictionary<string, WeakReference<UIElement>> Sources =
         new(StringComparer.Ordinal);
+
     private static readonly HashSet<string> PreparedKeys = new(StringComparer.Ordinal);
 
     public static void RegisterSource(string key, UIElement source) =>
@@ -69,7 +70,7 @@ internal static class DeviceConnectedAnimation
             }
 
             var sized = destination is not FrameworkElement element
-                || (element.ActualWidth > 0 && element.ActualHeight > 0);
+                        || element is { ActualWidth: > 0, ActualHeight: > 0 };
             if (sized && TryStart(key, destination, completed))
             {
                 CompositionTarget.Rendering -= onRendering;
@@ -100,19 +101,10 @@ internal static class DeviceConnectedAnimation
         onRendering = (_, _) =>
         {
             remainingFrames--;
-            if (!PreparedKeys.Contains(key))
-            {
-                CompositionTarget.Rendering -= onRendering;
-                return;
-            }
-
-            if (Sources.TryGetValue(key, out var reference)
+            if (!PreparedKeys.Contains(key) || Sources.TryGetValue(key, out var reference)
                 && reference.TryGetTarget(out var source)
                 && source.XamlRoot is not null
-                && source is FrameworkElement element
-                && element.ActualWidth > 0
-                && element.ActualHeight > 0
-                && TryStart(key, source))
+                && source is FrameworkElement { ActualWidth: > 0, ActualHeight: > 0 } && TryStart(key, source))
             {
                 CompositionTarget.Rendering -= onRendering;
                 return;

@@ -13,17 +13,17 @@ static class WidgetAppHost
     public const string SnapshotFileName = "widget-snapshot.json";
     public const string CommandFileName = "widget-command.json";
 
-    private static readonly object Gate = new();
-    private static Mutex? RunningMutex;
-    private static EventWaitHandle? CommandEvent;
-    private static RegisteredWaitHandle? CommandWait;
-    private static bool started;
+    private static readonly Lock Gate = new();
+    private static Mutex? _runningMutex;
+    private static EventWaitHandle? _commandEvent;
+    private static RegisteredWaitHandle? _commandWait;
+    private static bool _started;
 
-    private static AppRuntimeState Runtime = AppRuntimeState.Initial;
-    private static AppSettings Settings = AppSettings.Default;
-    private static OutgoingTransferViewState? Outgoing;
-    private static WidgetTransferInfo? Incoming;
-    private static bool ServerDesired = true;
+    private static AppRuntimeState _runtime = AppRuntimeState.Initial;
+    private static AppSettings _settings = AppSettings.Default;
+    private static OutgoingTransferViewState? _outgoing;
+    private static WidgetTransferInfo? _incoming;
+    private static bool _serverDesired = true;
 
     public static event Action<string>? CommandReceived;
 
@@ -31,14 +31,14 @@ static class WidgetAppHost
     {
         lock (Gate)
         {
-            if (started)
+            if (_started)
                 return;
 
-            started = true;
-            RunningMutex = new Mutex(initiallyOwned: true, MutexName, out _);
-            CommandEvent = new EventWaitHandle(false, EventResetMode.AutoReset, CommandEventName);
-            CommandWait = ThreadPool.RegisterWaitForSingleObject(
-                CommandEvent,
+            _started = true;
+            _runningMutex = new Mutex(initiallyOwned: true, MutexName, out _);
+            _commandEvent = new EventWaitHandle(false, EventResetMode.AutoReset, CommandEventName);
+            _commandWait = ThreadPool.RegisterWaitForSingleObject(
+                _commandEvent,
                 static (_, _) => DrainCommand(),
                 null,
                 -1,
@@ -53,26 +53,26 @@ static class WidgetAppHost
     {
         lock (Gate)
         {
-            if (!started)
+            if (!_started)
                 return;
 
-            started = false;
-            Incoming = null;
-            Outgoing = null;
-            ServerDesired = false;
-            Runtime = AppRuntimeState.Initial with { NodeState = LocalSendNodeState.Stopped };
+            _started = false;
+            _incoming = null;
+            _outgoing = null;
+            _serverDesired = false;
+            _runtime = AppRuntimeState.Initial with { NodeState = LocalSendNodeState.Stopped };
         }
 
         WriteSnapshot();
 
         lock (Gate)
         {
-            CommandWait?.Unregister(null);
-            CommandWait = null;
-            CommandEvent?.Dispose();
-            CommandEvent = null;
-            RunningMutex?.Dispose();
-            RunningMutex = null;
+            _commandWait?.Unregister(null);
+            _commandWait = null;
+            _commandEvent?.Dispose();
+            _commandEvent = null;
+            _runningMutex?.Dispose();
+            _runningMutex = null;
         }
     }
 
@@ -84,10 +84,10 @@ static class WidgetAppHost
     {
         lock (Gate)
         {
-            Runtime = runtime;
-            Settings = settings;
-            Outgoing = outgoing;
-            ServerDesired = serverDesired;
+            _runtime = runtime;
+            _settings = settings;
+            _outgoing = outgoing;
+            _serverDesired = serverDesired;
         }
 
         WriteSnapshot();
@@ -96,7 +96,7 @@ static class WidgetAppHost
     public static void SetIncoming(WidgetTransferInfo? incoming)
     {
         lock (Gate)
-            Incoming = incoming;
+            _incoming = incoming;
         WriteSnapshot();
     }
 
@@ -154,11 +154,11 @@ static class WidgetAppHost
         bool serverDesired;
         lock (Gate)
         {
-            runtime = Runtime;
-            settings = Settings;
-            outgoing = Outgoing;
-            incoming = Incoming;
-            serverDesired = ServerDesired;
+            runtime = _runtime;
+            settings = _settings;
+            outgoing = _outgoing;
+            incoming = _incoming;
+            serverDesired = _serverDesired;
         }
 
         var transfer = incoming is null
@@ -178,11 +178,14 @@ static class WidgetAppHost
                 _ => null,
             },
             Devices = runtime.NodeState == LocalSendNodeState.Running
-                ? runtime.Devices.Select(static device => new WidgetDeviceFile
-                {
-                    Alias = device.Alias,
-                    Type = device.DeviceType.ToString().ToLowerInvariant(),
-                }).ToList()
+                ?
+                [
+                    .. runtime.Devices.Select(static device => new WidgetDeviceFile
+                    {
+                        Alias = device.Alias,
+                        Type = device.DeviceType.ToString().ToLowerInvariant(),
+                    })
+                ]
                 : [],
             Transfer = transfer,
         };
@@ -251,7 +254,7 @@ static class WidgetAppHost
             BytesTransferred = outgoing.BytesTransferred,
             TotalBytes = outgoing.TotalBytes,
             Indeterminate = outgoing.TotalBytes <= 0
-                || outgoing.State is TransferState.Preparing or TransferState.WaitingForAcceptance,
+                            || outgoing.State is TransferState.Preparing or TransferState.WaitingForAcceptance,
         };
     }
 
@@ -312,7 +315,7 @@ static class WidgetLocale
                 language.StartsWith("zh", StringComparison.OrdinalIgnoreCase));
         }
         catch (Exception exception) when (exception is InvalidOperationException
-            or System.Runtime.InteropServices.COMException)
+                                              or System.Runtime.InteropServices.COMException)
         {
             AppDiagnostics.Report("Could not resolve the system language for the widget", exception);
             return false;

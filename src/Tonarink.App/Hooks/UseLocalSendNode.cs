@@ -29,8 +29,8 @@ sealed partial class LocalizedAppShell
         var (serverDesired, setServerDesired) = UseState(true);
         var (serverEpoch, updateServerEpoch) = UseReducer(0);
         var (httpsOverride, setHttpsOverride) = UseState<bool?>(null);
-        var nodeRef = UseRef<LocalSendNode?>(null);
-        var nodeLifecycleRef = UseRef<SemaphoreSlim?>(null);
+        var nodeRef = UseRef<LocalSendNode?>();
+        var nodeLifecycleRef = UseRef<SemaphoreSlim?>();
         var nodeLifecycle = nodeLifecycleRef.Current ??= new SemaphoreSlim(1, 1);
         var nextNodeSession = UseRef(0);
         var ownerNodeSession = UseRef(0);
@@ -125,7 +125,7 @@ sealed partial class LocalizedAppShell
 
         async Task RunNodeSessionAsync(int session, bool desired, CancellationToken cancellationToken)
         {
-            await nodeLifecycle.WaitAsync().ConfigureAwait(false);
+            await nodeLifecycle.WaitAsync(cancellationToken).ConfigureAwait(false);
             LocalSendNode? node = null;
             try
             {
@@ -357,7 +357,7 @@ sealed partial class LocalizedAppShell
         {
             if (nodeRef.Current is not { } node
                 || runtimeRef.Current.IncomingTransfers.FirstOrDefault(request => request.RequestId == requestId) is not
-                { } request)
+                    { } request)
                 return false;
 
             DismissIncoming(requestId);

@@ -12,17 +12,15 @@ static class WindowsStartup
 
     public static async Task<bool> IsEnabledAsync()
     {
-        if (AppPlatform.HasPackageIdentity())
+        if (!AppPlatform.HasPackageIdentity()) return IsRegistryEnabled();
+        try
         {
-            try
-            {
-                var task = await StartupTask.GetAsync(AppPlatform.StartupTaskId);
-                return task.State is StartupTaskState.Enabled or StartupTaskState.EnabledByPolicy;
-            }
-            catch (Exception exception) when (exception is COMException or InvalidOperationException)
-            {
-                AppDiagnostics.Report("Could not read the packaged startup task; using the registry fallback", exception);
-            }
+            var task = await StartupTask.GetAsync(AppPlatform.StartupTaskId);
+            return task.State is StartupTaskState.Enabled or StartupTaskState.EnabledByPolicy;
+        }
+        catch (Exception exception) when (exception is COMException or InvalidOperationException)
+        {
+            AppDiagnostics.Report("Could not read the packaged startup task; using the registry fallback", exception);
         }
 
         return IsRegistryEnabled();
@@ -72,27 +70,26 @@ static class WindowsStartup
                 _ => task.State,
             };
 
-            if (state is StartupTaskState.Enabled or StartupTaskState.EnabledByPolicy)
-                return;
-
-            if (state is StartupTaskState.DisabledByUser)
+            switch (state)
             {
-                try
-                {
-                    await Launcher.LaunchUriAsync(new Uri("ms-settings:startupapps"));
-                }
-                catch (Exception exception) when (exception is COMException or InvalidOperationException)
-                {
-                    AppDiagnostics.Report("Could not open Windows startup app settings", exception);
-                }
+                case StartupTaskState.Enabled or StartupTaskState.EnabledByPolicy:
+                    return;
+                case StartupTaskState.DisabledByUser:
+                    try
+                    {
+                        await Launcher.LaunchUriAsync(new Uri("ms-settings:startupapps"));
+                    }
+                    catch (Exception exception) when (exception is COMException or InvalidOperationException)
+                    {
+                        AppDiagnostics.Report("Could not open Windows startup app settings", exception);
+                    }
 
-                throw new StartupDisabledException("StartupDisabledByUser");
+                    throw new StartupDisabledException("StartupDisabledByUser");
+                case StartupTaskState.DisabledByPolicy:
+                    throw new StartupDisabledException("StartupDisabledByPolicy");
+                default:
+                    throw new StartupDisabledException("StartupFailed");
             }
-
-            if (state is StartupTaskState.DisabledByPolicy)
-                throw new StartupDisabledException("StartupDisabledByPolicy");
-
-            throw new StartupDisabledException("StartupFailed");
         }
 
         if (task.State is StartupTaskState.Enabled)
@@ -103,13 +100,13 @@ static class WindowsStartup
     {
         using var key = Registry.CurrentUser.OpenSubKey(RunKeyPath, writable: false);
         return key?.GetValue(RunValueName) is string value
-            && !string.IsNullOrWhiteSpace(value);
+               && !string.IsNullOrWhiteSpace(value);
     }
 
     private static void SetRegistry(bool enabled, bool startMinimized)
     {
         using var key = Registry.CurrentUser.CreateSubKey(RunKeyPath)
-            ?? throw new InvalidOperationException("StartupFailed");
+                        ?? throw new InvalidOperationException("StartupFailed");
 
         if (!enabled)
         {

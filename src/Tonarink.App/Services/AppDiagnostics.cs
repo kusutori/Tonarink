@@ -5,7 +5,7 @@ namespace Tonarink.Services;
 
 static class AppDiagnostics
 {
-    private static readonly object Gate = new();
+    private static readonly Lock Gate = new();
     private static bool _sessionStarted;
 
     public static string LogFilePath => Path.Combine(AppPlatform.DataDirectory, "tonarink.log");
@@ -60,7 +60,9 @@ static class AppDiagnostics
                 File.AppendAllText(
                     LogFilePath,
                     $"{DateTimeOffset.Now:O} {summary}" +
-                    (exception is null ? Environment.NewLine : $"{Environment.NewLine}{exception}{Environment.NewLine}"));
+                    (exception is null
+                        ? Environment.NewLine
+                        : $"{Environment.NewLine}{exception}{Environment.NewLine}"));
             }
             catch (Exception logException) when (logException is IOException or UnauthorizedAccessException)
             {

@@ -32,66 +32,67 @@ sealed class NetworkInterfacesPage : Component<NetworkInterfacesPageProps>
                 Caption(t.Message(new("App", "SettingsNetworkInterfacesEmpty")))
                     .Foreground(Theme.SecondaryText),
             }
-            : adapters.Select(adapter => AdapterCard(adapter, IsIgnored(adapter, settings)).WithKey(adapter.Id)).ToArray();
+            : adapters.Select(adapter => AdapterCard(adapter, IsIgnored(adapter, settings)).WithKey(adapter.Id))
+                .ToArray();
 
         var patternRows = currentList is null
             ? Array.Empty<Element>()
             : currentList.Select((pattern, index) =>
-                PatternRow(t, pattern, index, value => ReplacePattern(index, value), () => RemovePattern(index))
-                    .WithKey($"pattern-{index}"))
+                    PatternRow(t, pattern, index, value => ReplacePattern(index, value), () => RemovePattern(index))
+                        .WithKey($"pattern-{index}"))
                 .ToArray();
 
         return ScrollView(
-            VStack(24,
-                Heading(t.Message(new("App", "SettingsNetworkInterfaces")))
-                    .HeadingLevel(AutomationHeadingLevel.Level1),
-                TextBlock(t.Message(new("App", "SettingsNetworkInterfacesInfo")))
-                    .Foreground(Theme.SecondaryText)
-                    .TextAlignment(TextAlignment.Center)
-                    .TextWrapping(TextWrapping.WrapWholeWords),
-                VStack(8,
-                    BodyStrong(t.Message(new("App", "SettingsNetworkInterfacesPreview"))),
-                    (FlexRow(previewCards) with
-                    {
-                        ColumnGap = 12,
-                        RowGap = 12,
-                        Wrap = FlexWrap.Wrap,
-                    })),
-                Grid(
-                    columns: [GridSize.Star(), GridSize.Star()],
-                    rows: [GridSize.Auto],
-                    CheckBox(
-                        (bool?)(settings.NetworkWhitelist is not null),
-                        enabled => SetMode(whitelist: true, enable: enabled),
-                        t.Message(new("App", "SettingsNetworkInterfacesWhitelist")))
-                        .HAlign(HorizontalAlignment.Center)
-                        .Grid(column: 0),
-                    CheckBox(
-                        (bool?)(settings.NetworkBlacklist is not null),
-                        enabled => SetMode(whitelist: false, enable: enabled),
-                        t.Message(new("App", "SettingsNetworkInterfacesBlacklist")))
-                        .HAlign(HorizontalAlignment.Center)
-                        .Grid(column: 1)),
-                VStack(12, patternRows),
-                currentList is null
-                    ? null
-                    : Grid(
-                        columns: [GridSize.Star(), GridSize.Auto],
-                        rows: [GridSize.Auto],
-                        VStack(0,
-                            TextBlock(t.Message(new("App", "SettingsNetworkInterfacesExample"))),
-                            TextBlock("123.123.123.123"),
-                            TextBlock("123.123.123.*"))
-                            .Grid(column: 0),
-                        Button(
-                            HStack(8,
-                                Icon("Add").AccessibilityHidden(),
-                                TextBlock(t.Message(new("App", "Add")))),
-                            AddPattern)
-                            .AutomationName(t.Message(new("App", "Add")))
-                            .VAlign(VerticalAlignment.Bottom)
-                            .Grid(column: 1)))
-                .Padding(AppLayout.PagePadding))
+                VStack(24,
+                        Heading(t.Message(new("App", "SettingsNetworkInterfaces")))
+                            .HeadingLevel(AutomationHeadingLevel.Level1),
+                        TextBlock(t.Message(new("App", "SettingsNetworkInterfacesInfo")))
+                            .Foreground(Theme.SecondaryText)
+                            .TextAlignment(TextAlignment.Center)
+                            .TextWrapping(TextWrapping.WrapWholeWords),
+                        VStack(8,
+                            BodyStrong(t.Message(new("App", "SettingsNetworkInterfacesPreview"))),
+                            (FlexRow(previewCards) with
+                            {
+                                ColumnGap = 12,
+                                RowGap = 12,
+                                Wrap = FlexWrap.Wrap,
+                            })),
+                        Grid(
+                            columns: [GridSize.Star(), GridSize.Star()],
+                            rows: [GridSize.Auto],
+                            CheckBox(
+                                    (bool?)(settings.NetworkWhitelist is not null),
+                                    enabled => SetMode(whitelist: true, enable: enabled),
+                                    t.Message(new("App", "SettingsNetworkInterfacesWhitelist")))
+                                .HAlign(HorizontalAlignment.Center)
+                                .Grid(column: 0),
+                            CheckBox(
+                                    (bool?)(settings.NetworkBlacklist is not null),
+                                    enabled => SetMode(whitelist: false, enable: enabled),
+                                    t.Message(new("App", "SettingsNetworkInterfacesBlacklist")))
+                                .HAlign(HorizontalAlignment.Center)
+                                .Grid(column: 1)),
+                        VStack(12, patternRows),
+                        currentList is null
+                            ? null
+                            : Grid(
+                                columns: [GridSize.Star(), GridSize.Auto],
+                                rows: [GridSize.Auto],
+                                VStack(0,
+                                        TextBlock(t.Message(new("App", "SettingsNetworkInterfacesExample"))),
+                                        TextBlock("123.123.123.123"),
+                                        TextBlock("123.123.123.*"))
+                                    .Grid(column: 0),
+                                Button(
+                                        HStack(8,
+                                            Icon("Add").AccessibilityHidden(),
+                                            TextBlock(t.Message(new("App", "Add")))),
+                                        AddPattern)
+                                    .AutomationName(t.Message(new("App", "Add")))
+                                    .VAlign(VerticalAlignment.Bottom)
+                                    .Grid(column: 1)))
+                    .Padding(AppLayout.PagePadding))
             .HorizontalContentAlignment(HorizontalAlignment.Stretch)
             .Landmark(AutomationLandmarkType.Main);
 
@@ -113,8 +114,6 @@ sealed class NetworkInterfacesPage : Component<NetworkInterfacesPageProps>
 
         void ReplacePattern(int index, string value)
         {
-            if (currentList is null)
-                return;
             var next = currentList.ToArray();
             next[index] = value;
             WriteList(next);
@@ -122,8 +121,6 @@ sealed class NetworkInterfacesPage : Component<NetworkInterfacesPageProps>
 
         void RemovePattern(int index)
         {
-            if (currentList is null)
-                return;
             if (currentList.Count <= 1)
             {
                 WriteList(null);
@@ -135,7 +132,7 @@ sealed class NetworkInterfacesPage : Component<NetworkInterfacesPageProps>
 
         void AddPattern()
         {
-            var next = currentList is null ? new[] { "" } : [.. currentList, ""];
+            string[] next = [.. currentList, ""];
             WriteList(next);
         }
 
@@ -154,23 +151,23 @@ sealed class NetworkInterfacesPage : Component<NetworkInterfacesPageProps>
         Action<string> onChanged,
         Action onRemove) =>
         Grid(
-            columns: [GridSize.Star(), GridSize.Auto],
-            rows: [GridSize.Auto],
-            Component<DeferredTextSetting, DeferredTextSettingProps>(new(
-                pattern,
-                onChanged,
-                t.Message(new("App", "SettingsNetworkInterfacesPattern"), ("index", index + 1))))
-                .Grid(column: 0),
-            Button(Icon("\uE711"), onRemove)
-                .SubtleButton()
-                .AutomationName(t.Message(new("App", "SettingsNetworkInterfacesRemovePattern")))
-                .ToolTip(t.Message(new("App", "SettingsNetworkInterfacesRemovePattern")))
-                .MinWidth(40)
-                .MinHeight(40)
-                .Grid(column: 1)) with
-        {
-            ColumnSpacing = 8,
-        };
+                columns: [GridSize.Star(), GridSize.Auto],
+                rows: [GridSize.Auto],
+                Component<DeferredTextSetting, DeferredTextSettingProps>(new(
+                        pattern,
+                        onChanged,
+                        t.Message(new("App", "SettingsNetworkInterfacesPattern"), ("index", index + 1))))
+                    .Grid(column: 0),
+                Button(Icon("\uE711"), onRemove)
+                    .SubtleButton()
+                    .AutomationName(t.Message(new("App", "SettingsNetworkInterfacesRemovePattern")))
+                    .ToolTip(t.Message(new("App", "SettingsNetworkInterfacesRemovePattern")))
+                    .MinWidth(40)
+                    .MinHeight(40)
+                    .Grid(column: 1)) with
+            {
+                ColumnSpacing = 8,
+            };
 
     private static Element AdapterCard(NetworkAdapterPreview adapter, bool ignored)
     {
@@ -180,8 +177,12 @@ sealed class NetworkInterfacesPage : Component<NetworkInterfacesPageProps>
         if (ignored)
         {
             name = name.Foreground(Theme.DisabledText).TextDecorations(TextDecorations.Strikethrough);
-            addresses = [.. addresses.Select(static address =>
-                ((TextBlockElement)address).Foreground(Theme.DisabledText).TextDecorations(TextDecorations.Strikethrough))];
+            addresses =
+            [
+                .. addresses.Select(static address =>
+                    ((TextBlockElement)address).Foreground(Theme.DisabledText)
+                    .TextDecorations(TextDecorations.Strikethrough))
+            ];
         }
 
         return Border(
@@ -190,11 +191,12 @@ sealed class NetworkInterfacesPage : Component<NetworkInterfacesPageProps>
             .MinWidth(160)
             .CornerRadius(8)
             .Background(Theme.CardBackground)
-            .WithBorder(Theme.CardStroke, 1);
+            .WithBorder(Theme.CardStroke);
     }
 
     private static bool IsIgnored(NetworkAdapterPreview adapter, AppSettings settings) =>
-        NetworkAddressPatterns.IsInterfaceIgnored(adapter.Addresses, settings.NetworkWhitelist, settings.NetworkBlacklist);
+        NetworkAddressPatterns.IsInterfaceIgnored(adapter.Addresses, settings.NetworkWhitelist,
+            settings.NetworkBlacklist);
 
     private static IReadOnlyList<NetworkAdapterPreview> ListAdapters()
     {
@@ -208,7 +210,8 @@ sealed class NetworkInterfacesPage : Component<NetworkInterfacesPageProps>
 
             var addresses = nic.GetIPProperties().UnicastAddresses
                 .Select(static item => item.Address)
-                .Where(static address => address.AddressFamily == AddressFamily.InterNetwork && !IPAddress.IsLoopback(address))
+                .Where(static address =>
+                    address.AddressFamily == AddressFamily.InterNetwork && !IPAddress.IsLoopback(address))
                 .Select(static address => address.ToString())
                 .Distinct(StringComparer.Ordinal)
                 .ToArray();

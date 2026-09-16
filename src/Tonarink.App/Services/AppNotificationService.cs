@@ -12,7 +12,7 @@ sealed record AppNotificationActivation(
 
 static class AppNotificationService
 {
-    private static readonly object Gate = new();
+    private static readonly Lock Gate = new();
     private static AppNotificationManager? _manager;
     private static readonly Queue<AppNotificationActivation> PendingActivations = new();
     private static EventHandler? _activated;
@@ -80,7 +80,8 @@ static class AppNotificationService
             try
             {
                 if (!AppNotificationManager.IsSupported())
-                    throw new NotSupportedException("App notifications are not supported by the current Windows App Runtime configuration.");
+                    throw new NotSupportedException(
+                        "App notifications are not supported by the current Windows App Runtime configuration.");
 
                 _manager = AppNotificationManager.Default;
                 _manager.NotificationInvoked += OnNotificationInvoked;
@@ -91,7 +92,8 @@ static class AppNotificationService
 
                 if (_manager.Setting != AppNotificationSetting.Enabled)
                 {
-                    WriteDiagnostic($"Windows notification setting is {_manager.Setting}; notifications may not be displayed.");
+                    WriteDiagnostic(
+                        $"Windows notification setting is {_manager.Setting}; notifications may not be displayed.");
                 }
             }
             catch (Exception exception)

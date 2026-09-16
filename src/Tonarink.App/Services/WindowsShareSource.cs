@@ -1,7 +1,7 @@
-using Microsoft.UI.Xaml;
 using Windows.ApplicationModel.DataTransfer;
+using Microsoft.UI.Xaml;
 
-namespace Tonarink;
+namespace Tonarink.Services;
 
 /// <summary>Shares content from a WinUI desktop window through the Windows share sheet.</summary>
 sealed class WindowsShareSource : IDisposable

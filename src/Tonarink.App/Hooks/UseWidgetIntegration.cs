@@ -1,5 +1,6 @@
 // This file supplies partial hook members for LocalizedAppShell in the root namespace.
 // ReSharper disable once CheckNamespace
+
 namespace Tonarink;
 
 sealed partial class LocalizedAppShell
@@ -13,7 +14,7 @@ sealed partial class LocalizedAppShell
         Action startServer,
         Action stopServer)
     {
-        var commandHandler = UseRef<Action<string>?>(null);
+        var commandHandler = UseRef<Action<string>?>();
 
         UseEffect(
             () => WidgetAppHost.Update(runtime, settings, outgoingTransfer, serverDesired),

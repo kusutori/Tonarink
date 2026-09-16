@@ -1,11 +1,9 @@
 using LocalSendDotNet;
 using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Core;
-using Microsoft.UI.Reactor.Layout;
 using Microsoft.UI.Reactor.Localization;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
-using Microsoft.UI.Xaml.Controls;
 using static Microsoft.UI.Reactor.Factories;
 using static Tonarink.Components.DeviceVisuals;
 
@@ -26,76 +24,77 @@ sealed class DeviceDetailsPage : Component<DeviceDetailsPageProps>
         // its previous element tree without calling the route factory, so request one
         // reconciliation before the transition to pick up the newly selected device props.
         UseNavigationLifecycle(onNavigatingTo: _ => refreshCachedPage(value => value + 1));
-        var favorites = UseExternalStore<IReadOnlyDictionary<string, FavoriteDevice>>(
+        var favorites = UseExternalStore(
             listener =>
             {
                 FavoriteDeviceStore.Changed += listener;
                 return () => FavoriteDeviceStore.Changed -= listener;
             },
             static () => FavoriteDeviceStore.Entries);
-        var currentDevice = Props.Runtime.Devices.FirstOrDefault(
-            candidate => candidate.Fingerprint == Props.Device.Fingerprint) ?? Props.Device;
+        var currentDevice =
+            Props.Runtime.Devices.FirstOrDefault(candidate => candidate.Fingerprint == Props.Device.Fingerprint) ??
+            Props.Device;
         var favorite = favorites.GetValueOrDefault(currentDevice.Fingerprint);
         var displayName = favorite?.Name ?? currentDevice.Alias;
         var (showVerification, setShowVerification) = UseState(false);
         var (favoriteDraft, setFavoriteDraft) = UseState<FavoriteDevice?>(null);
         var (showRemoveFavorite, setShowRemoveFavorite) = UseState(false);
         var activity = Props.Runtime.DeviceActivity.GetValueOrDefault(currentDevice.Fingerprint)
-            ?? Array.Empty<DeviceActivityEntry>();
+                       ?? [];
         var page = FlexColumn(
-            Heading(t.Message(new("App", "DeviceDetailsTitle")))
-                .HeadingLevel(AutomationHeadingLevel.Level1),
-            Component<DeviceIdentityCard, DeviceIdentityCardProps>(new(
-                displayName,
-                currentDevice.DeviceModel,
-                currentDevice.DeviceType,
-                RemoteDeviceNumber(currentDevice)))
-                .MaxWidth(AppLayout.NarrowContentWidth)
-                .HAlign(HorizontalAlignment.Stretch),
-            HStack(12,
-                    ActionButton(
-                        favorite is null ? "\uEB51" : "\uEB52",
-                        favorite is null
-                            ? t.Message(new("App", "FavoriteAction"))
-                            : t.Message(new("App", "RemoveFavoriteAction")),
-                        () =>
-                        {
-                            if (favorite is null)
-                                OpenFavoriteDialog(currentDevice);
-                            else
-                                setShowRemoveFavorite(true);
-                        },
-                        accent: favorite is not null),
-                    ActionButton(
-                        "\uF760",
-                        t.Message(new("App", "VerifyAction")),
-                        () => setShowVerification(true)))
-                .HAlign(HorizontalAlignment.Center),
-            InfoCard(t, currentDevice),
-            ActivityCard(t, activity),
-            Component<DeviceVerificationDialog, DeviceVerificationDialogProps>(new(
-                currentDevice,
-                Props.Runtime.Identity?.Fingerprint,
-                Props.Theme,
-                showVerification,
-                () => setShowVerification(false))),
-            favoriteDraft is null
-                ? null
-                : Component<FavoriteDeviceDialog, FavoriteDeviceDialogProps>(new(
-                    favoriteDraft,
-                    IsNew: true,
+                Heading(t.Message(new("App", "DeviceDetailsTitle")))
+                    .HeadingLevel(AutomationHeadingLevel.Level1),
+                Component<DeviceIdentityCard, DeviceIdentityCardProps>(new(
+                        displayName,
+                        currentDevice.DeviceModel,
+                        currentDevice.DeviceType,
+                        RemoteDeviceNumber(currentDevice)))
+                    .MaxWidth(AppLayout.NarrowContentWidth)
+                    .HAlign(HorizontalAlignment.Stretch),
+                HStack(12,
+                        ActionButton(
+                            favorite is null ? "\uEB51" : "\uEB52",
+                            favorite is null
+                                ? t.Message(new("App", "FavoriteAction"))
+                                : t.Message(new("App", "RemoveFavoriteAction")),
+                            () =>
+                            {
+                                if (favorite is null)
+                                    OpenFavoriteDialog(currentDevice);
+                                else
+                                    setShowRemoveFavorite(true);
+                            },
+                            accent: favorite is not null),
+                        ActionButton(
+                            "\uF760",
+                            t.Message(new("App", "VerifyAction")),
+                            () => setShowVerification(true)))
+                    .HAlign(HorizontalAlignment.Center),
+                InfoCard(t, currentDevice),
+                ActivityCard(t, activity),
+                Component<DeviceVerificationDialog, DeviceVerificationDialogProps>(new(
+                    currentDevice,
+                    Props.Runtime.Identity?.Fingerprint,
                     Props.Theme,
-                    FavoriteDeviceStore.Upsert,
-                    () => setFavoriteDraft(null))),
-            Component<DeleteFavoriteDialog, DeleteFavoriteDialogProps>(new(
-                displayName,
-                Props.Theme,
-                showRemoveFavorite,
-                () => FavoriteDeviceStore.Remove(currentDevice.Fingerprint),
-                () => setShowRemoveFavorite(false)))) with
-        {
-            RowGap = 20,
-        };
+                    showVerification,
+                    () => setShowVerification(false))),
+                favoriteDraft is null
+                    ? null
+                    : Component<FavoriteDeviceDialog, FavoriteDeviceDialogProps>(new(
+                        favoriteDraft,
+                        IsNew: true,
+                        Props.Theme,
+                        FavoriteDeviceStore.Upsert,
+                        () => setFavoriteDraft(null))),
+                Component<DeleteFavoriteDialog, DeleteFavoriteDialogProps>(new(
+                    displayName,
+                    Props.Theme,
+                    showRemoveFavorite,
+                    () => FavoriteDeviceStore.Remove(currentDevice.Fingerprint),
+                    () => setShowRemoveFavorite(false)))) with
+            {
+                RowGap = 20,
+            };
 
         return ScrollView(
                 Border(page)
@@ -143,18 +142,18 @@ sealed class DeviceDetailsPage : Component<DeviceDetailsPageProps>
 
         return Card(
             FlexColumn(
-                Subtitle(t.Message(new("App", "DeviceInformation")))
-                    .HeadingLevel(AutomationHeadingLevel.Level2),
-                DetailRow(t.Message(new("App", "Name")), device.Alias),
-                DetailRow(t.Message(new("App", "DeviceModelLabel")),
-                    DeviceModel(t, device.DeviceModel, device.DeviceType)),
-                DetailRow(t.Message(new("App", "ProtocolVersion")), device.ProtocolVersion),
-                DetailRow(t.Message(new("App", "Address")), endpoints),
-                DetailRow(t.Message(new("App", "LastSeen")), device.LastSeen.ToLocalTime().ToString("G")),
-                DetailRow(t.Message(new("App", "FingerprintLabel")), device.Fingerprint)) with
-            {
-                RowGap = 12,
-            });
+                    Subtitle(t.Message(new("App", "DeviceInformation")))
+                        .HeadingLevel(AutomationHeadingLevel.Level2),
+                    DetailRow(t.Message(new("App", "Name")), device.Alias),
+                    DetailRow(t.Message(new("App", "DeviceModelLabel")),
+                        DeviceModel(t, device.DeviceModel, device.DeviceType)),
+                    DetailRow(t.Message(new("App", "ProtocolVersion")), device.ProtocolVersion),
+                    DetailRow(t.Message(new("App", "Address")), endpoints),
+                    DetailRow(t.Message(new("App", "LastSeen")), device.LastSeen.ToLocalTime().ToString("G")),
+                    DetailRow(t.Message(new("App", "FingerprintLabel")), device.Fingerprint)) with
+                {
+                    RowGap = 12,
+                });
     }
 
     private static Element DetailRow(string label, string value) =>
@@ -169,20 +168,21 @@ sealed class DeviceDetailsPage : Component<DeviceDetailsPageProps>
     private static Element ActivityCard(IntlAccessor t, IReadOnlyList<DeviceActivityEntry> activity) =>
         Card(
             FlexColumn(
-                Subtitle(t.Message(new("App", "DeviceLog")))
-                    .HeadingLevel(AutomationHeadingLevel.Level2),
-                activity.Count == 0
-                    ? TextBlock(t.Message(new("App", "DeviceLogEmpty")))
-                        .Foreground(Theme.SecondaryText)
-                    : VStack(8,
-                        activity.Reverse().Select((entry, index) =>
-                            ActivityRow(t, entry)
-                                .PositionInSet(index + 1, activity.Count)
-                                .WithKey($"{entry.Timestamp.UtcTicks}:{index}"))
-                            .ToArray<Element?>())) with
-            {
-                RowGap = 12,
-            });
+                    Subtitle(t.Message(new("App", "DeviceLog")))
+                        .HeadingLevel(AutomationHeadingLevel.Level2),
+                    activity.Count == 0
+                        ? TextBlock(t.Message(new("App", "DeviceLogEmpty")))
+                            .Foreground(Theme.SecondaryText)
+                        : VStack(8,
+                        [
+                            .. activity.Reverse().Select((entry, index) =>
+                                ActivityRow(t, entry)
+                                    .PositionInSet(index + 1, activity.Count)
+                                    .WithKey($"{entry.Timestamp.UtcTicks}:{index}"))
+                        ])) with
+                {
+                    RowGap = 12,
+                });
 
     private static Element ActivityRow(IntlAccessor t, DeviceActivityEntry entry)
     {
@@ -202,5 +202,4 @@ sealed class DeviceDetailsPage : Component<DeviceDetailsPageProps>
                     .TextWrapping(TextWrapping.WrapWholeWords))
             .Padding(horizontal: 0, vertical: 4);
     }
-
 }

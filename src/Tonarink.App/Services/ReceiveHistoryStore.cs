@@ -8,7 +8,7 @@ static class ReceiveHistoryStore
 {
     private const int MaxEntries = 500;
     private static readonly string FilePath = Path.Combine(AppPlatform.DataDirectory, "receive-history.json");
-    private static readonly object Gate = new();
+    private static readonly Lock Gate = new();
     private static IReadOnlyList<ReceiveHistoryEntry>? _entries;
 
     public static event Action? Changed;
@@ -51,7 +51,7 @@ static class ReceiveHistoryStore
     }
 
     public static void Remove(Guid id) =>
-        Mutate(current => current.Where(entry => entry.Id != id).ToArray());
+        Mutate(current => [.. current.Where(entry => entry.Id != id)]);
 
     public static void Clear() => Mutate(_ => []);
 
@@ -61,7 +61,7 @@ static class ReceiveHistoryStore
         {
             var next = update(_entries ??= LoadUnlocked());
             if (next.Count > MaxEntries)
-                next = next.Take(MaxEntries).ToArray();
+                next = [.. next.Take(MaxEntries)];
             _entries = next;
             SaveUnlocked(next);
         }
@@ -104,15 +104,18 @@ sealed class ReceiveHistoryFile
 
     public static ReceiveHistoryFile FromEntries(IReadOnlyList<ReceiveHistoryEntry> entries) => new()
     {
-        Items = entries.Select(static entry => new ReceiveHistoryItemFile
-        {
-            Id = entry.Id,
-            FileName = entry.FileName,
-            Path = entry.Path,
-            Size = entry.Size,
-            SenderAlias = entry.SenderAlias,
-            ReceivedAt = entry.ReceivedAt,
-        }).ToList(),
+        Items =
+        [
+            .. entries.Select(static entry => new ReceiveHistoryItemFile
+            {
+                Id = entry.Id,
+                FileName = entry.FileName,
+                Path = entry.Path,
+                Size = entry.Size,
+                SenderAlias = entry.SenderAlias,
+                ReceivedAt = entry.ReceivedAt,
+            })
+        ],
     };
 
     public IReadOnlyList<ReceiveHistoryEntry> ToEntries()
@@ -120,23 +123,25 @@ sealed class ReceiveHistoryFile
         if (Items is not { Count: > 0 })
             return [];
 
-        return Items
-            .Where(static item => item.Id != Guid.Empty && !string.IsNullOrWhiteSpace(item.Path))
-            .Select(static item =>
-            {
-                var path = item.Path ?? string.Empty;
-                var fileName = string.IsNullOrWhiteSpace(item.FileName)
-                    ? Path.GetFileName(path)
-                    : item.FileName;
-                return new ReceiveHistoryEntry(
-                    item.Id,
-                    string.IsNullOrWhiteSpace(fileName) ? path : fileName,
-                    path,
-                    item.Size,
-                    string.IsNullOrWhiteSpace(item.SenderAlias) ? "?" : item.SenderAlias,
-                    item.ReceivedAt == default ? DateTimeOffset.UtcNow : item.ReceivedAt);
-            })
-            .ToArray();
+        return
+        [
+            .. Items
+                .Where(static item => item.Id != Guid.Empty && !string.IsNullOrWhiteSpace(item.Path))
+                .Select(static item =>
+                {
+                    var path = item.Path ?? string.Empty;
+                    var fileName = string.IsNullOrWhiteSpace(item.FileName)
+                        ? Path.GetFileName(path)
+                        : item.FileName;
+                    return new ReceiveHistoryEntry(
+                        item.Id,
+                        string.IsNullOrWhiteSpace(fileName) ? path : fileName,
+                        path,
+                        item.Size,
+                        string.IsNullOrWhiteSpace(item.SenderAlias) ? "?" : item.SenderAlias,
+                        item.ReceivedAt == default ? DateTimeOffset.UtcNow : item.ReceivedAt);
+                })
+        ];
     }
 }
 

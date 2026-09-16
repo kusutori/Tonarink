@@ -15,14 +15,16 @@ static class ShareTargetActivationBroker
     private const string IngestedEventName = @"Local\Tonarink.ShareIngested";
     private const string ShareEventName = @"Local\Tonarink.ExplorerShare";
     private static readonly ConcurrentQueue<ShareTargetPayload> PendingPayloads = new();
+
     private static readonly EventWaitHandle Ingested = new(
         initialState: true,
         mode: EventResetMode.ManualReset,
         name: IngestedEventName);
-    private static readonly object ExplorerShareGate = new();
-    private static FileSystemWatcher? ExplorerShareWatcher;
-    private static EventWaitHandle? ExplorerShareEvent;
-    private static RegisteredWaitHandle? ExplorerShareWait;
+
+    private static readonly Lock ExplorerShareGate = new();
+    private static FileSystemWatcher? _explorerShareWatcher;
+    private static EventWaitHandle? _explorerShareEvent;
+    private static RegisteredWaitHandle? _explorerShareWait;
 
     public static event EventHandler? ActivationReceived;
 
@@ -65,22 +67,25 @@ static class ShareTargetActivationBroker
     {
         try
         {
-            // AppActivationArguments.Data exposes the activation *interface*, not
-            // necessarily the projected runtime class. The class check happens to
-            // work in JIT builds, but can fail after Native AOT trimming because the
-            // inspectable is materialized directly as the WinRT interface.
-            if (activation?.Kind == ExtendedActivationKind.ShareTarget
-                && activation.Data is IShareTargetActivatedEventArgs shareArgs)
+            switch (activation?.Kind)
             {
-                var payload = await CaptureSharePayloadAsync(shareArgs).ConfigureAwait(false);
-                if (payload is not null)
-                    PendingPayloads.Enqueue(payload);
-            }
-            else if (activation?.Kind == ExtendedActivationKind.ShareTarget)
-            {
-                WriteDiagnostic(
-                    $"Share activation data did not expose {nameof(IShareTargetActivatedEventArgs)} " +
-                    $"(runtime type: {activation.Data?.GetType().FullName ?? "<null>"}).");
+                // AppActivationArguments.Data exposes the activation *interface*, not
+                // necessarily the projected runtime class. The class check happens to
+                // work in JIT builds, but can fail after Native AOT trimming because the
+                // inspectable is materialized directly as the WinRT interface.
+                case ExtendedActivationKind.ShareTarget
+                    when activation.Data is IShareTargetActivatedEventArgs shareArgs:
+                {
+                    var payload = await CaptureSharePayloadAsync(shareArgs).ConfigureAwait(false);
+                    if (payload is not null)
+                        PendingPayloads.Enqueue(payload);
+                    break;
+                }
+                case ExtendedActivationKind.ShareTarget:
+                    WriteDiagnostic(
+                        $"Share activation data did not expose {nameof(IShareTargetActivatedEventArgs)} " +
+                        $"(runtime type: {activation.Data?.GetType().FullName ?? "<null>"}).");
+                    break;
             }
         }
         catch (Exception exception)
@@ -105,7 +110,7 @@ static class ShareTargetActivationBroker
 
     private static void StartExplorerShareWatch()
     {
-        if (ExplorerShareWatcher is not null)
+        if (_explorerShareWatcher is not null)
             return;
 
         var directory = AppPlatform.ExplorerShareDirectory;
@@ -119,11 +124,11 @@ static class ShareTargetActivationBroker
         watcher.Created += (_, _) => DrainExplorerShare();
         watcher.Changed += (_, _) => DrainExplorerShare();
         watcher.Renamed += (_, _) => DrainExplorerShare();
-        ExplorerShareWatcher = watcher;
+        _explorerShareWatcher = watcher;
 
-        ExplorerShareEvent = new EventWaitHandle(false, EventResetMode.AutoReset, ShareEventName);
-        ExplorerShareWait = ThreadPool.RegisterWaitForSingleObject(
-            ExplorerShareEvent,
+        _explorerShareEvent = new EventWaitHandle(false, EventResetMode.AutoReset, ShareEventName);
+        _explorerShareWait = ThreadPool.RegisterWaitForSingleObject(
+            _explorerShareEvent,
             static (_, _) => DrainExplorerShare(),
             null,
             -1,
@@ -146,10 +151,12 @@ static class ShareTargetActivationBroker
                     string[] paths;
                     try
                     {
-                        paths = File.ReadAllLines(file)
-                            .Select(static path => path.Trim())
-                            .Where(static path => path.Length > 0 && Path.Exists(path))
-                            .ToArray();
+                        paths =
+                        [
+                            .. File.ReadAllLines(file)
+                                .Select(static path => path.Trim())
+                                .Where(static path => path.Length > 0 && Path.Exists(path))
+                        ];
                     }
                     catch (IOException)
                     {

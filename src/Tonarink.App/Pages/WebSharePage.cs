@@ -2,13 +2,10 @@ using LocalSendDotNet;
 using System.Collections.Immutable;
 using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Core;
-using Microsoft.UI.Reactor.Layout;
 using Microsoft.UI.Reactor.Localization;
-using Microsoft.UI.Reactor.Navigation;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
-using Tonarink.Components.Animations;
 using Windows.ApplicationModel.DataTransfer;
 using static Microsoft.UI.Reactor.Factories;
 
@@ -33,13 +30,13 @@ sealed class WebSharePage : Component<WebSharePageProps>
         var (pinDraft, setPinDraft) = UseState(RandomPin());
         var (pinDialogOpen, setPinDialogOpen) = UseState(false);
         var (encrypted, setEncrypted) = UseState(
-            Props.Mode == WebShareMode.Send && Props.Runtime.Identity?.Protocol == LocalSendProtocol.Https);
+            Props is { Mode: WebShareMode.Send, Runtime.Identity.Protocol: LocalSendProtocol.Https });
         var (qrUrl, setQrUrl) = UseState<string?>(null);
         var (zoomUrl, setZoomUrl) = UseState<string?>(null);
         var (copyFeedbackVersions, updateCopyFeedbackVersions) =
             UseReducer(ImmutableDictionary<string, int>.Empty);
         var nextCopyFeedbackVersion = UseRef(0);
-        var shareSource = UseRef<WindowsShareSource?>(null);
+        var shareSource = UseRef<WindowsShareSource?>();
         var alive = UseRef(true);
         var node = Props.Node;
         var window = UseWindow();
@@ -117,118 +114,123 @@ sealed class WebSharePage : Component<WebSharePageProps>
         {
             [] => TextBlock(t.Message(new("App", "WebShareNoRequests")))
                 .Foreground(Theme.SecondaryText),
-            _ => VStack(8, share.Requests.Select(request =>
-                RequestCard(t, request, node).WithKey(request.SessionId)).ToArray<Element?>()),
+            _ => VStack(8, [
+                .. share.Requests.Select(request =>
+                    RequestCard(t, request, node).WithKey(request.SessionId))
+            ]),
         };
 
         return ScrollView(
-            VStack(24,
-                Heading(t.Message(new("App", Props.Mode == WebShareMode.Receive ? "WebReceiveTitle" : "WebShareTitle")))
-                    .HeadingLevel(AutomationHeadingLevel.Level1),
-                TextBlock(t.Message(new("App", "WebShareOpenLink")))
-                    .SemiBold(),
-                VStack(8, urls.Select(url =>
-                    LinkBar(
-                        t,
-                        url,
-                        copyFeedbackVersions.TryGetValue(url, out var version) ? version : 0,
-                        () => _ = CopyWithFeedbackAsync(url),
-                        ShowQr,
-                        setZoomUrl,
-                        () => ShareLink(url)).WithKey(url)).ToArray<Element?>()),
-                VStack(8,
-                    BodyStrong(t.Message(new("App", "WebShareRequests"))),
-                    requestBody),
-                CheckBox(
-                    (bool?)encrypted,
-                    value =>
-                    {
-                        setEncrypted(value);
-                        Props.SetHttpsOverride(value);
-                    },
-                    t.Message(new("App", "WebShareEncryption"))),
-                encrypted
-                    ? TextBlock(t.Message(new("App", "WebShareEncryptionHint")))
-                        .Foreground(Theme.SystemCaution)
-                        .TextWrapping(TextWrapping.WrapWholeWords)
-                    : null,
-                CheckBox(
-                    (bool?)autoAccept,
-                    value =>
-                    {
-                        setAutoAccept(value);
-                        node?.SetWebShareAutoAccept(value);
-                    },
-                    t.Message(new("App", "WebShareAutoAccept"))),
-                CheckBox(
-                    (bool?)(pin is not null || pinDialogOpen),
-                    value =>
-                    {
-                        if (value)
-                        {
-                            setPinDraft(RandomPin());
-                            setPinDialogOpen(true);
-                        }
-                        else
-                        {
-                            setPin(null);
-                            node?.SetWebSharePin(null);
-                        }
-                    },
-                    t.Message(new("App", "WebShareRequirePin"))),
-                pin is null
-                    ? null
-                    : TextBlock(t.Message(new("App", "WebSharePinHint"), ("pin", pin)))
-                        .Foreground(Theme.SystemCaution),
-                (ContentDialog(
-                    t.Message(new("App", "WebSharePinTitle")),
-                    TextBox(pinDraft, setPinDraft)
-                        .AutomationName(t.Message(new("App", "WebSharePinTitle"))),
-                    primaryButtonText: t.Message(new("App", "Confirm"))) with
-                {
-                    IsOpen = pinDialogOpen,
-                    SecondaryButtonText = t.Message(new("App", "Cancel")),
-                    DefaultButton = ContentDialogButton.Primary,
-                    OnClosed = result =>
-                    {
-                        if (result == ContentDialogResult.Primary && !string.IsNullOrWhiteSpace(pinDraft))
-                        {
-                            var next = pinDraft.Trim();
-                            setPin(next);
-                            node?.SetWebSharePin(next);
-                        }
-
-                        setPinDialogOpen(false);
-                    },
-                }).Themed(dialogTheme),
-                (ContentDialog(
-                    t.Message(new("App", "WebShareQrTitle")),
-                    qrUrl is null
-                        ? Empty()
-                        : VStack(12,
-                            QrCodeCanvas.Render(
-                                qrUrl,
-                                t.Message(new("App", "WebShareQrTitle"))),
-                            TextBlock(qrUrl)
+                VStack(24,
+                        Heading(t.Message(new("App",
+                                Props.Mode == WebShareMode.Receive ? "WebReceiveTitle" : "WebShareTitle")))
+                            .HeadingLevel(AutomationHeadingLevel.Level1),
+                        TextBlock(t.Message(new("App", "WebShareOpenLink")))
+                            .SemiBold(),
+                        VStack(8, [
+                            .. urls.Select(url =>
+                                LinkBar(
+                                    t,
+                                    url,
+                                    CollectionExtensions.GetValueOrDefault(copyFeedbackVersions, url, 0),
+                                    () => _ = CopyWithFeedbackAsync(url),
+                                    ShowQr,
+                                    setZoomUrl,
+                                    () => ShareLink(url)).WithKey(url))
+                        ]),
+                        VStack(8,
+                            BodyStrong(t.Message(new("App", "WebShareRequests"))),
+                            requestBody),
+                        CheckBox(
+                            (bool?)encrypted,
+                            value =>
+                            {
+                                setEncrypted(value);
+                                Props.SetHttpsOverride(value);
+                            },
+                            t.Message(new("App", "WebShareEncryption"))),
+                        encrypted
+                            ? TextBlock(t.Message(new("App", "WebShareEncryptionHint")))
+                                .Foreground(Theme.SystemCaution)
                                 .TextWrapping(TextWrapping.WrapWholeWords)
-                                .IsTextSelectionEnabled(true)),
-                    primaryButtonText: t.Message(new("App", "Close"))) with
-                {
-                    IsOpen = qrUrl is not null,
-                    OnClosed = _ => setQrUrl(null),
-                }).Themed(dialogTheme),
-                (ContentDialog(
-                    t.Message(new("App", "WebShareZoomTitle")),
-                    Title(zoomUrl ?? "")
-                        .TextWrapping(TextWrapping.WrapWholeWords)
-                        .IsTextSelectionEnabled()
-                        .AutomationName(t.Message(new("App", "WebShareZoomTitle"))),
-                    primaryButtonText: t.Message(new("App", "Close"))) with
-                {
-                    IsOpen = zoomUrl is not null,
-                    OnClosed = _ => setZoomUrl(null),
-                }).Themed(dialogTheme))
-            .Padding(AppLayout.PagePadding))
+                            : null,
+                        CheckBox(
+                            (bool?)autoAccept,
+                            value =>
+                            {
+                                setAutoAccept(value);
+                                node?.SetWebShareAutoAccept(value);
+                            },
+                            t.Message(new("App", "WebShareAutoAccept"))),
+                        CheckBox(
+                            (bool?)(pin is not null || pinDialogOpen),
+                            value =>
+                            {
+                                if (value)
+                                {
+                                    setPinDraft(RandomPin());
+                                    setPinDialogOpen(true);
+                                }
+                                else
+                                {
+                                    setPin(null);
+                                    node?.SetWebSharePin(null);
+                                }
+                            },
+                            t.Message(new("App", "WebShareRequirePin"))),
+                        pin is null
+                            ? null
+                            : TextBlock(t.Message(new("App", "WebSharePinHint"), ("pin", pin)))
+                                .Foreground(Theme.SystemCaution),
+                        (ContentDialog(
+                                t.Message(new("App", "WebSharePinTitle")),
+                                TextBox(pinDraft, setPinDraft)
+                                    .AutomationName(t.Message(new("App", "WebSharePinTitle"))),
+                                primaryButtonText: t.Message(new("App", "Confirm"))) with
+                            {
+                                IsOpen = pinDialogOpen,
+                                SecondaryButtonText = t.Message(new("App", "Cancel")),
+                                DefaultButton = ContentDialogButton.Primary,
+                                OnClosed = result =>
+                                {
+                                    if (result == ContentDialogResult.Primary && !string.IsNullOrWhiteSpace(pinDraft))
+                                    {
+                                        var next = pinDraft.Trim();
+                                        setPin(next);
+                                        node?.SetWebSharePin(next);
+                                    }
+
+                                    setPinDialogOpen(false);
+                                },
+                            }).Themed(dialogTheme),
+                        (ContentDialog(
+                                t.Message(new("App", "WebShareQrTitle")),
+                                qrUrl is null
+                                    ? Empty()
+                                    : VStack(12,
+                                        QrCodeCanvas.Render(
+                                            qrUrl,
+                                            t.Message(new("App", "WebShareQrTitle"))),
+                                        TextBlock(qrUrl)
+                                            .TextWrapping(TextWrapping.WrapWholeWords)
+                                            .IsTextSelectionEnabled()),
+                                primaryButtonText: t.Message(new("App", "Close"))) with
+                            {
+                                IsOpen = qrUrl is not null,
+                                OnClosed = _ => setQrUrl(null),
+                            }).Themed(dialogTheme),
+                        (ContentDialog(
+                                t.Message(new("App", "WebShareZoomTitle")),
+                                Title(zoomUrl ?? "")
+                                    .TextWrapping(TextWrapping.WrapWholeWords)
+                                    .IsTextSelectionEnabled()
+                                    .AutomationName(t.Message(new("App", "WebShareZoomTitle"))),
+                                primaryButtonText: t.Message(new("App", "Close"))) with
+                            {
+                                IsOpen = zoomUrl is not null,
+                                OnClosed = _ => setZoomUrl(null),
+                            }).Themed(dialogTheme))
+                    .Padding(AppLayout.PagePadding))
             .HorizontalContentAlignment(HorizontalAlignment.Stretch)
             .Landmark(AutomationLandmarkType.Main);
 
@@ -277,65 +279,65 @@ sealed class WebSharePage : Component<WebSharePageProps>
         Action<string?> setZoom,
         Action share) =>
         Border(
-            Grid(
-                columns: [GridSize.Star(), GridSize.Auto, GridSize.Auto, GridSize.Auto, GridSize.Auto],
-                rows: [GridSize.Auto],
-                TextBlock(url)
-                    .TextTrimming(TextTrimming.CharacterEllipsis)
-                    .IsTextSelectionEnabled(true)
-                    .VAlign(VerticalAlignment.Center)
-                    .ToolTip(url)
-                    .Grid(column: 0),
-                AnimatedButtons.CopyFeedback(
-                        copySuccessVersion,
-                        t.Message(new("App", "WebShareCopy")),
-                        copy)
-                    .MinWidth(40)
-                    .MinHeight(40)
-                    .Grid(column: 1),
-                IconButton("\uED14", t.Message(new("App", "WebShareQr")), () => showQr(url))
-                    .Grid(column: 2),
-                IconButton("\uE7F4", t.Message(new("App", "WebShareZoom")), () => setZoom(url))
-                    .Grid(column: 3),
-                IconButton("\uE72D", t.Message(new("App", "WebShareSystemShare")), share)
-                    .Grid(column: 4)) with
-            {
-                ColumnSpacing = 4,
-            })
+                Grid(
+                        columns: [GridSize.Star(), GridSize.Auto, GridSize.Auto, GridSize.Auto, GridSize.Auto],
+                        rows: [GridSize.Auto],
+                        TextBlock(url)
+                            .TextTrimming(TextTrimming.CharacterEllipsis)
+                            .IsTextSelectionEnabled()
+                            .VAlign(VerticalAlignment.Center)
+                            .ToolTip(url)
+                            .Grid(column: 0),
+                        AnimatedButtons.CopyFeedback(
+                                copySuccessVersion,
+                                t.Message(new("App", "WebShareCopy")),
+                                copy)
+                            .MinWidth(40)
+                            .MinHeight(40)
+                            .Grid(column: 1),
+                        IconButton("\uED14", t.Message(new("App", "WebShareQr")), () => showQr(url))
+                            .Grid(column: 2),
+                        IconButton("\uE7F4", t.Message(new("App", "WebShareZoom")), () => setZoom(url))
+                            .Grid(column: 3),
+                        IconButton("\uE72D", t.Message(new("App", "WebShareSystemShare")), share)
+                            .Grid(column: 4)) with
+                    {
+                        ColumnSpacing = 4,
+                    })
             .Padding(horizontal: 16, vertical: 8)
             .CornerRadius(8)
             .Background(Theme.SubtleFill);
 
     private static Element RequestCard(IntlAccessor t, WebShareRequest request, LocalSendNode? node) =>
         Border(
-            Grid(
-                columns: [GridSize.Star(), GridSize.Auto],
-                rows: [GridSize.Auto],
-                VStack(4,
-                    TextBlock(request.DeviceInfo)
-                        .Foreground(request.Pending ? Theme.SystemCaution : Theme.PrimaryText),
-                    Caption(request.Ip).Foreground(Theme.SecondaryText))
-                    .Grid(column: 0),
-                (request.Pending
-                    ? (Element)HStack(4,
-                        Button(Icon("Cancel"), () => node?.DeclineWebShareRequest(request.SessionId))
-                            .SubtleButton()
-                            .AutomationName(t.Message(new("App", "Decline")))
-                            .MinWidth(40)
-                            .MinHeight(40),
-                        Button(Icon("Accept"), () => node?.AcceptWebShareRequest(request.SessionId))
-                            .SubtleButton()
-                            .AutomationName(t.Message(new("App", "Accept")))
-                            .MinWidth(40)
-                            .MinHeight(40))
-                    : Caption(t.Message(new("App", "WebShareAccepted")))
-                        .Foreground(Theme.SecondaryText)
-                        .VAlign(VerticalAlignment.Center))
+                Grid(
+                    columns: [GridSize.Star(), GridSize.Auto],
+                    rows: [GridSize.Auto],
+                    VStack(4,
+                            TextBlock(request.DeviceInfo)
+                                .Foreground(request.Pending ? Theme.SystemCaution : Theme.PrimaryText),
+                            Caption(request.Ip).Foreground(Theme.SecondaryText))
+                        .Grid(column: 0),
+                    (request.Pending
+                        ? (Element)HStack(4,
+                            Button(Icon("Cancel"), () => node?.DeclineWebShareRequest(request.SessionId))
+                                .SubtleButton()
+                                .AutomationName(t.Message(new("App", "Decline")))
+                                .MinWidth(40)
+                                .MinHeight(40),
+                            Button(Icon("Accept"), () => node?.AcceptWebShareRequest(request.SessionId))
+                                .SubtleButton()
+                                .AutomationName(t.Message(new("App", "Accept")))
+                                .MinWidth(40)
+                                .MinHeight(40))
+                        : Caption(t.Message(new("App", "WebShareAccepted")))
+                            .Foreground(Theme.SecondaryText)
+                            .VAlign(VerticalAlignment.Center))
                     .Grid(column: 1)))
             .Padding(12)
             .CornerRadius(8)
             .Background(Theme.CardBackground)
-            .WithBorder(Theme.CardStroke, 1);
+            .WithBorder(Theme.CardStroke);
 
     private static Element IconButton(string glyph, string name, Action onClick) =>
         Button(Icon(glyph), onClick)

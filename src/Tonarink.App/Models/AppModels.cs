@@ -107,9 +107,9 @@ sealed record AppSettings(
 
     public IPAddress ResolvedMulticastAddress =>
         IPAddress.TryParse(MulticastGroup, out var address)
-            && address.AddressFamily == AddressFamily.InterNetwork
-                ? address
-                : LocalSendOptions.DefaultMulticastAddress;
+        && address.AddressFamily == AddressFamily.InterNetwork
+            ? address
+            : LocalSendOptions.DefaultMulticastAddress;
 }
 
 sealed record AppRuntimeState(
@@ -128,8 +128,8 @@ sealed record AppRuntimeState(
     public static readonly AppRuntimeState Initial = new(
         LocalSendNodeState.Created,
         Identity: null,
-        Devices: Array.Empty<LocalSendDevice>(),
-        IncomingTransfers: Array.Empty<IncomingTransferRequest>(),
+        Devices: [],
+        IncomingTransfers: [],
         DeviceActivity: new Dictionary<string, IReadOnlyList<DeviceActivityEntry>>(StringComparer.Ordinal),
         Error: null,
         AppliedMulticastGroup: null,

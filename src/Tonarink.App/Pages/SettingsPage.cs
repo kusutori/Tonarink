@@ -2,9 +2,7 @@ using CommunityToolkit.WinUI.Controls;
 using LocalSendDotNet;
 using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Core;
-using Microsoft.UI.Reactor.Layout;
 using Microsoft.UI.Reactor.Localization;
-using Microsoft.UI.Reactor.Navigation;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
@@ -526,10 +524,10 @@ sealed class SettingsPage : Component<SettingsPageProps>
                             ? null
                             : (InfoBar(t.Message(new("App", "NodeDiscoveryLimited")),
                                     Props.Runtime.DiscoveryWarning) with
-                            {
-                                IsOpen = true,
-                                IsClosable = false,
-                            }).Severity(InfoBarSeverity.Warning),
+                                {
+                                    IsOpen = true,
+                                    IsClosable = false,
+                                }).Severity(InfoBarSeverity.Warning),
                         generalCards,
                         receiveCards,
                         sendCards,
@@ -540,11 +538,11 @@ sealed class SettingsPage : Component<SettingsPageProps>
                                 TextBlock(t.Message(new("App", "SettingsEncryptionDisabledNotice")))
                                     .TextWrapping(TextWrapping.WrapWholeWords),
                                 primaryButtonText: t.Message(new("App", "Close"))) with
-                        {
-                            IsOpen = encryptionNoticeOpen,
-                            DefaultButton = ContentDialogButton.Close,
-                            OnClosed = _ => setEncryptionNoticeOpen(false),
-                        })
+                            {
+                                IsOpen = encryptionNoticeOpen,
+                                DefaultButton = ContentDialogButton.Close,
+                                OnClosed = _ => setEncryptionNoticeOpen(false),
+                            })
                     .Padding(AppLayout.PagePadding))
             .HorizontalContentAlignment(HorizontalAlignment.Stretch)
             .Landmark(AutomationLandmarkType.Main);

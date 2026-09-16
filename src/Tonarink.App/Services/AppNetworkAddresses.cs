@@ -36,16 +36,17 @@ static class AppNetworkAddresses
 
             var interfaceAddresses = nic.GetIPProperties().UnicastAddresses
                 .Select(static item => item.Address)
-                .Where(static address => address.AddressFamily == AddressFamily.InterNetwork && !IPAddress.IsLoopback(address))
+                .Where(static address =>
+                    address.AddressFamily == AddressFamily.InterNetwork && !IPAddress.IsLoopback(address))
                 .Select(static address => address.ToString())
                 .Distinct(StringComparer.Ordinal)
                 .ToArray();
             if (interfaceAddresses.Length == 0)
                 continue;
             if (NetworkAddressPatterns.IsInterfaceIgnored(
-                interfaceAddresses,
-                whitelist,
-                blacklist))
+                    interfaceAddresses,
+                    whitelist,
+                    blacklist))
                 continue;
 
             var hasGateway = nic.GetIPProperties().GatewayAddresses.Any(static gateway =>
@@ -55,32 +56,39 @@ static class AppNetworkAddresses
                 (address, AddressPriority(IPAddress.Parse(address), hasGateway))));
         }
 
-        return addresses
-            .GroupBy(static item => item.Address, StringComparer.Ordinal)
-            .Select(static group => group.MinBy(static item => item.Priority))
-            .ToArray();
+        return
+        [
+            .. addresses
+                .GroupBy(static item => item.Address, StringComparer.Ordinal)
+                .Select(static group => group.MinBy(static item => item.Priority))
+        ];
     }
 
     private static IReadOnlyList<string> OrderAddresses(
         IEnumerable<(string Address, int Priority)> addresses) =>
-        addresses
+    [
+        .. addresses
             .OrderBy(static item => item.Priority)
             .ThenBy(static item => item.Address, StringComparer.Ordinal)
             .Select(static item => item.Address)
-            .ToArray();
+    ];
 
     private static int AddressPriority(IPAddress address, bool hasGateway)
     {
         var octets = address.GetAddressBytes();
         var isAutomaticPrivate = octets[0] == 169 && octets[1] == 254;
         var isPrivate = octets[0] == 10
-            || octets[0] == 172 && octets[1] is >= 16 and <= 31
-            || octets[0] == 192 && octets[1] == 168;
+                        || octets[0] == 172 && octets[1] is >= 16 and <= 31
+                        || octets[0] == 192 && octets[1] == 168;
 
-        if (isPrivate && hasGateway)
-            return 0;
-        if (isPrivate)
-            return 1;
+        switch (isPrivate)
+        {
+            case true when hasGateway:
+                return 0;
+            case true:
+                return 1;
+        }
+
         if (hasGateway && !isAutomaticPrivate)
             return 2;
         return isAutomaticPrivate ? 4 : 3;
