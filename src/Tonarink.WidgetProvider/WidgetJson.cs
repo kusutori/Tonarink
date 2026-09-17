@@ -57,6 +57,7 @@ sealed class WidgetCardData
     public bool ServerOn { get; set; }
     public string ServerLabel { get; set; } = "";
     public string ServerValue { get; set; } = "关";
+    public string ServerColor { get; set; } = "default";
     public string ServerHint { get; set; } = "";
     public bool IsNearby { get; set; }
     public bool IsHistory { get; set; }
@@ -73,13 +74,12 @@ sealed class WidgetCardData
     public string HistoryTab { get; set; } = "";
     public string NearbyWeight { get; set; } = "default";
     public string HistoryWeight { get; set; } = "default";
-    public string OpenLabel { get; set; } = "";
+    public string NearbyColor { get; set; } = "default";
+    public string HistoryColor { get; set; } = "default";
     public string TransferTitle { get; set; } = "";
     public string TransferPeer { get; set; } = "";
     public string TransferStatus { get; set; } = "";
     public string TransferProgress { get; set; } = "";
-    public int ProgressFilled { get; set; } = 1;
-    public int ProgressRest { get; set; } = 99;
     public List<WidgetCardRow> Devices { get; set; } = [];
     public List<WidgetCardRow> History { get; set; } = [];
 }

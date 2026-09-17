@@ -2,42 +2,21 @@
   "type": "AdaptiveCard",
   "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
   "version": "1.5",
+  "speak": "${title}",
   "body": [
     {
       "type": "ColumnSet",
       "columns": [
         {
           "type": "Column",
-          "width": "auto",
-          "verticalContentAlignment": "center",
-          "items": [
-            {
-              "type": "Image",
-              "url": "${statusIcon}",
-              "size": "small",
-              "width": "18px",
-              "altText": "${appStatusLabel}"
-            }
-          ]
-        },
-        {
-          "type": "Column",
           "width": "stretch",
-          "verticalContentAlignment": "center",
           "items": [
             {
               "type": "TextBlock",
               "text": "${title}",
-              "weight": "bolder",
               "size": "medium",
+              "weight": "bolder",
               "spacing": "none"
-            },
-            {
-              "type": "TextBlock",
-              "text": "${appStatusLabel}",
-              "isSubtle": true,
-              "spacing": "none",
-              "size": "small"
             }
           ]
         },
@@ -45,20 +24,39 @@
           "type": "Column",
           "width": "auto",
           "verticalContentAlignment": "center",
-          "selectAction": {
-            "type": "Action.Execute",
-            "verb": "toggle"
-          },
           "items": [
             {
-              "type": "Container",
-              "style": "emphasis",
-              "items": [
+              "type": "ColumnSet",
+              "spacing": "none",
+              "columns": [
                 {
-                  "type": "TextBlock",
-                  "text": "${serverLabel} ${serverValue}",
-                  "weight": "bolder",
-                  "size": "small"
+                  "type": "Column",
+                  "width": "auto",
+                  "verticalContentAlignment": "center",
+                  "items": [
+                    {
+                      "type": "Image",
+                      "url": "${statusIcon}",
+                      "width": "14px",
+                      "height": "14px",
+                      "altText": "${appStatusLabel}"
+                    }
+                  ]
+                },
+                {
+                  "type": "Column",
+                  "width": "auto",
+                  "verticalContentAlignment": "center",
+                  "items": [
+                    {
+                      "type": "TextBlock",
+                      "text": "${appStatusLabel}",
+                      "size": "small",
+                      "isSubtle": true,
+                      "spacing": "none",
+                      "$when": "${$host.widgetSize != \"small\"}"
+                    }
+                  ]
                 }
               ]
             }
@@ -67,13 +65,56 @@
       ]
     },
     {
-      "type": "TextBlock",
-      "text": "${serverHint}",
-      "isSubtle": true,
-      "wrap": true,
-      "size": "small",
-      "spacing": "small",
-      "$when": "${$host.widgetSize != \"small\"}"
+      "type": "Container",
+      "style": "emphasis",
+      "spacing": "medium",
+      "selectAction": {
+        "type": "Action.Execute",
+        "verb": "toggle"
+      },
+      "items": [
+        {
+          "type": "ColumnSet",
+          "columns": [
+            {
+              "type": "Column",
+              "width": "stretch",
+              "items": [
+                {
+                  "type": "TextBlock",
+                  "text": "${serverLabel}",
+                  "weight": "bolder",
+                  "spacing": "none"
+                },
+                {
+                  "type": "TextBlock",
+                  "text": "${serverHint}",
+                  "size": "small",
+                  "isSubtle": true,
+                  "wrap": true,
+                  "maxLines": 2,
+                  "spacing": "none",
+                  "$when": "${$host.widgetSize == \"large\"}"
+                }
+              ]
+            },
+            {
+              "type": "Column",
+              "width": "auto",
+              "verticalContentAlignment": "center",
+              "items": [
+                {
+                  "type": "TextBlock",
+                  "text": "${serverValue}",
+                  "color": "${serverColor}",
+                  "weight": "bolder",
+                  "spacing": "none"
+                }
+              ]
+            }
+          ]
+        }
+      ]
     },
     {
       "type": "Container",
@@ -85,180 +126,91 @@
           "type": "TextBlock",
           "text": "${transferTitle}",
           "weight": "bolder",
-          "wrap": true
+          "wrap": true,
+          "maxLines": 1
         },
         {
           "type": "TextBlock",
           "text": "${transferPeer}",
+          "size": "small",
           "isSubtle": true,
+          "wrap": true,
+          "maxLines": 1,
           "spacing": "none",
-          "wrap": true
+          "$when": "${$host.widgetSize != \"small\"}"
         },
         {
           "type": "TextBlock",
           "text": "${transferStatus}",
-          "spacing": "small",
+          "size": "small",
           "wrap": true,
-          "size": "small"
-        },
-        {
-          "type": "ColumnSet",
+          "maxLines": 1,
           "spacing": "small",
-          "$when": "${hasProgressBar}",
-          "columns": [
-            {
-              "type": "Column",
-              "width": "${progressFilled}",
-              "items": [
-                {
-                  "type": "Container",
-                  "style": "accent",
-                  "items": [
-                    {
-                      "type": "TextBlock",
-                      "text": " ",
-                      "size": "small"
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "type": "Column",
-              "width": "${progressRest}",
-              "items": [
-                {
-                  "type": "Container",
-                  "style": "emphasis",
-                  "items": [
-                    {
-                      "type": "TextBlock",
-                      "text": " ",
-                      "size": "small"
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
+          "$when": "${$host.widgetSize != \"small\"}"
         },
         {
           "type": "TextBlock",
           "text": "${transferProgress}",
-          "isSubtle": true,
-          "spacing": "small",
           "size": "small",
+          "isSubtle": true,
+          "spacing": "none",
           "$when": "${hasProgressBar}"
         }
       ]
     },
     {
-      "type": "Container",
-      "style": "emphasis",
+      "type": "TextBlock",
+      "text": "${deviceCountLabel}",
+      "weight": "bolder",
       "spacing": "medium",
-      "$when": "${$host.widgetSize == \"small\" && isNearby && !hasTransfer}",
-      "items": [
-        {
-          "type": "TextBlock",
-          "text": "${deviceCountLabel}",
-          "weight": "bolder",
-          "horizontalAlignment": "center"
-        }
-      ]
+      "$when": "${isNearby && !hasTransfer}"
     },
     {
-      "type": "Container",
-      "style": "emphasis",
+      "type": "TextBlock",
+      "text": "${historyCountLabel}",
+      "weight": "bolder",
       "spacing": "medium",
-      "$when": "${$host.widgetSize == \"small\" && isHistory && !hasTransfer}",
-      "items": [
-        {
-          "type": "TextBlock",
-          "text": "${historyCountLabel}",
-          "weight": "bolder",
-          "horizontalAlignment": "center"
-        }
-      ]
-    },
-    {
-      "type": "Container",
-      "spacing": "medium",
-      "$when": "${$host.widgetSize != \"small\" && isNearby && !hasTransfer && hasDevices}",
-      "items": [
-        {
-          "type": "ColumnSet",
-          "$data": "${devices}",
-          "$when": "${($host.widgetSize == \"medium\" && $index < 3) || ($host.widgetSize == \"large\" && $index < 8)}",
-          "spacing": "small",
-          "columns": [
-            {
-              "type": "Column",
-              "width": "auto",
-              "verticalContentAlignment": "center",
-              "items": [
-                {
-                  "type": "Image",
-                  "url": "${icon}",
-                  "size": "small",
-                  "width": "24px",
-                  "altText": "${alias}"
-                }
-              ]
-            },
-            {
-              "type": "Column",
-              "width": "stretch",
-              "verticalContentAlignment": "center",
-              "items": [
-                {
-                  "type": "TextBlock",
-                  "text": "${alias}",
-                  "wrap": true
-                }
-              ]
-            }
-          ]
-        }
-      ]
+      "$when": "${isHistory && !hasTransfer}"
     },
     {
       "type": "TextBlock",
       "text": "${emptyLabel}",
+      "size": "small",
       "isSubtle": true,
-      "spacing": "medium",
-      "horizontalAlignment": "center",
-      "$when": "${$host.widgetSize != \"small\" && isNearby && !hasTransfer && !hasDevices}"
+      "spacing": "small",
+      "$when": "${isNearby && !hasTransfer && !hasDevices && $host.widgetSize != \"small\"}"
     },
     {
-      "type": "Container",
-      "spacing": "medium",
-      "$when": "${$host.widgetSize != \"small\" && isHistory && !hasTransfer && hasHistoryItems}",
-      "items": [
+      "type": "ColumnSet",
+      "$data": "${devices}",
+      "$when": "${$root.isNearby && !$root.hasTransfer && $host.widgetSize != \"small\" && (($host.widgetSize == \"medium\" && $index < 2) || ($host.widgetSize == \"large\" && $index < 4))}",
+      "spacing": "small",
+      "columns": [
         {
-          "type": "ColumnSet",
-          "$data": "${history}",
-          "$when": "${($host.widgetSize == \"medium\" && $index < 4) || ($host.widgetSize == \"large\" && $index < 8)}",
-          "spacing": "small",
-          "columns": [
+          "type": "Column",
+          "width": "auto",
+          "verticalContentAlignment": "center",
+          "items": [
             {
-              "type": "Column",
-              "width": "stretch",
-              "items": [
-                {
-                  "type": "TextBlock",
-                  "text": "${fileName}",
-                  "weight": "bolder",
-                  "wrap": true
-                },
-                {
-                  "type": "TextBlock",
-                  "text": "${detail}",
-                  "isSubtle": true,
-                  "spacing": "none",
-                  "size": "small",
-                  "wrap": true
-                }
-              ]
+              "type": "Image",
+              "url": "${icon}",
+              "width": "22px",
+              "height": "22px",
+              "altText": "${alias}"
+            }
+          ]
+        },
+        {
+          "type": "Column",
+          "width": "stretch",
+          "verticalContentAlignment": "center",
+          "items": [
+            {
+              "type": "TextBlock",
+              "text": "${alias}",
+              "wrap": true,
+              "maxLines": 1,
+              "spacing": "none"
             }
           ]
         }
@@ -267,14 +219,40 @@
     {
       "type": "TextBlock",
       "text": "${historyEmptyLabel}",
+      "size": "small",
       "isSubtle": true,
-      "spacing": "medium",
-      "horizontalAlignment": "center",
-      "$when": "${$host.widgetSize != \"small\" && isHistory && !hasTransfer && !hasHistoryItems}"
+      "spacing": "small",
+      "$when": "${isHistory && !hasTransfer && !hasHistoryItems && $host.widgetSize != \"small\"}"
+    },
+    {
+      "type": "Container",
+      "$data": "${history}",
+      "$when": "${$root.isHistory && !$root.hasTransfer && $host.widgetSize != \"small\" && (($host.widgetSize == \"medium\" && $index < 2) || ($host.widgetSize == \"large\" && $index < 4))}",
+      "spacing": "small",
+      "items": [
+        {
+          "type": "TextBlock",
+          "text": "${fileName}",
+          "weight": "bolder",
+          "wrap": true,
+          "maxLines": 1,
+          "spacing": "none"
+        },
+        {
+          "type": "TextBlock",
+          "text": "${detail}",
+          "size": "small",
+          "isSubtle": true,
+          "wrap": true,
+          "maxLines": 1,
+          "spacing": "none"
+        }
+      ]
     },
     {
       "type": "ColumnSet",
       "spacing": "medium",
+      "separator": true,
       "columns": [
         {
           "type": "Column",
@@ -288,7 +266,9 @@
               "type": "TextBlock",
               "text": "${nearbyTab}",
               "weight": "${nearbyWeight}",
-              "horizontalAlignment": "center"
+              "color": "${nearbyColor}",
+              "horizontalAlignment": "center",
+              "spacing": "none"
             }
           ]
         },
@@ -304,7 +284,9 @@
               "type": "TextBlock",
               "text": "${historyTab}",
               "weight": "${historyWeight}",
-              "horizontalAlignment": "center"
+              "color": "${historyColor}",
+              "horizontalAlignment": "center",
+              "spacing": "none"
             }
           ]
         }
@@ -314,13 +296,5 @@
   "selectAction": {
     "type": "Action.Execute",
     "verb": "open"
-  },
-  "actions": [
-    {
-      "type": "Action.Execute",
-      "title": "${openLabel}",
-      "verb": "open",
-      "$when": "${$host.widgetSize == \"large\" && !appRunning}"
-    }
-  ]
+  }
 }

@@ -107,7 +107,14 @@ Windows 11 widgets are **not** in the default package. Opt in with
 `Tonarink.WidgetProvider.exe` (~3 MB) plus templates and icons. The host
 shares the package's Windows App SDK runtime instead of bundling a second
 copy.
-Do not use `winapp package` for this layout.
+`winapp package` 0.6.1 packs this prepared layout. A local x64 comparison found
+that its payload and `resources.pri` matched `makeappx` byte for byte; the
+generated manifest only gained a WinAppCli build marker. Use `--skip-pri` to
+retain the merged PRI created above. The CLI does not replace the publish,
+widget-payload, manifest, asset, or PRI preparation steps. GitHub Release CI
+uses WinApp CLI for managed and Native AOT MSIX packages, then signs them with
+the Windows SDK's `signtool`. Store CI also uses it for unsigned MSIX packages
+and the submission bundle.
 
 ```powershell
 dotnet publish src/Tonarink.App/Tonarink.App.csproj -c Release `
@@ -125,8 +132,8 @@ Copy-Item src/Tonarink.App/Assets/*.png, src/Tonarink.App/Assets/*.ico `
 ./tools/New-AotMsixResourcesPri.ps1 `
   -LayoutPath artifacts/publish/native-aot/win-x64
 
-makeappx pack /o /d artifacts/publish/native-aot/win-x64 `
-  /p artifacts/Tonarink-win-x64-aot.msix
+winapp package artifacts/publish/native-aot/win-x64 --skip-pri `
+  --output artifacts/Tonarink-win-x64-aot.msix
 ```
 
 A missing `mspdbcmf.exe` only prevents generation of the optional symbol package; it
@@ -137,8 +144,7 @@ does not prevent the `.msix` application package from being created.
 Pushing a numeric `app-vMAJOR.MINOR.PATCH` tag builds x64 and ARM64 Native AOT
 portable archives, signed managed MSIX sideload ZIPs, and signed Native AOT MSIX
 sideload ZIPs, then attaches them to the GitHub Release for that tag. Managed
-MSIX ZIPs use the standard `*_Test` AppPackages layout; Native AOT MSIX ZIPs use
-the repository's lightweight sideload installer. The separate tag prefix avoids
+MSIX ZIPs include the repository's sideload installer. The separate tag prefix avoids
 triggering Core NuGet publication. The private key is supplied only through
 GitHub Actions Secrets. See [app-release-ci.md](app-release-ci.md) for setup and
 release instructions.

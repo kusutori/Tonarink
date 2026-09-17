@@ -10,3 +10,8 @@ name = "watch run"
 icon = "run"
 command = "dotnet watch run --project .\\src\\Tonarink.App\\Tonarink.App.csproj"
 platform = "win32"
+
+[[actions]]
+name = "winapp"
+icon = "test"
+command = "winapp run .\\src\\Tonarink.App\\Tonarink.App.csproj -c Debug --arch x64 -p TonarinkPackaged=true -p TonarinkWidgets=true --no-restore --output-appx-directory .\\artifacts\\winapp-widget-dev --detach"

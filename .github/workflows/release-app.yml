@@ -134,6 +134,10 @@ jobs:
         with:
           dotnet-version: 10.0.x
 
+      - name: Install WinApp CLI
+        shell: pwsh
+        run: ./tools/Install-WinAppCli.ps1 -Destination (Join-Path $env:RUNNER_TEMP 'winapp-cli')
+
       - name: Validate signing configuration
         shell: pwsh
         env:
@@ -177,8 +181,11 @@ jobs:
           if ($certificate.Subject -ne $expectedPublisher) {
             throw "Certificate subject '$($certificate.Subject)' does not match manifest publisher '$expectedPublisher'."
           }
+          $publicCertificatePath = Join-Path $env:RUNNER_TEMP 'release-signing.cer'
+          Export-Certificate -Cert $certificate -FilePath $publicCertificatePath -Type CERT | Out-Null
           "thumbprint=$($certificate.Thumbprint)" >> $env:GITHUB_OUTPUT
           "pfx=$certificatePath" >> $env:GITHUB_OUTPUT
+          "cer=$publicCertificatePath" >> $env:GITHUB_OUTPUT
 
       - name: Restore
         run: |
@@ -186,7 +193,7 @@ jobs:
           dotnet restore src/Tonarink.ExplorerCommand/Tonarink.ExplorerCommand.csproj -p:Platform=${{ matrix.platform }} -r ${{ matrix.rid }}
           dotnet restore src/Tonarink.WidgetProvider/Tonarink.WidgetProvider.csproj -p:Platform=${{ matrix.platform }} -r ${{ matrix.rid }}
 
-      - name: Build signed MSIX
+      - name: Build and pack MSIX with WinApp CLI
         shell: pwsh
         env:
           PLATFORM: ${{ matrix.platform }}
@@ -197,45 +204,54 @@ jobs:
           $releaseVersion = $env:PACKAGE_VERSION -replace '\.0$', ''
           $suffix = '${{ matrix.suffix }}'
           $archive = Join-Path $env:RUNNER_TEMP "Tonarink-$releaseVersion-$env:PLATFORM$suffix-msix.zip"
-          $packageDir = Join-Path $env:RUNNER_TEMP 'AppPackages\'
+          $packagePath = Join-Path $env:RUNNER_TEMP "Tonarink-$releaseVersion-$env:PLATFORM$suffix.msix"
+          $layout = Join-Path $env:RUNNER_TEMP 'managed-msix-layout'
           $widgets = '${{ matrix.widgets }}'
-          dotnet build $env:APP_PROJECT --no-restore -c Release `
+          dotnet publish $env:APP_PROJECT --no-restore -c Release `
+            -r $env:RID `
             -p:Platform=$env:PLATFORM `
-            -p:RuntimeIdentifier=$env:RID `
             -p:TonarinkPackaged=true `
             -p:TonarinkWidgets=$widgets `
-            -p:GenerateAppxPackageOnBuild=true `
-            -p:GenerateTestArtifacts=true `
-            -p:AppxSymbolPackageEnabled=false `
-            -p:AppxPackageIncludePrivateSymbols=false `
-            -p:AppxPackageSigningEnabled=true `
-            -p:PackageCertificateThumbprint=$env:THUMBPRINT `
-            -p:AppxPackageDir=$packageDir
+            -p:GenerateAppxPackageOnBuild=false `
+            -o $layout
           if ($LASTEXITCODE -ne 0) {
-            throw "Packaging the $env:PLATFORM$suffix MSIX failed."
+            throw "Publishing the $env:PLATFORM$suffix MSIX layout failed."
           }
 
-          $packageFolder = Get-ChildItem $packageDir -Directory -Recurse |
-            Where-Object { $_.Name -like '*_Test' } |
+          $appxLayouts = @(Get-ChildItem 'src/Tonarink.App/bin' -Recurse -Filter AppxManifest.xml -File |
+            Where-Object { $_.Directory.Name -eq $env:RID -and $_.FullName -match '[\\/]Release[\\/]' })
+          if ($appxLayouts.Count -ne 1) {
+            throw "Expected one generated Release manifest for $env:RID, found $($appxLayouts.Count)."
+          }
+          Copy-Item -LiteralPath $appxLayouts[0].FullName -Destination (Join-Path $layout 'AppxManifest.xml')
+          if (-not (Test-Path (Join-Path $layout 'resources.pri'))) {
+            throw 'The managed MSIX layout is missing resources.pri.'
+          }
+
+          winapp package $layout --skip-pri --output $packagePath
+          if ($LASTEXITCODE -ne 0) {
+            throw 'WinApp CLI failed to pack the managed MSIX.'
+          }
+
+          $sdkBinRoot = Join-Path ${env:ProgramFiles(x86)} 'Windows Kits\10\bin'
+          $sdkTools = Get-ChildItem -LiteralPath $sdkBinRoot -Directory |
+            Where-Object { Test-Path (Join-Path $_.FullName 'x64\signtool.exe') } |
+            Sort-Object { [Version]$_.Name } -Descending |
             Select-Object -First 1
-          if ($null -eq $packageFolder) {
-            throw 'The build completed without producing a standard AppPackages Test folder.'
+          if ($null -eq $sdkTools) {
+            throw 'A Windows SDK containing signtool.exe was not found.'
           }
-
-          foreach ($requiredName in @('Install.ps1', 'Add-AppDevPackage.ps1')) {
-            if (-not (Test-Path (Join-Path $packageFolder.FullName $requiredName))) {
-              throw "The package folder is missing $requiredName."
-            }
-          }
-          $msix = Get-ChildItem $packageFolder.FullName -Filter *.msix | Select-Object -First 1
-          if ($null -eq $msix) {
-            throw 'The package folder is missing an MSIX file.'
+          $signTool = Join-Path $sdkTools.FullName 'x64\signtool.exe'
+          & $signTool sign /fd SHA256 /s My /sha1 $env:THUMBPRINT $packagePath
+          if ($LASTEXITCODE -ne 0) {
+            throw 'signtool failed to sign the managed MSIX.'
           }
 
           Add-Type -AssemblyName System.IO.Compression.FileSystem
-          $zip = [IO.Compression.ZipFile]::OpenRead($msix.FullName)
+          $zip = [IO.Compression.ZipFile]::OpenRead($packagePath)
           try {
             $hasWidget = [bool]($zip.Entries.FullName | Where-Object { $_ -match 'WidgetProvider[/\\]Tonarink\.WidgetProvider\.exe$' })
+            $primaryPri = $zip.GetEntry('resources.pri')
           }
           finally {
             $zip.Dispose()
@@ -246,8 +262,18 @@ jobs:
           if ($widgets -ne 'true' -and $hasWidget) {
             throw 'The default MSIX must not include Tonarink.WidgetProvider.exe.'
           }
+          if ($null -eq $primaryPri -or $primaryPri.Length -eq 0) {
+            throw 'The managed MSIX is missing its primary resources.pri.'
+          }
 
-          Compress-Archive -Path $packageFolder.FullName -DestinationPath $archive -CompressionLevel Optimal
+          $packageFolder = Join-Path $env:RUNNER_TEMP "Tonarink_${env:PACKAGE_VERSION}_${env:PLATFORM}${suffix}_Test"
+          New-Item -ItemType Directory -Path $packageFolder | Out-Null
+          Copy-Item $packagePath -Destination $packageFolder
+          Copy-Item 'tools/Install-MsixSideload.ps1' -Destination (Join-Path $packageFolder 'Install.ps1')
+          Copy-Item 'docs/development-msix-install.md' -Destination (Join-Path $packageFolder 'README.md')
+          Copy-Item LICENSE, NOTICE -Destination $packageFolder
+          Copy-Item '${{ steps.certificate.outputs.cer }}' -Destination (Join-Path $packageFolder 'Tonarink-Development.cer')
+          Compress-Archive -Path $packageFolder -DestinationPath $archive -CompressionLevel Optimal
 
       - name: Upload signed package
         uses: actions/upload-artifact@v4
@@ -262,6 +288,7 @@ jobs:
         run: |
           Remove-Item "Cert:\CurrentUser\My\${{ steps.certificate.outputs.thumbprint }}" -Force -ErrorAction SilentlyContinue
           Remove-Item "${{ steps.certificate.outputs.pfx }}" -Force -ErrorAction SilentlyContinue
+          Remove-Item "${{ steps.certificate.outputs.cer }}" -Force -ErrorAction SilentlyContinue
 
   signed-aot-msix:
     name: Build signed Native AOT MSIX ${{ matrix.platform }}${{ matrix.suffix }}
@@ -299,6 +326,10 @@ jobs:
         uses: actions/setup-dotnet@v5
         with:
           dotnet-version: 10.0.x
+
+      - name: Install WinApp CLI
+        shell: pwsh
+        run: ./tools/Install-WinAppCli.ps1 -Destination (Join-Path $env:RUNNER_TEMP 'winapp-cli')
 
       - name: Validate signing configuration
         shell: pwsh
@@ -422,29 +453,28 @@ jobs:
             throw 'AOT MSIX layout is missing resources.pri.'
           }
 
-      - name: Pack and sign Native AOT MSIX
+      - name: Pack and sign Native AOT MSIX with WinApp CLI
         shell: pwsh
         env:
           THUMBPRINT: ${{ steps.certificate.outputs.thumbprint }}
         run: |
           $sdkBinRoot = Join-Path ${env:ProgramFiles(x86)} 'Windows Kits\10\bin'
           $sdkTools = Get-ChildItem -LiteralPath $sdkBinRoot -Directory |
-            Where-Object { Test-Path (Join-Path $_.FullName 'x64\makeappx.exe') } |
+            Where-Object { Test-Path (Join-Path $_.FullName 'x64\signtool.exe') } |
             Sort-Object { [Version]$_.Name } -Descending |
             Select-Object -First 1
           if ($null -eq $sdkTools) {
-            throw 'A Windows SDK containing makeappx.exe and signtool.exe was not found.'
+            throw 'A Windows SDK containing signtool.exe was not found.'
           }
 
-          $makeAppx = Join-Path $sdkTools.FullName 'x64\makeappx.exe'
           $signTool = Join-Path $sdkTools.FullName 'x64\signtool.exe'
           $layout = Join-Path $env:RUNNER_TEMP 'aot-msix-layout'
           $packageName = 'Tonarink-${{ steps.package.outputs.release_version }}-${{ matrix.platform }}-aot${{ matrix.suffix }}.msix'
           $packagePath = Join-Path $env:RUNNER_TEMP $packageName
 
-          & $makeAppx pack /o /d $layout /p $packagePath
+          winapp package $layout --skip-pri --output $packagePath
           if ($LASTEXITCODE -ne 0) {
-            throw 'makeappx failed to create the Native AOT MSIX.'
+            throw 'WinApp CLI failed to create the Native AOT MSIX.'
           }
           & $signTool sign /fd SHA256 /s My /sha1 $env:THUMBPRINT $packagePath
           if ($LASTEXITCODE -ne 0) {

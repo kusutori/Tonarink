@@ -53,6 +53,7 @@ internal static class WidgetSnapshot
             ServerOn = serverOn,
             ServerLabel = chinese ? "接收服务" : "Receive",
             ServerValue = serverOn ? (chinese ? "开" : "On") : (chinese ? "关" : "Off"),
+            ServerColor = serverOn ? "accent" : "default",
             ServerHint = !appRunning
                 ? (chinese ? "打开应用后才能发现设备和接收文件。" : "Open the app to discover devices and receive files.")
                 : serverOn
@@ -77,7 +78,8 @@ internal static class WidgetSnapshot
             HistoryTab = chinese ? "历史" : "History",
             NearbyWeight = isNearby ? "bolder" : "default",
             HistoryWeight = isNearby ? "default" : "bolder",
-            OpenLabel = chinese ? "打开 Tonarink" : "Open Tonarink",
+            NearbyColor = isNearby ? "accent" : "default",
+            HistoryColor = isNearby ? "default" : "accent",
             TransferTitle = transfer?.Title ?? "",
             TransferPeer = transfer is null
                 ? ""
@@ -90,8 +92,6 @@ internal static class WidgetSnapshot
                 : transfer.Indeterminate || transfer.TotalBytes <= 0
                     ? ""
                     : $"{FormatBytes(transfer.BytesTransferred)} / {FormatBytes(transfer.TotalBytes)}  {percent}%",
-            ProgressFilled = Math.Max(percent, 1),
-            ProgressRest = Math.Max(100 - percent, 1),
             Devices = devices.Take(8).Select(static device => new WidgetCardRow
             {
                 Alias = string.IsNullOrWhiteSpace(device.Alias) ? "?" : device.Alias.Trim(),

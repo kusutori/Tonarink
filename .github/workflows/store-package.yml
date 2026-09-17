@@ -50,6 +50,10 @@ jobs:
         with:
           dotnet-version: 10.0.x
 
+      - name: Install WinApp CLI
+        shell: pwsh
+        run: ./tools/Install-WinAppCli.ps1 -Destination (Join-Path $env:RUNNER_TEMP 'winapp-cli')
+
       - name: Resolve Store package version
         id: package
         shell: pwsh
@@ -93,34 +97,40 @@ jobs:
             -p:Platform=${{ matrix.platform }} `
             -r ${{ matrix.rid }}
 
-      - name: Build unsigned Store MSIX
+      - name: Build and pack unsigned Store MSIX with WinApp CLI
         id: build
         shell: pwsh
         run: |
-          $packageDir = Join-Path $env:RUNNER_TEMP 'AppPackages\'
-          dotnet build $env:APP_PROJECT --no-restore -c Release `
+          $layout = Join-Path $env:RUNNER_TEMP 'store-msix-layout'
+          dotnet publish $env:APP_PROJECT --no-restore -c Release `
+            -r ${{ matrix.rid }} `
             -p:Platform=${{ matrix.platform }} `
-            -p:RuntimeIdentifier=${{ matrix.rid }} `
             -p:TonarinkPackaged=true `
             -p:TonarinkWidgets=false `
-            -p:GenerateAppxPackageOnBuild=true `
-            -p:GenerateTestArtifacts=false `
-            -p:AppxBundle=Never `
-            -p:AppxSymbolPackageEnabled=false `
-            -p:AppxPackageIncludePrivateSymbols=false `
-            -p:AppxPackageSigningEnabled=false `
-            -p:AppxPackageDir=$packageDir
+            -p:GenerateAppxPackageOnBuild=false `
+            -o $layout
           if ($LASTEXITCODE -ne 0) {
-            throw 'Store packaging failed for ${{ matrix.platform }}.'
+            throw 'Publishing the Store layout failed for ${{ matrix.platform }}.'
           }
 
-          $packages = @(Get-ChildItem -LiteralPath $packageDir -Recurse -File -Filter '*.msix')
-          if ($packages.Count -ne 1) {
-            throw "Expected one MSIX for ${{ matrix.platform }}, found $($packages.Count)."
+          $appxLayouts = @(Get-ChildItem 'src/Tonarink.App/bin' -Recurse -Filter AppxManifest.xml -File |
+            Where-Object { $_.Directory.Name -eq '${{ matrix.rid }}' -and $_.FullName -match '[\\/]Release[\\/]' })
+          if ($appxLayouts.Count -ne 1) {
+            throw "Expected one generated Release manifest for ${{ matrix.rid }}, found $($appxLayouts.Count)."
+          }
+          Copy-Item -LiteralPath $appxLayouts[0].FullName -Destination (Join-Path $layout 'AppxManifest.xml')
+          if (-not (Test-Path (Join-Path $layout 'resources.pri'))) {
+            throw 'The Store MSIX layout is missing resources.pri.'
           }
 
           $destination = Join-Path $env:RUNNER_TEMP 'Tonarink-Store-${{ steps.package.outputs.version }}-${{ matrix.platform }}.msix'
-          Copy-Item -LiteralPath $packages[0].FullName -Destination $destination
+          winapp package $layout --skip-pri --output $destination
+          if ($LASTEXITCODE -ne 0) {
+            throw 'WinApp CLI failed to pack the Store MSIX.'
+          }
+
+          $layoutArchive = Join-Path $env:RUNNER_TEMP 'store-layout-${{ matrix.platform }}.zip'
+          Compress-Archive -Path (Join-Path $layout '*') -DestinationPath $layoutArchive -CompressionLevel Optimal
 
           Add-Type -AssemblyName System.IO.Compression.FileSystem
           $archive = [IO.Compression.ZipFile]::OpenRead($destination)
@@ -128,6 +138,10 @@ jobs:
             $entry = $archive.GetEntry('AppxManifest.xml')
             if ($null -eq $entry) {
               throw 'The generated package has no AppxManifest.xml.'
+            }
+            $primaryPri = $archive.GetEntry('resources.pri')
+            if ($null -eq $primaryPri -or $primaryPri.Length -eq 0) {
+              throw 'The generated Store MSIX has no primary resources.pri.'
             }
             $reader = [IO.StreamReader]::new($entry.Open())
             try {
@@ -156,16 +170,37 @@ jobs:
           path: ${{ runner.temp }}/Tonarink-Store-${{ steps.package.outputs.version }}-${{ matrix.platform }}.msix
           if-no-files-found: error
 
+      - name: Upload architecture layout for bundling
+        uses: actions/upload-artifact@v4
+        with:
+          name: store-layout-${{ matrix.platform }}
+          path: ${{ runner.temp }}/store-layout-${{ matrix.platform }}.zip
+          if-no-files-found: error
+
   bundle:
     name: Create Store submission bundle
     needs: build
     runs-on: windows-latest
     steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install WinApp CLI
+        shell: pwsh
+        run: ./tools/Install-WinAppCli.ps1 -Destination (Join-Path $env:RUNNER_TEMP 'winapp-cli')
+
       - name: Download architecture packages
         uses: actions/download-artifact@v4
         with:
           pattern: store-msix-*
           path: packages
+          merge-multiple: true
+
+      - name: Download architecture layouts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: store-layout-*
+          path: layouts
           merge-multiple: true
 
       - name: Resolve Store package version
@@ -183,23 +218,28 @@ jobs:
           }
           "version=$version" >> $env:GITHUB_OUTPUT
 
-      - name: Create and inspect MSIX bundle
+      - name: Create and inspect MSIX bundle with WinApp CLI
         shell: pwsh
         run: |
-          $sdkBinRoot = Join-Path ${env:ProgramFiles(x86)} 'Windows Kits\10\bin'
-          $sdkTools = Get-ChildItem -LiteralPath $sdkBinRoot -Directory |
-            Where-Object { Test-Path (Join-Path $_.FullName 'x64\makeappx.exe') } |
-            Sort-Object { [Version]$_.Name } -Descending |
-            Select-Object -First 1
-          if ($null -eq $sdkTools) {
-            throw 'A Windows SDK containing makeappx.exe was not found.'
+          foreach ($platform in @('x64', 'ARM64')) {
+            $archivePath = Join-Path 'layouts' "store-layout-$platform.zip"
+            if (-not (Test-Path -LiteralPath $archivePath)) {
+              throw "Missing Store layout archive: $archivePath"
+            }
+            Expand-Archive -LiteralPath $archivePath -DestinationPath (Join-Path 'layouts' $platform)
           }
 
-          $makeAppx = Join-Path $sdkTools.FullName 'x64\makeappx.exe'
+          $x64Layout = Join-Path 'layouts' 'x64'
+          $arm64Layout = Join-Path 'layouts' 'ARM64'
+          foreach ($layout in @($x64Layout, $arm64Layout)) {
+            if (-not (Test-Path (Join-Path $layout 'AppxManifest.xml'))) {
+              throw "The Store bundle layout has no AppxManifest.xml: $layout"
+            }
+          }
           $bundle = Join-Path $env:RUNNER_TEMP 'Tonarink-Store-${{ steps.package.outputs.version }}.msixbundle'
-          & $makeAppx bundle /o /d packages /p $bundle /bv '${{ steps.package.outputs.version }}'
+          winapp package $x64Layout $arm64Layout --skip-pri --output $bundle
           if ($LASTEXITCODE -ne 0) {
-            throw 'makeappx failed to create the Store MSIX bundle.'
+            throw 'WinApp CLI failed to create the Store MSIX bundle.'
           }
 
           Add-Type -AssemblyName System.IO.Compression.FileSystem
