@@ -21,6 +21,7 @@
 </p>
 
 <p align="center">
+  <a href="https://apps.microsoft.com/detail/9P29ZJGFWPJR"><img alt="从 Microsoft Store 获取" src="https://img.shields.io/badge/Microsoft_Store-获取应用-0078D4?logo=microsoft&logoColor=white"></a>
   <a href="https://github.com/kusutori/Tonarink/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/kusutori/Tonarink?display_name=tag&sort=semver"></a>
   <a href="LICENSE"><img alt="Apache-2.0 license" src="https://img.shields.io/github/license/kusutori/Tonarink"></a>
   <img alt="Windows 11" src="https://img.shields.io/badge/Windows-11-0078D4?logo=windows11">
@@ -54,9 +55,12 @@
 
 ## 下载
 
-请从 [GitHub Releases](https://github.com/kusutori/Tonarink/releases/latest)
-下载最新版本。日常使用强烈建议安装 MSIX，因为 Windows 分享菜单和文件资源管理器
-右键菜单等功能依赖打包应用身份。
+日常使用推荐直接[从 Microsoft Store 安装](https://apps.microsoft.com/detail/9P29ZJGFWPJR)，
+可以自动获取适合当前设备架构的版本及后续更新。
+
+也可以从 [GitHub Releases](https://github.com/kusutori/Tonarink/releases/latest)
+下载独立发行包。建议选择 MSIX，因为 Windows 分享菜单和文件资源管理器右键菜单等
+功能依赖打包应用身份。
 
 | 版本 | 推荐场景 |
 | --- | --- |
