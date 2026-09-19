@@ -128,7 +128,7 @@
   <data name="ItemsAdded" xml:space="preserve"><value>已添加 {count} 项</value></data>
   <data name="LanguageChinese" xml:space="preserve"><value>简体中文</value></data>
   <data name="LanguageEnglish" xml:space="preserve"><value>English</value></data>
-  <data name="LanguageSystem" xml:space="preserve"><value>使用系统设置</value></data>
+  <data name="LanguageSystem" xml:space="preserve"><value>Use system setting</value></data>
   <data name="MoreItems" xml:space="preserve"><value>另外 {count} 项…</value></data>
   <data name="Name" xml:space="preserve"><value>名称</value></data>
   <data name="NavReceive" xml:space="preserve"><value>接收</value></data>
@@ -280,8 +280,8 @@
   <data name="SettingsMulticastWarning" xml:space="preserve"><value>正在使用自定义多播组。其他兼容 LocalSend 的设备默认使用 {group}，除非也改成相同值。</value></data>
   <data name="SettingsMinimizeToTray" xml:space="preserve"><value>关闭时最小化到系统托盘</value></data>
   <data name="SettingsMinimizeToTrayDescription" xml:space="preserve"><value>关闭主窗口时继续在后台接收。</value></data>
-  <data name="SettingsTrayClickOpensFlyout" xml:space="preserve"><value>单击托盘图标时打开托盘面板</value></data>
-  <data name="SettingsTrayClickOpensFlyoutDescription" xml:space="preserve"><value>关闭后，单击将打开应用主窗口。</value></data>
+  <data name="SettingsTrayClickOpensFlyout" xml:space="preserve"><value>Open the tray panel on a single click</value></data>
+  <data name="SettingsTrayClickOpensFlyoutDescription" xml:space="preserve"><value>When off, clicking the tray icon opens the app window instead.</value></data>
   <data name="SettingsReceive" xml:space="preserve"><value>接收</value></data>
   <data name="SettingsSend" xml:space="preserve"><value>发送</value></data>
   <data name="SettingsVerifyChecksumsOnReceive" xml:space="preserve"><value>接收文件时验证校验和</value></data>
@@ -326,29 +326,29 @@
   <data name="StartupDisabledByUser" xml:space="preserve"><value>已在 Windows 设置中关闭开机启动。请先在系统设置里启用 Tonarink，然后再试。</value></data>
   <data name="StartupFailed" xml:space="preserve"><value>无法更新登录后自动启动：{error}</value></data>
   <data name="TrayExit" xml:space="preserve"><value>退出</value></data>
-  <data name="TrayFromPeer" xml:space="preserve"><value>来自 {peer}</value></data>
-  <data name="TrayHistoryTab" xml:space="preserve"><value>历史</value></data>
-  <data name="TrayNearbyTab" xml:space="preserve"><value>附近</value></data>
-  <data name="TrayNoDevices" xml:space="preserve"><value>附近没有设备</value></data>
+  <data name="TrayFromPeer" xml:space="preserve"><value>From {peer}</value></data>
+  <data name="TrayHistoryTab" xml:space="preserve"><value>History</value></data>
+  <data name="TrayNearbyTab" xml:space="preserve"><value>Nearby</value></data>
+  <data name="TrayNoDevices" xml:space="preserve"><value>No nearby devices</value></data>
   <data name="TrayOpen" xml:space="preserve"><value>打开 Tonarink</value></data>
-  <data name="TrayReceiveOff" xml:space="preserve"><value>关闭</value></data>
-  <data name="TrayReceiveOn" xml:space="preserve"><value>开启</value></data>
-  <data name="TrayReceiveService" xml:space="preserve"><value>接收服务</value></data>
-  <data name="TrayToPeer" xml:space="preserve"><value>发送到 {peer}</value></data>
+  <data name="TrayReceiveOff" xml:space="preserve"><value>Off</value></data>
+  <data name="TrayReceiveOn" xml:space="preserve"><value>On</value></data>
+  <data name="TrayReceiveService" xml:space="preserve"><value>Receive service</value></data>
+  <data name="TrayToPeer" xml:space="preserve"><value>To {peer}</value></data>
   <data name="TrayTooltip" xml:space="preserve"><value>Tonarink</value></data>
-  <data name="TrayWaitingReceive" xml:space="preserve"><value>等待接收</value></data>
-  <data name="WidgetAppClosed" xml:space="preserve"><value>应用未开启</value></data>
-  <data name="WidgetAppClosedStatus" xml:space="preserve"><value>未开启</value></data>
-  <data name="WidgetAppOpen" xml:space="preserve"><value>已开启</value></data>
-  <data name="WidgetFileCount" xml:space="preserve"><value>{count} 个文件</value></data>
-  <data name="WidgetHintAppClosed" xml:space="preserve"><value>打开应用后才能发现设备和接收文件。</value></data>
-  <data name="WidgetHintServerOff" xml:space="preserve"><value>点击开启接收。</value></data>
-  <data name="WidgetHintServerOn" xml:space="preserve"><value>附近设备可以发送文件。</value></data>
-  <data name="WidgetHistoryCount" xml:space="preserve"><value>历史 {count} 条</value></data>
-  <data name="WidgetNearbyCount" xml:space="preserve"><value>附近 {count} 台</value></data>
-  <data name="WidgetReceivingOff" xml:space="preserve"><value>接收已停止</value></data>
-  <data name="WidgetServerOff" xml:space="preserve"><value>关</value></data>
-  <data name="WidgetServerOn" xml:space="preserve"><value>开</value></data>
+  <data name="TrayWaitingReceive" xml:space="preserve"><value>Waiting to receive</value></data>
+  <data name="WidgetAppClosed" xml:space="preserve"><value>App is closed</value></data>
+  <data name="WidgetAppClosedStatus" xml:space="preserve"><value>Closed</value></data>
+  <data name="WidgetAppOpen" xml:space="preserve"><value>Running</value></data>
+  <data name="WidgetFileCount" xml:space="preserve"><value>{count} files</value></data>
+  <data name="WidgetHintAppClosed" xml:space="preserve"><value>Open the app to discover devices and receive files.</value></data>
+  <data name="WidgetHintServerOff" xml:space="preserve"><value>Tap to start receiving.</value></data>
+  <data name="WidgetHintServerOn" xml:space="preserve"><value>Nearby devices can send files.</value></data>
+  <data name="WidgetHistoryCount" xml:space="preserve"><value>{count} in history</value></data>
+  <data name="WidgetNearbyCount" xml:space="preserve"><value>{count} nearby</value></data>
+  <data name="WidgetReceivingOff" xml:space="preserve"><value>Receiving is off</value></data>
+  <data name="WidgetServerOff" xml:space="preserve"><value>Off</value></data>
+  <data name="WidgetServerOn" xml:space="preserve"><value>On</value></data>
   <data name="SettingsTheme" xml:space="preserve"><value>主题</value></data>
   <data name="SettingsThemeDescription" xml:space="preserve"><value>选择应用的明暗外观。</value></data>
   <data name="SettingsTitle" xml:space="preserve"><value>设置</value></data>
@@ -377,14 +377,14 @@
   <data name="WebShareEncryption" xml:space="preserve"><value>加密</value></data>
   <data name="WebShareEncryptionHint" xml:space="preserve"><value>HTTPS 使用此设备的证书。浏览器会提示该证书不受信任。</value></data>
   <data name="WebShareNoRequests" xml:space="preserve"><value>尚无请求。</value></data>
-  <data name="WebShareNoLinkAvailable" xml:space="preserve"><value>当前没有可分享的链接。</value></data>
+  <data name="WebShareNoLinkAvailable" xml:space="preserve"><value>No link is available to share.</value></data>
   <data name="WebShareOpenLink" xml:space="preserve"><value>在浏览器中打开链接：</value></data>
   <data name="WebSharePinHint" xml:space="preserve"><value>PIN 为 “{pin}”</value></data>
   <data name="WebSharePinTitle" xml:space="preserve"><value>PIN</value></data>
   <data name="WebShareQr" xml:space="preserve"><value>二维码</value></data>
   <data name="WebShareQrTitle" xml:space="preserve"><value>二维码</value></data>
   <data name="WebShareRequests" xml:space="preserve"><value>请求</value></data>
-  <data name="WebShareSystemShare" xml:space="preserve"><value>通过 Windows 分享链接</value></data>
+  <data name="WebShareSystemShare" xml:space="preserve"><value>Share link with Windows</value></data>
   <data name="WebShareRequirePin" xml:space="preserve"><value>需要一个 PIN</value></data>
   <data name="WebShareTitle" xml:space="preserve"><value>分享为链接</value></data>
   <data name="WebReceiveTitle" xml:space="preserve"><value>通过链接接收</value></data>
