@@ -173,7 +173,7 @@ sealed class TrayFlyoutPanel : Component<TrayFlyoutPanelProps>
                 DeviceRow(device, t)
                     .PositionInSet(index + 1, runtime.Devices.Count)
                     .WithKey(device.Fingerprint))
-        ]);
+        ]).HAlign(HorizontalAlignment.Stretch);
     }
 
     private static Element DeviceRow(LocalSendDevice device, IntlAccessor t) =>
@@ -198,6 +198,7 @@ sealed class TrayFlyoutPanel : Component<TrayFlyoutPanelProps>
                     TrayFlyoutHost.Dismiss();
                     TrayFlyoutStore.Restore();
                 })
+            .HAlign(HorizontalAlignment.Stretch)
             .HorizontalContentAlignment(HorizontalAlignment.Stretch)
             .SubtleButton()
             .AutomationName(device.Alias);
@@ -216,7 +217,7 @@ sealed class TrayFlyoutPanel : Component<TrayFlyoutPanelProps>
                 HistoryRow(entry, t)
                     .PositionInSet(index + 1, entries.Count)
                     .WithKey(entry.Id.ToString("N")))
-        ]);
+        ]).HAlign(HorizontalAlignment.Stretch);
     }
 
     private static Element HistoryRow(ReceiveHistoryEntry entry, IntlAccessor t)
@@ -253,6 +254,7 @@ sealed class TrayFlyoutPanel : Component<TrayFlyoutPanelProps>
                         TrayFlyoutStore.Restore();
                     }
                 })
+            .HAlign(HorizontalAlignment.Stretch)
             .HorizontalContentAlignment(HorizontalAlignment.Stretch)
             .SubtleButton()
             .AutomationName(entry.FileName);
