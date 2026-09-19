@@ -1,6 +1,5 @@
 using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Core;
-using Microsoft.UI.Reactor.Layout;
 using Microsoft.UI.Reactor.Localization;
 using Microsoft.UI.Reactor.Navigation;
 using Microsoft.UI.Xaml;
@@ -93,10 +92,10 @@ sealed class PageHeader : Component<PageHeaderProps>
             rows: [GridSize.Auto],
             bar.Grid(column: 0).VAlign(VerticalAlignment.Center),
             (Props.RightContent ?? Empty())
-                .MinHeight(AppLayout.PageHeaderRowMinHeight)
-                .VAlign(VerticalAlignment.Center)
-                .Margin(left: Props.RightContent is null ? 0 : 8)
-                .Grid(column: 1));
+            .MinHeight(AppLayout.PageHeaderRowMinHeight)
+            .VAlign(VerticalAlignment.Center)
+            .Margin(left: Props.RightContent is null ? 0 : 8)
+            .Grid(column: 1));
     }
 
     private static void GoTo(NavigationHandle<AppRoute> navigation, AppRoute target)

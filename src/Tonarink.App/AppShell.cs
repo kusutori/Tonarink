@@ -117,7 +117,7 @@ sealed partial class LocalizedAppShell : Component<LocalizedAppShellProps>
             },
             static () => FavoriteDeviceStore.Revision);
         var (headerEpoch, bumpHeader) = UseReducer(0);
-        var headerRight = UseRef<PageHeaderRightSlot?>(null);
+        var headerRight = UseRef<PageHeaderRightSlot?>();
         headerRight.Current ??= new PageHeaderRightSlot
         {
             Invalidate = () => bumpHeader(epoch => epoch + 1),
