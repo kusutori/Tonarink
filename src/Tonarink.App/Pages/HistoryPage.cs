@@ -28,9 +28,6 @@ sealed class HistoryPage : Component<HistoryPageProps>
         var (infoEntry, setInfoEntry) = UseState<ReceiveHistoryEntry?>(null);
         var (confirmClear, setConfirmClear) = UseState(false);
 
-        var header = Heading(t.Message(new("App", "HistoryTitle")))
-            .HeadingLevel(AutomationHeadingLevel.Level1);
-
         var actions = FlexRow(
                 Button(HStack(Icon("\uE8DA").AccessibilityHidden(), t.Message(new("App", "HistoryOpenDirectory"))),
                         OpenDownloadDirectory)
@@ -62,7 +59,6 @@ sealed class HistoryPage : Component<HistoryPageProps>
 
         return Border(
                 FlexColumn(
-                        header,
                         actions,
                         ScrollView(list)
                             .HorizontalContentAlignment(HorizontalAlignment.Stretch)

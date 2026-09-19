@@ -4,10 +4,12 @@ using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Core;
 using Microsoft.UI.Reactor.Layout;
 using Microsoft.UI.Reactor.Localization;
+using Microsoft.UI.Reactor.Navigation;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
+using Tonarink.Components.Shell;
 using static Microsoft.UI.Reactor.Factories;
 using static Tonarink.Controls.SegmentedElement;
 
@@ -35,12 +37,16 @@ sealed class ReceivePage : Component<ReceivePageProps>
         var stored = AppSettingsStore.Load();
         var (alias, setAlias) = UseState(stored.ResolvedAlias);
         var idleLogoPlayerRef = UseRef<AnimatedVisualPlayer?>();
+        var headerRight = UseContext(PageHeader.RightSlot);
+        headerRight.Owner = AppRoute.Receive;
+        headerRight.Build = () => HeaderActions(t, navigation, alias, Props.Settings, identity);
         UseNavigationLifecycle(onNavigatedTo: _ =>
         {
             var current = AppSettingsStore.Load();
             setAlias(current.ResolvedAlias);
             PlayIdleLogoAnimation(idleLogoPlayerRef.Current, play: !reduceMotion);
         });
+        UseEffect(() => headerRight.Invalidate(), 0);
         var fingerprint = identity?.Fingerprint;
         var fingerprintPreview = fingerprint?[..12];
         var shortId = fingerprint is null
@@ -131,28 +137,6 @@ sealed class ReceivePage : Component<ReceivePageProps>
 
         var page = ScrollView(
                 FlexColumn(
-                        FlexRow(
-                                Heading(t.Message(new("App", "ReceiveTitle")))
-                                    .HeadingLevel(AutomationHeadingLevel.Level1)
-                                    .Flex(grow: 1, basis: 0),
-                                Button(Icon(FontIcon("\uE121")),
-                                        () => navigation.Navigate(AppRoute.History, AppNavigation.DrillIn))
-                                    .SubtleButton()
-                                    .AutomationName(t.Message(new("App", "HistoryOpenReceiveHistory")))
-                                    .MinWidth(40)
-                                    .MinHeight(40),
-                                Button(Icon("\uF167"))
-                                    .SubtleButton()
-                                    .AutomationName(t.Message(new("App", "DeviceInfo")))
-                                    .MinWidth(40)
-                                    .MinHeight(40)
-                                    .WithFlyout(ContentFlyout(
-                                        DeviceInfoFlyout(t, alias, Props.Settings, identity),
-                                        FlyoutPlacementMode.BottomEdgeAlignedRight)))
-                            with
-                            {
-                                AlignItems = FlexAlign.Center, ColumnGap = 8
-                            },
                         identityPanel.Flex(grow: 1, basis: 0),
                         autoSave) with
                     {
@@ -165,6 +149,33 @@ sealed class ReceivePage : Component<ReceivePageProps>
 
         return page;
     }
+
+    private static Element HeaderActions(
+        IntlAccessor t,
+        NavigationHandle<AppRoute> navigation,
+        string alias,
+        AppSettings settings,
+        LocalSendIdentity? identity) =>
+        FlexRow(
+                Button(Icon(FontIcon("\uE121")),
+                        () => navigation.Navigate(AppRoute.History, AppNavigation.DrillIn))
+                    .SubtleButton()
+                    .AutomationName(t.Message(new("App", "HistoryOpenReceiveHistory")))
+                    .MinWidth(40)
+                    .MinHeight(40),
+                Button(Icon("\uF167"))
+                    .SubtleButton()
+                    .AutomationName(t.Message(new("App", "DeviceInfo")))
+                    .MinWidth(40)
+                    .MinHeight(40)
+                    .WithFlyout(ContentFlyout(
+                        DeviceInfoFlyout(t, alias, settings, identity),
+                        FlyoutPlacementMode.BottomEdgeAlignedRight)))
+            with
+            {
+                ColumnGap = 8,
+                AlignItems = FlexAlign.Center,
+            };
 
     private static Element DeviceInfoFlyout(
         IntlAccessor t,

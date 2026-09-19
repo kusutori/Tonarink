@@ -502,8 +502,6 @@ sealed class SettingsPage : Component<SettingsPageProps>
 
         return ScrollView(
                 VStack(24,
-                        Heading(t.Message(new("App", "SettingsTitle")))
-                            .HeadingLevel(AutomationHeadingLevel.Level1),
                         statusMessage is null
                             ? null
                             : (InfoBar(t.Message(new("App", "SettingsTitle")), statusMessage) with

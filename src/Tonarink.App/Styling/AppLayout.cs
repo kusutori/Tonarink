@@ -1,3 +1,5 @@
+using Microsoft.UI.Xaml;
+
 namespace Tonarink.Styling;
 
 static class AppLayout
@@ -15,6 +17,16 @@ static class AppLayout
     public const double WindowMinHeight = 520;
 
     public const double PagePadding = 36;
+    public const double PageHeaderPaddingHorizontal = PagePadding;
+    public const double PageHeaderPaddingTop = 12;
+    public const double PageHeaderPaddingBottom = 8;
+    public const double PageHeaderRowMinHeight = 40;
+
+    public static Thickness PageHeaderMargin { get; } = new(
+        PageHeaderPaddingHorizontal,
+        PageHeaderPaddingTop,
+        PageHeaderPaddingHorizontal,
+        PageHeaderPaddingBottom);
     public const double PageMaxWidth = WindowWidth;
     public const double NarrowContentWidth = 560;
     public const double DetailsContentWidth = 760;

@@ -385,8 +385,6 @@ sealed class SendPage : Component<SendPageProps>
             .HAlign(HorizontalAlignment.Stretch);
 
         var pageBody = (FlexColumn(
-                Heading(t.Message(new("App", "SendTitle")))
-                    .HeadingLevel(AutomationHeadingLevel.Level1),
                 VStack(12,
                     Subtitle(t.Message(new("App", "ChooseContent")))
                         .HeadingLevel(AutomationHeadingLevel.Level2),

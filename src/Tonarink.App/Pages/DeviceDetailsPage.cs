@@ -42,8 +42,6 @@ sealed class DeviceDetailsPage : Component<DeviceDetailsPageProps>
         var activity = Props.Runtime.DeviceActivity.GetValueOrDefault(currentDevice.Fingerprint)
                        ?? [];
         var page = FlexColumn(
-                Heading(t.Message(new("App", "DeviceDetailsTitle")))
-                    .HeadingLevel(AutomationHeadingLevel.Level1),
                 Component<DeviceIdentityCard, DeviceIdentityCardProps>(new(
                         displayName,
                         currentDevice.DeviceModel,

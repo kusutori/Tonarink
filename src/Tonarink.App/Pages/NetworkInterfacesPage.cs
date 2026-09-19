@@ -44,8 +44,6 @@ sealed class NetworkInterfacesPage : Component<NetworkInterfacesPageProps>
 
         return ScrollView(
                 VStack(24,
-                        Heading(t.Message(new("App", "SettingsNetworkInterfaces")))
-                            .HeadingLevel(AutomationHeadingLevel.Level1),
                         TextBlock(t.Message(new("App", "SettingsNetworkInterfacesInfo")))
                             .Foreground(Theme.SecondaryText)
                             .TextAlignment(TextAlignment.Center)

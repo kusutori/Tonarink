@@ -127,9 +127,6 @@ sealed class WebSharePage : Component<WebSharePageProps>
 
         return ScrollView(
                 VStack(24,
-                        Heading(t.Message(new("App",
-                                Props.Mode == WebShareMode.Receive ? "WebReceiveTitle" : "WebShareTitle")))
-                            .HeadingLevel(AutomationHeadingLevel.Level1),
                         TextBlock(t.Message(new("App", "WebShareOpenLink")))
                             .SemiBold(),
                         VStack(8, [
