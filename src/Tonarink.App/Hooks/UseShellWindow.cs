@@ -44,6 +44,7 @@ sealed partial class LocalizedAppShell
 
             if (!minimizeToTray)
             {
+                TrayFlyoutHost.Close();
                 trayIcon.Current?.Dispose();
                 trayIcon.Current = null;
                 return () => { };
@@ -54,16 +55,25 @@ sealed partial class LocalizedAppShell
                 iconPath = AppPlatform.ExecutablePath;
 
             var icon = new WinUIEx.TrayIcon(1, iconPath, t.Message(new("App", "TrayTooltip")));
-            icon.Selected += (_, _) => Restore();
-            icon.LeftDoubleClick += (_, _) => Restore();
+            icon.Selected += (_, _) => TrayFlyoutHost.Toggle();
+            icon.LeftDoubleClick += (_, _) =>
+            {
+                TrayFlyoutHost.Dismiss();
+                Restore();
+            };
             icon.ContextMenu += (_, args) =>
             {
                 var flyout = new MenuFlyout();
                 var open = new MenuFlyoutItem { Text = t.Message(new("App", "TrayOpen")) };
-                open.Click += (_, _) => Restore();
+                open.Click += (_, _) =>
+                {
+                    TrayFlyoutHost.Dismiss();
+                    Restore();
+                };
                 var exit = new MenuFlyoutItem { Text = t.Message(new("App", "TrayExit")) };
                 exit.Click += (_, _) =>
                 {
+                    TrayFlyoutHost.Close();
                     icon.Dispose();
                     trayIcon.Current = null;
                     ReactorApp.Exit();

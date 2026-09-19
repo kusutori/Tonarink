@@ -291,7 +291,12 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                 TotalBytes: view.TotalBytes,
                 Indeterminate: view.TotalBytes <= 0
                                || view.State is TransferState.Preparing or TransferState.WaitingForAcceptance));
-            return () => WidgetAppHost.SetIncoming(null);
+            TrayFlyoutStore.NotifyIncoming();
+            return () =>
+            {
+                WidgetAppHost.SetIncoming(null);
+                TrayFlyoutStore.NotifyIncoming();
+            };
         }, view.State, view.BytesTransferred, view.TotalBytes, view.Status, request.RequestId);
 
         var acceptMutation =

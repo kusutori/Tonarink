@@ -27,6 +27,15 @@ static class WidgetAppHost
 
     public static event Action<string>? CommandReceived;
 
+    public static WidgetTransferInfo? Incoming
+    {
+        get
+        {
+            lock (Gate)
+                return _incoming;
+        }
+    }
+
     public static void Start()
     {
         lock (Gate)

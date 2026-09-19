@@ -32,4 +32,8 @@ static class AppLayout
     public const double OverlayExpandedHeightMin = 360;
     public const double OverlayExpandedHeightMax = 760;
     public const double OverlayExpandedHeightFallback = 640;
+
+    public const double TrayFlyoutWidth = 360;
+    public const double TrayFlyoutHeight = 520;
+    public const double TrayFlyoutGap = 12;
 }

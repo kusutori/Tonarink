@@ -15,7 +15,7 @@ namespace Tonarink;
 
 sealed class AppShell : Component
 {
-    private static readonly ReswResourceProvider Resources = new(defaultLocale: "en-US");
+    internal static readonly ReswResourceProvider Resources = new(defaultLocale: "en-US");
 
     public override Element Render()
     {
@@ -151,6 +151,23 @@ sealed partial class LocalizedAppShell : Component<LocalizedAppShellProps>
             navigation,
             nodeSession,
             windowController.Restore);
+
+        TrayFlyoutStore.Restore = windowController.Restore;
+        TrayFlyoutStore.StartServer = nodeSession.StartOrRestart;
+        TrayFlyoutStore.StopServer = nodeSession.Stop;
+        UseEffect(
+            () => TrayFlyoutStore.Publish(
+                runtime,
+                outgoingTransfer,
+                settings,
+                nodeSession.IsServerDesired),
+            runtime,
+            settings,
+            nodeSession.IsServerDesired,
+            outgoingTransfer is null,
+            outgoingTransfer?.BytesTransferred ?? 0,
+            outgoingTransfer?.TotalBytes ?? 0,
+            (int?)outgoingTransfer?.State ?? -1);
 
         UseWidgetIntegration(
             runtime,

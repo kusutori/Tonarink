@@ -323,8 +323,15 @@
   <data name="StartupDisabledByUser" xml:space="preserve"><value>已在 Windows 设置中关闭开机启动。请先在系统设置里启用 Tonarink，然后再试。</value></data>
   <data name="StartupFailed" xml:space="preserve"><value>无法更新登录后自动启动：{error}</value></data>
   <data name="TrayExit" xml:space="preserve"><value>退出</value></data>
+  <data name="TrayFromPeer" xml:space="preserve"><value>来自 {peer}</value></data>
+  <data name="TrayHistoryTab" xml:space="preserve"><value>历史</value></data>
+  <data name="TrayNearbyTab" xml:space="preserve"><value>附近</value></data>
+  <data name="TrayNoDevices" xml:space="preserve"><value>附近没有设备</value></data>
   <data name="TrayOpen" xml:space="preserve"><value>打开 Tonarink</value></data>
+  <data name="TrayReceiveService" xml:space="preserve"><value>接收服务</value></data>
+  <data name="TrayToPeer" xml:space="preserve"><value>发送到 {peer}</value></data>
   <data name="TrayTooltip" xml:space="preserve"><value>Tonarink</value></data>
+  <data name="TrayWaitingReceive" xml:space="preserve"><value>等待接收</value></data>
   <data name="SettingsTheme" xml:space="preserve"><value>主题</value></data>
   <data name="SettingsThemeDescription" xml:space="preserve"><value>选择应用的明暗外观。</value></data>
   <data name="SettingsTitle" xml:space="preserve"><value>设置</value></data>
