@@ -47,20 +47,6 @@ sealed class TrayFlyoutPanel : Component<TrayFlyoutPanelProps>
         var t = UseIntl();
         var highContrast = UseHighContrast();
         var snapshot = Props.Snapshot;
-        var history = UseExternalStore(
-            static listener =>
-            {
-                ReceiveHistoryStore.Changed += listener;
-                return () => ReceiveHistoryStore.Changed -= listener;
-            },
-            static () => ReceiveHistoryStore.Entries);
-        var (tab, setTab) = UseState(0);
-        var tabItems = UseMemo(() => new object[]
-        {
-            new SegmentedItem { Content = t.Message(new("App", "TrayNearbyTab")) },
-            new SegmentedItem { Content = t.Message(new("App", "TrayHistoryTab")) },
-        }, t.Locale);
-
         var runtime = snapshot.Runtime;
         var statusText = StatusText(t, runtime.NodeState, runtime.DiscoveryWarning);
         var statusColor = runtime.Error is not null || runtime.NodeState == LocalSendNodeState.Faulted
@@ -74,20 +60,14 @@ sealed class TrayFlyoutPanel : Component<TrayFlyoutPanelProps>
                         : Theme.SecondaryText;
         var transfer = ResolveTransfer(t, snapshot);
 
-        Element list = tab == 0
-            ? NearbyList(runtime, t)
-            : HistoryList(history, t);
-
         var body = FlexColumn(
                 Header(t, statusText, statusColor, snapshot),
-                transfer is null ? null : TransferCard(transfer, t),
-                Segmented(
-                        selectedIndex: tab,
-                        onSelectedIndexChanged: setTab,
-                        items: tabItems)
-                    .HAlign(HorizontalAlignment.Stretch),
-                ScrollView(list)
-                    .HorizontalContentAlignment(HorizontalAlignment.Stretch)
+                (transfer is null
+                    ? Border(null).Height(0)
+                    : TransferCard(transfer, t))
+                    .WithKey("tray-transfer"),
+                Component<Lists, TrayFlyoutListsProps>(new(runtime))
+                    .WithKey("tray-lists")
                     .Flex(grow: 1, basis: 0),
                 Button(t.Message(new("App", "TrayOpen")), OpenApp)
                     .HAlign(HorizontalAlignment.Stretch)
@@ -352,7 +332,53 @@ sealed class TrayFlyoutPanel : Component<TrayFlyoutPanelProps>
             LocalSendNodeState.Stopping => t.Message(new("App", "NodeStopping")),
             _ => t.Message(new("App", "NodeDisconnected")),
         };
+
+    sealed class Lists : Component<TrayFlyoutListsProps>
+    {
+        public override Element Render()
+        {
+            var t = UseIntl();
+            var history = UseExternalStore(
+                static listener =>
+                {
+                    ReceiveHistoryStore.Changed += listener;
+                    return () => ReceiveHistoryStore.Changed -= listener;
+                },
+                static () => ReceiveHistoryStore.Entries);
+            var (tab, setTab) = UseState(0);
+            var nearby = t.Message(new("App", "TrayNearbyTab"));
+            var historyTab = t.Message(new("App", "TrayHistoryTab"));
+            var tabItems = UseMemo(
+                () => new object[]
+                {
+                    new SegmentedItem { Content = nearby },
+                    new SegmentedItem { Content = historyTab },
+                },
+                nearby,
+                historyTab);
+
+            Element list = tab == 0
+                ? NearbyList(Props.Runtime, t)
+                : HistoryList(history, t);
+
+            return FlexColumn(
+                    Segmented(
+                            selectedIndex: tab,
+                            onSelectedIndexChanged: setTab,
+                            items: tabItems)
+                        .HAlign(HorizontalAlignment.Stretch)
+                        .WithKey("tray-segmented"),
+                    ScrollView(list)
+                        .HorizontalContentAlignment(HorizontalAlignment.Stretch)
+                        .Flex(grow: 1, basis: 0)) with
+                {
+                    RowGap = 12,
+                };
+        }
+    }
 }
+
+sealed record TrayFlyoutListsProps(AppRuntimeState Runtime);
 
 sealed record TrayFlyoutTransfer(
     string Title,
