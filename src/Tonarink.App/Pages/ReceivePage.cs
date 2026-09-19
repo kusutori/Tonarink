@@ -96,10 +96,10 @@ sealed class ReceivePage : Component<ReceivePageProps>
                     .IsEnabled(Props.Runtime.NodeState == LocalSendNodeState.Running)
                     .AutomationName(t.Message(new("App", "WebReceiveTitle")))
                     .ToolTip(t.Message(new("App", "WebReceiveTitle")))) with
-            {
-                RowGap = 12,
-                AlignItems = FlexAlign.Center,
-            };
+        {
+            RowGap = 12,
+            AlignItems = FlexAlign.Center,
+        };
 
         var autoSave = Card(
                 FlexColumn(
@@ -115,10 +115,10 @@ sealed class ReceivePage : Component<ReceivePageProps>
                                             new("App", "PendingRequests"),
                                             ("count", Props.Runtime.IncomingTransfers.Count)))
                                     : null) with
-                            {
-                                AlignItems = FlexAlign.Center,
-                                ColumnGap = 12,
-                            },
+                        {
+                            AlignItems = FlexAlign.Center,
+                            ColumnGap = 12,
+                        },
                         Segmented(
                                 selectedIndex: (int)Props.Settings.AutoSave,
                                 onSelectedIndexChanged: index => Props.UpdateSettings(settings => settings with
@@ -128,9 +128,9 @@ sealed class ReceivePage : Component<ReceivePageProps>
                                 }),
                                 items: autoSaveItems)
                             .HAlign(HorizontalAlignment.Stretch)) with
-                    {
-                        RowGap = 20
-                    })
+                {
+                    RowGap = 20
+                })
             .MaxWidth(AppLayout.NarrowContentWidth)
             .HAlign(HorizontalAlignment.Stretch);
 
@@ -138,10 +138,10 @@ sealed class ReceivePage : Component<ReceivePageProps>
                 FlexColumn(
                         identityPanel.Flex(grow: 1, basis: 0),
                         autoSave) with
-                    {
-                        RowGap = 32,
-                        AlignItems = FlexAlign.Stretch,
-                    })
+                {
+                    RowGap = 32,
+                    AlignItems = FlexAlign.Stretch,
+                })
             .Padding(AppLayout.PagePadding)
             .HorizontalContentAlignment(HorizontalAlignment.Stretch)
             .Landmark(AutomationLandmarkType.Main);
@@ -171,10 +171,10 @@ sealed class ReceivePage : Component<ReceivePageProps>
                         DeviceInfoFlyout(t, alias, settings, identity),
                         FlyoutPlacementMode.BottomEdgeAlignedRight)))
             with
-            {
-                ColumnGap = 8,
-                AlignItems = FlexAlign.Center,
-            };
+        {
+            ColumnGap = 8,
+            AlignItems = FlexAlign.Center,
+        };
 
     private static Element DeviceInfoFlyout(
         IntlAccessor t,
@@ -197,10 +197,10 @@ sealed class ReceivePage : Component<ReceivePageProps>
                     DeviceInfoValue(ipText).Grid(row: 1, column: 1),
                     DeviceInfoLabel(t.Message(new("App", "DeviceInfoPort"))).Grid(row: 2, column: 0),
                     DeviceInfoValue(port.ToString()).Grid(row: 2, column: 1)) with
-                {
-                    ColumnSpacing = 24,
-                    RowSpacing = 8,
-                })
+        {
+            ColumnSpacing = 24,
+            RowSpacing = 8,
+        })
             .MinWidth(280)
             .Padding(8);
     }

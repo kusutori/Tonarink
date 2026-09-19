@@ -189,22 +189,22 @@ sealed class WebSharePage : Component<WebSharePageProps>
                                 TextBox(pinDraft, setPinDraft)
                                     .AutomationName(t.Message(new("App", "WebSharePinTitle"))),
                                 primaryButtonText: t.Message(new("App", "Confirm"))) with
+                        {
+                            IsOpen = pinDialogOpen,
+                            SecondaryButtonText = t.Message(new("App", "Cancel")),
+                            DefaultButton = ContentDialogButton.Primary,
+                            OnClosed = result =>
                             {
-                                IsOpen = pinDialogOpen,
-                                SecondaryButtonText = t.Message(new("App", "Cancel")),
-                                DefaultButton = ContentDialogButton.Primary,
-                                OnClosed = result =>
+                                if (result == ContentDialogResult.Primary && !string.IsNullOrWhiteSpace(pinDraft))
                                 {
-                                    if (result == ContentDialogResult.Primary && !string.IsNullOrWhiteSpace(pinDraft))
-                                    {
-                                        var next = pinDraft.Trim();
-                                        setPin(next);
-                                        node?.SetWebSharePin(next);
-                                    }
+                                    var next = pinDraft.Trim();
+                                    setPin(next);
+                                    node?.SetWebSharePin(next);
+                                }
 
-                                    setPinDialogOpen(false);
-                                },
-                            }).Themed(dialogTheme),
+                                setPinDialogOpen(false);
+                            },
+                        }).Themed(dialogTheme),
                         (ContentDialog(
                                 t.Message(new("App", "WebShareQrTitle")),
                                 qrUrl is null
@@ -217,10 +217,10 @@ sealed class WebSharePage : Component<WebSharePageProps>
                                             .TextWrapping(TextWrapping.WrapWholeWords)
                                             .IsTextSelectionEnabled()),
                                 primaryButtonText: t.Message(new("App", "Close"))) with
-                            {
-                                IsOpen = qrUrl is not null,
-                                OnClosed = _ => setQrUrl(null),
-                            }).Themed(dialogTheme),
+                        {
+                            IsOpen = qrUrl is not null,
+                            OnClosed = _ => setQrUrl(null),
+                        }).Themed(dialogTheme),
                         (ContentDialog(
                                 t.Message(new("App", "WebShareZoomTitle")),
                                 Title(zoomUrl ?? "")
@@ -228,10 +228,10 @@ sealed class WebSharePage : Component<WebSharePageProps>
                                     .IsTextSelectionEnabled()
                                     .AutomationName(t.Message(new("App", "WebShareZoomTitle"))),
                                 primaryButtonText: t.Message(new("App", "Close"))) with
-                            {
-                                IsOpen = zoomUrl is not null,
-                                OnClosed = _ => setZoomUrl(null),
-                            }).Themed(dialogTheme))
+                        {
+                            IsOpen = zoomUrl is not null,
+                            OnClosed = _ => setZoomUrl(null),
+                        }).Themed(dialogTheme))
                     .Padding(AppLayout.PagePadding))
             .HorizontalContentAlignment(HorizontalAlignment.Stretch)
             .Landmark(AutomationLandmarkType.Main);
@@ -303,9 +303,9 @@ sealed class WebSharePage : Component<WebSharePageProps>
                             .Grid(column: 3),
                         IconButton("\uE72D", t.Message(new("App", "WebShareSystemShare")), share)
                             .Grid(column: 4)) with
-                    {
-                        ColumnSpacing = 4,
-                    })
+                {
+                    ColumnSpacing = 4,
+                })
             .Padding(horizontal: 16, vertical: 8)
             .CornerRadius(8)
             .Background(Theme.SubtleFill);

@@ -242,13 +242,13 @@ sealed partial class LocalizedAppShell : Component<LocalizedAppShellProps>
                         .WithKey(detailsDevice.Fingerprint),
                 _ => TextBlock(t.Message(new("App", "PageNotFound"))),
             }) with
-            {
-                CacheMode = NavigationCacheMode.Enabled,
-                CacheSize = 3,
-                Transition = AppNavigation.IsDetail(navigation.CurrentRoute)
+        {
+            CacheMode = NavigationCacheMode.Enabled,
+            CacheSize = 3,
+            Transition = AppNavigation.IsDetail(navigation.CurrentRoute)
                     ? NavigationTransition.DrillIn()
                     : NavigationTransition.Slide(),
-            }).WithKey($"navigation:{Props.Locale}:{favoriteRevision}");
+        }).WithKey($"navigation:{Props.Locale}:{favoriteRevision}");
 
         var navigationView = ((NavigationView(
                     [
@@ -290,15 +290,15 @@ sealed partial class LocalizedAppShell : Component<LocalizedAppShellProps>
                         navigationViewRef.Current = null;
                 })
                 .Flex(grow: 1, basis: 0)) with
-            {
-                IsSettingsVisible = false,
-                Header = Component<PageHeader, PageHeaderProps>(new(
+        {
+            IsSettingsVisible = false,
+            Header = Component<PageHeader, PageHeaderProps>(new(
                     navigation.CurrentRoute,
                     navigation,
                     headerRight.Current.Owner == navigation.CurrentRoute
                         ? headerRight.Current.Build?.Invoke()
                         : null)),
-            }).Provide(PageHeader.RightSlot, headerRight.Current!);
+        }).Provide(PageHeader.RightSlot, headerRight.Current!);
 
         var pendingIncoming = runtime.IncomingTransfers.FirstOrDefault();
         var overlayVisible = pendingIncoming is not null && nodeSession.Node is not null

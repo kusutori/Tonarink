@@ -163,9 +163,9 @@ sealed class NetworkInterfacesPage : Component<NetworkInterfacesPageProps>
                     .MinWidth(40)
                     .MinHeight(40)
                     .Grid(column: 1)) with
-            {
-                ColumnSpacing = 8,
-            };
+        {
+            ColumnSpacing = 8,
+        };
 
     private static Element AdapterCard(NetworkAdapterPreview adapter, bool ignored)
     {

@@ -357,7 +357,7 @@ sealed partial class LocalizedAppShell
         {
             if (nodeRef.Current is not { } node
                 || runtimeRef.Current.IncomingTransfers.FirstOrDefault(request => request.RequestId == requestId) is not
-                    { } request)
+                { } request)
                 return false;
 
             DismissIncoming(requestId);

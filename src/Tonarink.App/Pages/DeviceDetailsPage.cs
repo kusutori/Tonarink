@@ -90,9 +90,9 @@ sealed class DeviceDetailsPage : Component<DeviceDetailsPageProps>
                     showRemoveFavorite,
                     () => FavoriteDeviceStore.Remove(currentDevice.Fingerprint),
                     () => setShowRemoveFavorite(false)))) with
-            {
-                RowGap = 20,
-            };
+        {
+            RowGap = 20,
+        };
 
         return ScrollView(
                 Border(page)
@@ -149,9 +149,9 @@ sealed class DeviceDetailsPage : Component<DeviceDetailsPageProps>
                     DetailRow(t.Message(new("App", "Address")), endpoints),
                     DetailRow(t.Message(new("App", "LastSeen")), device.LastSeen.ToLocalTime().ToString("G")),
                     DetailRow(t.Message(new("App", "FingerprintLabel")), device.Fingerprint)) with
-                {
-                    RowGap = 12,
-                });
+            {
+                RowGap = 12,
+            });
     }
 
     private static Element DetailRow(string label, string value) =>
@@ -178,9 +178,9 @@ sealed class DeviceDetailsPage : Component<DeviceDetailsPageProps>
                                     .PositionInSet(index + 1, activity.Count)
                                     .WithKey($"{entry.Timestamp.UtcTicks}:{index}"))
                         ])) with
-                {
-                    RowGap = 12,
-                });
+            {
+                RowGap = 12,
+            });
 
     private static Element ActivityRow(IntlAccessor t, DeviceActivityEntry entry)
     {

@@ -72,9 +72,9 @@ sealed class TrayFlyoutPanel : Component<TrayFlyoutPanelProps>
                 Button(t.Message(new("App", "TrayOpen")), OpenApp)
                     .HAlign(HorizontalAlignment.Stretch)
                     .AutomationName(t.Message(new("App", "TrayOpen")))) with
-            {
-                RowGap = 12,
-            };
+        {
+            RowGap = 12,
+        };
 
         return Border(body)
             .Padding(16)
@@ -122,10 +122,10 @@ sealed class TrayFlyoutPanel : Component<TrayFlyoutPanelProps>
                         })
                     .AutomationName(t.Message(new("App", "TrayReceiveService")))
                     .ToolTip(t.Message(new("App", "TrayReceiveService")))) with
-            {
-                AlignItems = FlexAlign.Center,
-                ColumnGap = 12,
-            });
+        {
+            AlignItems = FlexAlign.Center,
+            ColumnGap = 12,
+        });
 
     private static Element NearbyList(AppRuntimeState runtime, IntlAccessor t)
     {
@@ -374,9 +374,9 @@ sealed class TrayFlyoutPanel : Component<TrayFlyoutPanelProps>
                     ScrollView(list)
                         .HorizontalContentAlignment(HorizontalAlignment.Stretch)
                         .Flex(grow: 1, basis: 0)) with
-                {
-                    RowGap = 12,
-                };
+            {
+                RowGap = 12,
+            };
         }
     }
 }

@@ -165,9 +165,9 @@ sealed class SendPage : Component<SendPageProps>
                     .Grid(column: 2),
                 SelectionTile(t.Message(new("App", "Clipboard")), "Paste", () => _ = AddClipboardAsync(), t)
                     .Grid(column: 3)) with
-            {
-                ColumnSpacing = 12,
-            };
+        {
+            ColumnSpacing = 12,
+        };
 
         var selectedHeader = selectedItems.Count == 0
             ? t.Message(new("App", "NothingSelected"))
@@ -211,14 +211,14 @@ sealed class SendPage : Component<SendPageProps>
                                         updateSelectedItems(_ => []);
                                         setPickerMessage(t.Message(new("App", "NothingSelected")));
                                     }).AutomationName(t.Message(new("App", "Clear")))) with
-                            {
-                                AlignItems = FlexAlign.Center,
-                                ColumnGap = 8,
-                            },
+                        {
+                            AlignItems = FlexAlign.Center,
+                            ColumnGap = 8,
+                        },
                         selectedItemsContent) with
-                    {
-                        RowGap = 12,
-                    })
+                {
+                    RowGap = 12,
+                })
             .VAlign(VerticalAlignment.Stretch);
         if (isWideLayout)
             selectedItemsCard = selectedItemsCard.Flex(grow: 1, shrink: 1, basis: 320);
@@ -357,14 +357,14 @@ sealed class SendPage : Component<SendPageProps>
                                     .AutomationName(t.Message(new("App", "MultipleReceivers")))
                                     .ToolTip(t.Message(new("App", "MultipleReceiversDescription")))
                                     .IsEnabled(!sendMutation.IsPending)) with
-                            {
-                                AlignItems = FlexAlign.Center,
-                                ColumnGap = 8,
-                            },
+                        {
+                            AlignItems = FlexAlign.Center,
+                            ColumnGap = 8,
+                        },
                         deviceContent) with
-                    {
-                        RowGap = 12,
-                    })
+                {
+                    RowGap = 12,
+                })
             .VAlign(VerticalAlignment.Stretch);
         if (isWideLayout)
             nearbyDevicesCard = nearbyDevicesCard.Flex(grow: 1, shrink: 1, basis: 320);
@@ -390,9 +390,9 @@ sealed class SendPage : Component<SendPageProps>
                         .HeadingLevel(AutomationHeadingLevel.Level2),
                     selectionGrid),
                 contentCards) with
-            {
-                RowGap = 20,
-            })
+        {
+            RowGap = 20,
+        })
             .VAlign(isWideLayout ? VerticalAlignment.Stretch : VerticalAlignment.Top);
 
         var pageContainer = Border(pageBody)
@@ -481,28 +481,28 @@ sealed class SendPage : Component<SendPageProps>
                     .TextWrapping()
                     .MinHeight(160),
                 primaryButtonText: t.Message(new("App", "Add"))) with
+        {
+            IsOpen = showTextDialog,
+            SecondaryButtonText = t.Message(new("App", "Cancel")),
+            OnClosed = result =>
             {
-                IsOpen = showTextDialog,
-                SecondaryButtonText = t.Message(new("App", "Cancel")),
-                OnClosed = result =>
+                if (result == ContentDialogResult.Primary && !string.IsNullOrWhiteSpace(text))
                 {
-                    if (result == ContentDialogResult.Primary && !string.IsNullOrWhiteSpace(text))
-                    {
-                        var item = new SendTextItem(text);
-                        AddSelectedItems([
-                            new(
+                    var item = new SendTextItem(text);
+                    AddSelectedItems([
+                        new(
                                 Guid.NewGuid(),
                                 item,
                                 t.Message(new("App", "TextMessage")),
                                 TextLength(text),
                                 "text")
-                        ]);
-                        setText(string.Empty);
-                    }
+                    ]);
+                    setText(string.Empty);
+                }
 
-                    setShowTextDialog(false);
-                },
-            }).Themed(Props.Theme);
+                setShowTextDialog(false);
+            },
+        }).Themed(Props.Theme);
 
         Element AddressDialog()
         {
@@ -550,18 +550,18 @@ sealed class SendPage : Component<SendPageProps>
                                         .Foreground(Theme.SecondaryText))
                         .MinWidth(340),
                     primaryButtonText: t.Message(new("App", "Confirm"))) with
+            {
+                IsOpen = showAddressDialog,
+                IsPrimaryButtonEnabled = !isResolvingAddress && hasValidFormat,
+                SecondaryButtonText = t.Message(new("App", "Cancel")),
+                DefaultButton = ContentDialogButton.Primary,
+                OnClosed = result =>
                 {
-                    IsOpen = showAddressDialog,
-                    IsPrimaryButtonEnabled = !isResolvingAddress && hasValidFormat,
-                    SecondaryButtonText = t.Message(new("App", "Cancel")),
-                    DefaultButton = ContentDialogButton.Primary,
-                    OnClosed = result =>
-                    {
-                        setShowAddressDialog(false);
-                        if (result == ContentDialogResult.Primary)
-                            _ = SendToAddressAsync(manualAddress);
-                    },
-                }).Themed(Props.Theme);
+                    setShowAddressDialog(false);
+                    if (result == ContentDialogResult.Primary)
+                        _ = SendToAddressAsync(manualAddress);
+                },
+            }).Themed(Props.Theme);
         }
 
         async Task PickFileAsync()
@@ -1117,11 +1117,11 @@ sealed class SendPage : Component<SendPageProps>
                         : Caption(pickerMessage)
                             .Foreground(Theme.SecondaryText)
                             .TextWrapping(TextWrapping.WrapWholeWords)) with
-                {
-                    RowGap = 12,
-                    AlignItems = FlexAlign.Center,
-                    JustifyContent = FlexJustify.Center,
-                })
+        {
+            RowGap = 12,
+            AlignItems = FlexAlign.Center,
+            JustifyContent = FlexJustify.Center,
+        })
             .MinHeight(280)
             .HAlign(HorizontalAlignment.Stretch)
             .VAlign(VerticalAlignment.Stretch);
@@ -1225,18 +1225,18 @@ sealed class SendPage : Component<SendPageProps>
                     _ => t.Message(new("App", "SearchingDevices")),
                 }),
                 TextBlock(state switch
-                    {
-                        LocalSendNodeState.Faulted => t.Message(new("App", "PortInUseHint")),
-                        _ when discoveryWarning is not null => t.Message(new("App", "DiscoveryScanHint")),
-                        _ => t.Message(new("App", "SameNetworkHint")),
-                    })
+                {
+                    LocalSendNodeState.Faulted => t.Message(new("App", "PortInUseHint")),
+                    _ when discoveryWarning is not null => t.Message(new("App", "DiscoveryScanHint")),
+                    _ => t.Message(new("App", "SameNetworkHint")),
+                })
                     .Foreground(Theme.SecondaryText)
                     .TextWrapping(TextWrapping.WrapWholeWords)) with
-            {
-                RowGap = 12,
-                AlignItems = FlexAlign.Center,
-                JustifyContent = FlexJustify.Center,
-            };
+        {
+            RowGap = 12,
+            AlignItems = FlexAlign.Center,
+            JustifyContent = FlexJustify.Center,
+        };
 
     private static void PlaySearchingAnimation(AnimatedVisualPlayer? player, bool play)
     {
@@ -1332,29 +1332,29 @@ sealed class SendPage : Component<SendPageProps>
         TransferResult result,
         string deviceAlias,
         long requestedBytes) => result.State switch
-    {
-        TransferState.Completed => new(
-            result.State,
-            deviceAlias,
-            result.BytesTransferred,
-            result.BytesTransferred,
-            t.Message(new("App", "SentToDevice"), ("device", deviceAlias)),
-            IsError: false),
-        TransferState.Cancelled => new(
-            result.State,
-            deviceAlias,
-            result.BytesTransferred,
-            requestedBytes,
-            t.Message(new("App", "TransferCancelled")),
-            IsError: false),
-        _ => new(
-            result.State,
-            deviceAlias,
-            result.BytesTransferred,
-            requestedBytes,
-            result.Failure?.Message ?? t.Message(new("App", "TransferFailed")),
-            IsError: true),
-    };
+        {
+            TransferState.Completed => new(
+                result.State,
+                deviceAlias,
+                result.BytesTransferred,
+                result.BytesTransferred,
+                t.Message(new("App", "SentToDevice"), ("device", deviceAlias)),
+                IsError: false),
+            TransferState.Cancelled => new(
+                result.State,
+                deviceAlias,
+                result.BytesTransferred,
+                requestedBytes,
+                t.Message(new("App", "TransferCancelled")),
+                IsError: false),
+            _ => new(
+                result.State,
+                deviceAlias,
+                result.BytesTransferred,
+                requestedBytes,
+                result.Failure?.Message ?? t.Message(new("App", "TransferFailed")),
+                IsError: true),
+        };
 
     private static string ProgressMessage(IntlAccessor t, TransferState state, string deviceAlias) => state switch
     {

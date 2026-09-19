@@ -42,10 +42,10 @@ sealed class HistoryPage : Component<HistoryPageProps>
                         .Set("ButtonForegroundPressed", Theme.SystemCritical)
                         .Set("ButtonForegroundDisabled", Theme.DisabledText)))
             with
-            {
-                ColumnGap = 8,
-                Wrap = FlexWrap.Wrap
-            };
+        {
+            ColumnGap = 8,
+            Wrap = FlexWrap.Wrap
+        };
 
         Element list = entries switch
         {
@@ -68,29 +68,29 @@ sealed class HistoryPage : Component<HistoryPageProps>
                                 TextBlock(t.Message(new("App", "HistoryDeleteAllConfirmMessage")))
                                     .TextWrapping(TextWrapping.WrapWholeWords),
                                 primaryButtonText: t.Message(new("App", "HistoryDeleteAll"))) with
+                        {
+                            IsOpen = confirmClear,
+                            SecondaryButtonText = t.Message(new("App", "Cancel")),
+                            DefaultButton = ContentDialogButton.Primary,
+                            OnClosed = result =>
                             {
-                                IsOpen = confirmClear,
-                                SecondaryButtonText = t.Message(new("App", "Cancel")),
-                                DefaultButton = ContentDialogButton.Primary,
-                                OnClosed = result =>
-                                {
-                                    if (result == ContentDialogResult.Primary)
-                                        ReceiveHistoryStore.Clear();
-                                    setConfirmClear(false);
-                                },
-                            }).Themed(Props.Theme),
+                                if (result == ContentDialogResult.Primary)
+                                    ReceiveHistoryStore.Clear();
+                                setConfirmClear(false);
+                            },
+                        }).Themed(Props.Theme),
                         (ContentDialog(
                                 t.Message(new("App", "HistoryInfoTitle")),
                                 infoEntry is null ? Empty() : HistoryInfoBody(infoEntry, t),
                                 primaryButtonText: t.Message(new("App", "Close"))) with
-                            {
-                                IsOpen = infoEntry is not null,
-                                DefaultButton = ContentDialogButton.Primary,
-                                OnClosed = _ => setInfoEntry(null),
-                            }).Themed(Props.Theme)) with
-                    {
-                        RowGap = 20
-                    })
+                        {
+                            IsOpen = infoEntry is not null,
+                            DefaultButton = ContentDialogButton.Primary,
+                            OnClosed = _ => setInfoEntry(null),
+                        }).Themed(Props.Theme)) with
+                {
+                    RowGap = 20
+                })
             .Padding(AppLayout.PagePadding)
             .Landmark(AutomationLandmarkType.Main);
 

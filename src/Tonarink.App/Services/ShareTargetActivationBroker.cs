@@ -75,12 +75,12 @@ static class ShareTargetActivationBroker
                 // inspectable is materialized directly as the WinRT interface.
                 case ExtendedActivationKind.ShareTarget
                     when activation.Data is IShareTargetActivatedEventArgs shareArgs:
-                {
-                    var payload = await CaptureSharePayloadAsync(shareArgs).ConfigureAwait(false);
-                    if (payload is not null)
-                        PendingPayloads.Enqueue(payload);
-                    break;
-                }
+                    {
+                        var payload = await CaptureSharePayloadAsync(shareArgs).ConfigureAwait(false);
+                        if (payload is not null)
+                            PendingPayloads.Enqueue(payload);
+                        break;
+                    }
                 case ExtendedActivationKind.ShareTarget:
                     WriteDiagnostic(
                         $"Share activation data did not expose {nameof(IShareTargetActivatedEventArgs)} " +
