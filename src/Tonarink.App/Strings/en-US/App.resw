@@ -280,6 +280,8 @@
   <data name="SettingsMulticastWarning" xml:space="preserve"><value>Custom multicast group. Other LocalSend-compatible devices expect {group} unless they are changed too.</value></data>
   <data name="SettingsMinimizeToTray" xml:space="preserve"><value>Minimize to the system tray when closing</value></data>
   <data name="SettingsMinimizeToTrayDescription" xml:space="preserve"><value>Keep receiving in the background when the main window closes.</value></data>
+  <data name="SettingsTrayClickOpensFlyout" xml:space="preserve"><value>Open the tray panel on a single click</value></data>
+  <data name="SettingsTrayClickOpensFlyoutDescription" xml:space="preserve"><value>When off, clicking the tray icon opens the app window instead.</value></data>
   <data name="SettingsReceive" xml:space="preserve"><value>Receive</value></data>
   <data name="SettingsSend" xml:space="preserve"><value>Send</value></data>
   <data name="SettingsVerifyChecksumsOnReceive" xml:space="preserve"><value>Verify checksums when receiving files</value></data>

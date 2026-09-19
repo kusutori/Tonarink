@@ -55,6 +55,7 @@ sealed class AppSettingsFile
     public int? LanguageIndex { get; set; }
     public string? Language { get; set; }
     public bool? MinimizeToTray { get; set; }
+    public bool? TrayClickOpensFlyout { get; set; }
     public bool? StartWithWindows { get; set; }
     public bool? NotificationsEnabled { get; set; }
     public string? NotificationDefaultAction { get; set; }
@@ -84,6 +85,7 @@ sealed class AppSettingsFile
         LanguageIndex = settings.LanguageIndex,
         Language = AppLanguages.ToStoredCulture(settings.LanguageIndex),
         MinimizeToTray = settings.MinimizeToTray,
+        TrayClickOpensFlyout = settings.TrayClickOpensFlyout,
         StartWithWindows = settings.StartWithWindows,
         NotificationsEnabled = settings.NotificationsEnabled,
         NotificationDefaultAction = settings.NotificationDefaultAction.ToString(),
@@ -124,6 +126,7 @@ sealed class AppSettingsFile
                 ? language
                 : defaults.LanguageIndex,
             MinimizeToTray = MinimizeToTray ?? defaults.MinimizeToTray,
+            TrayClickOpensFlyout = TrayClickOpensFlyout ?? defaults.TrayClickOpensFlyout,
             StartWithWindows = StartWithWindows ?? defaults.StartWithWindows,
             NotificationsEnabled = NotificationsEnabled ?? defaults.NotificationsEnabled,
             NotificationDefaultAction = Enum.TryParse<NotificationDefaultAction>(

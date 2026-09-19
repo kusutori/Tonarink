@@ -280,6 +280,8 @@
   <data name="SettingsMulticastWarning" xml:space="preserve"><value>正在使用自定义多播组。其他兼容 LocalSend 的设备默认使用 {group}，除非也改成相同值。</value></data>
   <data name="SettingsMinimizeToTray" xml:space="preserve"><value>关闭时最小化到系统托盘</value></data>
   <data name="SettingsMinimizeToTrayDescription" xml:space="preserve"><value>关闭主窗口时继续在后台接收。</value></data>
+  <data name="SettingsTrayClickOpensFlyout" xml:space="preserve"><value>单击托盘图标时打开托盘面板</value></data>
+  <data name="SettingsTrayClickOpensFlyoutDescription" xml:space="preserve"><value>关闭后，单击将打开应用主窗口。</value></data>
   <data name="SettingsReceive" xml:space="preserve"><value>接收</value></data>
   <data name="SettingsSend" xml:space="preserve"><value>发送</value></data>
   <data name="SettingsVerifyChecksumsOnReceive" xml:space="preserve"><value>接收文件时验证校验和</value></data>

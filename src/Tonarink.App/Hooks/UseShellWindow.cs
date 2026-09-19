@@ -57,7 +57,17 @@ sealed partial class LocalizedAppShell
                 iconPath = AppPlatform.ExecutablePath;
 
             var icon = new WinUIEx.TrayIcon(1, iconPath, t.Message(new("App", "TrayTooltip")));
-            icon.Selected += (_, _) => TrayFlyoutHost.Toggle();
+            icon.Selected += (_, _) =>
+            {
+                if (AppSettingsStore.Load().TrayClickOpensFlyout)
+                {
+                    TrayFlyoutHost.Toggle();
+                    return;
+                }
+
+                TrayFlyoutHost.Dismiss();
+                Restore();
+            };
             icon.LeftDoubleClick += (_, _) =>
             {
                 TrayFlyoutHost.Dismiss();

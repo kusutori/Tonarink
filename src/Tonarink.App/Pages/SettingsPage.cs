@@ -119,6 +119,16 @@ sealed class SettingsPage : Component<SettingsPageProps>
                 ToggleSwitch(Props.Settings.MinimizeToTray, value =>
                     Props.UpdateSettings(settings => settings with { MinimizeToTray = value }))),
             SettingsCard(
+                header: t.Message(new("App", "SettingsTrayClickOpensFlyout")),
+                description: t.Message(new("App", "SettingsTrayClickOpensFlyoutDescription")),
+                headerIcon: HeaderGlyph("\uEB3B"),
+                isClickEnabled: false,
+                isActionIconVisible: false,
+                content:
+                ToggleSwitch(Props.Settings.TrayClickOpensFlyout, value =>
+                    Props.UpdateSettings(settings => settings with { TrayClickOpensFlyout = value }))
+                    .IsEnabled(Props.Settings.MinimizeToTray)),
+            SettingsCard(
                 header: t.Message(new("App", "SettingsStartWithWindows")),
                 description: t.Message(new("App", "SettingsStartWithWindowsDescription")),
                 headerIcon: HeaderGlyph("\uEC4A"),
