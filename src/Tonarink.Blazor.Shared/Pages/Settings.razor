@@ -3,41 +3,41 @@
 @inject ITonarinkRuntime Runtime
 @inject IJSRuntime JS
 
-<PageTitle>@L("设置", "Settings") · Tonarink</PageTitle>
+<PageTitle>@T("Settings") · Tonarink</PageTitle>
 
 <div class="page">
     <header class="page-header">
         <div>
-            <h1>@L("设置", "Settings")</h1>
-            <p>@L("在这台设备上保存 Tonarink 的偏好设置。", "Tonarink preferences saved on this device.")</p>
+            <h1>@T("Settings")</h1>
+            <p>@T("SettingsDescription")</p>
         </div>
     </header>
 
     @if (_error is not null)
     {
         <BbAlert Variant="AlertVariant.Danger" AccentBorder Dismissible OnDismiss="() => _error = null">
-            <BbAlertTitle>@L("无法保存", "Could not save")</BbAlertTitle>
+            <BbAlertTitle>@T("CouldNotSave")</BbAlertTitle>
             <BbAlertDescription>@_error</BbAlertDescription>
         </BbAlert>
     }
 
     <BbCard>
         <BbCardHeader>
-            <BbCardTitle>@L("设备身份", "Device identity")</BbCardTitle>
-            <BbCardDescription>@L("附近设备看到的名称和保存位置。", "The name nearby devices see and where files are saved.")</BbCardDescription>
+            <BbCardTitle>@T("DeviceIdentity")</BbCardTitle>
+            <BbCardDescription>@T("DeviceIdentityDescription")</BbCardDescription>
         </BbCardHeader>
         <BbCardContent>
             <div class="settings-row">
                 <div>
-                    <strong>@L("设备名称", "Device name")</strong>
-                    <small>@L("附近设备会看到这个名称", "Visible to nearby devices")</small>
+                    <strong>@T("DeviceName")</strong>
+                    <small>@T("DeviceNameDescription")</small>
                 </div>
                 <BbInput Value="@AppState.Settings.Alias" ValueChanged="ChangeAlias" />
             </div>
             <div class="settings-row">
                 <div>
-                    <strong>@L("下载目录", "Download directory")</strong>
-                    <small>@L("接收的文件保存到这里", "Received files are saved here")</small>
+                    <strong>@T("DownloadDirectory")</strong>
+                    <small>@T("DownloadDirectoryDescription")</small>
                 </div>
                 <BbInput Value="@AppState.Settings.DownloadDirectory" Disabled="true" />
             </div>
@@ -46,55 +46,55 @@
 
     <BbCard>
         <BbCardHeader>
-            <BbCardTitle>@L("外观", "Appearance")</BbCardTitle>
-            <BbCardDescription>@L("主题和界面语言。", "Theme and interface language.")</BbCardDescription>
+            <BbCardTitle>@T("Appearance")</BbCardTitle>
+            <BbCardDescription>@T("AppearanceDescription")</BbCardDescription>
         </BbCardHeader>
         <BbCardContent>
             <div class="settings-row">
                 <div>
-                    <strong>@L("主题", "Theme")</strong>
-                    <small>@L("跟随系统或固定外观", "Follow the system or use a fixed appearance")</small>
+                    <strong>@T("Theme")</strong>
+                    <small>@T("ThemeDescription")</small>
                 </div>
-                <BbSelect TValue="string" Value="@AppState.Settings.Theme.ToString()" ValueChanged="ChangeTheme" Options="@_themeOptions" />
+                <BbSelect TValue="string" Value="@AppState.Settings.Theme.ToString()" ValueChanged="ChangeTheme" Options="@ThemeOptions" />
             </div>
             <div class="settings-row">
                 <div>
-                    <strong>@L("语言", "Language")</strong>
-                    <small>@L("共享界面的显示语言", "Language used by the shared interface")</small>
+                    <strong>@T("Language")</strong>
+                    <small>@T("LanguageDescription")</small>
                 </div>
-                <BbSelect TValue="string" Value="@AppState.Settings.Language.ToString()" ValueChanged="ChangeLanguage" Options="@_languageOptions" />
+                <BbSelect TValue="string" Value="@AppState.Settings.Language.ToString()" ValueChanged="ChangeLanguage" Options="@LanguageOptions" />
             </div>
         </BbCardContent>
     </BbCard>
 
     <BbCard>
         <BbCardHeader>
-            <BbCardTitle>@L("接收", "Receive")</BbCardTitle>
-            <BbCardDescription>@L("控制入站传输如何处理。", "Control how incoming transfers are handled.")</BbCardDescription>
+            <BbCardTitle>@T("ReceiveSection")</BbCardTitle>
+            <BbCardDescription>@T("ReceiveSectionDescription")</BbCardDescription>
         </BbCardHeader>
         <BbCardContent>
             <div class="settings-row">
                 <div>
-                    <strong>@L("自动接收", "Auto accept")</strong>
-                    <small>@L("收到请求后直接保存到下载目录", "Save incoming requests directly to the download directory")</small>
+                    <strong>@T("AutoAccept")</strong>
+                    <small>@T("AutoAcceptDescription")</small>
                 </div>
-                <BbSwitch Checked="@AppState.Settings.AutoAccept" CheckedChanged="ChangeAutoAccept" AriaLabel="@L("自动接收", "Auto accept")" />
+                <BbSwitch Checked="@AppState.Settings.AutoAccept" CheckedChanged="ChangeAutoAccept" AriaLabel="@T("AutoAccept")" />
             </div>
             <div class="settings-row">
                 <div>
-                    <strong>@L("接收 PIN", "Receive PIN")</strong>
-                    <small>@L("留空则不要求 PIN；更改后附近设备需要新 PIN", "Leave empty to disable. Nearby senders must use the new PIN.")</small>
+                    <strong>@T("ReceivePin")</strong>
+                    <small>@T("ReceivePinDescription")</small>
                 </div>
-                <BbInput Type="InputType.Password" Value="@AppState.Settings.ReceivePin" ValueChanged="ChangeReceivePin" Placeholder="@L("可选", "Optional")" />
+                <BbInput Type="InputType.Password" Value="@AppState.Settings.ReceivePin" ValueChanged="ChangeReceivePin" Placeholder="@T("Optional")" />
             </div>
             @if (!AppState.Platform.Capabilities.IsNative)
             {
                 <div class="settings-row">
                     <div>
-                        <strong>@L("浏览器通知", "Browser notifications")</strong>
-                        <small>@L("在收到请求和完成传输时显示系统通知", "Show system notifications for requests and completed transfers")</small>
+                        <strong>@T("BrowserNotifications")</strong>
+                        <small>@T("BrowserNotificationsDescription")</small>
                     </div>
-                    <BbButton Variant="ButtonVariant.Outline" OnClick="EnableBrowserNotificationsAsync">@L("启用通知", "Enable notifications")</BbButton>
+                    <BbButton Variant="ButtonVariant.Outline" OnClick="EnableBrowserNotificationsAsync">@T("EnableNotifications")</BbButton>
                 </div>
             }
         </BbCardContent>
@@ -103,18 +103,16 @@
 
 @code {
     private string? _error;
-    private readonly List<SelectOption<string>> _themeOptions =
+
+    private List<SelectOption<string>> ThemeOptions =>
     [
-        new("System", "System"),
-        new("Light", "Light"),
-        new("Dark", "Dark"),
+        new(nameof(TonarinkTheme.System), T("ThemeSystem")),
+        new(nameof(TonarinkTheme.Light), T("ThemeLight")),
+        new(nameof(TonarinkTheme.Dark), T("ThemeDark")),
     ];
-    private readonly List<SelectOption<string>> _languageOptions =
-    [
-        new("System", "System"),
-        new("SimplifiedChinese", "简体中文"),
-        new("English", "English"),
-    ];
+
+    private List<SelectOption<string>> LanguageOptions =>
+        [.. AppLanguages.Choices.Select(choice => new SelectOption<string>(choice.Language.ToString(), T(choice.NameKey)))];
 
     private async Task ChangeAlias(string? alias)
     {
@@ -159,7 +157,7 @@
     {
         var permission = await JS.InvokeAsync<string>("tonarink.requestNotifications");
         if (!string.Equals(permission, "granted", StringComparison.OrdinalIgnoreCase))
-            _error = L("浏览器没有授予通知权限。", "The browser did not grant notification permission.");
+            _error = T("NotificationPermissionDenied");
         else
             _error = null;
     }

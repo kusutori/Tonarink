@@ -76,8 +76,18 @@ sealed class WebSharePage : Component<WebSharePageProps>
                 return () => { };
 
             _ = Props.Mode == WebShareMode.Send
-                ? node.StartWebShareAsync(items, new WebShareOptions { AutoAccept = autoAccept, Pin = pin })
-                : node.StartWebReceiveAsync(new WebShareOptions { AutoAccept = autoAccept, Pin = pin });
+                ? node.StartWebShareAsync(items, new WebShareOptions
+                {
+                    AutoAccept = autoAccept,
+                    Pin = pin,
+                    UiCulture = AppLocale.Resolve(Props.Settings.LanguageIndex),
+                })
+                : node.StartWebReceiveAsync(new WebShareOptions
+                {
+                    AutoAccept = autoAccept,
+                    Pin = pin,
+                    UiCulture = AppLocale.Resolve(Props.Settings.LanguageIndex),
+                });
             var watch = new CancellationTokenSource();
             _ = WatchAsync(watch.Token);
             return () =>

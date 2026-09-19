@@ -3,6 +3,7 @@ using System.Net.Sockets;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using LocalSendDotNet;
+using Tonarink.Application;
 
 namespace Tonarink.Services;
 
@@ -81,12 +82,7 @@ sealed class AppSettingsFile
         AutoSave = settings.AutoSave.ToString(),
         ThemeIndex = settings.ThemeIndex,
         LanguageIndex = settings.LanguageIndex,
-        Language = settings.LanguageIndex switch
-        {
-            1 => "zh-CN",
-            2 => "en-US",
-            _ => null,
-        },
+        Language = AppLanguages.ToStoredCulture(settings.LanguageIndex),
         MinimizeToTray = settings.MinimizeToTray,
         StartWithWindows = settings.StartWithWindows,
         NotificationsEnabled = settings.NotificationsEnabled,
@@ -124,7 +120,9 @@ sealed class AppSettingsFile
             Alias = string.IsNullOrWhiteSpace(Alias) ? defaults.Alias : Alias.Trim(),
             AutoSave = autoSave,
             ThemeIndex = ThemeIndex is >= 0 and <= 2 ? ThemeIndex.Value : defaults.ThemeIndex,
-            LanguageIndex = LanguageIndex is >= 0 and <= 2 ? LanguageIndex.Value : defaults.LanguageIndex,
+            LanguageIndex = LanguageIndex is { } language && AppLanguages.IsValidIndex(language)
+                ? language
+                : defaults.LanguageIndex,
             MinimizeToTray = MinimizeToTray ?? defaults.MinimizeToTray,
             StartWithWindows = StartWithWindows ?? defaults.StartWithWindows,
             NotificationsEnabled = NotificationsEnabled ?? defaults.NotificationsEnabled,

@@ -119,7 +119,7 @@ internal sealed class V2Server(
             return;
         }
 
-        var html = WebShareHtml.Render(localInfo().Alias, state.Pin is not null, state.Mode);
+        var html = WebShareHtml.Render(localInfo().Alias, state.Pin is not null, state.Mode, state.UiCulture);
         context.Response.ContentType = "text/html; charset=utf-8";
         await context.Response.WriteAsync(html, context.RequestAborted).ConfigureAwait(false);
     }

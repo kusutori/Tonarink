@@ -5,15 +5,15 @@
 @inject IPlatformServices Platform
 @inject IJSRuntime JS
 
-<PageTitle>@L("接收请求", "Incoming request") · Tonarink</PageTitle>
+<PageTitle>@T("IncomingRequest") · Tonarink</PageTitle>
 
 <div class="page">
     @if (Offer is null)
     {
-        <BbEmpty Title="@L("请求已失效", "Request expired")" Description="@L("发送方可能已经取消了请求。", "The sender may have cancelled this request.")">
+        <BbEmpty Title="@T("RequestExpired")" Description="@T("RequestExpiredDescription")">
             <Icon><LucideIcon Name="circle-alert" /></Icon>
             <ChildContent>
-                <BbButton Href="/">@L("返回接收", "Back to receive")</BbButton>
+                <BbButton Href="/">@T("BackToReceive")</BbButton>
             </ChildContent>
         </BbEmpty>
     }
@@ -22,24 +22,24 @@
         <header class="page-header">
             <div>
                 <h1>@Offer.SenderAlias</h1>
-                <p>@L($"{Offer.SenderModel} 想要发送给你 {Offer.Items.Count} 项内容", $"{Offer.SenderModel} wants to send you {Offer.Items.Count} items")</p>
+                <p>@T("WantsToSend", Offer.SenderModel, Offer.Items.Count)</p>
             </div>
             <BbButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Small" OnClick="ToggleAll">
-                @(_selected.Count == Offer.Items.Count ? L("取消全选", "Select none") : L("全选", "Select all"))
+                @(_selected.Count == Offer.Items.Count ? T("SelectNone") : T("SelectAll"))
             </BbButton>
         </header>
 
         @if (_error is not null)
         {
             <BbAlert Variant="AlertVariant.Danger" AccentBorder>
-                <BbAlertTitle>@L("无法完成", "Could not complete")</BbAlertTitle>
+                <BbAlertTitle>@T("CouldNotComplete")</BbAlertTitle>
                 <BbAlertDescription>@_error</BbAlertDescription>
             </BbAlert>
         }
 
         <BbCard>
             <BbCardHeader>
-                <BbCardTitle>@L("选择要接收的内容", "Choose what to receive")</BbCardTitle>
+                <BbCardTitle>@T("ChooseWhatToReceive")</BbCardTitle>
             </BbCardHeader>
             <BbCardContent>
                 <div class="list-stack">
@@ -59,7 +59,7 @@
                             <BbCard>
                                 <BbCardContent>
                                     <pre class="text-sm whitespace-pre-wrap">@text</pre>
-                                    <BbButton Variant="ButtonVariant.Outline" Size="ButtonSize.Small" OnClick="() => CopyTextAsync(text)">@L("复制", "Copy")</BbButton>
+                                    <BbButton Variant="ButtonVariant.Outline" Size="ButtonSize.Small" OnClick="() => CopyTextAsync(text)">@T("Copy")</BbButton>
                                 </BbCardContent>
                             </BbCard>
                         }
@@ -71,10 +71,10 @@
         <footer class="decision-bar">
             @if (_receiveCancellation is not null)
             {
-                <BbButton Variant="ButtonVariant.Outline" OnClick="CancelReceive">@L("取消接收", "Cancel receive")</BbButton>
+                <BbButton Variant="ButtonVariant.Outline" OnClick="CancelReceive">@T("CancelReceive")</BbButton>
             }
-            <BbButton Variant="ButtonVariant.Destructive" OnClick="DeclineAsync" Disabled="@_busy">@L("拒绝", "Decline")</BbButton>
-            <BbButton OnClick="AcceptAsync" Disabled="@(_busy || _selected.Count == 0)">@L($"接收 {_selected.Count} 项", $"Receive {_selected.Count} items")</BbButton>
+            <BbButton Variant="ButtonVariant.Destructive" OnClick="DeclineAsync" Disabled="@_busy">@T("Decline")</BbButton>
+            <BbButton OnClick="AcceptAsync" Disabled="@(_busy || _selected.Count == 0)">@T("ReceiveNItems", _selected.Count)</BbButton>
         </footer>
     }
 </div>

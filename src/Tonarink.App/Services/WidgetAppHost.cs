@@ -3,6 +3,7 @@ using System.Text.Json.Serialization;
 using LocalSendDotNet;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Reactor;
+using Microsoft.UI.Reactor.Localization;
 
 namespace Tonarink.Services;
 
@@ -170,22 +171,19 @@ static class WidgetAppHost
             serverDesired = _serverDesired;
         }
 
+        var t = AppIntl.For(settings);
         var transfer = incoming is null
-            ? OfferTransfer(runtime, settings.LanguageIndex) ?? OutgoingTransfer(outgoing)
+            ? OfferTransfer(runtime, t) ?? OutgoingTransfer(outgoing)
             : ToFile(incoming);
         var snapshot = new WidgetSnapshotFile
         {
-            Schema = 1,
+            Schema = 2,
             ServerRunning = runtime.NodeState == LocalSendNodeState.Running,
             ServerBusy = runtime.NodeState is LocalSendNodeState.Starting or LocalSendNodeState.Stopping,
             ServerDesired = serverDesired,
             Alias = settings.ResolvedAlias,
-            Language = settings.LanguageIndex switch
-            {
-                1 => "zh-CN",
-                2 => "en-US",
-                _ => null,
-            },
+            Language = AppLocale.Resolve(settings.LanguageIndex),
+            Chrome = Chrome(t),
             Devices = runtime.NodeState == LocalSendNodeState.Running
                 ?
                 [
@@ -226,28 +224,47 @@ static class WidgetAppHost
         Indeterminate = incoming.Indeterminate,
     };
 
-    private static WidgetTransferFile? OfferTransfer(AppRuntimeState runtime, int languageIndex)
+    private static WidgetTransferFile? OfferTransfer(AppRuntimeState runtime, IntlAccessor t)
     {
         var request = runtime.IncomingTransfers.FirstOrDefault();
         if (request is null)
             return null;
 
-        var chinese = IsChinese(languageIndex);
         var title = request.Items.Count == 1
             ? request.Items[0].FileName
-            : chinese
-                ? $"{request.Items.Count} 个文件"
-                : $"{request.Items.Count} files";
+            : t.Message(new("App", "WidgetFileCount"), ("count", request.Items.Count));
         return new WidgetTransferFile
         {
             Incoming = true,
             Title = title,
             Peer = request.Sender.Alias,
-            Status = chinese ? "等待接收" : "Waiting to receive",
+            Status = t.Message(new("App", "TrayWaitingReceive")),
             TotalBytes = request.Items.Sum(static item => item.Size),
             Indeterminate = true,
         };
     }
+
+    private static WidgetChromeFile Chrome(IntlAccessor t) => new()
+    {
+        AppStatusOpen = t.Message(new("App", "WidgetAppOpen")),
+        AppStatusClosed = t.Message(new("App", "WidgetAppClosedStatus")),
+        ServerLabel = t.Message(new("App", "TrayReceiveService")),
+        ServerOn = t.Message(new("App", "WidgetServerOn")),
+        ServerOff = t.Message(new("App", "WidgetServerOff")),
+        HintAppClosed = t.Message(new("App", "WidgetHintAppClosed")),
+        HintServerOn = t.Message(new("App", "WidgetHintServerOn")),
+        HintServerOff = t.Message(new("App", "WidgetHintServerOff")),
+        EmptyNoDevices = t.Message(new("App", "TrayNoDevices")),
+        EmptyReceivingOff = t.Message(new("App", "WidgetReceivingOff")),
+        EmptyAppClosed = t.Message(new("App", "WidgetAppClosed")),
+        HistoryEmpty = t.Message(new("App", "HistoryEmpty")),
+        NearbyTab = t.Message(new("App", "TrayNearbyTab")),
+        HistoryTab = t.Message(new("App", "TrayHistoryTab")),
+        NearbyCount = t.Message(new("App", "WidgetNearbyCount")),
+        HistoryCount = t.Message(new("App", "WidgetHistoryCount")),
+        FromPeer = t.Message(new("App", "TrayFromPeer")),
+        ToPeer = t.Message(new("App", "TrayToPeer")),
+    };
 
     private static WidgetTransferFile? OutgoingTransfer(OutgoingTransferViewState? outgoing)
     {
@@ -267,9 +284,6 @@ static class WidgetAppHost
         };
     }
 
-    private static bool IsChinese(int languageIndex) =>
-        languageIndex == 1
-        || (languageIndex == 0 && WidgetLocale.IsChinese());
 }
 
 sealed record WidgetTransferInfo(
@@ -290,6 +304,29 @@ sealed class WidgetSnapshotFile
     public string? Language { get; set; }
     public List<WidgetDeviceFile>? Devices { get; set; }
     public WidgetTransferFile? Transfer { get; set; }
+    public WidgetChromeFile? Chrome { get; set; }
+}
+
+sealed class WidgetChromeFile
+{
+    public string? AppStatusOpen { get; set; }
+    public string? AppStatusClosed { get; set; }
+    public string? ServerLabel { get; set; }
+    public string? ServerOn { get; set; }
+    public string? ServerOff { get; set; }
+    public string? HintAppClosed { get; set; }
+    public string? HintServerOn { get; set; }
+    public string? HintServerOff { get; set; }
+    public string? EmptyNoDevices { get; set; }
+    public string? EmptyReceivingOff { get; set; }
+    public string? EmptyAppClosed { get; set; }
+    public string? HistoryEmpty { get; set; }
+    public string? NearbyTab { get; set; }
+    public string? HistoryTab { get; set; }
+    public string? NearbyCount { get; set; }
+    public string? HistoryCount { get; set; }
+    public string? FromPeer { get; set; }
+    public string? ToPeer { get; set; }
 }
 
 sealed class WidgetDeviceFile
@@ -314,25 +351,8 @@ sealed class WidgetCommandFile
     public string? Verb { get; set; }
 }
 
-static class WidgetLocale
-{
-    public static bool IsChinese()
-    {
-        try
-        {
-            return Windows.System.UserProfile.GlobalizationPreferences.Languages.Any(static language =>
-                language.StartsWith("zh", StringComparison.OrdinalIgnoreCase));
-        }
-        catch (Exception exception) when (exception is InvalidOperationException
-                                              or System.Runtime.InteropServices.COMException)
-        {
-            AppDiagnostics.Report("Could not resolve the system language for the widget", exception);
-            return false;
-        }
-    }
-}
-
 [JsonSourceGenerationOptions(WriteIndented = true, PropertyNameCaseInsensitive = true)]
 [JsonSerializable(typeof(WidgetSnapshotFile))]
+[JsonSerializable(typeof(WidgetChromeFile))]
 [JsonSerializable(typeof(WidgetCommandFile))]
 internal sealed partial class WidgetHostJsonContext : JsonSerializerContext;

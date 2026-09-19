@@ -39,6 +39,9 @@ public sealed record WebShareState(
     /// <summary>Gets the direction of the active browser link.</summary>
     public WebShareMode Mode { get; init; } = WebShareMode.Send;
 
+    /// <summary>Gets the BCP-47 culture used for the guest HTML pages.</summary>
+    public string? UiCulture { get; init; }
+
     /// <summary>Gets an inactive share snapshot.</summary>
     public static readonly WebShareState Inactive = new(false, [], [], false, null);
 }
@@ -50,4 +53,6 @@ public sealed class WebShareOptions
     public bool AutoAccept { get; init; }
     /// <summary>Gets the optional PIN browsers must enter.</summary>
     public string? Pin { get; init; }
+    /// <summary>Gets the BCP-47 culture used for the guest HTML pages.</summary>
+    public string? UiCulture { get; init; }
 }

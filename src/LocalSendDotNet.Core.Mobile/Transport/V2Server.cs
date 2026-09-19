@@ -260,7 +260,7 @@ internal sealed class V2Server(
             await PortableResponse.WriteStatusAsync(response, HttpStatusCode.NotFound, request.CancellationToken).ConfigureAwait(false);
             return;
         }
-        var body = Encoding.UTF8.GetBytes(WebShareHtml.Render(localInfo().Alias, state.Pin is not null, state.Mode));
+        var body = Encoding.UTF8.GetBytes(WebShareHtml.Render(localInfo().Alias, state.Pin is not null, state.Mode, state.UiCulture));
         await PortableResponse.WriteAsync(response, HttpStatusCode.OK, "text/html; charset=utf-8", body, null, request.CancellationToken).ConfigureAwait(false);
     }
 

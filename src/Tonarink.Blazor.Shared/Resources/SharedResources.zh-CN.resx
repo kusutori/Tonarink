@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="AddText" xml:space="preserve"><value>添加文本</value></data>
+  <data name="AddTextDescription" xml:space="preserve"><value>输入要发送的消息。</value></data>
+  <data name="AddToQueue" xml:space="preserve"><value>添加到队列</value></data>
+  <data name="AdvertisedAs" xml:space="preserve"><value>“{0}”已在局域网中广播。</value></data>
+  <data name="Appearance" xml:space="preserve"><value>外观</value></data>
+  <data name="AppearanceDescription" xml:space="preserve"><value>主题和界面语言。</value></data>
+  <data name="AutoAccept" xml:space="preserve"><value>自动接收</value></data>
+  <data name="AutoAcceptDescription" xml:space="preserve"><value>收到请求后直接保存到下载目录</value></data>
+  <data name="BackToReceive" xml:space="preserve"><value>返回接收</value></data>
+  <data name="BackToReceivePage" xml:space="preserve"><value>返回接收页</value></data>
+  <data name="BrowserLimitationsDescription" xml:space="preserve"><value>浏览器页面控制服务器上运行的 Tonarink 节点。</value></data>
+  <data name="BrowserLimitationsTitle" xml:space="preserve"><value>浏览器能力受限</value></data>
+  <data name="BrowserNotifications" xml:space="preserve"><value>浏览器通知</value></data>
+  <data name="BrowserNotificationsDescription" xml:space="preserve"><value>在收到请求和完成传输时显示系统通知</value></data>
+  <data name="Cancel" xml:space="preserve"><value>取消</value></data>
+  <data name="CancelReceive" xml:space="preserve"><value>取消接收</value></data>
+  <data name="CancelTransfer" xml:space="preserve"><value>取消发送</value></data>
+  <data name="ChooseWhatToReceive" xml:space="preserve"><value>选择要接收的内容</value></data>
+  <data name="Clear" xml:space="preserve"><value>清空</value></data>
+  <data name="Clipboard" xml:space="preserve"><value>剪贴板</value></data>
+  <data name="Close" xml:space="preserve"><value>关闭</value></data>
+  <data name="Copy" xml:space="preserve"><value>复制</value></data>
+  <data name="CouldNotComplete" xml:space="preserve"><value>无法完成</value></data>
+  <data name="CouldNotSave" xml:space="preserve"><value>无法保存</value></data>
+  <data name="Decline" xml:space="preserve"><value>拒绝</value></data>
+  <data name="DeviceIdentity" xml:space="preserve"><value>设备身份</value></data>
+  <data name="DeviceIdentityDescription" xml:space="preserve"><value>附近设备看到的名称和保存位置。</value></data>
+  <data name="DeviceName" xml:space="preserve"><value>设备名称</value></data>
+  <data name="DeviceNameDescription" xml:space="preserve"><value>附近设备会看到这个名称</value></data>
+  <data name="DeviceRequiresPin" xml:space="preserve"><value>接收设备需要 PIN。</value></data>
+  <data name="DownloadDirectory" xml:space="preserve"><value>下载目录</value></data>
+  <data name="DownloadDirectoryDescription" xml:space="preserve"><value>接收的文件保存到这里</value></data>
+  <data name="EnableNotifications" xml:space="preserve"><value>启用通知</value></data>
+  <data name="Files" xml:space="preserve"><value>文件</value></data>
+  <data name="Folder" xml:space="preserve"><value>文件夹</value></data>
+  <data name="History" xml:space="preserve"><value>历史</value></data>
+  <data name="HistoryDescription" xml:space="preserve"><value>当前会话中的发送和接收活动。</value></data>
+  <data name="IncomingNotifyBody" xml:space="preserve"><value>{0} 想要发送 {1} 项内容</value></data>
+  <data name="IncomingRequest" xml:space="preserve"><value>接收请求</value></data>
+  <data name="IncomingRequests" xml:space="preserve"><value>接收请求</value></data>
+  <data name="IncomingRequestsDescription" xml:space="preserve"><value>查看并选择要保存的内容。</value></data>
+  <data name="IncomingTransfer" xml:space="preserve"><value>收到发送请求</value></data>
+  <data name="IncorrectPin" xml:space="preserve"><value>PIN 不正确，请重试。</value></data>
+  <data name="InvalidAddress" xml:space="preserve"><value>地址格式无效，请使用 IP 或 IP:端口。</value></data>
+  <data name="Items" xml:space="preserve"><value>项</value></data>
+  <data name="Language" xml:space="preserve"><value>语言</value></data>
+  <data name="LanguageChinese" xml:space="preserve"><value>简体中文</value></data>
+  <data name="LanguageDescription" xml:space="preserve"><value>共享界面的显示语言</value></data>
+  <data name="LanguageEnglish" xml:space="preserve"><value>English</value></data>
+  <data name="LanguageSystem" xml:space="preserve"><value>跟随系统</value></data>
+  <data name="LookingForDevices" xml:space="preserve"><value>正在寻找附近设备</value></data>
+  <data name="Navigate" xml:space="preserve"><value>导航</value></data>
+  <data name="NearbyDevices" xml:space="preserve"><value>附近设备</value></data>
+  <data name="NearbyDevicesDescription" xml:space="preserve"><value>点选设备即可发送当前队列。</value></data>
+  <data name="NoContentHint" xml:space="preserve"><value>使用上方四个操作添加文件、文件夹、文本或剪贴板。</value></data>
+  <data name="NoContentSelected" xml:space="preserve"><value>尚未选择内容</value></data>
+  <data name="NodeRunning" xml:space="preserve"><value>节点运行中</value></data>
+  <data name="NodeStartFailed" xml:space="preserve"><value>节点启动失败</value></data>
+  <data name="NodeStopped" xml:space="preserve"><value>节点未运行</value></data>
+  <data name="NoPendingRequests" xml:space="preserve"><value>暂无待处理请求</value></data>
+  <data name="NotConnected" xml:space="preserve"><value>尚未连接</value></data>
+  <data name="NotificationPermissionDenied" xml:space="preserve"><value>浏览器没有授予通知权限。</value></data>
+  <data name="NoTransfers" xml:space="preserve"><value>暂无传输记录</value></data>
+  <data name="NoTransfersHint" xml:space="preserve"><value>完成一次发送或接收后会显示在这里。</value></data>
+  <data name="Optional" xml:space="preserve"><value>可选</value></data>
+  <data name="PageNotFound" xml:space="preserve"><value>找不到页面</value></data>
+  <data name="PageNotFoundDescription" xml:space="preserve"><value>这个地址没有对应的页面。</value></data>
+  <data name="PendingRequestsHint" xml:space="preserve"><value>有人向你发送内容时会显示在这里。</value></data>
+  <data name="PinPlaceholder" xml:space="preserve"><value>输入接收设备的 PIN</value></data>
+  <data name="PinRequired" xml:space="preserve"><value>需要 PIN</value></data>
+  <data name="PinRequiredDescription" xml:space="preserve"><value>接收设备需要 PIN 才能接收。</value></data>
+  <data name="QueueSummary" xml:space="preserve"><value>{0} 项 · {1}</value></data>
+  <data name="ReadyToReceive" xml:space="preserve"><value>可以接收</value></data>
+  <data name="ReadyToSend" xml:space="preserve"><value>待发送</value></data>
+  <data name="Receive" xml:space="preserve"><value>接收</value></data>
+  <data name="ReceiveDescription" xml:space="preserve"><value>其他 LocalSend 设备可以发现这台设备并向这里发送内容。</value></data>
+  <data name="ReceiveNItems" xml:space="preserve"><value>接收 {0} 项</value></data>
+  <data name="ReceivePin" xml:space="preserve"><value>接收 PIN</value></data>
+  <data name="ReceivePinDescription" xml:space="preserve"><value>留空则不要求 PIN；更改后附近设备需要新 PIN</value></data>
+  <data name="ReceiveSection" xml:space="preserve"><value>接收</value></data>
+  <data name="ReceiveSectionDescription" xml:space="preserve"><value>控制入站传输如何处理。</value></data>
+  <data name="RecentActivity" xml:space="preserve"><value>最近活动</value></data>
+  <data name="RecentActivityDescription" xml:space="preserve"><value>当前会话中的发送和接收记录。</value></data>
+  <data name="RefreshDevices" xml:space="preserve"><value>刷新设备</value></data>
+  <data name="Remove" xml:space="preserve"><value>移除</value></data>
+  <data name="RequestExpired" xml:space="preserve"><value>请求已失效</value></data>
+  <data name="RequestExpiredDescription" xml:space="preserve"><value>发送方可能已经取消了请求。</value></data>
+  <data name="SameNetworkHint" xml:space="preserve"><value>确保设备位于同一局域网。</value></data>
+  <data name="SelectAll" xml:space="preserve"><value>全选</value></data>
+  <data name="SelectNone" xml:space="preserve"><value>取消全选</value></data>
+  <data name="Send" xml:space="preserve"><value>发送</value></data>
+  <data name="SendDescription" xml:space="preserve"><value>选择文件或文本，然后选择附近设备。</value></data>
+  <data name="SendFailed" xml:space="preserve"><value>发送失败</value></data>
+  <data name="SendToAddress" xml:space="preserve"><value>发送到地址</value></data>
+  <data name="SendToKnownAddress" xml:space="preserve"><value>发送到已知地址</value></data>
+  <data name="SendToKnownAddressDescription" xml:space="preserve"><value>当设备未出现在附近列表时，使用 IP 或 IP:端口。</value></data>
+  <data name="Settings" xml:space="preserve"><value>设置</value></data>
+  <data name="SettingsDescription" xml:space="preserve"><value>在这台设备上保存 Tonarink 的偏好设置。</value></data>
+  <data name="StatusCancelled" xml:space="preserve"><value>已取消</value></data>
+  <data name="StatusCompleted" xml:space="preserve"><value>已完成</value></data>
+  <data name="StatusFailed" xml:space="preserve"><value>失败</value></data>
+  <data name="StatusTransferring" xml:space="preserve"><value>传输中</value></data>
+  <data name="StatusWaiting" xml:space="preserve"><value>等待中</value></data>
+  <data name="Text" xml:space="preserve"><value>文本</value></data>
+  <data name="TextPlaceholder" xml:space="preserve"><value>输入要发送的文本…</value></data>
+  <data name="Theme" xml:space="preserve"><value>主题</value></data>
+  <data name="ThemeDark" xml:space="preserve"><value>深色</value></data>
+  <data name="ThemeDescription" xml:space="preserve"><value>跟随系统或固定外观</value></data>
+  <data name="ThemeLight" xml:space="preserve"><value>浅色</value></data>
+  <data name="ThemeSystem" xml:space="preserve"><value>跟随系统</value></data>
+  <data name="TooManyPinAttempts" xml:space="preserve"><value>PIN 尝试次数过多，请稍后重试。</value></data>
+  <data name="TransferCompleted" xml:space="preserve"><value>传输完成</value></data>
+  <data name="ViewAll" xml:space="preserve"><value>查看全部</value></data>
+  <data name="WaitingNearby" xml:space="preserve"><value>等待附近设备</value></data>
+  <data name="WantsToSend" xml:space="preserve"><value>{0} 想要发送给你 {1} 项内容</value></data>
+</root>

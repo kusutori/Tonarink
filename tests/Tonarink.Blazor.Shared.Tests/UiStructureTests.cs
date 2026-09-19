@@ -28,8 +28,8 @@ public sealed class UiStructureTests
         Assert.Contains("LucideIcon Name=\"text\"", send);
         Assert.Contains("LucideIcon Name=\"clipboard\"", send);
         Assert.Contains("split-panes", send);
-        Assert.Contains("Ready to send", send);
-        Assert.Contains("Nearby devices", send);
+        Assert.Contains("T(\"ReadyToSend\")", send);
+        Assert.Contains("T(\"NearbyDevices\")", send);
         Assert.Contains("_showAddress", send);
         Assert.Contains("BbDialog", send);
         Assert.DoesNotContain("▱", send);
@@ -41,11 +41,11 @@ public sealed class UiStructureTests
     public void SettingsExposesAliasThemeLanguageAutoAcceptAndReceivePin()
     {
         var settings = Read("Pages", "Settings.razor");
-        Assert.Contains("Device name", settings);
-        Assert.Contains("Theme", settings);
-        Assert.Contains("Language", settings);
-        Assert.Contains("Auto accept", settings);
-        Assert.Contains("Receive PIN", settings);
+        Assert.Contains("T(\"DeviceName\")", settings);
+        Assert.Contains("T(\"Theme\")", settings);
+        Assert.Contains("T(\"Language\")", settings);
+        Assert.Contains("T(\"AutoAccept\")", settings);
+        Assert.Contains("T(\"ReceivePin\")", settings);
         Assert.Contains("settings-row", settings);
         Assert.Contains("BbSwitch", settings);
         Assert.Contains("BbSelect", settings);
@@ -57,7 +57,7 @@ public sealed class UiStructureTests
         var receive = Read("Pages", "Receive.razor");
         Assert.Contains("/receive/", receive);
         Assert.Contains("Href=\"/history\"", receive);
-        Assert.Contains("Incoming requests", receive);
+        Assert.Contains("T(\"IncomingRequests\")", receive);
         Assert.Contains("BbCard", receive);
         Assert.Contains("LucideIcon", receive);
     }

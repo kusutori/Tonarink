@@ -12,6 +12,29 @@ sealed class WidgetSnapshotFile
     public string? Language { get; set; }
     public List<WidgetDeviceFile>? Devices { get; set; }
     public WidgetTransferFile? Transfer { get; set; }
+    public WidgetChromeFile? Chrome { get; set; }
+}
+
+sealed class WidgetChromeFile
+{
+    public string? AppStatusOpen { get; set; }
+    public string? AppStatusClosed { get; set; }
+    public string? ServerLabel { get; set; }
+    public string? ServerOn { get; set; }
+    public string? ServerOff { get; set; }
+    public string? HintAppClosed { get; set; }
+    public string? HintServerOn { get; set; }
+    public string? HintServerOff { get; set; }
+    public string? EmptyNoDevices { get; set; }
+    public string? EmptyReceivingOff { get; set; }
+    public string? EmptyAppClosed { get; set; }
+    public string? HistoryEmpty { get; set; }
+    public string? NearbyTab { get; set; }
+    public string? HistoryTab { get; set; }
+    public string? NearbyCount { get; set; }
+    public string? HistoryCount { get; set; }
+    public string? FromPeer { get; set; }
+    public string? ToPeer { get; set; }
 }
 
 sealed class WidgetDeviceFile
@@ -96,6 +119,7 @@ sealed class WidgetCardRow
     PropertyNameCaseInsensitive = true,
     PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
 [JsonSerializable(typeof(WidgetSnapshotFile))]
+[JsonSerializable(typeof(WidgetChromeFile))]
 [JsonSerializable(typeof(WidgetCommandFile))]
 [JsonSerializable(typeof(ReceiveHistoryFile))]
 [JsonSerializable(typeof(WidgetCardData))]

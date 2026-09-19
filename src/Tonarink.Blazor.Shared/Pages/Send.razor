@@ -4,25 +4,25 @@
 @inject ITonarinkRuntime Runtime
 @inject IJSRuntime JS
 
-<PageTitle>@L("发送", "Send") · Tonarink</PageTitle>
+<PageTitle>@T("Send") · Tonarink</PageTitle>
 
 <div class="page">
     <header class="page-header">
         <div>
-            <h1>@L("发送", "Send")</h1>
-            <p>@L("选择文件或文本，然后选择附近设备。", "Choose files or text, then select a nearby device.")</p>
+            <h1>@T("Send")</h1>
+            <p>@T("SendDescription")</p>
         </div>
         <div class="flex items-center gap-2">
             @if (_sendCancellation is not null)
             {
-                <BbButton Variant="ButtonVariant.Destructive" Size="ButtonSize.Small" OnClick="CancelSend">@L("取消发送", "Cancel transfer")</BbButton>
+                <BbButton Variant="ButtonVariant.Destructive" Size="ButtonSize.Small" OnClick="CancelSend">@T("CancelTransfer")</BbButton>
             }
-            <BbButton Variant="ButtonVariant.Outline" Size="ButtonSize.Icon" AriaLabel="@L("刷新设备", "Refresh devices")" OnClick="RefreshAsync" Disabled="@_busy">
+            <BbButton Variant="ButtonVariant.Outline" Size="ButtonSize.Icon" AriaLabel="@T("RefreshDevices")" OnClick="RefreshAsync" Disabled="@_busy">
                 <LucideIcon Name="refresh-cw" Class="h-4 w-4" />
             </BbButton>
             <BbButton Variant="ButtonVariant.Outline" Size="ButtonSize.Small" OnClick="() => _showAddress = true" Disabled="@(AppState.SendItems.Count == 0 || _busy)">
                 <LucideIcon Name="laptop" Class="h-4 w-4" />
-                @L("发送到地址", "Send to address")
+                @T("SendToAddress")
             </BbButton>
         </div>
     </header>
@@ -32,11 +32,11 @@
         {
             <BbButton Variant="ButtonVariant.Outline" Class="h-24 flex-col gap-2" OnClick="PickFilesAsync" Disabled="@(!Platform.Capabilities.CanPickFiles || _busy)">
                 <LucideIcon Name="file" Class="h-5 w-5" />
-                <span>@L("文件", "Files")</span>
+                <span>@T("Files")</span>
             </BbButton>
             <BbButton Variant="ButtonVariant.Outline" Class="h-24 flex-col gap-2" OnClick="PickFoldersAsync" Disabled="@(!Platform.Capabilities.CanPickFolders || _busy)">
                 <LucideIcon Name="folder" Class="h-5 w-5" />
-                <span>@L("文件夹", "Folder")</span>
+                <span>@T("Folder")</span>
             </BbButton>
         }
         else
@@ -45,24 +45,24 @@
                 <InputFile OnChange="BrowserFilesSelected" multiple />
                 <BbButton Variant="ButtonVariant.Outline" Class="h-24 flex-col gap-2 w-full">
                     <LucideIcon Name="file" Class="h-5 w-5" />
-                    <span>@L("文件", "Files")</span>
+                    <span>@T("Files")</span>
                 </BbButton>
             </label>
         }
         <BbButton Variant="ButtonVariant.Outline" Class="h-24 flex-col gap-2" OnClick="() => _showText = true">
             <LucideIcon Name="text" Class="h-5 w-5" />
-            <span>@L("文本", "Text")</span>
+            <span>@T("Text")</span>
         </BbButton>
         <BbButton Variant="ButtonVariant.Outline" Class="h-24 flex-col gap-2" OnClick="PasteAsync" Disabled="@(!Platform.Capabilities.CanUseClipboard || _busy)">
             <LucideIcon Name="clipboard" Class="h-5 w-5" />
-            <span>@L("剪贴板", "Clipboard")</span>
+            <span>@T("Clipboard")</span>
         </BbButton>
     </section>
 
     @if (_error is not null)
     {
         <BbAlert Variant="AlertVariant.Danger" AccentBorder Dismissible OnDismiss="() => _error = null">
-            <BbAlertTitle>@L("发送失败", "Send failed")</BbAlertTitle>
+            <BbAlertTitle>@T("SendFailed")</BbAlertTitle>
             <BbAlertDescription>@_error</BbAlertDescription>
         </BbAlert>
     }
@@ -70,20 +70,20 @@
     <div class="split-panes">
         <BbCard>
             <BbCardHeader>
-                <BbCardTitle>@L("待发送", "Ready to send")</BbCardTitle>
+                <BbCardTitle>@T("ReadyToSend")</BbCardTitle>
                 <BbCardDescription>
                     @(AppState.SendItems.Count == 0
-                        ? L("尚未选择内容", "No content selected")
-                        : L($"{AppState.SendItems.Count} 项 · {FormatBytes(AppState.SendItems.Sum(static item => item.Size))}", $"{AppState.SendItems.Count} items · {FormatBytes(AppState.SendItems.Sum(static item => item.Size))}"))
+                        ? T("NoContentSelected")
+                        : T("QueueSummary", AppState.SendItems.Count, FormatBytes(AppState.SendItems.Sum(static item => item.Size))))
                 </BbCardDescription>
                 <BbCardAction>
-                    <BbButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Small" OnClick="AppState.ClearSendItems" Disabled="@(AppState.SendItems.Count == 0)">@L("清空", "Clear")</BbButton>
+                    <BbButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Small" OnClick="AppState.ClearSendItems" Disabled="@(AppState.SendItems.Count == 0)">@T("Clear")</BbButton>
                 </BbCardAction>
             </BbCardHeader>
             <BbCardContent>
                 @if (AppState.SendItems.Count == 0)
                 {
-                    <BbEmpty Title="@L("尚未选择内容", "No content selected")" Description="@L("使用上方四个操作添加文件、文件夹、文本或剪贴板。", "Use the four actions above to add files, folders, text, or clipboard content.")" Size="EmptySize.Small">
+                    <BbEmpty Title="@T("NoContentSelected")" Description="@T("NoContentHint")" Size="EmptySize.Small">
                         <Icon><LucideIcon Name="plus" /></Icon>
                     </BbEmpty>
                 }
@@ -98,7 +98,7 @@
                                     <strong>@item.Name</strong>
                                     <small>@item.ContentType · @FormatBytes(item.Size)</small>
                                 </div>
-                                <BbButton Variant="ButtonVariant.Ghost" Size="ButtonSize.IconSmall" AriaLabel="@L("移除", "Remove")" OnClick="() => AppState.RemoveSendItem(item.Id)">
+                                <BbButton Variant="ButtonVariant.Ghost" Size="ButtonSize.IconSmall" AriaLabel="@T("Remove")" OnClick="() => AppState.RemoveSendItem(item.Id)">
                                     <LucideIcon Name="x" Class="h-4 w-4" />
                                 </BbButton>
                             </div>
@@ -110,8 +110,8 @@
 
         <BbCard>
             <BbCardHeader>
-                <BbCardTitle>@L("附近设备", "Nearby devices")</BbCardTitle>
-                <BbCardDescription>@L("点选设备即可发送当前队列。", "Tap a device to send the current queue.")</BbCardDescription>
+                <BbCardTitle>@T("NearbyDevices")</BbCardTitle>
+                <BbCardDescription>@T("NearbyDevicesDescription")</BbCardDescription>
                 <BbCardAction>
                     <BbBadge Variant="BadgeVariant.Secondary">@AppState.Devices.Count</BbBadge>
                 </BbCardAction>
@@ -119,7 +119,7 @@
             <BbCardContent>
                 @if (AppState.Devices.Count == 0)
                 {
-                    <BbEmpty Title="@L("正在寻找附近设备", "Looking for nearby devices")" Description="@L("确保设备位于同一局域网。", "Make sure devices are on the same local network.")" Size="EmptySize.Small">
+                    <BbEmpty Title="@T("LookingForDevices")" Description="@T("SameNetworkHint")" Size="EmptySize.Small">
                         <Icon><LucideIcon Name="radar" /></Icon>
                     </BbEmpty>
                 }
@@ -147,15 +147,15 @@
 <BbDialog Open="_showText" OpenChanged="value => _showText = value">
     <BbDialogContent>
         <BbDialogHeader>
-            <BbDialogTitle>@L("添加文本", "Add text")</BbDialogTitle>
-            <BbDialogDescription>@L("输入要发送的消息。", "Enter a message to send.")</BbDialogDescription>
+            <BbDialogTitle>@T("AddText")</BbDialogTitle>
+            <BbDialogDescription>@T("AddTextDescription")</BbDialogDescription>
         </BbDialogHeader>
-        <BbTextarea @bind-Value="_text" Placeholder="@L("输入要发送的文本…", "Enter text to send…")" Class="min-h-32" />
+        <BbTextarea @bind-Value="_text" Placeholder="@T("TextPlaceholder")" Class="min-h-32" />
         <BbDialogFooter>
             <BbDialogClose>
-                <BbButton Variant="ButtonVariant.Outline">@L("取消", "Cancel")</BbButton>
+                <BbButton Variant="ButtonVariant.Outline">@T("Cancel")</BbButton>
             </BbDialogClose>
-            <BbButton OnClick="AddText" Disabled="@(string.IsNullOrWhiteSpace(_text))">@L("添加到队列", "Add to queue")</BbButton>
+            <BbButton OnClick="AddText" Disabled="@(string.IsNullOrWhiteSpace(_text))">@T("AddToQueue")</BbButton>
         </BbDialogFooter>
     </BbDialogContent>
 </BbDialog>
@@ -163,13 +163,13 @@
 <BbDialog Open="_pinRequested" OpenChanged="value => _pinRequested = value">
     <BbDialogContent>
         <BbDialogHeader>
-            <BbDialogTitle>@L("需要 PIN", "PIN required")</BbDialogTitle>
-            <BbDialogDescription>@L("接收设备需要 PIN 才能接收。", "The receiving device requires a PIN.")</BbDialogDescription>
+            <BbDialogTitle>@T("PinRequired")</BbDialogTitle>
+            <BbDialogDescription>@T("PinRequiredDescription")</BbDialogDescription>
         </BbDialogHeader>
-        <BbInput Type="InputType.Password" @bind-Value="_pin" Placeholder="@L("输入接收设备的 PIN", "Enter the receiving device PIN")" />
+        <BbInput Type="InputType.Password" @bind-Value="_pin" Placeholder="@T("PinPlaceholder")" />
         <BbDialogFooter>
             <BbDialogClose>
-                <BbButton Variant="ButtonVariant.Outline">@L("关闭", "Close")</BbButton>
+                <BbButton Variant="ButtonVariant.Outline">@T("Close")</BbButton>
             </BbDialogClose>
         </BbDialogFooter>
     </BbDialogContent>
@@ -178,15 +178,15 @@
 <BbDialog Open="_showAddress" OpenChanged="value => _showAddress = value">
     <BbDialogContent>
         <BbDialogHeader>
-            <BbDialogTitle>@L("发送到已知地址", "Send to a known address")</BbDialogTitle>
-            <BbDialogDescription>@L("当设备未出现在附近列表时，使用 IP 或 IP:端口。", "Use IP or IP:port when the device is not in the nearby list.")</BbDialogDescription>
+            <BbDialogTitle>@T("SendToKnownAddress")</BbDialogTitle>
+            <BbDialogDescription>@T("SendToKnownAddressDescription")</BbDialogDescription>
         </BbDialogHeader>
         <BbInput @bind-Value="_manualAddress" Placeholder="192.168.1.8:53317" />
         <BbDialogFooter>
             <BbDialogClose>
-                <BbButton Variant="ButtonVariant.Outline">@L("取消", "Cancel")</BbButton>
+                <BbButton Variant="ButtonVariant.Outline">@T("Cancel")</BbButton>
             </BbDialogClose>
-            <BbButton OnClick="SendToManualAddressAsync" Disabled="@(AppState.SendItems.Count == 0 || _busy)">@L("发送", "Send")</BbButton>
+            <BbButton OnClick="SendToManualAddressAsync" Disabled="@(AppState.SendItems.Count == 0 || _busy)">@T("Send")</BbButton>
         </BbDialogFooter>
     </BbDialogContent>
 </BbDialog>
@@ -234,7 +234,7 @@
     {
         if (!DeviceAddress.TryParse(_manualAddress, out _, out _))
         {
-            _error = L("地址格式无效，请使用 IP 或 IP:端口。", "Invalid address. Use IP or IP:port.");
+            _error = T("InvalidAddress");
             return;
         }
         _showAddress = false;
@@ -254,12 +254,12 @@
             {
                 _pinRequested = true;
                 throw new InvalidOperationException(exception.InvalidPin
-                    ? L("PIN 不正确，请重试。", "Incorrect PIN. Please try again.")
-                    : L("接收设备需要 PIN。", "The receiving device requires a PIN."), exception);
+                    ? T("IncorrectPin")
+                    : T("DeviceRequiresPin"), exception);
             }
             catch (TransferPinRateLimitedException exception)
             {
-                throw new InvalidOperationException(L("PIN 尝试次数过多，请稍后重试。", "Too many PIN attempts. Try again later."), exception);
+                throw new InvalidOperationException(T("TooManyPinAttempts"), exception);
             }
         });
         _sendCancellation.Dispose();

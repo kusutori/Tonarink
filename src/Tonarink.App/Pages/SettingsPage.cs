@@ -1,5 +1,6 @@
 using CommunityToolkit.WinUI.Controls;
 using LocalSendDotNet;
+using Tonarink.Application;
 using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Core;
 using Microsoft.UI.Reactor.Localization;
@@ -72,9 +73,7 @@ sealed class SettingsPage : Component<SettingsPageProps>
         ];
         string[] languageOptions =
         [
-            t.Message(new("App", "OptionSystem")),
-            t.Message(new("App", "LanguageChinese")),
-            t.Message(new("App", "LanguageEnglish")),
+            .. AppLanguages.Choices.Select(choice => t.Message(new("App", choice.NameKey))),
         ];
         string[] notificationDefaultActionOptions =
         [
@@ -106,7 +105,7 @@ sealed class SettingsPage : Component<SettingsPageProps>
                 content:
                 ComboBox(languageOptions, Props.Settings.LanguageIndex, index =>
                     {
-                        if (index is >= 0 and <= 2 && index != Props.Settings.LanguageIndex)
+                        if (AppLanguages.IsValidIndex(index) && index != Props.Settings.LanguageIndex)
                             Props.UpdateSettings(settings => settings with { LanguageIndex = index });
                     })
                     .MinWidth(180)),

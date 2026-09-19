@@ -16,12 +16,12 @@
         </BbSidebarHeader>
         <BbSidebarContent>
             <BbSidebarGroup>
-                <BbSidebarGroupLabel>@L("导航", "Navigate")</BbSidebarGroupLabel>
+                <BbSidebarGroupLabel>@T("Navigate")</BbSidebarGroupLabel>
                 <BbSidebarMenu>
                     <BbSidebarMenuItem>
-                        <BbSidebarMenuButton Href="/" Match="NavLinkMatch.All" Tooltip="@L("接收", "Receive")">
+                        <BbSidebarMenuButton Href="/" Match="NavLinkMatch.All" Tooltip="@T("Receive")">
                             <LucideIcon Name="inbox" Class="h-4 w-4" />
-                            <span>@L("接收", "Receive")</span>
+                            <span>@T("Receive")</span>
                             @if (AppState.IncomingOffers.Count > 0)
                             {
                                 <BbSidebarMenuBadge>@AppState.IncomingOffers.Count</BbSidebarMenuBadge>
@@ -29,15 +29,15 @@
                         </BbSidebarMenuButton>
                     </BbSidebarMenuItem>
                     <BbSidebarMenuItem>
-                        <BbSidebarMenuButton Href="/send" Tooltip="@L("发送", "Send")">
+                        <BbSidebarMenuButton Href="/send" Tooltip="@T("Send")">
                             <LucideIcon Name="send" Class="h-4 w-4" />
-                            <span>@L("发送", "Send")</span>
+                            <span>@T("Send")</span>
                         </BbSidebarMenuButton>
                     </BbSidebarMenuItem>
                     <BbSidebarMenuItem>
-                        <BbSidebarMenuButton Href="/settings" Tooltip="@L("设置", "Settings")">
+                        <BbSidebarMenuButton Href="/settings" Tooltip="@T("Settings")">
                             <LucideIcon Name="settings" Class="h-4 w-4" />
-                            <span>@L("设置", "Settings")</span>
+                            <span>@T("Settings")</span>
                         </BbSidebarMenuButton>
                     </BbSidebarMenuItem>
                 </BbSidebarMenu>
@@ -45,7 +45,7 @@
         </BbSidebarContent>
         <BbSidebarFooter>
             <BbBadge Variant="@(AppState.RuntimeRunning ? BadgeVariant.Default : BadgeVariant.Secondary)">
-                @(AppState.RuntimeRunning ? L("节点运行中", "Node running") : L("节点未运行", "Node stopped"))
+                @(AppState.RuntimeRunning ? T("NodeRunning") : T("NodeStopped"))
             </BbBadge>
         </BbSidebarFooter>
     </BbSidebar>
@@ -105,10 +105,10 @@
         try
         {
             foreach (var offer in AppState.IncomingOffers.Where(offer => _notifiedOffers.Add(offer.Id)))
-                await JS.InvokeVoidAsync("tonarink.notify", L("收到发送请求", "Incoming transfer"),
-                    L($"{offer.SenderAlias} 想要发送 {offer.Items.Count} 项内容", $"{offer.SenderAlias} wants to send {offer.Items.Count} items"));
+                await JS.InvokeVoidAsync("tonarink.notify", T("IncomingTransfer"),
+                    T("IncomingNotifyBody", offer.SenderAlias, offer.Items.Count));
             foreach (var transfer in AppState.Transfers.Where(transfer => transfer.Status == TransferStatus.Completed && _notifiedTransfers.Add(transfer.Id)))
-                await JS.InvokeVoidAsync("tonarink.notify", L("传输完成", "Transfer completed"), transfer.Summary);
+                await JS.InvokeVoidAsync("tonarink.notify", T("TransferCompleted"), transfer.Summary);
         }
         catch (InvalidOperationException) { }
         catch (JSDisconnectedException) { }

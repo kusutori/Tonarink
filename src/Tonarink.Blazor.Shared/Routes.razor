@@ -1,3 +1,5 @@
+@inject IStringLocalizer<SharedResources> Loc
+
 <Router AppAssembly="typeof(Routes).Assembly">
     <Found Context="routeData">
         <RouteView RouteData="routeData" DefaultLayout="typeof(MainLayout)" />
@@ -6,11 +8,11 @@
     <NotFound>
         <LayoutView Layout="typeof(MainLayout)">
             <div class="page">
-                <BbEmpty Title="@(System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "zh" ? "找不到页面" : "Page not found")"
-                         Description="@(System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "zh" ? "这个地址没有对应的页面。" : "This address does not match a page.")">
+                <BbEmpty Title="@Loc["PageNotFound"]"
+                         Description="@Loc["PageNotFoundDescription"]">
                     <Icon><LucideIcon Name="circle-question-mark" /></Icon>
                     <ChildContent>
-                        <BbButton Href="/">@(System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "zh" ? "返回接收页" : "Back to receive")</BbButton>
+                        <BbButton Href="/">@Loc["BackToReceivePage"]</BbButton>
                     </ChildContent>
                 </BbEmpty>
             </div>

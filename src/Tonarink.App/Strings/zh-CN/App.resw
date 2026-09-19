@@ -128,6 +128,7 @@
   <data name="ItemsAdded" xml:space="preserve"><value>已添加 {count} 项</value></data>
   <data name="LanguageChinese" xml:space="preserve"><value>简体中文</value></data>
   <data name="LanguageEnglish" xml:space="preserve"><value>English</value></data>
+  <data name="LanguageSystem" xml:space="preserve"><value>使用系统设置</value></data>
   <data name="MoreItems" xml:space="preserve"><value>另外 {count} 项…</value></data>
   <data name="Name" xml:space="preserve"><value>名称</value></data>
   <data name="NavReceive" xml:space="preserve"><value>接收</value></data>
@@ -332,6 +333,18 @@
   <data name="TrayToPeer" xml:space="preserve"><value>发送到 {peer}</value></data>
   <data name="TrayTooltip" xml:space="preserve"><value>Tonarink</value></data>
   <data name="TrayWaitingReceive" xml:space="preserve"><value>等待接收</value></data>
+  <data name="WidgetAppClosed" xml:space="preserve"><value>应用未开启</value></data>
+  <data name="WidgetAppClosedStatus" xml:space="preserve"><value>未开启</value></data>
+  <data name="WidgetAppOpen" xml:space="preserve"><value>已开启</value></data>
+  <data name="WidgetFileCount" xml:space="preserve"><value>{count} 个文件</value></data>
+  <data name="WidgetHintAppClosed" xml:space="preserve"><value>打开应用后才能发现设备和接收文件。</value></data>
+  <data name="WidgetHintServerOff" xml:space="preserve"><value>点击开启接收。</value></data>
+  <data name="WidgetHintServerOn" xml:space="preserve"><value>附近设备可以发送文件。</value></data>
+  <data name="WidgetHistoryCount" xml:space="preserve"><value>历史 {count} 条</value></data>
+  <data name="WidgetNearbyCount" xml:space="preserve"><value>附近 {count} 台</value></data>
+  <data name="WidgetReceivingOff" xml:space="preserve"><value>接收已停止</value></data>
+  <data name="WidgetServerOff" xml:space="preserve"><value>关</value></data>
+  <data name="WidgetServerOn" xml:space="preserve"><value>开</value></data>
   <data name="SettingsTheme" xml:space="preserve"><value>主题</value></data>
   <data name="SettingsThemeDescription" xml:space="preserve"><value>选择应用的明暗外观。</value></data>
   <data name="SettingsTitle" xml:space="preserve"><value>设置</value></data>

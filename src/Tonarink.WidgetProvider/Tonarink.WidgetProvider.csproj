@@ -29,6 +29,7 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.WindowsAppSDK" />
+        <ProjectReference Include="..\Tonarink.Application\Tonarink.Application.csproj" />
     </ItemGroup>
 
     <ItemGroup>

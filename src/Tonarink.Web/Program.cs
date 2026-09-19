@@ -22,10 +22,11 @@ builder.Services.AddSingleton<IPlatformServices, BrowserPlatformServices>();
 builder.Services.AddSingleton<TonarinkAppState>();
 builder.Services.AddSingleton<ITonarinkRuntime, LocalSendRuntime>();
 builder.Services.AddHostedService<TonarinkNodeHostedService>();
+builder.Services.AddLocalization();
 builder.Services.Configure<RequestLocalizationOptions>(options =>
 {
-    var cultures = new[] { new CultureInfo("en-US"), new CultureInfo("zh-CN") };
-    options.DefaultRequestCulture = new("en-US");
+    var cultures = AppLanguages.ExplicitCultures.Select(static name => new CultureInfo(name)).ToArray();
+    options.DefaultRequestCulture = new(AppLanguages.DefaultCulture);
     options.SupportedCultures = cultures;
     options.SupportedUICultures = cultures;
 });

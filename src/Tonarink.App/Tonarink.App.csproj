@@ -228,6 +228,7 @@
         <PackageReference Include="WinUIEx" />
         <PackageReference Include="Net.Codecrete.QrCodeGenerator" />
         <ProjectReference Include="..\LocalSendDotNet.Core\LocalSendDotNet.Core.csproj" />
+        <ProjectReference Include="..\Tonarink.Application\Tonarink.Application.csproj" />
     </ItemGroup>
 
     <!-- Windows App SDK 2.4's self-contained payload omits this aggregate-runtime

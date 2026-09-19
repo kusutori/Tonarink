@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.Localization;
 using System.Globalization;
 using Tonarink.Application;
+using Tonarink.Blazor.Shared.Resources;
 
 namespace Tonarink.Blazor.Shared;
 
@@ -9,8 +11,12 @@ public abstract class StatefulComponentBase : ComponentBase, IDisposable
     [Inject]
     protected TonarinkAppState AppState { get; set; } = null!;
 
+    [Inject]
+    protected IStringLocalizer<SharedResources> Loc { get; set; } = null!;
+
     protected override void OnInitialized()
     {
+        ApplyCulture();
         AppState.Changed += HandleStateChanged;
         base.OnInitialized();
     }
@@ -34,19 +40,23 @@ public abstract class StatefulComponentBase : ComponentBase, IDisposable
         return $"{display:0.#} {units[unit]}";
     }
 
-    protected bool IsChinese => AppState.Settings.Language switch
-    {
-        TonarinkLanguage.SimplifiedChinese => true,
-        TonarinkLanguage.English => false,
-        _ => CultureInfo.CurrentUICulture.TwoLetterISOLanguageName.Equals("zh", StringComparison.OrdinalIgnoreCase),
-    };
+    protected string T(string key) => Loc[key];
 
-    protected string L(string chinese, string english) => IsChinese ? chinese : english;
+    protected string T(string key, params object[] args) => Loc[key, args];
+
+    protected void ApplyCulture()
+    {
+        var name = AppLanguages.Resolve(AppState.Settings.Language, CultureInfo.CurrentUICulture.Name);
+        var culture = CultureInfo.GetCultureInfo(name);
+        CultureInfo.CurrentCulture = culture;
+        CultureInfo.CurrentUICulture = culture;
+    }
 
     protected virtual void OnAppStateChanged() { }
 
     private void HandleStateChanged() => _ = InvokeAsync(() =>
     {
+        ApplyCulture();
         OnAppStateChanged();
         StateHasChanged();
     });

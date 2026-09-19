@@ -15,6 +15,7 @@ internal sealed class WebShareService(LocalSendOptions options, ILogger logger)
     private bool _active;
     private bool _autoAccept;
     private string? _pin;
+    private string? _uiCulture;
     private WebShareMode _mode;
 
     public event Action? Changed;
@@ -35,7 +36,8 @@ internal sealed class WebShareService(LocalSendOptions options, ILogger logger)
                 _autoAccept,
                 _pin)
             {
-                Mode = _mode
+                Mode = _mode,
+                UiCulture = _uiCulture,
             };
         }
     }
@@ -56,6 +58,7 @@ internal sealed class WebShareService(LocalSendOptions options, ILogger logger)
                 item.ContentType), item)).ToArray();
             _autoAccept = shareOptions.AutoAccept;
             _pin = string.IsNullOrWhiteSpace(shareOptions.Pin) ? null : shareOptions.Pin.Trim();
+            _uiCulture = string.IsNullOrWhiteSpace(shareOptions.UiCulture) ? null : shareOptions.UiCulture.Trim();
             _mode = WebShareMode.Send;
             _active = true;
             _pinAttempts.Clear();
@@ -72,6 +75,7 @@ internal sealed class WebShareService(LocalSendOptions options, ILogger logger)
             _offered = [];
             _autoAccept = shareOptions.AutoAccept;
             _pin = string.IsNullOrWhiteSpace(shareOptions.Pin) ? null : shareOptions.Pin.Trim();
+            _uiCulture = string.IsNullOrWhiteSpace(shareOptions.UiCulture) ? null : shareOptions.UiCulture.Trim();
             _mode = WebShareMode.Receive;
             _active = true;
             _pinAttempts.Clear();
@@ -107,6 +111,7 @@ internal sealed class WebShareService(LocalSendOptions options, ILogger logger)
             _offered = [];
             _autoAccept = false;
             _pin = null;
+            _uiCulture = null;
             _mode = WebShareMode.Send;
             _active = false;
             _pinAttempts.Clear();

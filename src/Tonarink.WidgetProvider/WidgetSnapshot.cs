@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Tonarink.Application;
 
 namespace Tonarink.WidgetProvider;
 
@@ -22,7 +23,8 @@ internal static class WidgetSnapshot
     {
         var appRunning = WidgetCommands.AppIsRunning();
         var snapshot = ReadSnapshot();
-        var chinese = IsChinese(snapshot?.Language);
+        var chrome = snapshot?.Chrome
+                     ?? WidgetChromeCatalog.Resolve(snapshot?.Language ?? WidgetNative.UserLocale());
         var serverOn = appRunning && snapshot is { ServerRunning: true };
         var devices = appRunning && serverOn
             ? snapshot?.Devices ?? []
@@ -33,10 +35,10 @@ internal static class WidgetSnapshot
             && !string.IsNullOrWhiteSpace(transfer.Title);
         var isNearby = !string.Equals(page, HistoryPage, StringComparison.Ordinal);
         var emptyLabel = !appRunning
-            ? (chinese ? "应用未开启" : "App is closed")
+            ? Text(chrome.EmptyAppClosed)
             : !serverOn
-                ? (chinese ? "接收已停止" : "Receiving is off")
-                : (chinese ? "无设备" : "No devices");
+                ? Text(chrome.EmptyReceivingOff)
+                : Text(chrome.EmptyNoDevices);
 
         var percent = transfer is null || transfer.TotalBytes <= 0
             ? 0
@@ -46,19 +48,17 @@ internal static class WidgetSnapshot
         {
             Title = "Tonarink",
             AppRunning = appRunning,
-            AppStatusLabel = appRunning
-                ? (chinese ? "已开启" : "Running")
-                : (chinese ? "未开启" : "Closed"),
+            AppStatusLabel = appRunning ? Text(chrome.AppStatusOpen) : Text(chrome.AppStatusClosed),
             StatusIcon = appRunning ? WidgetPaths.StatusOnIcon : WidgetPaths.StatusOffIcon,
             ServerOn = serverOn,
-            ServerLabel = chinese ? "接收服务" : "Receive",
-            ServerValue = serverOn ? (chinese ? "开" : "On") : (chinese ? "关" : "Off"),
+            ServerLabel = Text(chrome.ServerLabel),
+            ServerValue = serverOn ? Text(chrome.ServerOn) : Text(chrome.ServerOff),
             ServerColor = serverOn ? "accent" : "default",
             ServerHint = !appRunning
-                ? (chinese ? "打开应用后才能发现设备和接收文件。" : "Open the app to discover devices and receive files.")
+                ? Text(chrome.HintAppClosed)
                 : serverOn
-                    ? (chinese ? "附近设备可以发送文件。" : "Nearby devices can send files.")
-                    : (chinese ? "点击开启接收。" : "Tap to start receiving."),
+                    ? Text(chrome.HintServerOn)
+                    : Text(chrome.HintServerOff),
             IsNearby = isNearby,
             IsHistory = !isNearby,
             HasTransfer = hasTransfer,
@@ -66,16 +66,12 @@ internal static class WidgetSnapshot
             HasDevices = devices.Count > 0,
             HasHistoryItems = history.Count > 0,
             DeviceCount = devices.Count,
-            DeviceCountLabel = chinese
-                ? $"附近 {devices.Count} 台"
-                : $"{devices.Count} nearby",
-            HistoryCountLabel = chinese
-                ? $"历史 {history.Count} 条"
-                : $"{history.Count} in history",
+            DeviceCountLabel = AppLanguages.Format(Text(chrome.NearbyCount), ("count", devices.Count)),
+            HistoryCountLabel = AppLanguages.Format(Text(chrome.HistoryCount), ("count", history.Count)),
             EmptyLabel = emptyLabel,
-            HistoryEmptyLabel = chinese ? "无历史记录" : "No history",
-            NearbyTab = chinese ? "附近" : "Nearby",
-            HistoryTab = chinese ? "历史" : "History",
+            HistoryEmptyLabel = Text(chrome.HistoryEmpty),
+            NearbyTab = Text(chrome.NearbyTab),
+            HistoryTab = Text(chrome.HistoryTab),
             NearbyWeight = isNearby ? "bolder" : "default",
             HistoryWeight = isNearby ? "default" : "bolder",
             NearbyColor = isNearby ? "accent" : "default",
@@ -83,9 +79,9 @@ internal static class WidgetSnapshot
             TransferTitle = transfer?.Title ?? "",
             TransferPeer = transfer is null
                 ? ""
-                : transfer.Incoming
-                    ? (chinese ? $"来自 {transfer.Peer}" : $"From {transfer.Peer}")
-                    : (chinese ? $"发送到 {transfer.Peer}" : $"To {transfer.Peer}"),
+                : AppLanguages.Format(
+                    Text(transfer.Incoming ? chrome.FromPeer : chrome.ToPeer),
+                    ("peer", transfer.Peer)),
             TransferStatus = transfer?.Status ?? "",
             TransferProgress = transfer is null
                 ? ""
@@ -160,10 +156,7 @@ internal static class WidgetSnapshot
         }
     }
 
-    private static bool IsChinese(string? language) =>
-        !string.IsNullOrWhiteSpace(language)
-            ? language.StartsWith("zh", StringComparison.OrdinalIgnoreCase)
-            : WidgetNative.UserLocale().StartsWith("zh", StringComparison.OrdinalIgnoreCase);
+    private static string Text(string? value) => value ?? "";
 
     private static string FormatBytes(long bytes)
     {

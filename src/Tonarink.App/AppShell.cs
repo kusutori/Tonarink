@@ -9,7 +9,6 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using static Microsoft.UI.Reactor.Factories;
-using Windows.System.UserProfile;
 
 namespace Tonarink;
 
@@ -68,12 +67,7 @@ sealed class AppShell : Component
             }
         }, settings.ThemeIndex);
 
-        var locale = settings.LanguageIndex switch
-        {
-            1 => "zh-CN",
-            2 => "en-US",
-            _ => SystemLocale(),
-        };
+        var locale = AppLocale.Resolve(settings.LanguageIndex);
         var theme = settings.ThemeIndex switch
         {
             1 => ElementTheme.Light,
@@ -103,10 +97,6 @@ sealed class AppShell : Component
             .Backdrop(BackdropKind.Mica);
     }
 
-    private static string SystemLocale() => GlobalizationPreferences.Languages.Any(
-        static language => language.StartsWith("zh", StringComparison.OrdinalIgnoreCase))
-            ? "zh-CN"
-            : "en-US";
 }
 
 sealed record LocalizedAppShellProps(
