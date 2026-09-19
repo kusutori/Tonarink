@@ -1,7 +1,9 @@
 // This file supplies partial hook members for LocalizedAppShell in the root namespace.
 
+using System.Reflection;
 using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Localization;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
 // ReSharper disable once CheckNamespace
@@ -63,7 +65,11 @@ sealed partial class LocalizedAppShell
             };
             icon.ContextMenu += (_, args) =>
             {
+                var theme = AppTheme.ToElementTheme(AppSettingsStore.Load().ThemeIndex);
+                ApplyTrayHostTheme(icon, theme);
                 var flyout = new MenuFlyout();
+                if (TonarinkThemeResources.TrayMenuPresenterStyle(theme) is { } presenterStyle)
+                    flyout.MenuFlyoutPresenterStyle = presenterStyle;
                 var open = new MenuFlyoutItem { Text = t.Message(new("App", "TrayOpen")) };
                 open.Click += (_, _) =>
                 {
@@ -116,5 +122,24 @@ sealed partial class LocalizedAppShell
             if (window.Spec.ShowInTaskbar)
                 window.Update(window.Spec with { ShowInTaskbar = false });
         }
+
+        static void ApplyTrayHostTheme(WinUIEx.TrayIcon tray, ElementTheme theme)
+        {
+            try
+            {
+                if (typeof(WinUIEx.TrayIcon)
+                        .GetField("_window", BindingFlags.Instance | BindingFlags.NonPublic)
+                        ?.GetValue(tray) is not Window host)
+                    return;
+
+                if (host.Content is FrameworkElement content)
+                    content.RequestedTheme = theme;
+            }
+            catch (Exception exception)
+            {
+                AppDiagnostics.Report("Could not apply the tray menu host theme", exception);
+            }
+        }
+
     }
 }

@@ -40,12 +40,7 @@ sealed class WebSharePage : Component<WebSharePageProps>
         var alive = UseRef(true);
         var node = Props.Node;
         var window = UseWindow();
-        var dialogTheme = Props.Settings.ThemeIndex switch
-        {
-            1 => ElementTheme.Light,
-            2 => ElementTheme.Dark,
-            _ => ElementTheme.Default,
-        };
+        var dialogTheme = AppTheme.ToElementTheme(Props.Settings.ThemeIndex);
 
         UseEffect(() => () =>
         {

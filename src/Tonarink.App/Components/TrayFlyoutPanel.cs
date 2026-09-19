@@ -26,12 +26,7 @@ sealed class TrayFlyoutRoot : Component
             },
             static () => TrayFlyoutStore.Snapshot);
         var locale = AppLocale.Resolve(snapshot.Settings.LanguageIndex);
-        var theme = snapshot.Settings.ThemeIndex switch
-        {
-            1 => ElementTheme.Light,
-            2 => ElementTheme.Dark,
-            _ => ElementTheme.Default,
-        };
+        var theme = AppTheme.ToElementTheme(snapshot.Settings.ThemeIndex);
 
         return LocaleProvider(
                 locale,

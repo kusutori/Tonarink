@@ -68,12 +68,7 @@ sealed class AppShell : Component
         }, settings.ThemeIndex);
 
         var locale = AppLocale.Resolve(settings.LanguageIndex);
-        var theme = settings.ThemeIndex switch
-        {
-            1 => ElementTheme.Light,
-            2 => ElementTheme.Dark,
-            _ => ElementTheme.Default,
-        };
+        var theme = AppTheme.ToElementTheme(settings.ThemeIndex);
         var startHidden = AppPlatform.StartHidden && settings.MinimizeToTray;
         var (splashVisible, setSplashVisible) = UseState(!startHidden);
 
@@ -112,12 +107,7 @@ sealed partial class LocalizedAppShell : Component<LocalizedAppShellProps>
         var window = UseWindow();
         var useTitleBarPaneToggle = !UseBreakpoint(AppLayout.CompactBreakpoint);
         var settings = Props.Settings;
-        var contentTheme = settings.ThemeIndex switch
-        {
-            1 => ElementTheme.Light,
-            2 => ElementTheme.Dark,
-            _ => ElementTheme.Default,
-        };
+        var contentTheme = AppTheme.ToElementTheme(settings.ThemeIndex);
         var updateSettings = Props.UpdateSettings;
         var navigation = UseNavigation(AppRoute.Receive);
         var favoriteRevision = UseExternalStore<int>(
