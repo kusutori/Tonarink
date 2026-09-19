@@ -384,17 +384,33 @@ sealed class SendPage : Component<SendPageProps>
             })
             .HAlign(HorizontalAlignment.Stretch);
 
-        var page = (FlexColumn(
+        var pageBody = (FlexColumn(
                 Heading(t.Message(new("App", "SendTitle")))
                     .HeadingLevel(AutomationHeadingLevel.Level1),
                 VStack(12,
                     Subtitle(t.Message(new("App", "ChooseContent")))
                         .HeadingLevel(AutomationHeadingLevel.Level2),
                     selectionGrid),
-                contentCards,
-                TextDialog(),
-                AddressDialog(),
-                Component<FavoriteDevicesDialog, FavoriteDevicesDialogProps>(new(
+                contentCards) with
+            {
+                RowGap = 20,
+            })
+            .VAlign(isWideLayout ? VerticalAlignment.Stretch : VerticalAlignment.Top);
+
+        var pageContainer = Border(pageBody)
+            .Padding(AppLayout.PagePadding)
+            .MaxWidth(AppLayout.PageMaxWidth)
+            .HAlign(HorizontalAlignment.Stretch)
+            .VAlign(isWideLayout ? VerticalAlignment.Stretch : VerticalAlignment.Top)
+            .Landmark(AutomationLandmarkType.Main);
+
+        var page = Grid(
+            columns: [GridSize.Star()],
+            rows: [GridSize.Star()],
+            pageContainer.Grid(row: 0, column: 0),
+            TextDialog().Grid(row: 0, column: 0),
+            AddressDialog().Grid(row: 0, column: 0),
+            Component<FavoriteDevicesDialog, FavoriteDevicesDialogProps>(new(
                     favorites,
                     Props.Theme,
                     showFavoritesDialog,
@@ -408,16 +424,18 @@ sealed class SendPage : Component<SendPageProps>
                         IsNew: true)),
                     favorite => setFavoriteEdit(new FavoriteDeviceEdit(favorite, IsNew: false)),
                     setFavoriteToDelete,
-                    () => setShowFavoritesDialog(false))),
-                favoriteEdit is null
-                    ? null
-                    : Component<FavoriteDeviceDialog, FavoriteDeviceDialogProps>(new(
+                    () => setShowFavoritesDialog(false)))
+                .Grid(row: 0, column: 0),
+            favoriteEdit is null
+                ? null
+                : Component<FavoriteDeviceDialog, FavoriteDeviceDialogProps>(new(
                         favoriteEdit.Device,
                         favoriteEdit.IsNew,
                         Props.Theme,
                         FavoriteDeviceStore.Upsert,
-                        () => setFavoriteEdit(null))),
-                Component<DeleteFavoriteDialog, DeleteFavoriteDialogProps>(new(
+                        () => setFavoriteEdit(null)))
+                    .Grid(row: 0, column: 0),
+            Component<DeleteFavoriteDialog, DeleteFavoriteDialogProps>(new(
                     favoriteToDelete?.Name ?? string.Empty,
                     Props.Theme,
                     favoriteToDelete is not null,
@@ -426,21 +444,12 @@ sealed class SendPage : Component<SendPageProps>
                         if (favoriteToDelete is { } target)
                             FavoriteDeviceStore.Remove(target.Fingerprint);
                     },
-                    () => setFavoriteToDelete(null)))) with
-            {
-                RowGap = 20,
-            });
-
-        var pageContainer = Border(page)
-            .Padding(AppLayout.PagePadding)
-            .MaxWidth(AppLayout.PageMaxWidth)
-            .HAlign(HorizontalAlignment.Stretch)
-            .VAlign(isWideLayout ? VerticalAlignment.Stretch : VerticalAlignment.Top)
-            .Landmark(AutomationLandmarkType.Main);
+                    () => setFavoriteToDelete(null)))
+                .Grid(row: 0, column: 0));
 
         return isWideLayout
-            ? pageContainer
-            : ScrollView(pageContainer)
+            ? page
+            : ScrollView(page)
                 .HorizontalContentAlignment(HorizontalAlignment.Stretch)
                 .VerticalContentAlignment(VerticalAlignment.Top);
 
