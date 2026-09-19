@@ -329,6 +329,8 @@
   <data name="TrayNearbyTab" xml:space="preserve"><value>附近</value></data>
   <data name="TrayNoDevices" xml:space="preserve"><value>附近没有设备</value></data>
   <data name="TrayOpen" xml:space="preserve"><value>打开 Tonarink</value></data>
+  <data name="TrayReceiveOff" xml:space="preserve"><value>关闭</value></data>
+  <data name="TrayReceiveOn" xml:space="preserve"><value>开启</value></data>
   <data name="TrayReceiveService" xml:space="preserve"><value>接收服务</value></data>
   <data name="TrayToPeer" xml:space="preserve"><value>发送到 {peer}</value></data>
   <data name="TrayTooltip" xml:space="preserve"><value>Tonarink</value></data>

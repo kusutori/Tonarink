@@ -95,34 +95,37 @@ sealed class TrayFlyoutPanel : Component<TrayFlyoutPanelProps>
         IntlAccessor t,
         string statusText,
         ThemeRef statusColor,
-        TrayFlyoutSnapshot snapshot)
-    {
-        return Grid(
-            columns: [GridSize.Star(), GridSize.Auto],
-            rows: [GridSize.Auto, GridSize.Auto],
-            SubHeading("Tonarink")
-                .HeadingLevel(AutomationHeadingLevel.Level1)
-                .Grid(row: 0, column: 0),
-            ToggleSwitch(
-                    snapshot.ServerDesired,
-                    on =>
-                    {
-                        if (on)
-                            TrayFlyoutStore.StartServer();
-                        else
-                            TrayFlyoutStore.StopServer();
-                    })
-                .AutomationName(t.Message(new("App", "TrayReceiveService")))
-                .VAlign(VerticalAlignment.Center)
-                .Grid(row: 0, column: 1, rowSpan: 2),
-            HStack(8,
-                    StatusDot(statusColor),
-                    Caption(statusText)
-                        .Foreground(Theme.SecondaryText)
-                        .TextWrapping(TextWrapping.WrapWholeWords))
-                .VAlign(VerticalAlignment.Center)
-                .Grid(row: 1, column: 0));
-    }
+        TrayFlyoutSnapshot snapshot) =>
+        (FlexRow(
+                VStack(2,
+                        SubHeading("Tonarink")
+                            .HeadingLevel(AutomationHeadingLevel.Level1),
+                        HStack(8,
+                                StatusDot(statusColor),
+                                Caption(statusText)
+                                    .Foreground(Theme.SecondaryText)
+                                    .TextWrapping(TextWrapping.NoWrap)
+                                    .TextTrimming(TextTrimming.CharacterEllipsis)
+                                    .ToolTip(statusText)))
+                    .Flex(grow: 1, basis: 0),
+                ToggleButton(
+                        snapshot.ServerDesired
+                            ? t.Message(new("App", "TrayReceiveOn"))
+                            : t.Message(new("App", "TrayReceiveOff")),
+                        snapshot.ServerDesired,
+                        on =>
+                        {
+                            if (on)
+                                TrayFlyoutStore.StartServer();
+                            else
+                                TrayFlyoutStore.StopServer();
+                        })
+                    .AutomationName(t.Message(new("App", "TrayReceiveService")))
+                    .ToolTip(t.Message(new("App", "TrayReceiveService")))) with
+            {
+                AlignItems = FlexAlign.Center,
+                ColumnGap = 12,
+            });
 
     private static Element NearbyList(AppRuntimeState runtime, IntlAccessor t)
     {
