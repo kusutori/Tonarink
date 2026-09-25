@@ -54,21 +54,49 @@ sealed record SuggestedContactSend(
     Guid Id,
     string Fingerprint);
 
-sealed record TransferUiState(
-    TransferState? State,
-    string? DeviceName,
-    long BytesTransferred,
-    long TotalBytes,
-    string Message,
-    bool IsError)
+union TransferUiState(TransferUiState.Idle, TransferUiState.Active)
 {
-    public static TransferUiState Idle(string message) => new(
-        State: null,
-        DeviceName: null,
-        BytesTransferred: 0,
-        TotalBytes: 0,
-        Message: message,
-        IsError: false);
+    public sealed record Idle(string Message);
+
+    public sealed record Active(
+        TransferState State,
+        string DeviceName,
+        long BytesTransferred,
+        long TotalBytes,
+        string Message,
+        bool IsError);
+
+    public TransferState? State => this switch
+    {
+        Idle => null,
+        Active(var state, _, _, _, _, _) => state,
+    };
+
+    public long BytesTransferred => this switch
+    {
+        Idle => 0,
+        Active(_, _, var bytesTransferred, _, _, _) => bytesTransferred,
+    };
+
+    public long TotalBytes => this switch
+    {
+        Idle => 0,
+        Active(_, _, _, var totalBytes, _, _) => totalBytes,
+    };
+
+    public string Message => this switch
+    {
+        Idle(var message) => message,
+        Active(_, _, _, _, var message, _) => message,
+    };
+
+    public bool IsError => this is Active { IsError: true };
+
+    public TransferUiState WithMessage(string message) => this switch
+    {
+        Idle => new Idle(message),
+        Active active => active with { Message = message },
+    };
 }
 
 sealed class SendPage : Component<SendPageProps>
@@ -108,7 +136,7 @@ sealed class SendPage : Component<SendPageProps>
                 return () => FavoriteDeviceStore.Changed -= listener;
             },
             static () => FavoriteDeviceStore.Entries);
-        var (transfer, updateTransfer) = UseReducer(TransferUiState.Idle(
+        var (transfer, updateTransfer) = UseReducer<TransferUiState>(new TransferUiState.Idle(
             t.Message(new("App", "SendHint"))));
         var sendCancellationRef = UseRef<CancellationTokenSource?>();
         var searchingPlayerRef = UseRef<AnimatedVisualPlayer?>();
@@ -158,7 +186,7 @@ sealed class SendPage : Component<SendPageProps>
                 "send-progress");
             var progress = new Progress<TransferProgress>(value =>
             {
-                var next = new TransferUiState(
+                TransferUiState next = new TransferUiState.Active(
                     value.State,
                     request.Device.Alias,
                     value.BytesTransferred,
@@ -802,7 +830,7 @@ sealed class SendPage : Component<SendPageProps>
         {
             updateSelectedItems(current => (SelectedSendItem[])[.. current, .. newItems]);
             setPickerMessage(t.Message(new("App", "ItemsAdded"), ("count", newItems.Count)));
-            updateTransfer(_ => TransferUiState.Idle(t.Message(new("App", "SendHint"))));
+            updateTransfer(_ => new TransferUiState.Idle(t.Message(new("App", "SendHint"))));
         }
 
         async Task ImportShareTargetPayloadAsync(
@@ -879,7 +907,7 @@ sealed class SendPage : Component<SendPageProps>
             var cancellation = new CancellationTokenSource();
             sendCancellationRef.Current?.Dispose();
             sendCancellationRef.Current = cancellation;
-            updateTransfer(_ => new(
+            updateTransfer(_ => new TransferUiState.Active(
                 TransferState.Preparing,
                 device.Alias,
                 0,
@@ -889,7 +917,7 @@ sealed class SendPage : Component<SendPageProps>
             PublishTransferOverlay(
                 device,
                 (SendItem[])[.. selectedItems.Select(static item => item.Item)],
-                new(
+                new TransferUiState.Active(
                     TransferState.Preparing,
                     device.Alias,
                     0,
@@ -953,12 +981,13 @@ sealed class SendPage : Component<SendPageProps>
             }
             catch (PinRequiredException exception)
             {
-                var waitingState = transfer with
-                {
-                    State = TransferState.WaitingForAcceptance,
-                    Message = t.Message(new("App", "TargetRequiresPin")),
-                    IsError = exception.InvalidPin,
-                };
+                TransferUiState waitingState = new TransferUiState.Active(
+                    TransferState.WaitingForAcceptance,
+                    device.Alias,
+                    0,
+                    selectedItems.Sum(static item => item.Length),
+                    t.Message(new("App", "TargetRequiresPin")),
+                    exception.InvalidPin);
                 updateTransfer(_ => waitingState);
                 PublishTransferOverlay(
                     device,
@@ -968,11 +997,12 @@ sealed class SendPage : Component<SendPageProps>
                     new OutgoingPinPrompt(
                         exception.InvalidPin ? t.Message(new("App", "PinIncorrect")) : null,
                         enteredPin => _ = StartSendAsync(device, enteredPin, resolvedManualAddress),
-                        () => updateTransfer(_ => TransferUiState.Idle(t.Message(new("App", "SendHint"))))));
+                        () => updateTransfer(_ => new TransferUiState.Idle(
+                            t.Message(new("App", "SendHint"))))));
             }
             catch (PinRateLimitedException)
             {
-                var errorState = new TransferUiState(
+                TransferUiState errorState = new TransferUiState.Active(
                     TransferState.Failed,
                     device.Alias,
                     0,
@@ -985,7 +1015,7 @@ sealed class SendPage : Component<SendPageProps>
             }
             catch (Exception exception)
             {
-                var errorState = new TransferUiState(
+                TransferUiState errorState = new TransferUiState.Active(
                     TransferState.Failed,
                     device.Alias,
                     0,
@@ -1255,10 +1285,8 @@ sealed class SendPage : Component<SendPageProps>
                 () =>
                 {
                     sendCancellationRef.Current?.Cancel();
-                    updateTransfer(current => current with
-                    {
-                        Message = t.Message(new("App", "CancellingTransfer")),
-                    });
+                    updateTransfer(current => current.WithMessage(
+                        t.Message(new("App", "CancellingTransfer"))));
                 },
                 pinPrompt));
         }
@@ -1524,21 +1552,21 @@ sealed class SendPage : Component<SendPageProps>
         string deviceAlias,
         long requestedBytes) => result.State switch
         {
-            TransferState.Completed => new(
+            TransferState.Completed => new TransferUiState.Active(
                 result.State,
                 deviceAlias,
                 result.BytesTransferred,
                 result.BytesTransferred,
                 t.Message(new("App", "SentToDevice"), ("device", deviceAlias)),
                 IsError: false),
-            TransferState.Cancelled => new(
+            TransferState.Cancelled => new TransferUiState.Active(
                 result.State,
                 deviceAlias,
                 result.BytesTransferred,
                 requestedBytes,
                 t.Message(new("App", "TransferCancelled")),
                 IsError: false),
-            _ => new(
+            _ => new TransferUiState.Active(
                 result.State,
                 deviceAlias,
                 result.BytesTransferred,
