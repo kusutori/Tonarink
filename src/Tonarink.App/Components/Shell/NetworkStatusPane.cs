@@ -3,6 +3,7 @@ using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Core;
 using Microsoft.UI.Reactor.Localization;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation.Peers;
 using static Microsoft.UI.Reactor.Factories;
 
 namespace Tonarink.Components.Shell;
@@ -43,6 +44,7 @@ sealed class NetworkStatusPane : Component<NetworkStatusPaneProps>
                                 Caption(t.Message(new("App", "NetworkStatus"))).SemiBold(),
                                 Caption(statusText)
                                     .Foreground(Theme.SecondaryText)
+                                    .LiveRegion(AutomationLiveSetting.Polite)
                                     .TextWrapping(TextWrapping.WrapWholeWords))
                             .Margin(horizontal: 12, vertical: 0)
                             .Grid(column: 1),

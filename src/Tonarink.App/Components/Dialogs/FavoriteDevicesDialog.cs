@@ -8,9 +8,11 @@ namespace Tonarink.Components.Dialogs;
 
 sealed record FavoriteDevicesDialogProps(
     IReadOnlyDictionary<string, FavoriteDevice> Devices,
+    string? PreferredFingerprint,
     ElementTheme Theme,
     bool IsOpen,
     Action<FavoriteDevice> Send,
+    Action Hide,
     Action Create,
     Action<FavoriteDevice> Edit,
     Action<FavoriteDevice> Delete,
@@ -32,7 +34,11 @@ sealed class FavoriteDevicesDialog : Component<FavoriteDevicesDialogProps>
         var t = UseIntl();
         var pendingActionRef = UseRef<PendingAction?>();
         var entries = Props.Devices.Values
-            .OrderBy(static favorite => favorite.Name, StringComparer.CurrentCultureIgnoreCase)
+            .OrderBy(favorite => string.Equals(
+                favorite.Fingerprint,
+                Props.PreferredFingerprint,
+                StringComparison.Ordinal) ? 0 : 1)
+            .ThenBy(static favorite => favorite.Name, StringComparer.CurrentCultureIgnoreCase)
             .ToArray();
         Element body = entries switch
         {
@@ -58,10 +64,10 @@ sealed class FavoriteDevicesDialog : Component<FavoriteDevicesDialogProps>
             {
                 var pending = pendingActionRef.Current;
                 pendingActionRef.Current = null;
-                Props.Close();
 
                 if (result == ContentDialogResult.Primary)
                 {
+                    Props.Hide();
                     Props.Create();
                     return;
                 }
@@ -70,11 +76,13 @@ sealed class FavoriteDevicesDialog : Component<FavoriteDevicesDialogProps>
                 {
                     case { Action: DialogAction.Edit, Device: var device }:
                         Props.Edit(device);
-                        break;
+                        return;
                     case { Action: DialogAction.Delete, Device: var device }:
                         Props.Delete(device);
-                        break;
+                        return;
                 }
+
+                Props.Close();
             },
         }).Themed(Props.Theme);
 
@@ -99,18 +107,22 @@ sealed class FavoriteDevicesDialog : Component<FavoriteDevicesDialogProps>
                                 ("device", favorite.Name)))
                             .GhostButton()
                             .Grid(column: 0),
-                        Button(Icon("\uE70F"), () => Queue(DialogAction.Edit, favorite))
+                        Button(Icon("\uE70F").AccessibilityHidden(), () => Queue(DialogAction.Edit, favorite))
                             .AutomationName(t.Message(
                                 new("App", "EditFavoriteDevice"),
                                 ("device", favorite.Name)))
                             .ToolTip(t.Message(new("App", "EditFavorite")))
+                            .MinWidth(40)
+                            .MinHeight(40)
                             .SubtleButton()
                             .Grid(column: 1),
-                        Button(Icon("\uE74D"), () => Queue(DialogAction.Delete, favorite))
+                        Button(Icon("\uE74D").AccessibilityHidden(), () => Queue(DialogAction.Delete, favorite))
                             .AutomationName(t.Message(
                                 new("App", "RemoveFavoriteDevice"),
                                 ("device", favorite.Name)))
                             .ToolTip(t.Message(new("App", "Delete")))
+                            .MinWidth(40)
+                            .MinHeight(40)
                             .SubtleButton()
                             .Grid(column: 2))
                     .HAlign(HorizontalAlignment.Stretch));
@@ -118,7 +130,7 @@ sealed class FavoriteDevicesDialog : Component<FavoriteDevicesDialogProps>
         void Queue(DialogAction action, FavoriteDevice favorite)
         {
             pendingActionRef.Current = new(action, favorite);
-            Props.Close();
+            Props.Hide();
         }
     }
 }

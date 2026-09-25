@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using LocalSendDotNet;
 
 namespace Tonarink.Services;
 
@@ -7,7 +8,8 @@ sealed record FavoriteDevice(
     string Fingerprint,
     string Name,
     string Address,
-    int Port);
+    int Port,
+    LocalSendDeviceType? DeviceType = null);
 
 static class FavoriteDeviceStore
 {

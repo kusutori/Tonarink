@@ -131,7 +131,7 @@ sealed class DeviceIdentityCard : Component<DeviceIdentityCardProps>
                 columns: [GridSize.Star()],
                 rows: [GridSize.Auto],
                 card,
-                Button(Icon(Props.SecondaryGlyph), () => Props.OnSecondaryClick(cardRef.Current))
+                Button(Icon(Props.SecondaryGlyph).AccessibilityHidden(), () => Props.OnSecondaryClick(cardRef.Current))
                     .AutomationName(Props.SecondaryAutomationName ?? Props.Alias)
                     .ToolTip(Props.SecondaryAutomationName ?? Props.Alias)
                     .MinWidth(48)

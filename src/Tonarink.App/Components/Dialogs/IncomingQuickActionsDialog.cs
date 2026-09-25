@@ -2,9 +2,11 @@ using CommunityToolkit.WinUI.Controls;
 using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Core;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using System.Globalization;
 using static Microsoft.UI.Reactor.Factories;
+using Tonarink.Components.Animations;
 using static Tonarink.Controls.SegmentedElement;
 
 namespace Tonarink.Components.Dialogs;
@@ -62,12 +64,14 @@ sealed class IncomingQuickActionsDialog : Component<IncomingQuickActionsDialogPr
                         onSelectedIndexChanged: setMode,
                         items: modes)
                     .HAlign(HorizontalAlignment.Stretch),
-                mode switch
-                {
-                    0 => CounterModeContent(),
-                    _ => Caption(t.Message(new("App", "QuickActionsExample"), ("name", exampleName)))
-                        .Foreground(Theme.SecondaryText),
-                })
+                Component<SegmentedContentSwitcher, SegmentedContentSwitcherProps>(
+                        new(
+                            mode,
+                            CounterModeContent(),
+                            Caption(t.Message(new("App", "QuickActionsExample"), ("name", exampleName)))
+                                .Foreground(Theme.SecondaryText)))
+                    .MinHeight(160)
+                    .HAlign(HorizontalAlignment.Stretch))
             .MinWidth(360)
             .HAlign(HorizontalAlignment.Stretch);
 
@@ -92,11 +96,16 @@ sealed class IncomingQuickActionsDialog : Component<IncomingQuickActionsDialogPr
             VStack(8,
                 TextBox(prefix, setPrefix)
                     .Header(t.Message(new("App", "QuickActionsPrefix")))
-                    .AutomationName(t.Message(new("App", "QuickActionsPrefix"))),
+                    .AutomationName(t.Message(new("App", "QuickActionsPrefix")))
+                    .HelpText(prefixValid
+                        ? string.Empty
+                        : t.Message(new("App", "QuickActionsInvalidPrefix")))
+                    .Required(),
                 prefixValid
                     ? null
                     : Caption(t.Message(new("App", "QuickActionsInvalidPrefix")))
-                        .Foreground(Theme.SystemCritical),
+                        .Foreground(Theme.SystemCritical)
+                        .LiveRegion(AutomationLiveSetting.Assertive),
                 CheckBox(
                     (bool?)padZero,
                     value => setPadZero(value),

@@ -75,6 +75,7 @@ sealed class DeferredPasswordSetting : Component<DeferredPasswordSettingProps>
             })
             .MaxLength(Props.MaxLength)
             .AutomationName(Props.AutomationName)
+            .Required()
             .MinWidth(Props.MinWidth);
     }
 }

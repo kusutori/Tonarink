@@ -1,28 +1,34 @@
-// This file supplies partial hook members for LocalizedAppShell in the root namespace.
-
 using Microsoft.UI.Reactor;
+using Microsoft.UI.Reactor.Core;
 using Microsoft.UI.Reactor.Navigation;
 
-// ReSharper disable once CheckNamespace
-namespace Tonarink;
+namespace Tonarink.Hooks;
 
 sealed record ShellActivationState(
     ShareTargetPayload? ShareTargetPayload,
-    Action<Guid> ConsumeShareTargetPayload);
+    Action<Guid> ConsumeShareTargetPayload,
+    string? JumpListFavoriteFingerprint,
+    Action<string> ConsumeJumpListFavorite,
+    Guid? JumpListHistoryId,
+    Action<Guid> ConsumeJumpListHistory);
 
-sealed partial class LocalizedAppShell
+static class ShellActivationHooks
 {
-    private ShellActivationState UseShellActivations(
+    public static ShellActivationState UseShellActivations(
+        this RenderContext context,
         NavigationHandle<AppRoute> navigation,
         LocalSendNodeSession nodeSession,
-        Action restoreWindow)
+        Action restoreWindow,
+        bool canPresentDialogs)
     {
-        var (shareTargetPayload, setShareTargetPayload) = UseState<ShareTargetPayload?>(null);
-        var drainingActivations = UseRef(false);
-        var sessionRef = UseRef(nodeSession);
+        var (shareTargetPayload, setShareTargetPayload) = context.UseState<ShareTargetPayload?>(null);
+        var (jumpListFavoriteFingerprint, setJumpListFavoriteFingerprint) = context.UseState<string?>(null);
+        var (jumpListHistoryId, setJumpListHistoryId) = context.UseState<Guid?>(null);
+        var drainingActivations = context.UseRef(false);
+        var sessionRef = context.UseRef(nodeSession);
         sessionRef.Current = nodeSession;
 
-        UseEffect(() =>
+        context.UseEffect(() =>
         {
             EventHandler activationReceived = (_, _) => ScheduleActivationDrain();
             EventHandler notificationActivated = (_, _) => ScheduleActivationDrain();
@@ -36,12 +42,50 @@ sealed partial class LocalizedAppShell
             };
         });
 
-        return new(shareTargetPayload, ConsumeShareTargetPayload);
+        context.UseEffect(() =>
+        {
+            if (!canPresentDialogs || jumpListFavoriteFingerprint is null)
+                return;
+
+            if (navigation.CurrentRoute != AppRoute.Send)
+                navigation.Navigate(AppRoute.Send);
+            restoreWindow();
+        }, canPresentDialogs, jumpListFavoriteFingerprint);
+
+        context.UseEffect(() =>
+        {
+            if (!canPresentDialogs || jumpListHistoryId is null)
+                return;
+
+            if (navigation.CurrentRoute != AppRoute.History)
+                navigation.Navigate(AppRoute.History, AppNavigation.DrillIn);
+            restoreWindow();
+        }, canPresentDialogs, jumpListHistoryId);
+
+        return new(
+            shareTargetPayload,
+            ConsumeShareTargetPayload,
+            jumpListFavoriteFingerprint,
+            ConsumeJumpListFavorite,
+            jumpListHistoryId,
+            ConsumeJumpListHistory);
 
         void ConsumeShareTargetPayload(Guid payloadId)
         {
             if (shareTargetPayload?.Id == payloadId)
                 setShareTargetPayload(null);
+        }
+
+        void ConsumeJumpListFavorite(string fingerprint)
+        {
+            if (string.Equals(jumpListFavoriteFingerprint, fingerprint, StringComparison.Ordinal))
+                setJumpListFavoriteFingerprint(null);
+        }
+
+        void ConsumeJumpListHistory(Guid historyId)
+        {
+            if (jumpListHistoryId == historyId)
+                setJumpListHistoryId(null);
         }
 
         void ScheduleActivationDrain()
@@ -70,6 +114,27 @@ sealed partial class LocalizedAppShell
                         _ = HandleNotificationActivationAsync(activation);
                 }
 
+                while (JumpListService.TryDequeue(out var jumpListActivation))
+                {
+                    switch (jumpListActivation)
+                    {
+                        case { Kind: JumpListActivationKind.Favorite, Value: var fingerprint }
+                            when FavoriteDeviceStore.Contains(fingerprint):
+                            setJumpListFavoriteFingerprint(fingerprint);
+                            break;
+
+                        case { Kind: JumpListActivationKind.History, Value: var historyIdText }
+                            when Guid.TryParseExact(historyIdText, "N", out var historyId)
+                                 && ReceiveHistoryStore.Entries.Any(entry => entry.Id == historyId):
+                            setJumpListHistoryId(historyId);
+                            break;
+
+                        default:
+                            restoreWindow();
+                            break;
+                    }
+                }
+
                 while (ShareTargetActivationBroker.TryDequeue(out var payload))
                 {
                     if (payload is null)
@@ -85,6 +150,7 @@ sealed partial class LocalizedAppShell
             {
                 drainingActivations.Current = false;
                 if (ShareTargetActivationBroker.HasPendingActivations
+                    || JumpListService.HasPendingActivations
                     || AppNotificationService.HasPendingActivations)
                     ScheduleActivationDrain();
             }

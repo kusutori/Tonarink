@@ -6,8 +6,10 @@ using Microsoft.UI.Reactor.Localization;
 using Microsoft.UI.Reactor.Navigation;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using Tonarink.Hooks;
 using static Microsoft.UI.Reactor.Factories;
 
 namespace Tonarink;
@@ -69,15 +71,24 @@ sealed class AppShell : Component
 
         var locale = AppLocale.Resolve(settings.LanguageIndex);
         var theme = AppTheme.ToElementTheme(settings.ThemeIndex);
+        var reduceMotion = UseReducedMotion();
         var startHidden = AppPlatform.StartHidden && settings.MinimizeToTray;
         var (splashVisible, setSplashVisible) = UseState(!startHidden);
+        var (splashDismissing, setSplashDismissing) = UseState(false);
 
         var shell = LocaleProvider(
                 locale,
-                Component<LocalizedAppShell, LocalizedAppShellProps>(new(settings, updateSettings, locale)),
+                Component<LocalizedAppShell, LocalizedAppShellProps>(new(
+                    settings,
+                    updateSettings,
+                    locale,
+                    splashVisible)),
                 Resources,
                 defaultLocale: "en-US")
-            .RequestedTheme(theme);
+            .RequestedTheme(theme)
+            .Opacity(splashVisible && !splashDismissing ? 0 : 1)
+            .OpacityTransition(reduceMotion ? TimeSpan.Zero : StartupSplashOverlay.FadeDuration)
+            .IsHitTestVisible(!splashVisible);
 
         return Grid(
                 columns: [GridSize.Star()],
@@ -85,7 +96,9 @@ sealed class AppShell : Component
                 shell.Grid(row: 0, column: 0),
                 splashVisible
                     ? Component<StartupSplashOverlay, StartupSplashOverlayProps>(
-                            new(setSplashVisible))
+                            new(
+                                () => setSplashDismissing(true),
+                                () => setSplashVisible(false)))
                         .Grid(row: 0, column: 0)
                     : null)
             .RequestedTheme(theme)
@@ -96,52 +109,65 @@ sealed class AppShell : Component
 sealed record LocalizedAppShellProps(
     AppSettings Settings,
     Action<Func<AppSettings, AppSettings>> UpdateSettings,
-    string Locale);
+    string Locale,
+    bool IsSplashVisible);
 
-sealed partial class LocalizedAppShell : Component<LocalizedAppShellProps>
+sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
 {
-    public override Element Render()
+    public override Element Render() => RenderEachTime(context =>
     {
-        var t = UseIntl();
-        var window = UseWindow();
-        var useTitleBarPaneToggle = !UseBreakpoint(AppLayout.CompactBreakpoint);
+        var t = context.UseIntl();
+        var window = context.UseWindow();
+        var useTitleBarPaneToggle = !context.UseBreakpoint(AppLayout.CompactBreakpoint);
         var settings = Props.Settings;
         var contentTheme = AppTheme.ToElementTheme(settings.ThemeIndex);
         var updateSettings = Props.UpdateSettings;
-        var navigation = UseNavigation(AppRoute.Receive);
-        var favoriteRevision = UseExternalStore(
+        var navigation = context.UseNavigation(AppRoute.Receive);
+        var favoriteRevision = context.UseExternalStore(
             listener =>
             {
                 FavoriteDeviceStore.Changed += listener;
                 return () => FavoriteDeviceStore.Changed -= listener;
             },
             static () => FavoriteDeviceStore.Revision);
-        var (headerEpoch, bumpHeader) = UseReducer(0);
-        var headerRight = UseRef<PageHeaderRightSlot?>();
+        context.UsePeopleSuggestions(
+            settings.ShowFavoriteDevicesInWindowsShare,
+            favoriteRevision);
+        var (headerEpoch, bumpHeader) = context.UseReducer(0);
+        var headerRight = context.UseRef<PageHeaderRightSlot?>();
         headerRight.Current ??= new PageHeaderRightSlot
         {
             Invalidate = () => bumpHeader(epoch => epoch + 1),
         };
         _ = headerEpoch;
-        var navigationViewRef = UseRef<NavigationView?>();
-        var (isNavigationPaneOpen, setNavigationPaneOpen) = UseState(false);
-        var (detailsDevice, setDetailsDevice) = UseState<LocalSendDevice?>(null);
+        var navigationViewRef = context.UseRef<NavigationView?>();
+        var (isNavigationPaneOpen, setNavigationPaneOpen) = context.UseState(false);
+        var (detailsDevice, setDetailsDevice) = context.UseState<LocalSendDevice?>(null);
         var (selectedSendItems, updateSelectedSendItems) =
-            UseReducer<IReadOnlyList<SelectedSendItem>>([]);
-        var (outgoingTransfer, setOutgoingTransfer) = UseState<OutgoingTransferViewState?>(null);
-        var mouseBackHandler = UseRef<PointerEventHandler?>();
-        var nodeSession = UseLocalSendNode(settings, t);
+            context.UseReducer<IReadOnlyList<SelectedSendItem>>([]);
+        var (outgoingTransfer, setOutgoingTransfer) = context.UseState<OutgoingTransferViewState?>(null);
+        var mouseBackHandler = context.UseRef<PointerEventHandler?>();
+        var nodeSession = context.UseLocalSendNode(settings, t);
         var runtime = nodeSession.Runtime;
-        var windowController = UseShellWindow(window, settings.MinimizeToTray, t);
-        var activations = UseShellActivations(
+        var windowController = context.UseShellWindow(window, settings.MinimizeToTray, t);
+        var activations = context.UseShellActivations(
             navigation,
             nodeSession,
-            windowController.Restore);
+            windowController.Restore,
+            canPresentDialogs: !Props.IsSplashVisible);
+        context.UseJumpListIntegration(t, Props.Locale);
 
         TrayFlyoutStore.Restore = windowController.Restore;
         TrayFlyoutStore.StartServer = nodeSession.StartOrRestart;
         TrayFlyoutStore.StopServer = nodeSession.Stop;
-        UseEffect(
+        TrayFlyoutStore.SendAsync = request => TraySendCoordinator.SendAsync(
+            request,
+            nodeSession.Node,
+            runtime.Identity,
+            settings,
+            t,
+            setOutgoingTransfer);
+        context.UseEffect(
             () => TrayFlyoutStore.Publish(
                 runtime,
                 outgoingTransfer,
@@ -155,7 +181,7 @@ sealed partial class LocalizedAppShell : Component<LocalizedAppShellProps>
             outgoingTransfer?.TotalBytes ?? 0,
             (int?)outgoingTransfer?.State ?? -1);
 
-        UseWidgetIntegration(
+        context.UseWidgetIntegration(
             runtime,
             settings,
             outgoingTransfer,
@@ -164,7 +190,7 @@ sealed partial class LocalizedAppShell : Component<LocalizedAppShellProps>
             nodeSession.StartOrRestart,
             nodeSession.Stop);
 
-        UseEffect(() =>
+        context.UseEffect(() =>
         {
             if (runtime.IncomingTransfers.Count > 0)
                 windowController.Restore();
@@ -192,7 +218,11 @@ sealed partial class LocalizedAppShell : Component<LocalizedAppShellProps>
                     settings,
                     updateSettings)),
                 AppRoute.History => Component<HistoryPage, HistoryPageProps>(
-                    new(settings.DownloadDirectory, contentTheme)),
+                    new(
+                        settings.DownloadDirectory,
+                        contentTheme,
+                        activations.JumpListHistoryId,
+                        activations.ConsumeJumpListHistory)),
                 AppRoute.Send => Component<SendPage, SendPageProps>(new(
                     runtime,
                     nodeSession.Node,
@@ -213,7 +243,9 @@ sealed partial class LocalizedAppShell : Component<LocalizedAppShellProps>
                     {
                         setDetailsDevice(device);
                         navigation.Navigate(AppRoute.DeviceDetails, AppNavigation.DrillIn);
-                    })),
+                    },
+                    activations.JumpListFavoriteFingerprint,
+                    activations.ConsumeJumpListFavorite)),
                 AppRoute.Settings => Component<SettingsPage, SettingsPageProps>(new(
                     settings,
                     runtime,
@@ -267,6 +299,8 @@ sealed partial class LocalizedAppShell : Component<LocalizedAppShellProps>
                 .PaneFooter(paneStatus)
                 .PaneOpenChanged(setNavigationPaneOpen)
                 .PaneToggleButtonVisible(!useTitleBarPaneToggle)
+                .Landmark(AutomationLandmarkType.Navigation)
+                .AutomationName(t.Message(new("App", "MainNavigation")))
                 .AlwaysShowHeader()
                 .BackButtonVisible(false)
                 .TitleBarAutoPadding(false)
@@ -357,7 +391,7 @@ sealed partial class LocalizedAppShell : Component<LocalizedAppShellProps>
             });
 
         return root;
-    }
+    });
 
     private static string RouteTag(AppRoute route) => route switch
     {

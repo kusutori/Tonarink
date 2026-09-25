@@ -1,30 +1,32 @@
-// This file supplies partial hook members for LocalizedAppShell in the root namespace.
-
 using System.Reflection;
 using Microsoft.UI.Reactor;
+using Microsoft.UI.Reactor.Core;
 using Microsoft.UI.Reactor.Localization;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
-// ReSharper disable once CheckNamespace
-namespace Tonarink;
+namespace Tonarink.Hooks;
 
 sealed record ShellWindowController(Action Restore, Action Hide);
 
-sealed partial class LocalizedAppShell
+static class ShellWindowHooks
 {
-    private ShellWindowController UseShellWindow(
+    public static ShellWindowController UseShellWindow(
+        this RenderContext context,
         ReactorWindow? window,
         bool minimizeToTray,
         IntlAccessor t)
     {
-        var trayIcon = UseRef<WinUIEx.TrayIcon?>();
+        var trayIcon = context.UseRef<WinUIEx.TrayIcon?>();
 
-        UseEffect(() =>
+        context.UseEffect(() =>
         {
             if (window is null)
                 return () => { };
 
+            // UseClosingGuard cannot distinguish a user close from a programmatic close.
+            // Only title-bar/Alt+F4 closes should minimize to the tray; explicit shutdown
+            // must continue through the normal Reactor window lifecycle.
             void OnClosing(object? sender, WindowClosingEventArgs args)
             {
                 if (args.Reason != WindowCloseReason.UserClosed || !minimizeToTray)
@@ -38,7 +40,7 @@ sealed partial class LocalizedAppShell
             return () => window.Closing -= OnClosing;
         }, window, minimizeToTray);
 
-        UseEffect(() =>
+        context.UseEffect(() =>
         {
             ReactorApp.ShutdownPolicy = minimizeToTray
                 ? ShutdownPolicy.Explicit
@@ -150,6 +152,5 @@ sealed partial class LocalizedAppShell
                 AppDiagnostics.Report("Could not apply the tray menu host theme", exception);
             }
         }
-
     }
 }

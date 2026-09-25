@@ -17,6 +17,12 @@ sealed record TrayFlyoutSnapshot(
         ServerDesired: true);
 }
 
+sealed record TraySendRequest(
+    LocalSendDevice Device,
+    IReadOnlyList<SendItem> Items,
+    long TotalBytes,
+    string? Pin);
+
 static class TrayFlyoutStore
 {
     private static readonly Lock Gate = new();
@@ -29,6 +35,9 @@ static class TrayFlyoutStore
     public static Action StartServer { get; set; } = static () => { };
 
     public static Action StopServer { get; set; } = static () => { };
+
+    public static Func<TraySendRequest, Task> SendAsync { get; set; } =
+        static _ => Task.FromException(new InvalidOperationException("The send service is unavailable."));
 
     public static TrayFlyoutSnapshot Snapshot
     {

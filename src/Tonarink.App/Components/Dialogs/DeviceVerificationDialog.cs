@@ -6,6 +6,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using static Microsoft.UI.Reactor.Factories;
+using Tonarink.Components.Animations;
 using static Tonarink.Controls.SegmentedElement;
 
 namespace Tonarink.Components.Dialogs;
@@ -56,10 +57,11 @@ sealed class DeviceVerificationDialog : Component<DeviceVerificationDialogProps>
                             onSelectedIndexChanged: setMode,
                             items: modes)
                         .HAlign(HorizontalAlignment.Stretch),
-                    Grid(
-                            columns: [GridSize.Star()],
-                            rows: [GridSize.Star()],
-                            mode == 0 ? VerificationIcons(combined) : VerificationText(combined, t))
+                    Component<SegmentedContentSwitcher, SegmentedContentSwitcherProps>(
+                            new(
+                                mode,
+                                VerificationIcons(combined, t),
+                                VerificationText(combined, t)))
                         .Height(224)
                         .HAlign(HorizontalAlignment.Stretch),
                     TextBlock(t.Message(new("App", "VerificationCompareHint")))
@@ -82,7 +84,7 @@ sealed class DeviceVerificationDialog : Component<DeviceVerificationDialogProps>
         }
     }
 
-    private static Element VerificationIcons(string combined) =>
+    private static Element VerificationIcons(string combined, IntlAccessor t) =>
         (Grid(
                 columns: [GridSize.Star(), GridSize.Star(), GridSize.Star(), GridSize.Star()],
                 rows: [GridSize.Star(), GridSize.Star(), GridSize.Star(), GridSize.Star()],
@@ -102,6 +104,8 @@ sealed class DeviceVerificationDialog : Component<DeviceVerificationDialogProps>
             ColumnSpacing = 8,
         })
         .Size(224, 224)
+        .AutomationName(t.Message(new("App", "VerificationIcons")))
+        .FullDescription(combined)
         .HAlign(HorizontalAlignment.Center);
 
     private static Element VerificationText(string combined, IntlAccessor t) =>

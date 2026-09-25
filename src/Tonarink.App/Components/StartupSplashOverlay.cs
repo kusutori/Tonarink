@@ -6,14 +6,17 @@ using static Microsoft.UI.Reactor.Factories;
 
 namespace Tonarink.Components;
 
-sealed record StartupSplashOverlayProps(Action<bool> SetVisible);
+sealed record StartupSplashOverlayProps(
+    Action BeginDismissal,
+    Action CompleteDismissal);
 
 sealed class StartupSplashOverlay : Component<StartupSplashOverlayProps>
 {
-    private static readonly TimeSpan FadeDuration = TimeSpan.FromMilliseconds(280);
+    internal static readonly TimeSpan FadeDuration = TimeSpan.FromMilliseconds(280);
 
     public override Element Render()
     {
+        var reduceMotion = UseReducedMotion();
         var (opacity, setOpacity) = UseState(1.0);
         var alive = UseRef(true);
         var completionStarted = UseRef(false);
@@ -31,17 +34,19 @@ sealed class StartupSplashOverlay : Component<StartupSplashOverlayProps>
                     if (element is AnimatedVisualPlayer player)
                         _ = PlayThenFadeAsync(player);
                 }))
-            .Background(Theme.SolidBackground)
             .Opacity(opacity)
-            .OpacityTransition(FadeDuration)
+            .OpacityTransition(reduceMotion ? TimeSpan.Zero : FadeDuration)
             .IsHitTestVisible(opacity > 0);
 
         async Task PlayThenFadeAsync(AnimatedVisualPlayer player)
         {
             try
             {
-                player.Source = new Tonarink.SplashLogo();
-                await player.PlayAsync(fromProgress: 0, toProgress: 1, looped: false);
+                if (!reduceMotion)
+                {
+                    player.Source = new Tonarink.SplashLogo();
+                    await player.PlayAsync(fromProgress: 0, toProgress: 1, looped: false);
+                }
             }
             catch (Exception exception)
             {
@@ -52,11 +57,18 @@ sealed class StartupSplashOverlay : Component<StartupSplashOverlayProps>
                 return;
 
             completionStarted.Current = true;
+            Props.BeginDismissal();
             setOpacity(0);
+            if (reduceMotion)
+            {
+                Props.CompleteDismissal();
+                return;
+            }
+
             await Task.Delay(FadeDuration);
 
             if (alive.Current)
-                Props.SetVisible(false);
+                Props.CompleteDismissal();
         }
     }
 }

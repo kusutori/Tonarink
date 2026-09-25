@@ -69,6 +69,11 @@ static class ShareTargetActivationBroker
         {
             switch (activation?.Kind)
             {
+                case ExtendedActivationKind.Launch
+                    when activation.Data is ILaunchActivatedEventArgs launchArgs:
+                    JumpListService.TryEnqueueActivation(launchArgs.Arguments);
+                    break;
+
                 // AppActivationArguments.Data exposes the activation *interface*, not
                 // necessarily the projected runtime class. The class check happens to
                 // work in JIT builds, but can fail after Native AOT trimming because the
@@ -225,7 +230,13 @@ static class ShareTargetActivationBroker
         operation.ReportStarted();
         try
         {
-            var payload = await ReadShareTargetPayloadAsync(operation.Data).ConfigureAwait(true);
+            var suggestedContactFingerprint = operation.Contacts
+                .Select(static contact => contact.RemoteId)
+                .FirstOrDefault(static remoteId => !string.IsNullOrWhiteSpace(remoteId));
+            var payload = await ReadShareTargetPayloadAsync(
+                    operation.Data,
+                    suggestedContactFingerprint)
+                .ConfigureAwait(true);
             operation.ReportDataRetrieved();
             operation.ReportCompleted();
             return payload;
@@ -246,7 +257,9 @@ static class ShareTargetActivationBroker
         }
     }
 
-    private static async Task<ShareTargetPayload> ReadShareTargetPayloadAsync(DataPackageView data)
+    private static async Task<ShareTargetPayload> ReadShareTargetPayloadAsync(
+        DataPackageView data,
+        string? suggestedContactFingerprint)
     {
         var items = new List<ShareTargetItem>();
         if (data.Contains(StandardDataFormats.StorageItems))
@@ -277,7 +290,7 @@ static class ShareTargetActivationBroker
         if (items.Count == 0)
             throw new InvalidDataException("The share did not contain accessible files or text.");
 
-        return new ShareTargetPayload(Guid.NewGuid(), items);
+        return new ShareTargetPayload(Guid.NewGuid(), items, suggestedContactFingerprint);
     }
 
     private static void WriteDiagnostic(string message, Exception? exception = null)

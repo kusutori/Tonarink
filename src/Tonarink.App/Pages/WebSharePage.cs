@@ -187,7 +187,8 @@ sealed class WebSharePage : Component<WebSharePageProps>
                         (ContentDialog(
                                 t.Message(new("App", "WebSharePinTitle")),
                                 TextBox(pinDraft, setPinDraft)
-                                    .AutomationName(t.Message(new("App", "WebSharePinTitle"))),
+                                    .AutomationName(t.Message(new("App", "WebSharePinTitle")))
+                                    .Required(),
                                 primaryButtonText: t.Message(new("App", "Confirm"))) with
                         {
                             IsOpen = pinDialogOpen,
@@ -234,6 +235,9 @@ sealed class WebSharePage : Component<WebSharePageProps>
                         }).Themed(dialogTheme))
                     .Padding(AppLayout.PagePadding))
             .HorizontalContentAlignment(HorizontalAlignment.Stretch)
+            .AutomationName(t.Message(new(
+                "App",
+                Props.Mode == WebShareMode.Send ? "WebShareTitle" : "WebReceiveTitle")))
             .Landmark(AutomationLandmarkType.Main);
 
         void ShowQr(string url)
@@ -293,7 +297,8 @@ sealed class WebSharePage : Component<WebSharePageProps>
                         AnimatedButtons.CopyFeedback(
                                 copySuccessVersion,
                                 t.Message(new("App", "WebShareCopy")),
-                                copy)
+                                copy,
+                                successAnnouncement: t.Message(new("App", "Copied")))
                             .MinWidth(40)
                             .MinHeight(40)
                             .Grid(column: 1),
@@ -322,12 +327,12 @@ sealed class WebSharePage : Component<WebSharePageProps>
                         .Grid(column: 0),
                     (request.Pending
                         ? (Element)HStack(4,
-                            Button(Icon("Cancel"), () => node?.DeclineWebShareRequest(request.SessionId))
+                            Button(Icon("Cancel").AccessibilityHidden(), () => node?.DeclineWebShareRequest(request.SessionId))
                                 .SubtleButton()
                                 .AutomationName(t.Message(new("App", "Decline")))
                                 .MinWidth(40)
                                 .MinHeight(40),
-                            Button(Icon("Accept"), () => node?.AcceptWebShareRequest(request.SessionId))
+                            Button(Icon("Accept").AccessibilityHidden(), () => node?.AcceptWebShareRequest(request.SessionId))
                                 .SubtleButton()
                                 .AutomationName(t.Message(new("App", "Accept")))
                                 .MinWidth(40)
@@ -342,8 +347,10 @@ sealed class WebSharePage : Component<WebSharePageProps>
             .WithBorder(Theme.CardStroke);
 
     private static Element IconButton(string glyph, string name, Action onClick) =>
-        Button(Icon(glyph), onClick)
+        Button(Icon(glyph).AccessibilityHidden(), onClick)
             .SubtleButton()
+            .MinWidth(40)
+            .MinHeight(40)
             .AutomationName(name)
             .ToolTip(name)
             .MinWidth(40)

@@ -41,10 +41,10 @@ sealed class PageHeader : Component<PageHeaderProps>
         var layoutHandler = UseRef<EventHandler<object>?>();
         var (title, parentRoute, parentTitle) = CrumbLabels(t, route);
         var parentKey = parentRoute is { } parent ? $"{parent}|{parentTitle}" : "";
-        var items = UseMemo(
+        var items = UseMemo<BreadcrumbBarItemData[]>(
             () => parentRoute is { } parent && !string.IsNullOrEmpty(parentTitle)
-                ? new[] { Breadcrumb(parentTitle, parent), Breadcrumb(title, route) }
-                : new[] { Breadcrumb(title, route) },
+                ? [Breadcrumb(parentTitle, parent), Breadcrumb(title, route)]
+                : [Breadcrumb(title, route)],
             title,
             route,
             parentKey);

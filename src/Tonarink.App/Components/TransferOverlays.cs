@@ -2,11 +2,13 @@ using LocalSendDotNet;
 using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Animation;
 using Microsoft.UI.Reactor.Core;
+using Microsoft.UI.Reactor.Hooks;
 using Microsoft.UI.Reactor.Localization;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Windows.ApplicationModel.DataTransfer;
+using Windows.System;
 using BasicConnectedAnimationConfiguration = Microsoft.UI.Xaml.Media.Animation.BasicConnectedAnimationConfiguration;
 using static Microsoft.UI.Reactor.Factories;
 using static Tonarink.Utilities.ByteSize;
@@ -31,6 +33,8 @@ sealed class OutgoingTransferOverlay : Component<OutgoingTransferOverlayProps>
         var (showVerification, setShowVerification) = UseState(false);
         var (connectedAnimationReady, setConnectedAnimationReady) = UseState(false);
         var (pin, setPin) = UseState(string.Empty);
+        var focusTrap = this.UseFocusTrap(
+            !showVerification && !(connectedAnimationReady && transfer.PinPrompt is not null));
         var receiverCardRef = UseRef<FrameworkElement?>();
         var connectedAnimationKey = DeviceConnectedKey(transfer.Receiver.Fingerprint);
         var taskbarProgress = new TaskbarTransferProgress(
@@ -82,9 +86,11 @@ sealed class OutgoingTransferOverlay : Component<OutgoingTransferOverlayProps>
                     .HAlign(HorizontalAlignment.Center),
                 transfer.State is TransferState.Preparing or TransferState.WaitingForAcceptance
                     ? ProgressIndeterminate().MaxWidth(AppLayout.OverlayProgressMaxWidth)
+                        .AutomationName(OutgoingStatus(t, transfer.State))
                         .HAlign(HorizontalAlignment.Stretch)
                     : transfer.TotalBytes > 0
                         ? Progress(progress).MaxWidth(AppLayout.OverlayProgressMaxWidth)
+                            .AutomationName(OutgoingStatus(t, transfer.State))
                             .HAlign(HorizontalAlignment.Stretch)
                         : null,
                 transfer.TotalBytes > 0
@@ -99,6 +105,7 @@ sealed class OutgoingTransferOverlay : Component<OutgoingTransferOverlayProps>
                                 TextBlock(t.Message(new("App", "Cancel")))),
                             transfer.Cancel)
                         .AutomationName(t.Message(new("App", "CancelCurrentSend")))
+                        .OnMountAdd(element => element.Focus(FocusState.Programmatic))
                         .MinWidth(120)
                     : Button(
                             HStack(8,
@@ -106,6 +113,7 @@ sealed class OutgoingTransferOverlay : Component<OutgoingTransferOverlayProps>
                                 TextBlock(t.Message(new("App", "Close")))),
                             CloseOverlay)
                         .AutomationName(t.Message(new("App", "Close")))
+                        .OnMountAdd(element => element.Focus(FocusState.Programmatic))
                         .MinWidth(120))
                 .HAlign(HorizontalAlignment.Center))
             .MaxWidth(AppLayout.OverlayStatusMaxWidth)
@@ -137,6 +145,8 @@ sealed class OutgoingTransferOverlay : Component<OutgoingTransferOverlayProps>
                     () => setShowVerification(false))),
                 PinDialog())
             .Transition(new FadeTransition())
+            .FocusTrap(focusTrap)
+            .AutomationName(t.Message(new("App", "SendingTitle")))
             .Landmark(AutomationLandmarkType.Main);
 
         Element PinDialog()
@@ -152,10 +162,13 @@ sealed class OutgoingTransferOverlay : Component<OutgoingTransferOverlayProps>
                         PasswordBox(pin, setPin, placeholderText: t.Message(new("App", "PinPlaceholder")))
                             .Header(t.Message(new("App", "Pin")))
                             .AutomationName(t.Message(new("App", "Pin")))
+                            .Required()
                             .MaxLength(32),
                         prompt?.Error is null
                             ? null
-                            : TextBlock(prompt.Error).Foreground(Theme.SystemCritical)),
+                            : TextBlock(prompt.Error)
+                                .Foreground(Theme.SystemCritical)
+                                .LiveRegion(AutomationLiveSetting.Assertive)),
                     primaryButtonText: t.Message(new("App", "PinConfirm"))) with
             {
                 IsOpen = connectedAnimationReady && prompt is not null,
@@ -242,6 +255,7 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
     public override Element Render()
     {
         var t = UseIntl();
+        var announce = this.UseAnnounce();
         var window = UseWindow();
         var storagePicker = new StoragePicker(
             window?.NativeWindow,
@@ -265,6 +279,8 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
         var (renameFileName, setRenameFileName) = UseState(string.Empty);
         var (showQuickActions, setShowQuickActions) = UseState(false);
         var (folderError, setFolderError) = UseState<string?>(null);
+        var focusTrap = this.UseFocusTrap(
+            !showVerification && !showQuickActions && renameItemId is null);
         var cancellationRef = UseRef<CancellationTokenSource?>();
         var fileCardRef = UseRef<FrameworkElement?>();
         var fileOptionsDesiredRef = UseRef(false);
@@ -305,7 +321,24 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                 using var linked = CancellationTokenSource.CreateLinkedTokenSource(
                     cancellationRef.Current?.Token ?? CancellationToken.None,
                     mutationToken);
+                var acceptedItemIds = configuration.AcceptedItemIds.ToHashSet(StringComparer.Ordinal);
+                var totalBytes = request.Items
+                    .Where(item => acceptedItemIds.Contains(item.Id))
+                    .Sum(static item => item.Size);
+                var progressTitle = IncomingSummary(
+                    t,
+                    request.Items.Where(item => acceptedItemIds.Contains(item.Id)).ToArray());
+                var progressNotification = AppNotificationService.StartTransferProgress(
+                    request.RequestId,
+                    t.Message(new("App", "NotificationReceiveProgressTitle"), ("device", request.Sender.Alias)),
+                    progressTitle,
+                    t.Message(new("App", "ReceivingContent")),
+                    0,
+                    totalBytes,
+                    ProgressText(0, totalBytes),
+                    "receive-progress");
                 var progress = new Progress<TransferProgress>(value =>
+                {
                     updateView(current => current with
                     {
                         State = value.State,
@@ -313,18 +346,33 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                         TotalBytes = value.TotalBytes,
                         Status = t.Message(new("App", "ReceivingContent")),
                         IsDecided = true,
-                    }));
-                return await Props.Node.AcceptAsync(
-                    request.RequestId,
-                    new AcceptTransferOptions
-                    {
-                        DestinationDirectory = configuration.DestinationDirectory,
-                        AcceptedItemIds = configuration.AcceptedItemIds,
-                        TargetFileNames = configuration.TargetFileNames,
-                        VerifySha256 = Props.VerifyChecksums,
-                    },
-                    progress,
-                    linked.Token).ConfigureAwait(false);
+                    });
+                    progressNotification?.Report(
+                        progressTitle,
+                        t.Message(new("App", "ReceivingContent")),
+                        value.BytesTransferred,
+                        value.TotalBytes,
+                        ProgressText(value.BytesTransferred, value.TotalBytes));
+                });
+                try
+                {
+                    return await Props.Node.AcceptAsync(
+                        request.RequestId,
+                        new AcceptTransferOptions
+                        {
+                            DestinationDirectory = configuration.DestinationDirectory,
+                            AcceptedItemIds = configuration.AcceptedItemIds,
+                            TargetFileNames = configuration.TargetFileNames,
+                            VerifySha256 = Props.VerifyChecksums,
+                        },
+                        progress,
+                        linked.Token).ConfigureAwait(false);
+                }
+                finally
+                {
+                    if (progressNotification is not null)
+                        await progressNotification.RemoveAsync().ConfigureAwait(false);
+                }
             });
 
         var declineMutation = UseMutation<bool, bool>(async (_, token) =>
@@ -339,6 +387,27 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
         var progressText = $"{FormatBytes(view.BytesTransferred)} / {FormatBytes(view.TotalBytes)}";
         var isPending = acceptMutation.IsPending || declineMutation.IsPending;
         var canEdit = !view.IsDecided && !isPending;
+        var renameFileCommand = UseCommand(UseMemo(() => new Command<IncomingFileCommandTarget>
+            {
+                Label = t.Message(new("App", "Rename")),
+                Icon = new FontIconData("\uE70F"),
+                Accelerator = Accelerator(VirtualKey.F2),
+                CanExecute = canEdit,
+                Execute = target => OpenRenameDialog(target.ItemId, target.DisplayName),
+            },
+            t.Locale,
+            canEdit));
+        var undoRenameCommand = UseCommand(UseMemo(() => new Command<IncomingFileCommandTarget>
+            {
+                Label = t.Message(new("App", "UndoIncomingFileRename")),
+                Icon = new FontIconData("\uE7A7"),
+                Accelerator = Accelerator(VirtualKey.Z, VirtualKeyModifiers.Control),
+                CanExecute = canEdit,
+                Execute = target => updateTargetFileNames(current =>
+                    IncomingFileCard.UndoRename(current, target.ItemId)),
+            },
+            t.Locale,
+            canEdit));
         var showText = request.Items.Count == 1 && IsText(request.Items[0]);
         var verificationButton = VerificationButton(
             t,
@@ -388,14 +457,15 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
             () => updateSelectedItemIds(current => IncomingFileCard.ToggleSelectAll(current, request.Items)),
             ResetFileOptions,
             () => setShowQuickActions(true),
-            OpenRenameDialog,
-            itemId => updateTargetFileNames(current => IncomingFileCard.UndoRename(current, itemId)),
+            renameFileCommand,
+            undoRenameCommand,
             PickDestinationDirectoryAsync));
 
         var sender = VStack(16,
                 DeviceAvatar(request.Sender.DeviceType, OverlayAvatarSize)
                     .HAlign(HorizontalAlignment.Center),
                 Title(request.Sender.Alias)
+                    .HeadingLevel(AutomationHeadingLevel.Level1)
                     .TextAlignment(TextAlignment.Center)
                     .HAlign(HorizontalAlignment.Center),
                 HStack(8,
@@ -464,8 +534,11 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                     renameFileName,
                     setRenameFileName,
                     setRenameItemId,
-                    updateTargetFileNames))
+                    updateTargetFileNames),
+                announce.Region)
             .Transition(Transition.Enter(new FadeTransition()))
+            .FocusTrap(focusTrap)
+            .AutomationName(t.Message(new("App", "ReceiveTitle")))
             .Landmark(AutomationLandmarkType.Main);
 
         Element TextContent() =>
@@ -500,6 +573,7 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
             VStack(12,
                 BodyLarge(view.Status)
                     .TextAlignment(TextAlignment.Center)
+                    .LiveRegion(AutomationLiveSetting.Polite)
                     .HAlign(HorizontalAlignment.Center)
                     .Transition(Transition.Enter(new FadeTransition())),
                 showFileOptions ? null : fileCard,
@@ -525,6 +599,7 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                             () => _ = AcceptAsync())
                         .AutomationName(t.Message(new("App", "Accept")))
                         .IsEnabled(!isPending && (showText || selectedItemIds.Count > 0))
+                        .OnMountAdd(element => element.Focus(FocusState.Programmatic))
                         .MinWidth(120)
                         .AccentButton())
                 .HAlign(HorizontalAlignment.Center);
@@ -533,8 +608,10 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
             VStack(12,
                     view.State is TransferState.Preparing or TransferState.WaitingForAcceptance
                         ? ProgressIndeterminate().MaxWidth(AppLayout.OverlayProgressMaxWidth)
+                            .AutomationName(view.Status)
                             .HAlign(HorizontalAlignment.Stretch)
                         : Progress(progressValue).MaxWidth(AppLayout.OverlayProgressMaxWidth)
+                            .AutomationName(view.Status)
                             .HAlign(HorizontalAlignment.Stretch),
                     Caption(progressText)
                         .Foreground(Theme.SecondaryText)
@@ -545,6 +622,7 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                                 TextBlock(t.Message(new("App", "Cancel")))),
                             CancelReceive)
                         .AutomationName(t.Message(new("App", "Cancel")))
+                        .OnMountAdd(element => element.Focus(FocusState.Programmatic))
                         .MinWidth(120)
                         .HAlign(HorizontalAlignment.Center))
                 .MaxWidth(AppLayout.OverlayIncomingActionsMaxWidth)
@@ -562,9 +640,14 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                                 TextBlock(t.Message(new("App", "Close")))),
                             () => Props.Dismiss(request.RequestId))
                         .AutomationName(t.Message(new("App", "Close")))
+                        .OnMountAdd(element => element.Focus(FocusState.Programmatic))
                         .MinWidth(120)
                         .HAlign(HorizontalAlignment.Center))
                 .HAlign(HorizontalAlignment.Center);
+
+        static string ProgressText(long bytesTransferred, long totalBytes) => totalBytes > 0
+            ? $"{FormatBytes(bytesTransferred)} / {FormatBytes(totalBytes)}"
+            : FormatBytes(bytesTransferred);
 
         async Task AcceptAsync()
         {
@@ -670,6 +753,7 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
             Clipboard.SetContent(package);
             Clipboard.Flush();
             setCopied(true);
+            announce.Announce(t.Message(new("App", "Copied")));
         }
 
         void ToggleFileOptions()

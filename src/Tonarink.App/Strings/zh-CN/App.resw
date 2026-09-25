@@ -112,6 +112,9 @@
   <data name="HistoryInfoTitle" xml:space="preserve"><value>文件信息</value></data>
   <data name="HistoryOpenDirectory" xml:space="preserve"><value>打开目录</value></data>
   <data name="HistoryOpenFile" xml:space="preserve"><value>打开文件</value></data>
+  <data name="HistoryOpenFileDescription" xml:space="preserve"><value>打开 {file} 的历史记录</value></data>
+  <data name="JumpListFavoriteDevicesGroup" xml:space="preserve"><value>收藏夹设备</value></data>
+  <data name="JumpListHistoryGroup" xml:space="preserve"><value>历史记录</value></data>
   <data name="HistoryOpenReceiveHistory" xml:space="preserve"><value>接收历史</value></data>
   <data name="HistoryShowInFolder" xml:space="preserve"><value>在文件管理器中显示</value></data>
   <data name="HistorySubtitle" xml:space="preserve"><value>{date} · {size} · {sender}</value></data>
@@ -134,11 +137,14 @@
   <data name="NavReceive" xml:space="preserve"><value>接收</value></data>
   <data name="NavSend" xml:space="preserve"><value>发送</value></data>
   <data name="NavSettings" xml:space="preserve"><value>设置</value></data>
+  <data name="MainNavigation" xml:space="preserve"><value>主导航</value></data>
   <data name="NotificationIncomingTitle" xml:space="preserve"><value>来自 {device} 的传输请求</value></data>
+  <data name="NotificationReceiveProgressTitle" xml:space="preserve"><value>正在接收来自 {device} 的内容</value></data>
   <data name="NotificationReceiveCompleteTitle" xml:space="preserve"><value>接收完成</value></data>
   <data name="NotificationReceiveCompleteOne" xml:space="preserve"><value>已接收来自 {device} 的 1 个项目。</value></data>
   <data name="NotificationReceiveCompleteMany" xml:space="preserve"><value>已接收来自 {device} 的 {count} 个项目。</value></data>
   <data name="NotificationSendCompleteTitle" xml:space="preserve"><value>发送完成</value></data>
+  <data name="NotificationSendProgressTitle" xml:space="preserve"><value>正在发送给 {device}</value></data>
   <data name="NotificationSendCompleteOne" xml:space="preserve"><value>已向 {device} 发送 1 个项目。</value></data>
   <data name="NotificationSendCompleteMany" xml:space="preserve"><value>已向 {device} 发送 {count} 个项目。</value></data>
   <data name="NotificationOpenFile" xml:space="preserve"><value>打开文件</value></data>
@@ -150,6 +156,7 @@
   <data name="DeviceAddressNotFound" xml:space="preserve"><value>在 {address} 未找到兼容的设备，请检查地址和网络连接。</value></data>
   <data name="EnterAddressTitle" xml:space="preserve"><value>输入地址</value></data>
   <data name="InvalidDeviceAddress" xml:space="preserve"><value>请输入有效的 IP 地址。</value></data>
+  <data name="InvalidFileName" xml:space="preserve"><value>文件名为空或包含无效字符。</value></data>
   <data name="RecentlyUsedAddress" xml:space="preserve"><value>最近使用：</value></data>
   <data name="SendToAddress" xml:space="preserve"><value>按地址发送</value></data>
   <data name="UseRecentAddress" xml:space="preserve"><value>使用最近的地址 {address}</value></data>
@@ -305,6 +312,8 @@
   <data name="SettingsStopServer" xml:space="preserve"><value>停止服务器</value></data>
   <data name="SettingsStartWithWindows" xml:space="preserve"><value>登录系统后自动启动</value></data>
   <data name="SettingsStartWithWindowsDescription" xml:space="preserve"><value>登录 Windows 后自动运行 Tonarink。</value></data>
+  <data name="SettingsWindowsShareSuggestions" xml:space="preserve"><value>在 Windows 分享中显示收藏设备</value></data>
+  <data name="SettingsWindowsShareSuggestionsDescription" xml:space="preserve"><value>将收藏设备添加到 Windows 分享面板的建议联系人中；安装打包版本后生效。</value></data>
   <data name="SettingsNotifications" xml:space="preserve"><value>系统通知</value></data>
   <data name="SettingsNotificationsDescription" xml:space="preserve"><value>在收到传输请求以及发送或接收完成时显示 Windows 通知。</value></data>
   <data name="SettingsNotificationsEnabled" xml:space="preserve"><value>启用通知</value></data>
@@ -331,6 +340,9 @@
   <data name="TrayNearbyTab" xml:space="preserve"><value>附近</value></data>
   <data name="TrayNoDevices" xml:space="preserve"><value>附近没有设备</value></data>
   <data name="TrayOpen" xml:space="preserve"><value>打开 Tonarink</value></data>
+  <data name="TrayPinPanel" xml:space="preserve"><value>固定面板</value></data>
+  <data name="TrayUnpinPanel" xml:space="preserve"><value>取消固定面板</value></data>
+  <data name="TrayDropToSend" xml:space="preserve"><value>发送到 {device}</value></data>
   <data name="TrayReceiveOff" xml:space="preserve"><value>关闭</value></data>
   <data name="TrayReceiveOn" xml:space="preserve"><value>开启</value></data>
   <data name="TrayReceiveService" xml:space="preserve"><value>接收服务</value></data>
@@ -354,6 +366,8 @@
   <data name="SettingsTitle" xml:space="preserve"><value>设置</value></data>
   <data name="ShareTargetEmpty" xml:space="preserve"><value>分享内容中没有可访问的文件或文本。</value></data>
   <data name="ShareTargetFailed" xml:space="preserve"><value>无法添加分享内容：{error}</value></data>
+  <data name="ShareSuggestedDeviceOffline" xml:space="preserve"><value>{device} 当前不在线。分享内容已保留在待发送列表中，可以重试或选择其他设备。</value></data>
+  <data name="ShareSuggestedDeviceUnavailable" xml:space="preserve"><value>这个 Windows 分享联系人已不在收藏夹中，分享内容已保留在待发送列表中。</value></data>
   <data name="TargetDevice" xml:space="preserve"><value>目标设备</value></data>
   <data name="TargetRequiresPin" xml:space="preserve"><value>目标设备要求 PIN。</value></data>
   <data name="Text" xml:space="preserve"><value>文本</value></data>

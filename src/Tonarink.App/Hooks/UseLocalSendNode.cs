@@ -1,10 +1,8 @@
-// This file supplies partial hook members for LocalizedAppShell in the root namespace.
-
 using LocalSendDotNet;
+using Microsoft.UI.Reactor.Core;
 using Microsoft.UI.Reactor.Localization;
 
-// ReSharper disable once CheckNamespace
-namespace Tonarink;
+namespace Tonarink.Hooks;
 
 sealed record LocalSendNodeSession(
     AppRuntimeState Runtime,
@@ -17,27 +15,33 @@ sealed record LocalSendNodeSession(
     Action<Guid> DismissIncoming,
     Func<string, Guid, Task<bool>> HandleIncomingActivationAsync);
 
-sealed partial class LocalizedAppShell
+static class LocalSendNodeHooks
 {
-    private LocalSendNodeSession UseLocalSendNode(
+    public static LocalSendNodeSession UseLocalSendNode(
+        this RenderContext context,
         AppSettings settings,
         IntlAccessor t)
     {
-        var (runtime, updateRuntime) = UseReducer(AppRuntimeState.Initial);
-        var runtimeRef = UseRef(runtime);
+        var (runtime, updateRuntime) = context.UseReducer(AppRuntimeState.Initial);
+        var runtimeRef = context.UseRef(runtime);
         runtimeRef.Current = runtime;
-        var (serverDesired, setServerDesired) = UseState(true);
-        var (serverEpoch, updateServerEpoch) = UseReducer(0);
-        var (httpsOverride, setHttpsOverride) = UseState<bool?>(null);
-        var nodeRef = UseRef<LocalSendNode?>();
-        var nodeLifecycleRef = UseRef<SemaphoreSlim?>();
-        var nodeLifecycle = nodeLifecycleRef.Current ??= new SemaphoreSlim(1, 1);
-        var nextNodeSession = UseRef(0);
-        var ownerNodeSession = UseRef(0);
+        var intlRef = context.UseRef(t);
+        intlRef.Current = t;
+        var (serverDesired, setServerDesired) = context.UseState(true);
+        var (serverEpoch, updateServerEpoch) = context.UseReducer(0);
+        var (httpsOverride, setHttpsOverride) = context.UseState<bool?>(null);
+        var lifecycleRef = context.UseRef<LocalSendNodeLifecycle?>();
+        var lifecycle = lifecycleRef.Current ??= new LocalSendNodeLifecycle();
+        var incomingRef = context.UseRef<IncomingTransferCoordinator?>();
+        var incoming = incomingRef.Current ??= new(
+            () => intlRef.Current,
+            () => lifecycle.CurrentNode,
+            () => runtimeRef.Current,
+            updateRuntime);
 
-        UseEffect(() =>
+        context.UseEffect(() =>
         {
-            var session = ++nextNodeSession.Current;
+            var session = lifecycle.CreateSession();
             var cancellation = new CancellationTokenSource();
             _ = RunNodeSessionAsync(session, serverDesired, cancellation.Token);
             return () =>
@@ -49,7 +53,7 @@ sealed partial class LocalizedAppShell
                 {
                     try
                     {
-                        await DisposeNodeSessionAsync(session).ConfigureAwait(false);
+                        await lifecycle.DisposeSessionAsync(session).ConfigureAwait(false);
                     }
                     finally
                     {
@@ -61,26 +65,14 @@ sealed partial class LocalizedAppShell
 
         return new(
             runtime,
-            nodeRef.Current,
+            lifecycle.CurrentNode,
             serverDesired,
             RefreshAsync,
             StartOrRestart,
             Stop,
             SetHttpsOverride,
-            DismissIncoming,
-            HandleIncomingActivationAsync);
-
-        void DismissIncoming(Guid requestId)
-        {
-            updateRuntime(current => current with
-            {
-                IncomingTransfers =
-                [
-                    .. current.IncomingTransfers
-                        .Where(request => request.RequestId != requestId)
-                ],
-            });
-        }
+            incoming.Dismiss,
+            incoming.HandleActivationAsync);
 
         void StartOrRestart()
         {
@@ -125,12 +117,28 @@ sealed partial class LocalizedAppShell
 
         async Task RunNodeSessionAsync(int session, bool desired, CancellationToken cancellationToken)
         {
-            await nodeLifecycle.WaitAsync(cancellationToken).ConfigureAwait(false);
             LocalSendNode? node = null;
             try
             {
-                await DisposeCurrentNodeCoreAsync().ConfigureAwait(false);
-                if (!desired || cancellationToken.IsCancellationRequested)
+                if (desired)
+                {
+                    updateRuntime(current => current with
+                    {
+                        NodeState = LocalSendNodeState.Starting,
+                        Devices = [],
+                        IncomingTransfers = [],
+                        Error = null,
+                        DiscoveryWarning = null,
+                    });
+                }
+
+                node = await lifecycle.StartSessionAsync(
+                    session,
+                    desired,
+                    settings,
+                    httpsOverride,
+                    cancellationToken).ConfigureAwait(false);
+                if (node is null)
                 {
                     updateRuntime(current => current with
                     {
@@ -143,33 +151,6 @@ sealed partial class LocalizedAppShell
                     return;
                 }
 
-                node = new LocalSendNode(new LocalSendOptions
-                {
-                    Alias = settings.ResolvedAlias,
-                    DeviceModel = settings.ResolvedDeviceModel,
-                    DeviceType = settings.DeviceType,
-                    DataDirectory = AppPlatform.DataDirectory,
-                    DownloadDirectory = settings.DownloadDirectory,
-                    Port = settings.Port,
-                    EnableHttps = httpsOverride ?? settings.EnableHttps,
-                    ReceivePin = settings.ResolvedReceivePin,
-                    MulticastAddress = settings.ResolvedMulticastAddress,
-                    DiscoveryTimeout = TimeSpan.FromMilliseconds(Math.Max(1, settings.DiscoveryTimeoutMs)),
-                    NetworkWhitelist = settings.NetworkWhitelist,
-                    NetworkBlacklist = settings.NetworkBlacklist,
-                }, AppDiagnostics.LoggerFactory);
-                nodeRef.Current = node;
-                ownerNodeSession.Current = session;
-                updateRuntime(current => current with
-                {
-                    NodeState = LocalSendNodeState.Starting,
-                    Devices = [],
-                    IncomingTransfers = [],
-                    Error = null,
-                    DiscoveryWarning = null,
-                });
-
-                await node.StartAsync(cancellationToken).ConfigureAwait(false);
                 updateRuntime(current => current with
                 {
                     NodeState = node.State,
@@ -192,15 +173,11 @@ sealed partial class LocalizedAppShell
             {
                 updateRuntime(current => current with
                 {
-                    NodeState = node?.State ?? LocalSendNodeState.Faulted,
+                    NodeState = node?.State ?? lifecycle.CurrentNode?.State ?? LocalSendNodeState.Faulted,
                     Error = exception.Message,
                     DiscoveryWarning = null,
                 });
                 return;
-            }
-            finally
-            {
-                nodeLifecycle.Release();
             }
 
             if (cancellationToken.IsCancellationRequested)
@@ -210,44 +187,11 @@ sealed partial class LocalizedAppShell
             {
                 await Task.WhenAll(
                     WatchDevicesAsync(node, cancellationToken),
-                    WatchIncomingTransfersAsync(node, cancellationToken)).ConfigureAwait(false);
+                    incoming.WatchAsync(node, cancellationToken)).ConfigureAwait(false);
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
                 // Expected when the node session is replaced or the app shuts down.
-            }
-        }
-
-        async Task DisposeNodeSessionAsync(int session)
-        {
-            await nodeLifecycle.WaitAsync().ConfigureAwait(false);
-            try
-            {
-                if (ownerNodeSession.Current != session)
-                    return;
-
-                await DisposeCurrentNodeCoreAsync().ConfigureAwait(false);
-            }
-            finally
-            {
-                nodeLifecycle.Release();
-            }
-        }
-
-        async Task DisposeCurrentNodeCoreAsync()
-        {
-            ownerNodeSession.Current = 0;
-            if (nodeRef.Current is not { } node)
-                return;
-
-            nodeRef.Current = null;
-            try
-            {
-                await node.DisposeAsync().ConfigureAwait(false);
-            }
-            catch (Exception exception)
-            {
-                AppDiagnostics.Report("Could not dispose the LocalSend node", exception);
             }
         }
 
@@ -263,132 +207,9 @@ sealed partial class LocalizedAppShell
             }
         }
 
-        async Task WatchIncomingTransfersAsync(LocalSendNode node, CancellationToken cancellationToken)
-        {
-            await foreach (var request in node.WatchIncomingTransfersAsync(cancellationToken).ConfigureAwait(false))
-            {
-                var currentSettings = AppSettingsStore.Load();
-                var autoAccept = currentSettings.AutoSave switch
-                {
-                    AutoSaveMode.On => true,
-                    AutoSaveMode.Favorites => FavoriteDeviceStore.Contains(request.Sender.Fingerprint),
-                    _ => false,
-                };
-                if (autoAccept)
-                {
-                    _ = AutoAcceptIncomingAsync(
-                        node,
-                        request,
-                        currentSettings.DownloadDirectory,
-                        currentSettings.VerifyChecksumsOnReceive,
-                        cancellationToken);
-                    continue;
-                }
-
-                updateRuntime(current => current with
-                {
-                    IncomingTransfers = [.. current.IncomingTransfers, request],
-                });
-                AppNotificationService.ShowIncomingRequest(
-                    t.Message(new("App", "NotificationIncomingTitle"), ("device", request.Sender.Alias)),
-                    TransferOverlayVisuals.IncomingSummary(t, request.Items),
-                    request.RequestId,
-                    t.Message(new("App", "Accept")),
-                    t.Message(new("App", "Decline")));
-            }
-        }
-
-        async Task AutoAcceptIncomingAsync(
-            LocalSendNode node,
-            IncomingTransferRequest request,
-            string downloadDirectory,
-            bool verifyChecksums,
-            CancellationToken cancellationToken)
-        {
-            try
-            {
-                var result = await node.AcceptAsync(
-                    request.RequestId,
-                    new AcceptTransferOptions
-                    {
-                        DestinationDirectory = downloadDirectory,
-                        VerifySha256 = verifyChecksums,
-                    },
-                    cancellationToken: cancellationToken).ConfigureAwait(false);
-                if (!result.IsSuccess)
-                {
-                    var message = result.Failure?.Message ?? t.Message(new("App", "ReceiveFailed"));
-                    AppNotificationService.Show(t.Message(new("App", "ReceiveFailed")), message, "receive-failed");
-                    updateRuntime(current => current with { Error = message });
-                    return;
-                }
-
-                if (AppSettingsStore.Load().SaveReceiveHistory)
-                    ReceiveHistoryStore.Record(request.Sender.Alias, result);
-                AppNotificationService.ShowTransferComplete(
-                    t.Message(new("App", "NotificationReceiveCompleteTitle")),
-                    request.Items.Count == 1
-                        ? t.Message(new("App", "NotificationReceiveCompleteOne"), ("device", request.Sender.Alias))
-                        : t.Message(
-                            new("App", "NotificationReceiveCompleteMany"),
-                            ("count", request.Items.Count),
-                            ("device", request.Sender.Alias)),
-                    "receive-complete",
-                    result.Items.Select(static item => item.SavedPath ?? string.Empty),
-                    AppSettingsStore.Load().NotificationDefaultAction,
-                    t.Message(new("App", "NotificationOpenFile")),
-                    t.Message(new("App", "NotificationShowInFolder")));
-            }
-            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-            {
-                // Expected when automatic receiving is cancelled with the node session.
-            }
-            catch (Exception exception)
-            {
-                AppNotificationService.Show(
-                    t.Message(new("App", "ReceiveFailed")),
-                    exception.Message,
-                    "receive-failed");
-                updateRuntime(current => current with { Error = exception.Message });
-            }
-        }
-
-        async Task<bool> HandleIncomingActivationAsync(string action, Guid requestId)
-        {
-            if (nodeRef.Current is not { } node
-                || runtimeRef.Current.IncomingTransfers.FirstOrDefault(request => request.RequestId == requestId) is not
-                { } request)
-                return false;
-
-            DismissIncoming(requestId);
-            if (action == "incoming-accept")
-            {
-                var currentSettings = AppSettingsStore.Load();
-                await AutoAcceptIncomingAsync(
-                    node,
-                    request,
-                    currentSettings.DownloadDirectory,
-                    currentSettings.VerifyChecksumsOnReceive,
-                    CancellationToken.None).ConfigureAwait(false);
-            }
-            else
-            {
-                try
-                {
-                    await node.DeclineAsync(requestId).ConfigureAwait(false);
-                }
-                catch (Exception exception)
-                {
-                    updateRuntime(current => current with { Error = exception.Message });
-                }
-            }
-
-            return true;
-        }
-
         async Task RefreshAsync()
         {
-            var node = nodeRef.Current;
+            var node = lifecycle.CurrentNode;
             if (node?.State != LocalSendNodeState.Running)
                 return;
 

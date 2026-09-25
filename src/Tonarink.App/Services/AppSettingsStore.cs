@@ -57,6 +57,7 @@ sealed class AppSettingsFile
     public bool? MinimizeToTray { get; set; }
     public bool? TrayClickOpensFlyout { get; set; }
     public bool? StartWithWindows { get; set; }
+    public bool? ShowFavoriteDevicesInWindowsShare { get; set; }
     public bool? NotificationsEnabled { get; set; }
     public string? NotificationDefaultAction { get; set; }
     public bool? KeepItemsForMultipleReceivers { get; set; }
@@ -87,6 +88,7 @@ sealed class AppSettingsFile
         MinimizeToTray = settings.MinimizeToTray,
         TrayClickOpensFlyout = settings.TrayClickOpensFlyout,
         StartWithWindows = settings.StartWithWindows,
+        ShowFavoriteDevicesInWindowsShare = settings.ShowFavoriteDevicesInWindowsShare,
         NotificationsEnabled = settings.NotificationsEnabled,
         NotificationDefaultAction = settings.NotificationDefaultAction.ToString(),
         KeepItemsForMultipleReceivers = settings.KeepItemsForMultipleReceivers,
@@ -128,6 +130,8 @@ sealed class AppSettingsFile
             MinimizeToTray = MinimizeToTray ?? defaults.MinimizeToTray,
             TrayClickOpensFlyout = TrayClickOpensFlyout ?? defaults.TrayClickOpensFlyout,
             StartWithWindows = StartWithWindows ?? defaults.StartWithWindows,
+            ShowFavoriteDevicesInWindowsShare = ShowFavoriteDevicesInWindowsShare
+                                               ?? defaults.ShowFavoriteDevicesInWindowsShare,
             NotificationsEnabled = NotificationsEnabled ?? defaults.NotificationsEnabled,
             NotificationDefaultAction = Enum.TryParse<NotificationDefaultAction>(
                 NotificationDefaultAction,

@@ -6,12 +6,23 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
+using Windows.System;
 using static Microsoft.UI.Reactor.Factories;
 using static Tonarink.Utilities.ByteSize;
 
 namespace Tonarink.Pages;
 
-sealed record HistoryPageProps(string DownloadDirectory, ElementTheme Theme);
+sealed record HistoryPageProps(
+    string DownloadDirectory,
+    ElementTheme Theme,
+    Guid? JumpListHistoryId,
+    Action<Guid> ConsumeJumpListHistory);
+
+sealed record HistoryEntryCommands(
+    Command<ReceiveHistoryEntry> Open,
+    Command<ReceiveHistoryEntry> Reveal,
+    Command<ReceiveHistoryEntry> ShowInfo,
+    Command<ReceiveHistoryEntry> Delete);
 
 sealed class HistoryPage : Component<HistoryPageProps>
 {
@@ -27,6 +38,57 @@ sealed class HistoryPage : Component<HistoryPageProps>
             static () => ReceiveHistoryStore.Entries);
         var (infoEntry, setInfoEntry) = UseState<ReceiveHistoryEntry?>(null);
         var (confirmClear, setConfirmClear) = UseState(false);
+        var entryCommands = new HistoryEntryCommands(
+            UseCommand(UseMemo(() => new Command<ReceiveHistoryEntry>
+                {
+                    Label = t.Message(new("App", "HistoryOpenFile")),
+                    Icon = new SymbolIconData("OpenFile"),
+                    Accelerator = Accelerator(VirtualKey.Enter),
+                    Execute = entry =>
+                    {
+                        if (PathExists(entry.Path))
+                            ShellLauncher.Open(entry.Path);
+                    },
+                },
+                t.Locale)),
+            UseCommand(UseMemo(() => new Command<ReceiveHistoryEntry>
+                {
+                    Label = t.Message(new("App", "HistoryShowInFolder")),
+                    Icon = new SymbolIconData("Folder"),
+                    Execute = entry =>
+                    {
+                        if (PathExists(entry.Path))
+                            ShellLauncher.Reveal(entry.Path);
+                    },
+                },
+                t.Locale)),
+            UseCommand(UseMemo(() => new Command<ReceiveHistoryEntry>
+                {
+                    Label = t.Message(new("App", "HistoryInfo")),
+                    Icon = new FontIconData("\uE946"),
+                    Execute = entry => setInfoEntry(entry),
+                },
+                t.Locale)),
+            UseCommand(UseMemo(() => new Command<ReceiveHistoryEntry>
+                {
+                    Label = t.Message(new("App", "HistoryDeleteItem")),
+                    Icon = new SymbolIconData("Delete"),
+                    Accelerator = Accelerator(VirtualKey.Delete),
+                    Execute = entry => ReceiveHistoryStore.Remove(entry.Id),
+                },
+                t.Locale)));
+
+        UseEffect(() =>
+        {
+            if (Props.JumpListHistoryId is not { } historyId)
+                return;
+
+            var entry = entries.FirstOrDefault(candidate => candidate.Id == historyId);
+            if (entry is null)
+                Props.ConsumeJumpListHistory(historyId);
+            else
+                setInfoEntry(entry);
+        }, Props.JumpListHistoryId, entries);
 
         var actions = FlexRow(
                 Button(HStack(Icon("\uE8DA").AccessibilityHidden(), t.Message(new("App", "HistoryOpenDirectory"))),
@@ -52,8 +114,10 @@ sealed class HistoryPage : Component<HistoryPageProps>
             [] => Caption(t.Message(new("App", "HistoryEmpty")))
                 .Foreground(Theme.SecondaryText),
             _ => VStack(8, [
-                .. entries.Select(entry =>
-                    HistoryRow(entry, t, setInfoEntry).WithKey(entry.Id.ToString("N")))
+                .. entries.Select((entry, index) =>
+                    HistoryRow(entry, t, entryCommands)
+                        .PositionInSet(index + 1, entries.Count)
+                        .WithKey(entry.Id.ToString("N")))
             ]),
         };
 
@@ -86,12 +150,18 @@ sealed class HistoryPage : Component<HistoryPageProps>
                         {
                             IsOpen = infoEntry is not null,
                             DefaultButton = ContentDialogButton.Primary,
-                            OnClosed = _ => setInfoEntry(null),
+                            OnClosed = _ =>
+                            {
+                                setInfoEntry(null);
+                                if (Props.JumpListHistoryId is { } historyId)
+                                    Props.ConsumeJumpListHistory(historyId);
+                            },
                         }).Themed(Props.Theme)) with
                 {
                     RowGap = 20
                 })
             .Padding(AppLayout.PagePadding)
+            .AutomationName(t.Message(new("App", "HistoryTitle")))
             .Landmark(AutomationLandmarkType.Main);
 
         void OpenDownloadDirectory()
@@ -108,7 +178,7 @@ sealed class HistoryPage : Component<HistoryPageProps>
     private static Element HistoryRow(
         ReceiveHistoryEntry entry,
         IntlAccessor t,
-        Action<ReceiveHistoryEntry?> setInfoEntry)
+        HistoryEntryCommands commands)
     {
         var exists = PathExists(entry.Path);
         var receivedAt = entry.ReceivedAt.ToLocalTime();
@@ -140,7 +210,7 @@ sealed class HistoryPage : Component<HistoryPageProps>
                         .Margin(horizontal: 12, vertical: 0)
                         .VAlign(VerticalAlignment.Center)
                         .Grid(column: 1),
-                    Button(Icon("\uE712"))
+                    Button(Icon("\uE712").AccessibilityHidden())
                         .SubtleButton()
                         .AutomationName(t.Message(new("App", "HistoryEntryActions"), ("file", entry.FileName)))
                         .MinWidth(40)
@@ -149,22 +219,10 @@ sealed class HistoryPage : Component<HistoryPageProps>
                         .WithFlyout(MenuItems(
                             FlyoutPlacementMode.BottomEdgeAlignedRight,
                             [
-                                MenuItem(
-                                    t.Message(new("App", "HistoryOpenFile")),
-                                    exists ? () => ShellLauncher.Open(entry.Path) : null,
-                                    icon: "OpenFile"),
-                                MenuItem(
-                                    t.Message(new("App", "HistoryShowInFolder")),
-                                    exists ? () => ShellLauncher.Reveal(entry.Path) : null,
-                                    icon: "Folder"),
-                                MenuItem(
-                                    t.Message(new("App", "HistoryInfo")),
-                                    () => setInfoEntry(entry),
-                                    icon: "\uE946"),
-                                MenuItem(
-                                    t.Message(new("App", "HistoryDeleteItem")),
-                                    () => ReceiveHistoryStore.Remove(entry.Id),
-                                    icon: "Delete"),
+                                MenuItem(commands.Open, entry) with { IsEnabled = exists },
+                                MenuItem(commands.Reveal, entry) with { IsEnabled = exists },
+                                MenuItem(commands.ShowInfo, entry),
+                                MenuItem(commands.Delete, entry),
                             ]))
                         .Grid(column: 2)))
             .Padding(12)
@@ -191,7 +249,7 @@ sealed class HistoryPage : Component<HistoryPageProps>
             TextBlock(value).TextWrapping(TextWrapping.WrapWholeWords));
 
     private static string HistoryIcon(string path) =>
-        Directory.Exists(path) ? "Folder" : FileTypeGlyphs.ForFileName(path);
+        FileTypeGlyphs.ForPath(path);
 
     private static bool PathExists(string path) =>
         !string.IsNullOrWhiteSpace(path) && (File.Exists(path) || Directory.Exists(path));

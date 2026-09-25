@@ -50,6 +50,7 @@ sealed record AppSettings(
     bool MinimizeToTray,
     bool TrayClickOpensFlyout,
     bool StartWithWindows,
+    bool ShowFavoriteDevicesInWindowsShare,
     bool NotificationsEnabled,
     NotificationDefaultAction NotificationDefaultAction,
     bool KeepItemsForMultipleReceivers,
@@ -78,6 +79,7 @@ sealed record AppSettings(
         MinimizeToTray: false,
         TrayClickOpensFlyout: true,
         StartWithWindows: false,
+        ShowFavoriteDevicesInWindowsShare: false,
         NotificationsEnabled: true,
         NotificationDefaultAction: NotificationDefaultAction.OpenFile,
         KeepItemsForMultipleReceivers: false,
@@ -166,7 +168,8 @@ sealed record OutgoingPinPrompt(
 
 sealed record ShareTargetPayload(
     Guid Id,
-    IReadOnlyList<ShareTargetItem> Items);
+    IReadOnlyList<ShareTargetItem> Items,
+    string? SuggestedContactFingerprint = null);
 
 abstract record ShareTargetItem
 {

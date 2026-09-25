@@ -1,8 +1,13 @@
+using System.Diagnostics;
+using System.Numerics;
 using System.Runtime.InteropServices;
+using Microsoft.UI.Composition;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Core;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Hosting;
+using Windows.UI.ViewManagement;
 
 namespace Tonarink.Windowing;
 
@@ -16,6 +21,13 @@ static class TrayFlyoutHost
     private const int WmNclButtonDown = 0x00A1;
     private const int GaRoot = 2;
     private const int GaRootOwner = 3;
+    private const uint SwpNoSize = 0x0001;
+    private const uint SwpNoZOrder = 0x0004;
+    private const uint SwpNoActivate = 0x0010;
+    private const uint SwpNoOwnerZOrder = 0x0200;
+    private const double AnimationOffsetDip = 20;
+    private static readonly TimeSpan ShowAnimationDuration = TimeSpan.FromMilliseconds(300);
+    private static readonly TimeSpan HideAnimationDuration = TimeSpan.FromMilliseconds(300);
 
     private static readonly LowLevelMouseProc MouseProc = OnMouse;
     private static DateTime _hiddenUtc;
@@ -23,8 +35,13 @@ static class TrayFlyoutHost
     private static bool _dismissQueued;
     private static nint _mouseHook;
     private static nint _flyoutHwnd;
+    private static DispatcherQueueTimer? _pendingShowAnimation;
 
     public static bool IsOpen => TryFind() is { IsVisible: true };
+
+    public static bool IsPinned { get; private set; }
+
+    public static void SetPinned(bool pinned) => IsPinned = pinned;
 
     public static void Toggle()
     {
@@ -57,7 +74,9 @@ static class TrayFlyoutHost
 
     public static void Close()
     {
+        StopPendingShowAnimation();
         StopClickAwayWatch();
+        IsPinned = false;
         TryFind()?.Close();
     }
 
@@ -70,6 +89,7 @@ static class TrayFlyoutHost
         }
 
         var (x, y) = BottomRight();
+        var animate = AnimationsEnabled();
         var window = ReactorApp.OpenWindow(
             new WindowSpec
             {
@@ -99,17 +119,27 @@ static class TrayFlyoutHost
         window.Deactivated += OnDeactivated;
         window.Closed += (_, _) =>
         {
+            StopPendingShowAnimation();
             StopClickAwayWatch();
+            IsPinned = false;
             _hiddenUtc = DateTime.UtcNow;
         };
-        Show(window);
+        Show(window, animate);
     }
 
-    private static void Show(ReactorWindow window)
+    private static void Show(ReactorWindow window, bool? animate = null)
     {
+        StopPendingShowAnimation();
         var (x, y) = BottomRight();
+        var shouldAnimate = animate ?? AnimationsEnabled();
+        window.Hide();
         window.SetPosition(x, y);
-        window.Show();
+        if (!shouldAnimate || !TryStartShowAnimation(window))
+        {
+            SetPanelOpacity(window, 1);
+            window.Show();
+        }
+
         FocusFlyout(window);
         _shownUtc = DateTime.UtcNow;
         StartClickAwayWatch(window);
@@ -117,20 +147,209 @@ static class TrayFlyoutHost
 
     private static void Dismiss(ReactorWindow window)
     {
+        StopPendingShowAnimation();
         StopClickAwayWatch();
         _hiddenUtc = DateTime.UtcNow;
-        if (window.IsVisible)
+        if (window.IsVisible && (!AnimationsEnabled() || !TryStartHideAnimation(window)))
             window.Hide();
+    }
+
+    private static bool TryStartShowAnimation(ReactorWindow window)
+    {
+        var native = window.NativeWindow;
+        var queue = native?.DispatcherQueue;
+        if (native is null || queue is null)
+            return false;
+
+        var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(native);
+        if (hwnd == 0 || !GetWindowRect(hwnd, out var finalBounds))
+            return false;
+
+        var offset = AnimationOffset(hwnd);
+        if (!MoveWindow(hwnd, finalBounds.Left, finalBounds.Top + offset))
+            return false;
+
+        SetPanelOpacity(window, 0);
+        window.Show();
+        // Give XAML one frame to create its surface before the compositor fades the content in.
+        var timer = queue.CreateTimer();
+        timer.Interval = TimeSpan.FromMilliseconds(32);
+        timer.Tick += (_, _) =>
+        {
+            timer.Stop();
+            if (ReferenceEquals(_pendingShowAnimation, timer))
+                _pendingShowAnimation = null;
+            if (!window.IsVisible || !IsWindow(hwnd))
+                return;
+
+            StartPanelOpacityAnimation(window, 0, 1, ShowAnimationDuration, entering: true);
+            StartWindowAnimation(
+                hwnd,
+                finalBounds.Left,
+                finalBounds.Top + offset,
+                finalBounds.Top,
+                ShowAnimationDuration,
+                entering: true);
+        };
+        _pendingShowAnimation = timer;
+        timer.Start();
+        return true;
+    }
+
+    private static bool TryStartHideAnimation(ReactorWindow window)
+    {
+        var native = window.NativeWindow;
+        if (native is null)
+            return false;
+
+        var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(native);
+        if (hwnd == 0 || !GetWindowRect(hwnd, out var bounds))
+            return false;
+
+        var offset = AnimationOffset(hwnd);
+        StartPanelOpacityAnimation(window, 1, 0, HideAnimationDuration, entering: false);
+        StartWindowAnimation(
+            hwnd,
+            bounds.Left,
+            bounds.Top,
+            bounds.Top + offset,
+            HideAnimationDuration,
+            entering: false);
+        window.Hide();
+        SetPanelOpacity(window, 1);
+        return true;
+    }
+
+    private static int AnimationOffset(nint hwnd)
+    {
+        var dpi = GetDpiForWindow(hwnd);
+        var scale = dpi == 0 ? 1 : dpi / 96d;
+        return (int)Math.Round(AnimationOffsetDip * scale);
+    }
+
+    private static void StartPanelOpacityAnimation(
+        ReactorWindow window,
+        float from,
+        float to,
+        TimeSpan duration,
+        bool entering)
+    {
+        if (TryGetPanelVisual(window) is not { } visual)
+            return;
+
+        visual.StopAnimation(nameof(visual.Opacity));
+        visual.Opacity = from;
+
+        var animation = visual.Compositor.CreateScalarKeyFrameAnimation();
+        animation.Duration = duration;
+        animation.InsertKeyFrame(
+            1,
+            to,
+            visual.Compositor.CreateCubicBezierEasingFunction(entering
+                ? new Vector2(0.25f, 0.46f)
+                : new Vector2(0.55f, 0.085f),
+                entering
+                    ? new Vector2(0.45f, 0.94f)
+                    : new Vector2(0.68f, 0.53f)));
+        visual.StartAnimation(nameof(visual.Opacity), animation);
+    }
+
+    private static void SetPanelOpacity(ReactorWindow window, float opacity)
+    {
+        if (TryGetPanelVisual(window) is not { } visual)
+            return;
+
+        visual.StopAnimation(nameof(visual.Opacity));
+        visual.Opacity = opacity;
+    }
+
+    private static Visual? TryGetPanelVisual(ReactorWindow window) =>
+        window.NativeWindow?.Content is UIElement content
+            ? ElementCompositionPreview.GetElementVisual(content)
+            : null;
+
+    private static void StartWindowAnimation(
+        nint hwnd,
+        int x,
+        int startY,
+        int finalY,
+        TimeSpan duration,
+        bool entering)
+    {
+        AnimateWindowPosition(hwnd, x, startY, finalY, duration, entering);
+    }
+
+    private static void AnimateWindowPosition(
+        nint hwnd,
+        int x,
+        int startY,
+        int finalY,
+        TimeSpan duration,
+        bool entering)
+    {
+        var started = Stopwatch.GetTimestamp();
+        while (IsWindow(hwnd))
+        {
+            var progress = Math.Clamp(
+                Stopwatch.GetElapsedTime(started).TotalMilliseconds / duration.TotalMilliseconds,
+                0,
+                1);
+            var eased = Ease(progress, entering);
+            var y = startY + (int)Math.Round((finalY - startY) * eased);
+            MoveWindow(hwnd, x, y);
+
+            if (progress >= 1)
+                return;
+
+            // Synchronize HWND movement with the desktop compositor instead of a UI-thread timer.
+            if (DwmFlush() < 0)
+                Thread.Sleep(1);
+        }
+    }
+
+    private static double Ease(double progress, bool entering) => entering
+        ? 1 - (1 - progress) * (1 - progress)
+        : progress * progress;
+
+    private static void StopPendingShowAnimation()
+    {
+        _pendingShowAnimation?.Stop();
+        _pendingShowAnimation = null;
+    }
+
+    private static bool MoveWindow(nint hwnd, int x, int y) =>
+        SetWindowPos(
+            hwnd,
+            0,
+            x,
+            y,
+            0,
+            0,
+            SwpNoSize | SwpNoZOrder | SwpNoActivate | SwpNoOwnerZOrder);
+
+    private static bool AnimationsEnabled()
+    {
+        try
+        {
+            return new UISettings().AnimationsEnabled;
+        }
+        catch (Exception exception)
+        {
+            AppDiagnostics.Report("Could not read the Windows animation preference", exception);
+            return false;
+        }
     }
 
     private static void OnDeactivated(object? sender, EventArgs e)
     {
         if (sender is not ReactorWindow window || !window.IsVisible)
             return;
+        if (IsPinned)
+            return;
         if (DateTime.UtcNow - _shownUtc < TimeSpan.FromMilliseconds(250))
             return;
 
-        QueueDismiss(window);
+        Dismiss(window);
     }
 
     private static void QueueDismiss(ReactorWindow window)
@@ -150,7 +369,7 @@ static class TrayFlyoutHost
         queue.TryEnqueue(() =>
         {
             _dismissQueued = false;
-            if (window.IsVisible)
+            if (!IsPinned && window.IsVisible)
                 Dismiss(window);
         });
     }
@@ -216,6 +435,7 @@ static class TrayFlyoutHost
     {
         if (nCode >= 0
             && _flyoutHwnd != 0
+            && !IsPinned
             && DateTime.UtcNow - _shownUtc >= TimeSpan.FromMilliseconds(250)
             && wParam is (nint)WmLButtonDown or (nint)WmRButtonDown or (nint)WmNclButtonDown)
         {
@@ -299,6 +519,28 @@ static class TrayFlyoutHost
     [DllImport("user32.dll")]
     private static extern bool BringWindowToTop(nint hWnd);
 
+    [DllImport("user32.dll", SetLastError = true)]
+    private static extern bool SetWindowPos(
+        nint hWnd,
+        nint hWndInsertAfter,
+        int x,
+        int y,
+        int cx,
+        int cy,
+        uint uFlags);
+
+    [DllImport("user32.dll")]
+    private static extern bool GetWindowRect(nint hWnd, out NativeRect lpRect);
+
+    [DllImport("user32.dll")]
+    private static extern uint GetDpiForWindow(nint hWnd);
+
+    [DllImport("user32.dll")]
+    private static extern bool IsWindow(nint hWnd);
+
+    [DllImport("dwmapi.dll")]
+    private static extern int DwmFlush();
+
     [DllImport("user32.dll")]
     private static extern uint GetWindowThreadProcessId(nint hWnd, out uint processId);
 
@@ -307,4 +549,13 @@ static class TrayFlyoutHost
 
     [DllImport("kernel32.dll")]
     private static extern uint GetCurrentThreadId();
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct NativeRect
+    {
+        public int Left;
+        public int Top;
+        public int Right;
+        public int Bottom;
+    }
 }

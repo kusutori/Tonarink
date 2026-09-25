@@ -30,6 +30,7 @@ static class AppLayout
     public const double PageMaxWidth = WindowWidth;
     public const double NarrowContentWidth = 560;
     public const double DetailsContentWidth = 760;
+    public const double NarrowSendItemsViewportHeight = 280;
 
     public const double OverlayContentMaxWidth = 960;
     public const double OverlayFileCardWidth = 640;

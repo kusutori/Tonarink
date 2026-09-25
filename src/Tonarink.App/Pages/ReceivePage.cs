@@ -75,7 +75,9 @@ sealed class ReceivePage : Component<ReceivePageProps>
                             idleLogoPlayerRef.Current = null;
                         }
                     }),
-                Title(alias).HAlign(HorizontalAlignment.Center),
+                Title(alias)
+                    .HeadingLevel(AutomationHeadingLevel.Level2)
+                    .HAlign(HorizontalAlignment.Center),
                 BodyLarge(shortId)
                     .Foreground(Theme.SecondaryText)
                     .HAlign(HorizontalAlignment.Center),
@@ -88,7 +90,7 @@ sealed class ReceivePage : Component<ReceivePageProps>
                         .HAlign(HorizontalAlignment.Center),
                 Button(
                         HStack(8,
-                            Icon("\uE774"),
+                            Icon("\uE774").AccessibilityHidden(),
                             TextBlock(t.Message(new("App", "WebReceiveTitle")))),
                         () => navigation.Navigate(AppRoute.WebReceive, AppNavigation.DrillIn))
                     .HAlign(HorizontalAlignment.Center)
@@ -105,7 +107,8 @@ sealed class ReceivePage : Component<ReceivePageProps>
                 FlexColumn(
                         FlexRow(
                                 VStack(4,
-                                        Subtitle(t.Message(new("App", "AutoSaveTitle"))),
+                                        Subtitle(t.Message(new("App", "AutoSaveTitle")))
+                                            .HeadingLevel(AutomationHeadingLevel.Level2),
                                         TextBlock(t.Message(new("App", "AutoSaveDescription")))
                                             .Foreground(Theme.SecondaryText))
                                     .Flex(grow: 1, basis: 0),
@@ -144,6 +147,7 @@ sealed class ReceivePage : Component<ReceivePageProps>
                 })
             .Padding(AppLayout.PagePadding)
             .HorizontalContentAlignment(HorizontalAlignment.Stretch)
+            .AutomationName(t.Message(new("App", "ReceiveTitle")))
             .Landmark(AutomationLandmarkType.Main);
 
         return page;
@@ -156,13 +160,13 @@ sealed class ReceivePage : Component<ReceivePageProps>
         AppSettings settings,
         LocalSendIdentity? identity) =>
         FlexRow(
-                Button(Icon(FontIcon("\uE121")),
+                Button(Icon(FontIcon("\uE121")).AccessibilityHidden(),
                         () => navigation.Navigate(AppRoute.History, AppNavigation.DrillIn))
                     .SubtleButton()
                     .AutomationName(t.Message(new("App", "HistoryOpenReceiveHistory")))
                     .MinWidth(40)
                     .MinHeight(40),
-                Button(Icon("\uF167"))
+                Button(Icon("\uF167").AccessibilityHidden())
                     .SubtleButton()
                     .AutomationName(t.Message(new("App", "DeviceInfo")))
                     .MinWidth(40)

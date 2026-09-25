@@ -1,11 +1,11 @@
-// This file supplies partial hook members for LocalizedAppShell in the root namespace.
-// ReSharper disable once CheckNamespace
+using Microsoft.UI.Reactor.Core;
 
-namespace Tonarink;
+namespace Tonarink.Hooks;
 
-sealed partial class LocalizedAppShell
+static class WidgetIntegrationHooks
 {
-    private void UseWidgetIntegration(
+    public static void UseWidgetIntegration(
+        this RenderContext context,
         AppRuntimeState runtime,
         AppSettings settings,
         OutgoingTransferViewState? outgoingTransfer,
@@ -14,9 +14,9 @@ sealed partial class LocalizedAppShell
         Action startServer,
         Action stopServer)
     {
-        var commandHandler = UseRef<Action<string>?>();
+        var commandHandler = context.UseRef<Action<string>?>();
 
-        UseEffect(
+        context.UseEffect(
             () => WidgetAppHost.Update(runtime, settings, outgoingTransfer, serverDesired),
             runtime,
             settings,
@@ -26,7 +26,7 @@ sealed partial class LocalizedAppShell
             outgoingTransfer?.TotalBytes ?? 0,
             (int?)outgoingTransfer?.State ?? -1);
 
-        UseEffect(() =>
+        context.UseEffect(() =>
         {
             void OnCommand(string verb) => commandHandler.Current?.Invoke(verb);
             WidgetAppHost.CommandReceived += OnCommand;

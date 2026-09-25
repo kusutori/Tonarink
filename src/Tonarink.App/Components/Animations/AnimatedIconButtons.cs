@@ -1,6 +1,7 @@
 using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Animation;
 using Microsoft.UI.Reactor.Core;
+using Microsoft.UI.Reactor.Hooks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Hosting;
 using System.Numerics;
@@ -14,10 +15,11 @@ public static class AnimatedButtons
         int successVersion,
         string automationName,
         Action onClick,
+        string? successAnnouncement = null,
         string? toolTip = null,
         bool isEnabled = true) =>
         Component<AnimatedCopyButton, AnimatedCopyButtonProps>(
-            new(successVersion, automationName, onClick, toolTip, isEnabled));
+            new(successVersion, automationName, onClick, successAnnouncement, toolTip, isEnabled));
 
     public static Element Refresh(
         string automationName,
@@ -33,6 +35,7 @@ sealed record AnimatedCopyButtonProps(
     int SuccessVersion,
     string AutomationName,
     Action OnClick,
+    string? SuccessAnnouncement = null,
     string? ToolTip = null,
     bool IsEnabled = true);
 
@@ -40,8 +43,21 @@ sealed class AnimatedCopyButton : Component<AnimatedCopyButtonProps>
 {
     public override Element Render()
     {
-        var playing = Props.SuccessVersion > 0;
-        var copyIcon = Border(Icon("\uE8C8"))
+        var reduceMotion = UseReducedMotion();
+        var playing = Props.SuccessVersion > 0 && !reduceMotion;
+        var announce = this.UseAnnounce();
+        var previousVersion = UseRef(Props.SuccessVersion);
+        UseEffect(() =>
+        {
+            if (Props.SuccessVersion > previousVersion.Current
+                && !string.IsNullOrWhiteSpace(Props.SuccessAnnouncement))
+            {
+                announce.Announce(Props.SuccessAnnouncement);
+            }
+
+            previousVersion.Current = Props.SuccessVersion;
+        }, Props.SuccessVersion, Props.SuccessAnnouncement);
+        var copyIcon = Border(Icon("\uE8C8").AccessibilityHidden())
             .OnMount(BindCompositionCenterPoint)
             .Keyframes("copy-feedback-out", Props.SuccessVersion, keyframes => playing
                 ? keyframes
@@ -57,7 +73,7 @@ sealed class AnimatedCopyButton : Component<AnimatedCopyButtonProps>
                     .Duration(1)
                     .At(0f, opacity: 1, scale: new(1, 1, 1))
                     .At(1f, opacity: 1, scale: new(1, 1, 1)));
-        var successIcon = Border(Icon("\uE73E"))
+        var successIcon = Border(Icon("\uE73E").AccessibilityHidden())
             .OnMount(BindCompositionCenterPoint)
             .Opacity(0)
             .Keyframes("copy-feedback-in", Props.SuccessVersion, keyframes => playing
@@ -83,9 +99,12 @@ sealed class AnimatedCopyButton : Component<AnimatedCopyButtonProps>
                     columns: [GridSize.Auto],
                     rows: [GridSize.Auto],
                     copyIcon,
-                    successIcon),
+                    successIcon,
+                    announce.Region),
                 Props.OnClick)
             .SubtleButton()
+            .MinWidth(40)
+            .MinHeight(40)
             .AutomationName(Props.AutomationName)
             .ToolTip(Props.ToolTip ?? Props.AutomationName)
             .IsEnabled(Props.IsEnabled);
@@ -113,19 +132,23 @@ sealed class AnimatedRefreshButton : Component<AnimatedRefreshButtonProps>
     public override Element Render()
     {
         var (turns, setTurns) = UseState(0);
+        var reduceMotion = UseReducedMotion();
 
         return Button(
-                Icon("Sync")
+                Icon("Sync").AccessibilityHidden()
                     .RotationTransition(TimeSpan.FromMilliseconds(Props.DurationMilliseconds))
                     .Rotation(turns * 360f)
                     .OnSizeChanged(CenterRotation),
                 () =>
                 {
-                    setTurns(turns + 1);
+                    if (!reduceMotion)
+                        setTurns(turns + 1);
                     Props.OnClick();
                 })
             .AutomationName(Props.AutomationName)
             .ToolTip(Props.ToolTip ?? Props.AutomationName)
+            .MinWidth(40)
+            .MinHeight(40)
             .IsEnabled(Props.IsEnabled);
     }
 

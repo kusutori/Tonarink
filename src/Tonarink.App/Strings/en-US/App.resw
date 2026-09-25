@@ -112,6 +112,9 @@
   <data name="HistoryInfoTitle" xml:space="preserve"><value>File info</value></data>
   <data name="HistoryOpenDirectory" xml:space="preserve"><value>Open folder</value></data>
   <data name="HistoryOpenFile" xml:space="preserve"><value>Open file</value></data>
+  <data name="HistoryOpenFileDescription" xml:space="preserve"><value>Open history for {file}</value></data>
+  <data name="JumpListFavoriteDevicesGroup" xml:space="preserve"><value>Favorite devices</value></data>
+  <data name="JumpListHistoryGroup" xml:space="preserve"><value>History</value></data>
   <data name="HistoryOpenReceiveHistory" xml:space="preserve"><value>Receive history</value></data>
   <data name="HistoryShowInFolder" xml:space="preserve"><value>Show in File Explorer</value></data>
   <data name="HistorySubtitle" xml:space="preserve"><value>{date} · {size} · {sender}</value></data>
@@ -134,11 +137,14 @@
   <data name="NavReceive" xml:space="preserve"><value>Receive</value></data>
   <data name="NavSend" xml:space="preserve"><value>Send</value></data>
   <data name="NavSettings" xml:space="preserve"><value>Settings</value></data>
+  <data name="MainNavigation" xml:space="preserve"><value>Main navigation</value></data>
   <data name="NotificationIncomingTitle" xml:space="preserve"><value>Incoming transfer from {device}</value></data>
+  <data name="NotificationReceiveProgressTitle" xml:space="preserve"><value>Receiving from {device}</value></data>
   <data name="NotificationReceiveCompleteTitle" xml:space="preserve"><value>Receive complete</value></data>
   <data name="NotificationReceiveCompleteOne" xml:space="preserve"><value>Received an item from {device}.</value></data>
   <data name="NotificationReceiveCompleteMany" xml:space="preserve"><value>Received {count} items from {device}.</value></data>
   <data name="NotificationSendCompleteTitle" xml:space="preserve"><value>Send complete</value></data>
+  <data name="NotificationSendProgressTitle" xml:space="preserve"><value>Sending to {device}</value></data>
   <data name="NotificationSendCompleteOne" xml:space="preserve"><value>Sent an item to {device}.</value></data>
   <data name="NotificationSendCompleteMany" xml:space="preserve"><value>Sent {count} items to {device}.</value></data>
   <data name="NotificationOpenFile" xml:space="preserve"><value>Open file</value></data>
@@ -150,6 +156,7 @@
   <data name="DeviceAddressNotFound" xml:space="preserve"><value>No compatible device was found at {address}. Check the address and network connection.</value></data>
   <data name="EnterAddressTitle" xml:space="preserve"><value>Enter address</value></data>
   <data name="InvalidDeviceAddress" xml:space="preserve"><value>Enter a valid IP address.</value></data>
+  <data name="InvalidFileName" xml:space="preserve"><value>The file name is empty or contains invalid characters.</value></data>
   <data name="RecentlyUsedAddress" xml:space="preserve"><value>Recently used:</value></data>
   <data name="SendToAddress" xml:space="preserve"><value>Send to address</value></data>
   <data name="UseRecentAddress" xml:space="preserve"><value>Use recent address {address}</value></data>
@@ -305,6 +312,8 @@
   <data name="SettingsStopServer" xml:space="preserve"><value>Stop server</value></data>
   <data name="SettingsStartWithWindows" xml:space="preserve"><value>Start after signing in</value></data>
   <data name="SettingsStartWithWindowsDescription" xml:space="preserve"><value>Run Tonarink automatically after signing in to Windows.</value></data>
+  <data name="SettingsWindowsShareSuggestions" xml:space="preserve"><value>Show favorites in Windows Share</value></data>
+  <data name="SettingsWindowsShareSuggestionsDescription" xml:space="preserve"><value>Add favorite devices to the Windows Share suggestions row. Available in the packaged app.</value></data>
   <data name="SettingsNotifications" xml:space="preserve"><value>System notifications</value></data>
   <data name="SettingsNotificationsDescription" xml:space="preserve"><value>Show Windows notifications for incoming requests and completed transfers.</value></data>
   <data name="SettingsNotificationsEnabled" xml:space="preserve"><value>Enable notifications</value></data>
@@ -331,6 +340,9 @@
   <data name="TrayNearbyTab" xml:space="preserve"><value>Nearby</value></data>
   <data name="TrayNoDevices" xml:space="preserve"><value>No nearby devices</value></data>
   <data name="TrayOpen" xml:space="preserve"><value>Open Tonarink</value></data>
+  <data name="TrayPinPanel" xml:space="preserve"><value>Pin panel</value></data>
+  <data name="TrayUnpinPanel" xml:space="preserve"><value>Unpin panel</value></data>
+  <data name="TrayDropToSend" xml:space="preserve"><value>Send to {device}</value></data>
   <data name="TrayReceiveOff" xml:space="preserve"><value>Off</value></data>
   <data name="TrayReceiveOn" xml:space="preserve"><value>On</value></data>
   <data name="TrayReceiveService" xml:space="preserve"><value>Receive service</value></data>
@@ -354,6 +366,8 @@
   <data name="SettingsTitle" xml:space="preserve"><value>Settings</value></data>
   <data name="ShareTargetEmpty" xml:space="preserve"><value>The share did not contain any accessible files or text.</value></data>
   <data name="ShareTargetFailed" xml:space="preserve"><value>Could not add the shared content: {error}</value></data>
+  <data name="ShareSuggestedDeviceOffline" xml:space="preserve"><value>{device} is currently offline. The shared content remains in the send list; retry or choose another device.</value></data>
+  <data name="ShareSuggestedDeviceUnavailable" xml:space="preserve"><value>This Windows Share contact is no longer in your favorites. The shared content remains in the send list.</value></data>
   <data name="TargetDevice" xml:space="preserve"><value>Target device</value></data>
   <data name="TargetRequiresPin" xml:space="preserve"><value>The target device requires a PIN.</value></data>
   <data name="Text" xml:space="preserve"><value>Text</value></data>

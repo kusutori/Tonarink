@@ -10,6 +10,7 @@ using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage;
+using Windows.System;
 using static Microsoft.UI.Reactor.Factories;
 using static Tonarink.Utilities.ByteSize;
 using static Tonarink.Components.DeviceVisuals;
@@ -30,7 +31,9 @@ sealed record SendPageProps(
     bool KeepItemsForMultipleReceivers,
     Action<bool> SetKeepItemsForMultipleReceivers,
     bool VerifyChecksums,
-    Action<LocalSendDevice> OpenDeviceDetails);
+    Action<LocalSendDevice> OpenDeviceDetails,
+    string? JumpListFavoriteFingerprint,
+    Action<string> ConsumeJumpListFavorite);
 
 sealed record SelectedSendItem(
     Guid Id,
@@ -40,10 +43,16 @@ sealed record SelectedSendItem(
     string Kind);
 
 sealed record SendRequest(
+    Guid TransferId,
     LocalSendDevice Device,
     IReadOnlyList<SendItem> Items,
+    long TotalBytes,
     string? Pin,
     CancellationToken CancellationToken);
+
+sealed record SuggestedContactSend(
+    Guid Id,
+    string Fingerprint);
 
 sealed record TransferUiState(
     TransferState? State,
@@ -72,7 +81,10 @@ sealed class SendPage : Component<SendPageProps>
             window?.NativeWindow,
             t.Message(new("App", "WindowUnavailable")));
         var reduceMotion = UseReducedMotion();
-        var isWideLayout = UseBreakpoint(AppLayout.WideBreakpoint);
+        var (observedWindowWidth, _) = UseWindowSize();
+        var currentWindowWidth = window?.NativeWindow.Bounds.Width ?? observedWindowWidth;
+        var isWideLayout = currentWindowWidth >= AppLayout.WideBreakpoint;
+        var (_, refreshCachedPage) = UseReducer(0);
         var navigation = UseNavigation<AppRoute>();
         var selectedItems = Props.SelectedItems;
         var updateSelectedItems = Props.UpdateSelectedItems;
@@ -88,6 +100,7 @@ sealed class SendPage : Component<SendPageProps>
         var (manualAddressError, setManualAddressError) = UseState<string?>(null);
         var (isResolvingAddress, setResolvingAddress) = UseState(false);
         var (recentManualAddress, setRecentManualAddress) = UseState(RecentManualAddressStore.Load());
+        var (suggestedContactSend, setSuggestedContactSend) = UseState<SuggestedContactSend?>(null);
         var favorites = UseExternalStore(
             listener =>
             {
@@ -101,8 +114,19 @@ sealed class SendPage : Component<SendPageProps>
         var searchingPlayerRef = UseRef<AnimatedVisualPlayer?>();
         var shareTargetPayloadId = Props.ShareTargetPayload?.Id ?? Guid.Empty;
 
-        UseNavigationLifecycle(onNavigatedTo: _ =>
-            PlaySearchingAnimation(searchingPlayerRef.Current, play: !reduceMotion));
+        // A cached page keeps its previous hook state while it is outside the active tree.
+        // Reconcile it before the transition and read the live window bounds so a resize
+        // performed on another page is reflected immediately when Send becomes visible.
+        UseNavigationLifecycle(
+            onNavigatingTo: _ => refreshCachedPage(value => value + 1),
+            onNavigatedTo: _ =>
+                PlaySearchingAnimation(searchingPlayerRef.Current, play: !reduceMotion));
+
+        UseEffect(() =>
+        {
+            if (Props.JumpListFavoriteFingerprint is not null)
+                setShowFavoritesDialog(true);
+        }, Props.JumpListFavoriteFingerprint);
 
         UseEffect(() =>
         {
@@ -123,6 +147,15 @@ sealed class SendPage : Component<SendPageProps>
             using var linkedCancellation = CancellationTokenSource.CreateLinkedTokenSource(
                 request.CancellationToken,
                 mutationToken);
+            var progressNotification = AppNotificationService.StartTransferProgress(
+                request.TransferId,
+                t.Message(new("App", "NotificationSendProgressTitle"), ("device", request.Device.Alias)),
+                ContentSummary(t, request.Items),
+                t.Message(new("App", "SendingTransferring")),
+                0,
+                request.TotalBytes,
+                TransferProgressText(0, request.TotalBytes),
+                "send-progress");
             var progress = new Progress<TransferProgress>(value =>
             {
                 var next = new TransferUiState(
@@ -134,18 +167,58 @@ sealed class SendPage : Component<SendPageProps>
                     IsError: false);
                 updateTransfer(_ => next);
                 PublishTransferOverlay(request.Device, request.Items, next, isPending: true);
+                progressNotification?.Report(
+                    ContentSummary(t, request.Items),
+                    next.Message,
+                    value.BytesTransferred,
+                    value.TotalBytes,
+                    TransferProgressText(value.BytesTransferred, value.TotalBytes));
             });
 
-            return await Props.Node!.SendAsync(
-                request.Device,
-                request.Items,
-                new SendOptions
-                {
-                    Pin = request.Pin,
-                    ComputeSha256 = Props.VerifyChecksums,
-                },
-                progress,
-                linkedCancellation.Token).ConfigureAwait(false);
+            try
+            {
+                return await Props.Node!.SendAsync(
+                    request.Device,
+                    request.Items,
+                    new SendOptions
+                    {
+                        Pin = request.Pin,
+                        ComputeSha256 = Props.VerifyChecksums,
+                    },
+                    progress,
+                    linkedCancellation.Token).ConfigureAwait(false);
+            }
+            finally
+            {
+                if (progressNotification is not null)
+                    await progressNotification.RemoveAsync().ConfigureAwait(false);
+            }
+        });
+
+        UseEffect(() =>
+        {
+            if (suggestedContactSend is not { } pending
+                || Props.Runtime.NodeState != LocalSendNodeState.Running
+                || Props.Node is null)
+                return;
+
+            setSuggestedContactSend(null);
+            _ = SendToSuggestedContactAsync(pending);
+        }, suggestedContactSend?.Id ?? Guid.Empty, Props.Runtime.NodeState, selectedItems.Count);
+
+        // Clipboard APIs require the UI/STA thread. Use a synchronous command dispatcher
+        // to start the existing async flow there; an ExecuteAsync command is intentionally
+        // avoided because UseCommand runs async command bodies on the thread pool.
+        var pasteCommand = UseCommand(StandardCommand.Paste(() =>
+        {
+            _ = AddClipboardAsync();
+        }) with
+        {
+            Label = t.Message(new("App", "Clipboard")),
+            Description = t.Message(
+                new("App", "ChooseItem"),
+                ("item", t.Message(new("App", "Clipboard")))),
+            DebounceMs = 250,
         });
 
         var selectionGrid = Grid(
@@ -163,7 +236,12 @@ sealed class SendPage : Component<SendPageProps>
                     .Grid(column: 1),
                 SelectionTile(t.Message(new("App", "Text")), "Edit", () => setShowTextDialog(true), t)
                     .Grid(column: 2),
-                SelectionTile(t.Message(new("App", "Clipboard")), "Paste", () => _ = AddClipboardAsync(), t)
+                SelectionTile(
+                        t.Message(new("App", "Clipboard")),
+                        "Paste",
+                        () => pasteCommand.Execute?.Invoke(),
+                        t)
+                    .IsEnabled(pasteCommand.IsEnabled)
                     .Grid(column: 3)) with
         {
             ColumnSpacing = 12,
@@ -184,21 +262,22 @@ sealed class SendPage : Component<SendPageProps>
                 t),
             _ => VStack(8,
             [
-                .. selectedItems.Select(item => SelectedItemRow(
+                .. selectedItems.Select((item, index) => SelectedItemRow(
                         item,
                         () => updateSelectedItems(current =>
                             [.. current.Where(candidate => candidate.Id != item.Id)]),
                         t)
+                    .PositionInSet(index + 1, selectedItems.Count)
                     .WithKey(item.Id.ToString("N")))
             ]),
         };
 
-        Element selectedItemsContent = isWideLayout
-            ? ScrollView(selectedItemsBody)
-                .HorizontalContentAlignment(HorizontalAlignment.Stretch)
-                .VerticalContentAlignment(VerticalAlignment.Stretch)
-                .Flex(grow: 1, basis: 0)
-            : selectedItemsBody;
+        Element selectedItemsContent = ScrollView(selectedItemsBody)
+            .HorizontalContentAlignment(HorizontalAlignment.Stretch)
+            .VerticalContentAlignment(VerticalAlignment.Stretch);
+        selectedItemsContent = isWideLayout
+            ? selectedItemsContent.Flex(grow: 1, basis: 0)
+            : selectedItemsContent.Height(AppLayout.NarrowSendItemsViewportHeight);
 
         var selectedItemsCard = Card(
                 FlexColumn(
@@ -319,19 +398,23 @@ sealed class SendPage : Component<SendPageProps>
                                     t.Message(new("App", "RefreshDevices")),
                                     () => _ = Props.RefreshAsync(),
                                     isEnabled: !sendMutation.IsPending),
-                                Button(Icon("\uF272"), OpenAddressDialog)
+                                Button(Icon("\uF272").AccessibilityHidden(), OpenAddressDialog)
                                     .AutomationName(t.Message(new("App", "SendToAddress")))
                                     .ToolTip(t.Message(new("App", "SendToAddress")))
+                                    .MinWidth(40)
+                                    .MinHeight(40)
                                     .IsEnabled(!sendMutation.IsPending
                                                && !isResolvingAddress
                                                && Props.Runtime.NodeState == LocalSendNodeState.Running),
-                                Button(Icon("\uEB52"), OpenFavoritesDialog)
+                                Button(Icon("\uEB52").AccessibilityHidden(), OpenFavoritesDialog)
                                     .AutomationName(t.Message(new("App", "FavoritesTitle")))
                                     .ToolTip(t.Message(new("App", "FavoritesTitle")))
+                                    .MinWidth(40)
+                                    .MinHeight(40)
                                     .IsEnabled(!sendMutation.IsPending
                                                && !isResolvingAddress
                                                && Props.Runtime.NodeState == LocalSendNodeState.Running),
-                                Button(Icon("\uE71B"), () =>
+                                Button(Icon("\uE71B").AccessibilityHidden(), () =>
                                     {
                                         if (selectedItems.Count == 0)
                                         {
@@ -346,6 +429,8 @@ sealed class SendPage : Component<SendPageProps>
                                     })
                                     .AutomationName(t.Message(new("App", "WebShareTitle")))
                                     .ToolTip(t.Message(new("App", "WebShareTitle")))
+                                    .MinWidth(40)
+                                    .MinHeight(40)
                                     .IsEnabled(!sendMutation.IsPending
                                                && Props.Runtime.NodeState == LocalSendNodeState.Running),
                                 ToggleButton(
@@ -354,6 +439,8 @@ sealed class SendPage : Component<SendPageProps>
                                         Props.SetKeepItemsForMultipleReceivers)
                                     .FontFamily("Segoe Fluent Icons")
                                     .FontSize(20)
+                                    .MinWidth(40)
+                                    .MinHeight(40)
                                     .AutomationName(t.Message(new("App", "MultipleReceivers")))
                                     .ToolTip(t.Message(new("App", "MultipleReceiversDescription")))
                                     .IsEnabled(!sendMutation.IsPending)) with
@@ -395,12 +482,15 @@ sealed class SendPage : Component<SendPageProps>
         })
             .VAlign(isWideLayout ? VerticalAlignment.Stretch : VerticalAlignment.Top);
 
-        var pageContainer = Border(pageBody)
-            .Padding(AppLayout.PagePadding)
-            .MaxWidth(AppLayout.PageMaxWidth)
-            .HAlign(HorizontalAlignment.Stretch)
-            .VAlign(isWideLayout ? VerticalAlignment.Stretch : VerticalAlignment.Top)
-            .Landmark(AutomationLandmarkType.Main);
+        var pageContainer = CommandHost(
+            [pasteCommand],
+            Border(pageBody)
+                .Padding(AppLayout.PagePadding)
+                .MaxWidth(AppLayout.PageMaxWidth)
+                .HAlign(HorizontalAlignment.Stretch)
+                .VAlign(isWideLayout ? VerticalAlignment.Stretch : VerticalAlignment.Top)
+                .AutomationName(t.Message(new("App", "SendTitle")))
+                .Landmark(AutomationLandmarkType.Main));
 
         var page = Grid(
             columns: [GridSize.Star()],
@@ -410,9 +500,11 @@ sealed class SendPage : Component<SendPageProps>
             AddressDialog().Grid(row: 0, column: 0),
             Component<FavoriteDevicesDialog, FavoriteDevicesDialogProps>(new(
                     favorites,
+                    Props.JumpListFavoriteFingerprint,
                     Props.Theme,
                     showFavoritesDialog,
                     SendFavorite,
+                    () => setShowFavoritesDialog(false),
                     () => setFavoriteEdit(new FavoriteDeviceEdit(
                         new FavoriteDevice(
                             $"manual:{Guid.NewGuid():N}",
@@ -422,7 +514,12 @@ sealed class SendPage : Component<SendPageProps>
                         IsNew: true)),
                     favorite => setFavoriteEdit(new FavoriteDeviceEdit(favorite, IsNew: false)),
                     setFavoriteToDelete,
-                    () => setShowFavoritesDialog(false)))
+                    () =>
+                    {
+                        setShowFavoritesDialog(false);
+                        if (Props.JumpListFavoriteFingerprint is { } fingerprint)
+                            Props.ConsumeJumpListFavorite(fingerprint);
+                    }))
                 .Grid(row: 0, column: 0),
             favoriteEdit is null
                 ? null
@@ -431,7 +528,11 @@ sealed class SendPage : Component<SendPageProps>
                         favoriteEdit.IsNew,
                         Props.Theme,
                         FavoriteDeviceStore.Upsert,
-                        () => setFavoriteEdit(null)))
+                        () =>
+                        {
+                            setFavoriteEdit(null);
+                            setShowFavoritesDialog(true);
+                        }))
                     .Grid(row: 0, column: 0),
             Component<DeleteFavoriteDialog, DeleteFavoriteDialogProps>(new(
                     favoriteToDelete?.Name ?? string.Empty,
@@ -442,7 +543,11 @@ sealed class SendPage : Component<SendPageProps>
                         if (favoriteToDelete is { } target)
                             FavoriteDeviceStore.Remove(target.Fingerprint);
                     },
-                    () => setFavoriteToDelete(null)))
+                    () =>
+                    {
+                        setFavoriteToDelete(null);
+                        setShowFavoritesDialog(true);
+                    }))
                 .Grid(row: 0, column: 0));
 
         return isWideLayout
@@ -477,6 +582,7 @@ sealed class SendPage : Component<SendPageProps>
                 TextBox(text, setText, placeholderText: t.Message(new("App", "SendTextPlaceholder")))
                     .Header(t.Message(new("App", "TextContent")))
                     .AutomationName(t.Message(new("App", "TextContent")))
+                    .Required()
                     .AcceptsReturn()
                     .TextWrapping()
                     .MinHeight(160),
@@ -524,11 +630,16 @@ sealed class SendPage : Component<SendPageProps>
                                     },
                                     placeholderText: t.Message(new("App", "AddressPlaceholder")))
                                 .AutomationName(t.Message(new("App", "DeviceAddress")))
+                                .HelpText(validationMessage ?? t.Message(
+                                    new("App", "AddressExample"),
+                                    ("address", "192.168.1.100")))
+                                .Required()
                                 .IsEnabled(!isResolvingAddress),
                             validationMessage is not null
                                 ? TextBlock(validationMessage)
                                     .FontSize(14)
                                     .Foreground(Theme.SystemAttention)
+                                    .LiveRegion(AutomationLiveSetting.Assertive)
                                     .TextWrapping(TextWrapping.WrapWholeWords)
                                 : recentManualAddress is not null
                                     ? HStack(2,
@@ -731,6 +842,12 @@ sealed class SendPage : Component<SendPageProps>
                     throw new InvalidDataException(t.Message(new("App", "ShareTargetEmpty")));
 
                 AddSelectedItems(imported);
+                if (!string.IsNullOrWhiteSpace(payload.SuggestedContactFingerprint))
+                {
+                    setSuggestedContactSend(new(
+                        Guid.NewGuid(),
+                        payload.SuggestedContactFingerprint));
+                }
                 Props.ConsumeShareTargetPayload(payload.Id);
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
@@ -776,8 +893,10 @@ sealed class SendPage : Component<SendPageProps>
             try
             {
                 var result = await sendMutation.RunAsync(new(
+                    Guid.NewGuid(),
                     device,
                     [.. selectedItems.Select(static item => item.Item)],
+                    selectedItems.Sum(static item => item.Length),
                     pin,
                     cancellation.Token));
                 var resultState = ResultState(
@@ -914,6 +1033,38 @@ sealed class SendPage : Component<SendPageProps>
             _ = SendToAddressAsync(FormatAddress(address, favorite.Port));
         }
 
+        async Task SendToSuggestedContactAsync(SuggestedContactSend pending)
+        {
+            if (!FavoriteDeviceStore.Entries.TryGetValue(pending.Fingerprint, out var favorite))
+            {
+                setPickerMessage(t.Message(new("App", "ShareSuggestedDeviceUnavailable")));
+                return;
+            }
+
+            var discovered = Props.Runtime.Devices.FirstOrDefault(device =>
+                string.Equals(device.Fingerprint, pending.Fingerprint, StringComparison.Ordinal));
+            if (discovered is not null)
+            {
+                await StartSendAsync(discovered, pin: null).ConfigureAwait(true);
+                return;
+            }
+
+            if (!IPAddress.TryParse(favorite.Address, out var address))
+            {
+                setPickerMessage(t.Message(
+                    new("App", "ShareSuggestedDeviceOffline"),
+                    ("device", favorite.Name)));
+                return;
+            }
+
+            await SendToAddressAsync(
+                    FormatAddress(address, favorite.Port),
+                    showDialogOnFailure: false,
+                    expectedFingerprint: favorite.Fingerprint,
+                    suggestedDeviceName: favorite.Name)
+                .ConfigureAwait(true);
+        }
+
         void UseRecentAddress()
         {
             setManualAddress(recentManualAddress);
@@ -921,12 +1072,25 @@ sealed class SendPage : Component<SendPageProps>
             _ = SendToAddressAsync(recentManualAddress);
         }
 
-        async Task SendToAddressAsync(string value)
+        async Task SendToAddressAsync(
+            string value,
+            bool showDialogOnFailure = true,
+            string? expectedFingerprint = null,
+            string? suggestedDeviceName = null)
         {
             if (!TryParseAddress(value, out var address, out var port))
             {
-                setManualAddressError(t.Message(new("App", "InvalidDeviceAddress")));
-                setShowAddressDialog(true);
+                if (showDialogOnFailure)
+                {
+                    setManualAddressError(t.Message(new("App", "InvalidDeviceAddress")));
+                    setShowAddressDialog(true);
+                }
+                else
+                {
+                    setPickerMessage(t.Message(
+                        new("App", "ShareSuggestedDeviceOffline"),
+                        ("device", suggestedDeviceName ?? value)));
+                }
                 return;
             }
 
@@ -951,6 +1115,12 @@ sealed class SendPage : Component<SendPageProps>
                     {
                         var endpoint = new DeviceEndpoint(address, port, protocol);
                         var probe = await node.ProbeDeviceAsync(endpoint).ConfigureAwait(true);
+                        if (expectedFingerprint is not null
+                            && !string.Equals(
+                                probe.Device.Fingerprint,
+                                expectedFingerprint,
+                                StringComparison.Ordinal))
+                            throw new LocalSendException("The saved address now belongs to a different device.");
                         var device = await node.AddKnownDeviceAsync(
                             endpoint,
                             probe.Device.Fingerprint).ConfigureAwait(true);
@@ -972,10 +1142,19 @@ sealed class SendPage : Component<SendPageProps>
             }
             catch (Exception)
             {
-                setManualAddressError(t.Message(
-                    new("App", "DeviceAddressNotFound"),
-                    ("address", normalizedAddress)));
-                setShowAddressDialog(true);
+                if (showDialogOnFailure)
+                {
+                    setManualAddressError(t.Message(
+                        new("App", "DeviceAddressNotFound"),
+                        ("address", normalizedAddress)));
+                    setShowAddressDialog(true);
+                }
+                else
+                {
+                    setPickerMessage(t.Message(
+                        new("App", "ShareSuggestedDeviceOffline"),
+                        ("device", suggestedDeviceName ?? normalizedAddress)));
+                }
             }
             finally
             {
@@ -1087,6 +1266,10 @@ sealed class SendPage : Component<SendPageProps>
         };
     }
 
+    private static string TransferProgressText(long bytesTransferred, long totalBytes) => totalBytes > 0
+        ? $"{FormatBytes(bytesTransferred)} / {FormatBytes(totalBytes)}"
+        : FormatBytes(bytesTransferred);
+
     private static Element SelectionTile(string label, string icon, Action onClick, IntlAccessor t) =>
         Button(
                 VStack(8,
@@ -1170,7 +1353,7 @@ sealed class SendPage : Component<SendPageProps>
                             .Foreground(Theme.SecondaryText))
                     .Margin(horizontal: 12, vertical: 0)
                     .Grid(column: 1),
-                Button(Icon("Delete"), remove)
+                Button(Icon("Delete").AccessibilityHidden(), remove)
                     .AutomationName(t.Message(new("App", "RemoveItem"), ("item", item.DisplayName)))
                     .ToolTip(t.Message(new("App", "Remove")))
                     .Grid(column: 2))

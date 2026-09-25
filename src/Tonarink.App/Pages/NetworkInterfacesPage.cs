@@ -92,6 +92,7 @@ sealed class NetworkInterfacesPage : Component<NetworkInterfacesPageProps>
                                     .Grid(column: 1)))
                     .Padding(AppLayout.PagePadding))
             .HorizontalContentAlignment(HorizontalAlignment.Stretch)
+            .AutomationName(t.Message(new("App", "SettingsNetworkInterfaces")))
             .Landmark(AutomationLandmarkType.Main);
 
         void SetMode(bool whitelist, bool enable)
@@ -156,7 +157,7 @@ sealed class NetworkInterfacesPage : Component<NetworkInterfacesPageProps>
                         onChanged,
                         t.Message(new("App", "SettingsNetworkInterfacesPattern"), ("index", index + 1))))
                     .Grid(column: 0),
-                Button(Icon("\uE711"), onRemove)
+                Button(Icon("\uE711").AccessibilityHidden(), onRemove)
                     .SubtleButton()
                     .AutomationName(t.Message(new("App", "SettingsNetworkInterfacesRemovePattern")))
                     .ToolTip(t.Message(new("App", "SettingsNetworkInterfacesRemovePattern")))

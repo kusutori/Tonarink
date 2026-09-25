@@ -3,6 +3,7 @@
 **/obj/
 **/AppPackages/
 artifacts/
+.artifacts/
 
 # IDE and test output
 .vs/

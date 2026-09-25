@@ -2,12 +2,15 @@ using CommunityToolkit.WinUI.Controls;
 using LocalSendDotNet;
 using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Core;
+using Microsoft.UI.Reactor.Input;
 using Microsoft.UI.Reactor.Layout;
 using Microsoft.UI.Reactor.Localization;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
+using Windows.ApplicationModel.DataTransfer;
 using static Microsoft.UI.Reactor.Factories;
+using Tonarink.Components.Animations;
 using static Tonarink.Components.DeviceVisuals;
 using static Tonarink.Controls.SegmentedElement;
 using static Tonarink.Utilities.ByteSize;
@@ -46,6 +49,7 @@ sealed class TrayFlyoutPanel : Component<TrayFlyoutPanelProps>
     {
         var t = UseIntl();
         var highContrast = UseHighContrast();
+        var (isPinned, setPinned) = UseState(TrayFlyoutHost.IsPinned);
         var snapshot = Props.Snapshot;
         var runtime = snapshot.Runtime;
         var statusText = StatusText(t, runtime.NodeState, runtime.DiscoveryWarning);
@@ -61,12 +65,16 @@ sealed class TrayFlyoutPanel : Component<TrayFlyoutPanelProps>
         var transfer = ResolveTransfer(t, snapshot);
 
         var body = FlexColumn(
-                Header(t, statusText, statusColor, snapshot),
+                Header(t, statusText, statusColor, snapshot, isPinned, pinned =>
+                {
+                    TrayFlyoutHost.SetPinned(pinned);
+                    setPinned(pinned);
+                }),
                 (transfer is null
                     ? Border(null).Height(0)
                     : TransferCard(transfer, t))
                     .WithKey("tray-transfer"),
-                Component<Lists, TrayFlyoutListsProps>(new(runtime))
+                Component<Lists, TrayFlyoutListsProps>(new(snapshot))
                     .WithKey("tray-lists")
                     .Flex(grow: 1, basis: 0),
                 Button(t.Message(new("App", "TrayOpen")), OpenApp)
@@ -82,7 +90,9 @@ sealed class TrayFlyoutPanel : Component<TrayFlyoutPanelProps>
             .WithBorder(
                 highContrast ? Theme.Ref("SystemColorButtonTextColorBrush") : Theme.Ref("SurfaceStrokeColorFlyoutBrush"),
                 highContrast ? 2 : 1)
-            .CornerRadius(8);
+            .CornerRadius(8)
+            .AutomationName("Tonarink")
+            .Landmark(AutomationLandmarkType.Main);
 
         void OpenApp()
         {
@@ -95,7 +105,9 @@ sealed class TrayFlyoutPanel : Component<TrayFlyoutPanelProps>
         IntlAccessor t,
         string statusText,
         ThemeRef statusColor,
-        TrayFlyoutSnapshot snapshot) =>
+        TrayFlyoutSnapshot snapshot,
+        bool isPinned,
+        Action<bool> setPinned) =>
         (FlexRow(
                 VStack(2,
                         SubHeading("Tonarink")
@@ -104,14 +116,13 @@ sealed class TrayFlyoutPanel : Component<TrayFlyoutPanelProps>
                                 StatusDot(statusColor),
                                 Caption(statusText)
                                     .Foreground(Theme.SecondaryText)
+                                    .LiveRegion(AutomationLiveSetting.Polite)
                                     .TextWrapping(TextWrapping.NoWrap)
                                     .TextTrimming(TextTrimming.CharacterEllipsis)
                                     .ToolTip(statusText)))
                     .Flex(grow: 1, basis: 0),
                 ToggleButton(
-                        snapshot.ServerDesired
-                            ? t.Message(new("App", "TrayReceiveOn"))
-                            : t.Message(new("App", "TrayReceiveOff")),
+                        snapshot.ServerDesired ? "\uE768" : "\uE71A",
                         snapshot.ServerDesired,
                         on =>
                         {
@@ -120,14 +131,36 @@ sealed class TrayFlyoutPanel : Component<TrayFlyoutPanelProps>
                             else
                                 TrayFlyoutStore.StopServer();
                         })
+                    .FontFamily("Segoe Fluent Icons")
+                    .FontSize(16)
+                    .MinWidth(40)
+                    .MinHeight(40)
                     .AutomationName(t.Message(new("App", "TrayReceiveService")))
-                    .ToolTip(t.Message(new("App", "TrayReceiveService")))) with
+                    .ToolTip(snapshot.ServerDesired
+                        ? t.Message(new("App", "TrayReceiveOn"))
+                        : t.Message(new("App", "TrayReceiveOff"))),
+                ToggleButton(
+                        isPinned ? "\uE77A" : "\uE718",
+                        isPinned,
+                        setPinned)
+                    .FontFamily("Segoe Fluent Icons")
+                    .FontSize(16)
+                    .MinWidth(40)
+                    .MinHeight(40)
+                    .AutomationName(t.Message(new("App", isPinned ? "TrayUnpinPanel" : "TrayPinPanel")))
+                    .ToolTip(t.Message(new("App", isPinned ? "TrayUnpinPanel" : "TrayPinPanel")))) with
         {
             AlignItems = FlexAlign.Center,
             ColumnGap = 12,
         });
 
-    private static Element NearbyList(AppRuntimeState runtime, IntlAccessor t)
+    private static Element NearbyList(
+        AppRuntimeState runtime,
+        IntlAccessor t,
+        string? dropTargetFingerprint,
+        bool isSending,
+        Action<string?> setDropTarget,
+        Action<LocalSendDevice, Microsoft.UI.Reactor.Input.DragData> sendDropped)
     {
         if (runtime.NodeState == LocalSendNodeState.Faulted)
         {
@@ -148,14 +181,27 @@ sealed class TrayFlyoutPanel : Component<TrayFlyoutPanelProps>
 
         return VStack(4, [
             .. runtime.Devices.Take(8).Select((device, index) =>
-                DeviceRow(device, t)
+                DeviceRow(
+                        device,
+                        t,
+                        string.Equals(dropTargetFingerprint, device.Fingerprint, StringComparison.Ordinal),
+                        isSending,
+                        setDropTarget,
+                        sendDropped)
                     .PositionInSet(index + 1, runtime.Devices.Count)
                     .WithKey(device.Fingerprint))
         ]).HAlign(HorizontalAlignment.Stretch);
     }
 
-    private static Element DeviceRow(LocalSendDevice device, IntlAccessor t) =>
-        Button(
+    private static Element DeviceRow(
+        LocalSendDevice device,
+        IntlAccessor t,
+        bool isDropTarget,
+        bool isSending,
+        Action<string?> setDropTarget,
+        Action<LocalSendDevice, Microsoft.UI.Reactor.Input.DragData> sendDropped)
+    {
+        var row = Button(
                 Grid(
                     columns: [GridSize.Auto, GridSize.Star()],
                     rows: [GridSize.Auto],
@@ -179,7 +225,42 @@ sealed class TrayFlyoutPanel : Component<TrayFlyoutPanelProps>
             .HAlign(HorizontalAlignment.Stretch)
             .HorizontalContentAlignment(HorizontalAlignment.Stretch)
             .SubtleButton()
-            .AutomationName(device.Alias);
+            .AutomationName(device.Alias)
+            .OnDragEnter(args =>
+            {
+                if (isSending || !args.Data.HasFormat(StandardDataFormats.StorageItems))
+                    return;
+
+                args.AcceptedOperation = DragOperations.Copy;
+                setDropTarget(device.Fingerprint);
+            })
+            .OnDragOver(args =>
+            {
+                if (isSending || !args.Data.HasFormat(StandardDataFormats.StorageItems))
+                    return;
+
+                args.AcceptedOperation = DragOperations.Copy;
+                args.UIOverride.Caption = t.Message(
+                    new("App", "TrayDropToSend"),
+                    ("device", device.Alias));
+                args.UIOverride.IsCaptionVisible = true;
+                args.UIOverride.IsGlyphVisible = true;
+            })
+            .OnDragLeave(_ => setDropTarget(null))
+            .OnDrop(args =>
+            {
+                setDropTarget(null);
+                if (isSending || !args.Data.HasFormat(StandardDataFormats.StorageItems))
+                    return;
+
+                args.AcceptedOperation = DragOperations.Copy;
+                sendDropped(device, args.Data);
+            }, acceptedOps: DragOperations.Copy);
+
+        return isDropTarget
+            ? row.Background(Theme.SystemAttentionBackground).WithBorder(Theme.SystemAttention)
+            : row;
+    }
 
     private static Element HistoryList(IReadOnlyList<ReceiveHistoryEntry> entries, IntlAccessor t)
     {
@@ -243,7 +324,7 @@ sealed class TrayFlyoutPanel : Component<TrayFlyoutPanelProps>
         var progress = transfer.TotalBytes <= 0
             ? 0
             : Math.Clamp(transfer.BytesTransferred * 100d / transfer.TotalBytes, 0, 100);
-        return Card(
+        return Button(
                 VStack(8,
                     BodyStrong(transfer.Title)
                         .TextTrimming(TextTrimming.CharacterEllipsis)
@@ -255,20 +336,26 @@ sealed class TrayFlyoutPanel : Component<TrayFlyoutPanelProps>
                         .Foreground(Theme.SecondaryText)
                         .TextWrapping(TextWrapping.WrapWholeWords),
                     transfer.Indeterminate
-                        ? ProgressIndeterminate()
+                        ? ProgressIndeterminate().AutomationName(transfer.Status)
                         : transfer.TotalBytes > 0
-                            ? Progress(progress)
+                            ? Progress(progress).AutomationName(transfer.Status)
                             : null,
                     transfer.TotalBytes > 0 && !transfer.Indeterminate
                         ? Caption($"{FormatBytes(transfer.BytesTransferred)} / {FormatBytes(transfer.TotalBytes)}")
                             .Foreground(Theme.TertiaryText)
-                        : null))
-            .OnTapped((_, _) =>
-            {
-                TrayFlyoutHost.Dismiss();
-                TrayFlyoutStore.Restore();
-            })
-            .AutomationName(transfer.Title);
+                        : null),
+                () =>
+                {
+                    TrayFlyoutHost.Dismiss();
+                    TrayFlyoutStore.Restore();
+                })
+            .Padding(16)
+            .CornerRadius(8)
+            .Background(Theme.CardBackground)
+            .WithBorder(Theme.CardStroke)
+            .HAlign(HorizontalAlignment.Stretch)
+            .HorizontalContentAlignment(HorizontalAlignment.Stretch)
+            .AutomationName($"{transfer.Title}, {transfer.Status}");
     }
 
     private static TrayFlyoutTransfer? ResolveTransfer(IntlAccessor t, TrayFlyoutSnapshot snapshot)
@@ -341,6 +428,8 @@ sealed class TrayFlyoutPanel : Component<TrayFlyoutPanelProps>
         public override Element Render()
         {
             var t = UseIntl();
+            var theme = AppTheme.ToElementTheme(Props.Snapshot.Settings.ThemeIndex);
+            var runtime = Props.Snapshot.Runtime;
             var history = UseExternalStore(
                 static listener =>
                 {
@@ -349,6 +438,11 @@ sealed class TrayFlyoutPanel : Component<TrayFlyoutPanelProps>
                 },
                 static () => ReceiveHistoryStore.Entries);
             var (tab, setTab) = UseState(0);
+            var (dropTargetFingerprint, setDropTargetFingerprint) = UseState<string?>(null);
+            var (isSending, setSending) = UseState(false);
+            var (dropStatus, setDropStatus) = UseState<TrayDropStatus?>(null);
+            var (pendingPin, setPendingPin) = UseState<TrayPendingSend?>(null);
+            var (pin, setPin) = UseState(string.Empty);
             var nearby = t.Message(new("App", "TrayNearbyTab"));
             var historyTab = t.Message(new("App", "TrayHistoryTab"));
             var tabItems = UseMemo(
@@ -360,28 +454,167 @@ sealed class TrayFlyoutPanel : Component<TrayFlyoutPanelProps>
                 nearby,
                 historyTab);
 
-            Element list = tab == 0
-                ? NearbyList(Props.Runtime, t)
-                : HistoryList(history, t);
+            var nearbyContent = ScrollView(
+                    NearbyList(
+                    runtime,
+                    t,
+                    dropTargetFingerprint,
+                    isSending,
+                    setDropTargetFingerprint,
+                    (device, data) => _ = SendDroppedAsync(device, data)))
+                .HorizontalContentAlignment(HorizontalAlignment.Stretch);
+            var historyContent = ScrollView(HistoryList(history, t))
+                .HorizontalContentAlignment(HorizontalAlignment.Stretch);
 
-            return FlexColumn(
+            var content = FlexColumn(
                     Segmented(
                             selectedIndex: tab,
                             onSelectedIndexChanged: setTab,
                             items: tabItems)
                         .HAlign(HorizontalAlignment.Stretch)
                         .WithKey("tray-segmented"),
-                    ScrollView(list)
-                        .HorizontalContentAlignment(HorizontalAlignment.Stretch)
+                    dropStatus is null
+                        ? null
+                        : Caption(dropStatus.Message)
+                            .Foreground(dropStatus.IsError ? Theme.SystemCritical : Theme.SecondaryText)
+                            .LiveRegion(dropStatus.IsError
+                                ? AutomationLiveSetting.Assertive
+                                : AutomationLiveSetting.Polite)
+                            .TextWrapping(TextWrapping.WrapWholeWords),
+                    Component<SegmentedContentSwitcher, SegmentedContentSwitcherProps>(
+                            new(tab, nearbyContent, historyContent))
                         .Flex(grow: 1, basis: 0)) with
             {
                 RowGap = 12,
             };
+
+            return Grid(
+                columns: [GridSize.Star()],
+                rows: [GridSize.Star()],
+                content.Grid(row: 0, column: 0),
+                PinDialog().Grid(row: 0, column: 0));
+
+            Element PinDialog()
+            {
+                var pending = pendingPin;
+                return (ContentDialog(
+                        t.Message(new("App", "PinRequiredTitle")),
+                        VStack(8,
+                            TextBlock(t.Message(
+                                    new("App", "PinRequiredMessage"),
+                                    ("device", pending?.Device.Alias ?? string.Empty)))
+                                .TextWrapping(TextWrapping.WrapWholeWords),
+                            PasswordBox(pin, setPin, placeholderText: t.Message(new("App", "PinPlaceholder")))
+                                .Header(t.Message(new("App", "Pin")))
+                                .AutomationName(t.Message(new("App", "Pin")))
+                                .Required()
+                                .MaxLength(32),
+                            pending?.Error is null
+                                ? null
+                                : TextBlock(pending.Error)
+                                    .Foreground(Theme.SystemCritical)
+                                    .LiveRegion(AutomationLiveSetting.Assertive)),
+                        primaryButtonText: t.Message(new("App", "PinConfirm"))) with
+                {
+                    IsOpen = pending is not null,
+                    SecondaryButtonText = t.Message(new("App", "Cancel")),
+                    DefaultButton = ContentDialogButton.Primary,
+                    IsPrimaryButtonEnabled = !string.IsNullOrWhiteSpace(pin),
+                    OnClosed = result =>
+                    {
+                        var request = pendingPin;
+                        var submittedPin = pin.Trim();
+                        setPendingPin(null);
+                        setPin(string.Empty);
+                        if (result == ContentDialogResult.Primary
+                            && request is not null
+                            && submittedPin.Length > 0)
+                        {
+                            _ = SendPayloadAsync(request.Device, request.Payload, submittedPin);
+                        }
+                    },
+                }).Themed(theme);
+            }
+
+            async Task SendDroppedAsync(
+                LocalSendDevice device,
+                Microsoft.UI.Reactor.Input.DragData data)
+            {
+                try
+                {
+                    setDropStatus(null);
+                    var payload = await DroppedSendItemReader.ReadAsync(data);
+                    if (payload.Items.Count == 0)
+                    {
+                        setDropStatus(new(t.Message(new("App", "DroppedItemsEmpty")), IsError: true));
+                        return;
+                    }
+
+                    await SendPayloadAsync(device, payload, pin: null);
+                }
+                catch (Exception exception)
+                {
+                    AppDiagnostics.Report("Could not prepare files dropped on a tray device", exception);
+                    setDropStatus(new(t.Message(
+                        new("App", "DropItemsFailed"),
+                        ("error", exception.Message)), IsError: true));
+                }
+            }
+
+            async Task SendPayloadAsync(
+                LocalSendDevice device,
+                DroppedSendPayload payload,
+                string? pin)
+            {
+                setSending(true);
+                setDropStatus(new(
+                    t.Message(new("App", "SendingToDevice"), ("device", device.Alias)),
+                    IsError: false));
+                try
+                {
+                    await TrayFlyoutStore.SendAsync(new(device, payload.Items, payload.TotalBytes, pin));
+                    setDropStatus(new(
+                        t.Message(new("App", "SentToDevice"), ("device", device.Alias)),
+                        IsError: false));
+                }
+                catch (PinRequiredException exception)
+                {
+                    setDropStatus(null);
+                    setPendingPin(new(
+                        device,
+                        payload,
+                        exception.InvalidPin ? t.Message(new("App", "PinIncorrect")) : null));
+                }
+                catch (PinRateLimitedException)
+                {
+                    setDropStatus(new(t.Message(new("App", "PinRateLimited")), IsError: true));
+                }
+                catch (OperationCanceledException)
+                {
+                    setDropStatus(new(t.Message(new("App", "TransferCancelled")), IsError: false));
+                }
+                catch (Exception exception)
+                {
+                    AppDiagnostics.Report("Could not send files from the tray flyout", exception);
+                    setDropStatus(new(exception.Message, IsError: true));
+                }
+                finally
+                {
+                    setSending(false);
+                }
+            }
         }
     }
 }
 
-sealed record TrayFlyoutListsProps(AppRuntimeState Runtime);
+sealed record TrayFlyoutListsProps(TrayFlyoutSnapshot Snapshot);
+
+sealed record TrayPendingSend(
+    LocalSendDevice Device,
+    DroppedSendPayload Payload,
+    string? Error);
+
+sealed record TrayDropStatus(string Message, bool IsError);
 
 sealed record TrayFlyoutTransfer(
     string Title,

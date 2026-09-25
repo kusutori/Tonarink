@@ -3,6 +3,7 @@ using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Core;
 using Microsoft.UI.Reactor.Localization;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using static Microsoft.UI.Reactor.Factories;
 using static Tonarink.Utilities.ByteSize;
@@ -32,9 +33,11 @@ sealed record IncomingFileCardModel(
     Action ToggleSelectAll,
     Action Reset,
     Action OpenQuickActions,
-    Action<string, string> OpenRename,
-    Action<string> UndoRename,
+    Command<IncomingFileCommandTarget> RenameCommand,
+    Command<IncomingFileCommandTarget> UndoRenameCommand,
     Func<Task> PickDirectory);
+
+sealed record IncomingFileCommandTarget(string ItemId, string DisplayName);
 
 static class IncomingFileCard
 {
@@ -66,6 +69,8 @@ static class IncomingFileCard
                                     "App",
                                     model.Expanded ? "HideReceiveOptions" : "ShowReceiveOptions")))
                                 .IsEnabled(model.CanEdit)
+                                .MinWidth(40)
+                                .MinHeight(40)
                                 .SubtleButton()
                                 .Grid(column: 1)),
                         model.Expanded
@@ -108,9 +113,19 @@ static class IncomingFileCard
         var validName = IsValidTargetFileName(renameFileName);
         return (ContentDialog(
                 t.Message(new("App", "Rename")),
-                TextBox(renameFileName, setRenameFileName)
-                    .Header(t.Message(new("App", "Name")))
-                    .AutomationName(t.Message(new("App", "Name"))),
+                VStack(6,
+                    TextBox(renameFileName, setRenameFileName)
+                        .Header(t.Message(new("App", "Name")))
+                        .AutomationName(t.Message(new("App", "Name")))
+                        .HelpText(validName || string.IsNullOrWhiteSpace(renameFileName)
+                            ? string.Empty
+                            : t.Message(new("App", "InvalidFileName")))
+                        .Required(),
+                    validName || string.IsNullOrWhiteSpace(renameFileName)
+                        ? null
+                        : Caption(t.Message(new("App", "InvalidFileName")))
+                            .Foreground(Theme.SystemCritical)
+                            .LiveRegion(AutomationLiveSetting.Assertive)),
                 primaryButtonText: t.Message(new("App", "Save"))) with
         {
             IsOpen = renameItemId is not null,
@@ -242,7 +257,9 @@ static class IncomingFileCard
     {
         var request = model.Request;
         var t = model.T;
-        var rows = request.Items.Select(item => ReceiveItemRow(model, item).WithKey(item.Id)).ToArray<Element?>();
+        var rows = request.Items.Select((item, index) => ReceiveItemRow(model, item)
+            .PositionInSet(index + 1, request.Items.Count)
+            .WithKey(item.Id)).ToArray<Element?>();
         return Grid(
                 columns: [GridSize.Star()],
                 rows: [GridSize.Auto, GridSize.Auto, GridSize.Star()],
@@ -263,10 +280,14 @@ static class IncomingFileCard
                                 .AutomationName(t.Message(new("App", "ChangeSaveLocation")))
                                 .ToolTip(t.Message(new("App", "ChangeSaveLocation")))
                                 .IsEnabled(model.CanEdit)
+                                .MinWidth(40)
+                                .MinHeight(40)
                                 .Grid(column: 1)),
                         model.FolderError is null
                             ? null
-                            : Caption(model.FolderError).Foreground(Theme.SystemCritical))
+                            : Caption(model.FolderError)
+                                .Foreground(Theme.SystemCritical)
+                                .LiveRegion(AutomationLiveSetting.Assertive))
                     .Grid(row: 0),
                 Grid(
                         columns: [GridSize.Star(), GridSize.Auto],
@@ -281,6 +302,8 @@ static class IncomingFileCard
                                     .AutomationName(t.Message(new("App", "QuickActionsTitle")))
                                     .ToolTip(t.Message(new("App", "QuickActionsTitle")))
                                     .IsEnabled(model.CanEdit)
+                                    .MinWidth(40)
+                                    .MinHeight(40)
                                     .VAlign(VerticalAlignment.Center),
                                 Button(
                                         Icon("\uE7A7").AccessibilityHidden(),
@@ -288,6 +311,8 @@ static class IncomingFileCard
                                     .AutomationName(t.Message(new("App", "ResetReceiveOptions")))
                                     .ToolTip(t.Message(new("App", "ResetReceiveOptions")))
                                     .IsEnabled(model.CanEdit)
+                                    .MinWidth(40)
+                                    .MinHeight(40)
                                     .VAlign(VerticalAlignment.Center))
                             .HAlign(HorizontalAlignment.Left)
                             .VAlign(VerticalAlignment.Center)
@@ -334,22 +359,14 @@ static class IncomingFileCard
             new("App", "RenameSuccess"),
             ("size", FormatBytes(item.Size)));
         var canUndoRename = isRenamed && model.CanEdit;
-        var undoRename = canUndoRename
-            ? () => model.UndoRename(item.Id)
-            : (Action?)null;
+        var commandTarget = new IncomingFileCommandTarget(item.Id, displayName);
 
         Element FileRowMenu() => MenuItems(
-            MenuItem(
-                    t.Message(new("App", "UndoIncomingFileRename")),
-                    undoRename,
-                    icon: "\uE7A7") with
+            MenuItem(model.UndoRenameCommand, commandTarget) with
             {
                 IsEnabled = canUndoRename,
             },
-            MenuItem(
-                t.Message(new("App", "Rename")),
-                model.CanEdit ? () => model.OpenRename(item.Id, displayName) : null,
-                icon: "\uE70F"));
+            MenuItem(model.RenameCommand, commandTarget));
 
         return Border(
                 Grid(
@@ -392,20 +409,24 @@ static class IncomingFileCard
                         .Grid(column: 0),
                     HStack(
                             Button(
-                                    Icon("\uE7A7").AccessibilityHidden(),
-                                    () => model.UndoRename(item.Id))
-                                .AutomationName(t.Message(new("App", "UndoIncomingFileRename")))
-                                .ToolTip(t.Message(new("App", "UndoIncomingFileRename")))
+                                    Icon(model.UndoRenameCommand.Icon!).AccessibilityHidden(),
+                                    () => model.UndoRenameCommand.Execute?.Invoke(commandTarget))
+                                .AutomationName(model.UndoRenameCommand.Label)
+                                .ToolTip(model.UndoRenameCommand.Label)
                                 .IsEnabled(canUndoRename)
+                                .MinWidth(40)
+                                .MinHeight(40)
                                 .WithContextFlyout(FileRowMenu()),
                             Button(
-                                    Icon("\uE70F").AccessibilityHidden(),
-                                    () => model.OpenRename(item.Id, displayName))
+                                    Icon(model.RenameCommand.Icon!).AccessibilityHidden(),
+                                    () => model.RenameCommand.Execute?.Invoke(commandTarget))
                                 .AutomationName(t.Message(
                                     new("App", "RenameIncomingFile"),
                                     ("file", displayName)))
-                                .ToolTip(t.Message(new("App", "Rename")))
-                                .IsEnabled(model.CanEdit)
+                                .ToolTip(model.RenameCommand.Label)
+                                .IsEnabled(model.RenameCommand.IsEnabled)
+                                .MinWidth(40)
+                                .MinHeight(40)
                                 .WithContextFlyout(FileRowMenu()))
                         .Margin(8)
                         .VAlign(VerticalAlignment.Center)

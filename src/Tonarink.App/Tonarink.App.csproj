@@ -45,6 +45,8 @@
         <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
         <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
         <Nullable>enable</Nullable>
+        <!-- Accessibility regressions must fail local and CI builds, not remain advisory warnings. -->
+        <WarningsAsErrors>$(WarningsAsErrors);REACTOR_A11Y_001;REACTOR_A11Y_002;REACTOR_A11Y_003;REACTOR_A11Y_004</WarningsAsErrors>
         <ReactorLocDefaultLocale>en-US</ReactorLocDefaultLocale>
         <ReactorLocStringsPath>Strings\</ReactorLocStringsPath>
         <!-- ReswResourceProvider reads sentence-style keys directly; MakePRI must not index them. -->

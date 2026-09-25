@@ -95,6 +95,8 @@ sealed class SettingsPage : Component<SettingsPageProps>
                         if (index is >= 0 and <= 2 && index != Props.Settings.ThemeIndex)
                             Props.UpdateSettings(settings => settings with { ThemeIndex = index });
                     })
+                    .AutomationName(t.Message(new("App", "SettingsTheme")))
+                    .HelpText(t.Message(new("App", "SettingsThemeDescription")))
                     .MinWidth(180)),
             SettingsCard(
                 header: t.Message(new("App", "SettingsLanguage")),
@@ -108,6 +110,8 @@ sealed class SettingsPage : Component<SettingsPageProps>
                         if (AppLanguages.IsValidIndex(index) && index != Props.Settings.LanguageIndex)
                             Props.UpdateSettings(settings => settings with { LanguageIndex = index });
                     })
+                    .AutomationName(t.Message(new("App", "SettingsLanguage")))
+                    .HelpText(t.Message(new("App", "SettingsLanguageDescription")))
                     .MinWidth(180)),
             SettingsCard(
                 header: t.Message(new("App", "SettingsMinimizeToTray")),
@@ -117,7 +121,9 @@ sealed class SettingsPage : Component<SettingsPageProps>
                 isActionIconVisible: false,
                 content:
                 ToggleSwitch(Props.Settings.MinimizeToTray, value =>
-                    Props.UpdateSettings(settings => settings with { MinimizeToTray = value }))),
+                        Props.UpdateSettings(settings => settings with { MinimizeToTray = value }))
+                    .AutomationName(t.Message(new("App", "SettingsMinimizeToTray")))
+                    .HelpText(t.Message(new("App", "SettingsMinimizeToTrayDescription")))),
             SettingsCard(
                 header: t.Message(new("App", "SettingsTrayClickOpensFlyout")),
                 description: t.Message(new("App", "SettingsTrayClickOpensFlyoutDescription")),
@@ -127,6 +133,8 @@ sealed class SettingsPage : Component<SettingsPageProps>
                 content:
                 ToggleSwitch(Props.Settings.TrayClickOpensFlyout, value =>
                     Props.UpdateSettings(settings => settings with { TrayClickOpensFlyout = value }))
+                    .AutomationName(t.Message(new("App", "SettingsTrayClickOpensFlyout")))
+                    .HelpText(t.Message(new("App", "SettingsTrayClickOpensFlyoutDescription")))
                     .IsEnabled(Props.Settings.MinimizeToTray)),
             SettingsCard(
                 header: t.Message(new("App", "SettingsStartWithWindows")),
@@ -136,7 +144,24 @@ sealed class SettingsPage : Component<SettingsPageProps>
                 isActionIconVisible: false,
                 content:
                 ToggleSwitch(Props.Settings.StartWithWindows, value =>
-                    _ = SetStartupAsync(value))),
+                        _ = SetStartupAsync(value))
+                    .AutomationName(t.Message(new("App", "SettingsStartWithWindows")))
+                    .HelpText(t.Message(new("App", "SettingsStartWithWindowsDescription")))),
+            SettingsCard(
+                header: t.Message(new("App", "SettingsWindowsShareSuggestions")),
+                description: t.Message(new("App", "SettingsWindowsShareSuggestionsDescription")),
+                headerIcon: HeaderGlyph("\uE716"),
+                isClickEnabled: false,
+                isActionIconVisible: false,
+                content:
+                ToggleSwitch(Props.Settings.ShowFavoriteDevicesInWindowsShare, value =>
+                    Props.UpdateSettings(settings => settings with
+                    {
+                        ShowFavoriteDevicesInWindowsShare = value,
+                    }))
+                    .AutomationName(t.Message(new("App", "SettingsWindowsShareSuggestions")))
+                    .HelpText(t.Message(new("App", "SettingsWindowsShareSuggestionsDescription")))
+                    .IsEnabled(AppPlatform.HasPackageIdentity())),
             SettingsExpander(
                     headerIcon: HeaderGlyph("\uEA8F"),
                     items:
@@ -151,7 +176,9 @@ sealed class SettingsPage : Component<SettingsPageProps>
                             {
                                 Props.UpdateSettings(settings => settings with { NotificationsEnabled = value });
                                 AppNotificationService.SetEnabled(value);
-                            })),
+                            })
+                                .AutomationName(t.Message(new("App", "SettingsNotificationsEnabled")))
+                                .HelpText(t.Message(new("App", "SettingsNotificationsEnabledDescription")))),
                         SettingsCard(
                             header: t.Message(new("App", "SettingsNotificationsDefaultAction")),
                             description: t.Message(new("App", "SettingsNotificationsDefaultActionDescription")),
@@ -171,6 +198,8 @@ sealed class SettingsPage : Component<SettingsPageProps>
                                             });
                                         }
                                     })
+                                .AutomationName(t.Message(new("App", "SettingsNotificationsDefaultAction")))
+                                .HelpText(t.Message(new("App", "SettingsNotificationsDefaultActionDescription")))
                                 .MinWidth(180)),
                         SettingsCard(
                             header: t.Message(new("App", "SettingsNotificationsTest")),
@@ -204,7 +233,9 @@ sealed class SettingsPage : Component<SettingsPageProps>
                 isActionIconVisible: false,
                 content:
                 ToggleSwitch(Props.Settings.ShowExplorerContextMenu, value =>
-                    Props.UpdateSettings(settings => settings with { ShowExplorerContextMenu = value }))));
+                        Props.UpdateSettings(settings => settings with { ShowExplorerContextMenu = value }))
+                    .AutomationName(t.Message(new("App", "SettingsExplorerContextMenu")))
+                    .HelpText(t.Message(new("App", "SettingsExplorerContextMenuDescription")))));
 
         var receiveCards = SettingsGroup(
             t.Message(new("App", "SettingsReceive")),
@@ -229,7 +260,9 @@ sealed class SettingsPage : Component<SettingsPageProps>
                 isActionIconVisible: false,
                 content:
                 ToggleSwitch(Props.Settings.SaveReceiveHistory, value =>
-                    Props.UpdateSettings(settings => settings with { SaveReceiveHistory = value }))),
+                        Props.UpdateSettings(settings => settings with { SaveReceiveHistory = value }))
+                    .AutomationName(t.Message(new("App", "SettingsSaveReceiveHistory")))
+                    .HelpText(t.Message(new("App", "SettingsSaveReceiveHistoryDescription")))),
             SettingsCard(
                 header: t.Message(new("App", "SettingsVerifyChecksumsOnReceive")),
                 description: t.Message(new("App", "SettingsVerifyChecksumsOnReceiveDescription")),
@@ -238,7 +271,9 @@ sealed class SettingsPage : Component<SettingsPageProps>
                 isActionIconVisible: false,
                 content:
                 ToggleSwitch(Props.Settings.VerifyChecksumsOnReceive, value =>
-                    Props.UpdateSettings(settings => settings with { VerifyChecksumsOnReceive = value }))),
+                        Props.UpdateSettings(settings => settings with { VerifyChecksumsOnReceive = value }))
+                    .AutomationName(t.Message(new("App", "SettingsVerifyChecksumsOnReceive")))
+                    .HelpText(t.Message(new("App", "SettingsVerifyChecksumsOnReceiveDescription")))),
             SettingsExpander(
                     headerIcon: HeaderGlyph("\uE72E"),
                     items:
@@ -250,7 +285,9 @@ sealed class SettingsPage : Component<SettingsPageProps>
                             isActionIconVisible: false,
                             content:
                             ToggleSwitch(Props.Settings.ReceivePinEnabled, value =>
-                                Props.UpdateSettings(settings => settings with { ReceivePinEnabled = value }))),
+                                    Props.UpdateSettings(settings => settings with { ReceivePinEnabled = value }))
+                                .AutomationName(t.Message(new("App", "SettingsReceivePinEnabled")))
+                                .HelpText(t.Message(new("App", "SettingsReceivePinEnabledDescription")))),
                         SettingsCard(
                             header: t.Message(new("App", "SettingsReceivePin")),
                             description: t.Message(new("App", "SettingsReceivePinDescription")),
@@ -281,7 +318,9 @@ sealed class SettingsPage : Component<SettingsPageProps>
                 isActionIconVisible: false,
                 content:
                 ToggleSwitch(Props.Settings.VerifyChecksumsOnSend, value =>
-                    Props.UpdateSettings(settings => settings with { VerifyChecksumsOnSend = value }))));
+                        Props.UpdateSettings(settings => settings with { VerifyChecksumsOnSend = value }))
+                    .AutomationName(t.Message(new("App", "SettingsVerifyChecksumsOnSend")))
+                    .HelpText(t.Message(new("App", "SettingsVerifyChecksumsOnSendDescription")))));
 
         var startOrRestartName = serverOnline
             ? t.Message(new("App", "SettingsRestartServer"))
@@ -308,14 +347,14 @@ sealed class SettingsPage : Component<SettingsPageProps>
                 isActionIconVisible: false,
                 content:
                 HStack(4,
-                    Button(Icon(serverOnline ? "Refresh" : "Play"), Props.StartOrRestartServer)
+                    Button(Icon(serverOnline ? "Refresh" : "Play").AccessibilityHidden(), Props.StartOrRestartServer)
                         .SubtleButton()
                         .AutomationName(startOrRestartName)
                         .ToolTip(startOrRestartName)
                         .IsEnabled(!serverBusy)
                         .MinWidth(40)
                         .MinHeight(40),
-                    Button(Icon("Stop"), Props.StopServer)
+                    Button(Icon("Stop").AccessibilityHidden(), Props.StopServer)
                         .SubtleButton()
                         .AutomationName(stopName)
                         .ToolTip(stopName)
@@ -350,6 +389,8 @@ sealed class SettingsPage : Component<SettingsPageProps>
                                     if (type != Props.Settings.DeviceType)
                                         Props.UpdateSettings(settings => settings with { DeviceType = type });
                                 })
+                                .AutomationName(t.Message(new("App", "SettingsDeviceType")))
+                                .HelpText(t.Message(new("App", "SettingsDeviceTypeDescription")))
                                 .MinWidth(180)),
                         SettingsCard(
                             header: t.Message(new("App", "SettingsDeviceModel")),
@@ -422,7 +463,9 @@ sealed class SettingsPage : Component<SettingsPageProps>
                                 Props.UpdateSettings(settings => settings with { EnableHttps = value });
                                 if (!value)
                                     setEncryptionNoticeOpen(true);
-                            })),
+                            })
+                                .AutomationName(t.Message(new("App", "SettingsEncryption")))
+                                .HelpText(t.Message(new("App", "SettingsEncryptionDescription")))),
                         SettingsCard(
                             header: t.Message(new("App", "SettingsMulticast")),
                             description: string.Equals(
@@ -474,7 +517,7 @@ sealed class SettingsPage : Component<SettingsPageProps>
                 .HeadingLevel(AutomationHeadingLevel.Level2)
                 .Margin(bottom: 8),
             SettingsExpander(
-                    headerIcon: Icon(ImageIcon(new Uri(iconPath, UriKind.Absolute))),
+                    headerIcon: Icon(ImageIcon(new Uri(iconPath, UriKind.Absolute))).AccessibilityHidden(),
                     items:
                     [
                         SettingsCard(
@@ -552,6 +595,7 @@ sealed class SettingsPage : Component<SettingsPageProps>
                         })
                     .Padding(AppLayout.PagePadding))
             .HorizontalContentAlignment(HorizontalAlignment.Stretch)
+            .AutomationName(t.Message(new("App", "SettingsTitle")))
             .Landmark(AutomationLandmarkType.Main);
 
         async Task SetStartupAsync(bool enabled)

@@ -116,6 +116,7 @@
   <Capabilities>
     <Capability Name="internetClientServer" />
     <Capability Name="privateNetworkClientServer" />
+    <uap:Capability Name="contacts" />
     <rescap:Capability Name="runFullTrust" />
   </Capabilities>
 </Package>

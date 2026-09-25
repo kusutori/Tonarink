@@ -99,6 +99,7 @@ sealed class DeviceDetailsPage : Component<DeviceDetailsPageProps>
                     .Padding(AppLayout.PagePadding)
                     .MaxWidth(AppLayout.DetailsContentWidth)
                     .HAlign(HorizontalAlignment.Stretch)
+                    .AutomationName(t.Message(new("App", "DeviceDetailsTitle")))
                     .Landmark(AutomationLandmarkType.Main))
             .HorizontalContentAlignment(HorizontalAlignment.Stretch);
 
@@ -109,7 +110,8 @@ sealed class DeviceDetailsPage : Component<DeviceDetailsPageProps>
                 device.Fingerprint,
                 device.Alias,
                 endpoint?.Address.ToString() ?? string.Empty,
-                endpoint?.Port ?? LocalSendOptions.DefaultPort));
+                endpoint?.Port ?? LocalSendOptions.DefaultPort,
+                device.DeviceType));
         }
     }
 
@@ -121,7 +123,7 @@ sealed class DeviceDetailsPage : Component<DeviceDetailsPageProps>
     {
         var button = Button(
                 VStack(6,
-                    Icon(glyph),
+                    Icon(glyph).AccessibilityHidden(),
                     Caption(label)),
                 onClick)
             .MinWidth(104)

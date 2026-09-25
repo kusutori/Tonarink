@@ -12,6 +12,7 @@ sealed record AppNotificationActivation(
 
 static class AppNotificationService
 {
+    private const string TransferProgressGroup = "transfer-progress";
     private static readonly Lock Gate = new();
     private static AppNotificationManager? _manager;
     private static readonly Queue<AppNotificationActivation> PendingActivations = new();
@@ -173,6 +174,61 @@ static class AppNotificationService
                 .AddArgument("path", path)));
     }
 
+    public static TransferProgressNotification? StartTransferProgress(
+        Guid transferId,
+        string title,
+        string progressTitle,
+        string status,
+        long bytesTransferred,
+        long totalBytes,
+        string valueText,
+        string kind)
+    {
+        AppNotificationManager? manager;
+        lock (Gate)
+        {
+            if (!_enabled || !_registered)
+                return null;
+
+            manager = _manager;
+        }
+
+        try
+        {
+            if (manager is null || manager.Setting != AppNotificationSetting.Enabled)
+                return null;
+
+            var tag = transferId.ToString("N");
+            var progress = new TransferProgressNotification(
+                manager,
+                tag,
+                TransferProgressGroup,
+                bytesTransferred,
+                totalBytes,
+                status);
+            var notification = new AppNotificationBuilder()
+                .AddText(title)
+                .AddArgument("action", "open")
+                .AddArgument("kind", kind)
+                .AddProgressBar(new AppNotificationProgressBar()
+                    .BindTitle()
+                    .BindValue()
+                    .BindValueStringOverride()
+                    .BindStatus())
+                .BuildNotification();
+            notification.Tag = tag;
+            notification.Group = TransferProgressGroup;
+            notification.Progress = progress.CreateInitialData(progressTitle, status, valueText);
+            manager.Show(notification);
+            return progress;
+        }
+        catch (Exception exception)
+        {
+            WriteDiagnostic("Showing transfer progress failed.", exception);
+            return null;
+        }
+    }
+
     public static bool TryDequeueActivation(out AppNotificationActivation? activation)
     {
         lock (Gate)
@@ -288,7 +344,7 @@ static class AppNotificationService
         }
     }
 
-    private static void WriteDiagnostic(string message, Exception? exception = null)
+    internal static void WriteDiagnostic(string message, Exception? exception = null)
     {
         AppDiagnostics.Write(
             exception is null ? LogLevel.Information : LogLevel.Warning,
@@ -296,4 +352,130 @@ static class AppNotificationService
             message,
             exception);
     }
+}
+
+sealed class TransferProgressNotification
+{
+    private static readonly TimeSpan MinimumUpdateInterval = TimeSpan.FromMilliseconds(500);
+    private static readonly TimeSpan MaximumUpdateInterval = TimeSpan.FromSeconds(2);
+    private const double MinimumVisibleProgressDelta = 0.005;
+
+    private readonly Lock _gate = new();
+    private readonly AppNotificationManager _manager;
+    private readonly string _tag;
+    private readonly string _group;
+    private DateTimeOffset _lastUpdatedAt = DateTimeOffset.UtcNow;
+    private double _lastValue;
+    private string _lastStatus;
+    private uint _sequenceNumber = 1;
+    private Task _updateTail = Task.CompletedTask;
+    private bool _removed;
+
+    internal TransferProgressNotification(
+        AppNotificationManager manager,
+        string tag,
+        string group,
+        long bytesTransferred,
+        long totalBytes,
+        string status)
+    {
+        _manager = manager;
+        _tag = tag;
+        _group = group;
+        _lastValue = Fraction(bytesTransferred, totalBytes);
+        _lastStatus = status;
+    }
+
+    internal AppNotificationProgressData CreateInitialData(
+        string title,
+        string status,
+        string valueText) => new(_sequenceNumber)
+        {
+            Title = title,
+            Value = _lastValue,
+            ValueStringOverride = valueText,
+            Status = status,
+        };
+
+    public void Report(
+        string title,
+        string status,
+        long bytesTransferred,
+        long totalBytes,
+        string valueText)
+    {
+        var value = Fraction(bytesTransferred, totalBytes);
+        lock (_gate)
+        {
+            if (_removed)
+                return;
+
+            var now = DateTimeOffset.UtcNow;
+            var elapsed = now - _lastUpdatedAt;
+            var completed = totalBytes > 0 && bytesTransferred >= totalBytes;
+            var statusChanged = !string.Equals(status, _lastStatus, StringComparison.Ordinal);
+            if (!completed && !statusChanged && elapsed < MinimumUpdateInterval)
+                return;
+
+            if (!completed
+                && !statusChanged
+                && Math.Abs(value - _lastValue) < MinimumVisibleProgressDelta
+                && elapsed < MaximumUpdateInterval)
+            {
+                return;
+            }
+
+            _lastUpdatedAt = now;
+            _lastValue = value;
+            _lastStatus = status;
+            var data = new AppNotificationProgressData(++_sequenceNumber)
+            {
+                Title = title,
+                Value = value,
+                ValueStringOverride = valueText,
+                Status = status,
+            };
+            _updateTail = UpdateAfterAsync(_updateTail, data);
+        }
+    }
+
+    public async Task RemoveAsync()
+    {
+        Task pendingUpdate;
+        lock (_gate)
+        {
+            if (_removed)
+                return;
+
+            _removed = true;
+            pendingUpdate = _updateTail;
+        }
+
+        try
+        {
+            await pendingUpdate.ConfigureAwait(false);
+            await _manager.RemoveByTagAndGroupAsync(_tag, _group);
+        }
+        catch (Exception exception)
+        {
+            AppNotificationService.WriteDiagnostic("Removing transfer progress failed.", exception);
+        }
+    }
+
+    private async Task UpdateAfterAsync(Task previousUpdate, AppNotificationProgressData data)
+    {
+        try
+        {
+            await previousUpdate.ConfigureAwait(false);
+            await _manager.UpdateAsync(data, _tag, _group);
+        }
+        catch (Exception exception)
+        {
+            AppNotificationService.WriteDiagnostic("Updating transfer progress failed.", exception);
+        }
+    }
+
+    private static double Fraction(long bytesTransferred, long totalBytes) => totalBytes <= 0
+        ? 0
+        : Math.Clamp((double)bytesTransferred / totalBytes, 0, 1);
 }

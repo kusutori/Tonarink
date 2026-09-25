@@ -1,7 +1,29 @@
 namespace Tonarink.Utilities;
 
+enum FileTypeGlyphKind
+{
+    Document,
+    Folder,
+    Archive,
+    Pdf,
+    Text,
+    Video,
+    Image,
+    Audio,
+    Email,
+    Calendar,
+    OfflineMap,
+    Database,
+    Font,
+    Ebook,
+    Contact,
+    Subtitle,
+}
+
 static class FileTypeGlyphs
 {
+    private const string DocumentGlyph = "\uE8A5";
+    private const string FolderGlyph = "\uE8B7";
     private const string ArchiveGlyph = "\uF012";
     private const string PdfGlyph = "\uEA90";
     private const string TextGlyph = "\uF000";
@@ -78,29 +100,54 @@ static class FileTypeGlyphs
         ".ass", ".srt", ".ssa", ".vtt",
     };
 
-    public static string ForFileName(string? fileName)
+    public static string ForFileName(string? fileName) => ForKind(KindForFileName(fileName));
+
+    public static string ForPath(string path) =>
+        ForKind(Directory.Exists(path) ? FileTypeGlyphKind.Folder : KindForFileName(path));
+
+    public static string ForKind(FileTypeGlyphKind kind) => kind switch
+    {
+        FileTypeGlyphKind.Folder => FolderGlyph,
+        FileTypeGlyphKind.Archive => ArchiveGlyph,
+        FileTypeGlyphKind.Pdf => PdfGlyph,
+        FileTypeGlyphKind.Text => TextGlyph,
+        FileTypeGlyphKind.Video => VideoGlyph,
+        FileTypeGlyphKind.Image => ImageGlyph,
+        FileTypeGlyphKind.Audio => AudioGlyph,
+        FileTypeGlyphKind.Email => EmailGlyph,
+        FileTypeGlyphKind.Calendar => CalendarGlyph,
+        FileTypeGlyphKind.OfflineMap => OfflineMapGlyph,
+        FileTypeGlyphKind.Database => DatabaseGlyph,
+        FileTypeGlyphKind.Font => FontGlyph,
+        FileTypeGlyphKind.Ebook => EbookGlyph,
+        FileTypeGlyphKind.Contact => ContactGlyph,
+        FileTypeGlyphKind.Subtitle => SubtitleGlyph,
+        _ => DocumentGlyph,
+    };
+
+    public static FileTypeGlyphKind KindForFileName(string? fileName)
     {
         if (string.IsNullOrWhiteSpace(fileName))
-            return "Document";
+            return FileTypeGlyphKind.Document;
 
         var extension = Path.GetExtension(fileName);
         return extension.ToLowerInvariant() switch
         {
-            ".pdf" => PdfGlyph,
-            ".txt" => TextGlyph,
-            var ext when ArchiveExtensions.Contains(ext) => ArchiveGlyph,
-            var ext when VideoExtensions.Contains(ext) => VideoGlyph,
-            var ext when ImageExtensions.Contains(ext) => ImageGlyph,
-            var ext when AudioExtensions.Contains(ext) => AudioGlyph,
-            var ext when EmailExtensions.Contains(ext) => EmailGlyph,
-            var ext when CalendarExtensions.Contains(ext) => CalendarGlyph,
-            var ext when OfflineMapExtensions.Contains(ext) => OfflineMapGlyph,
-            var ext when DatabaseExtensions.Contains(ext) => DatabaseGlyph,
-            var ext when FontExtensions.Contains(ext) => FontGlyph,
-            var ext when EbookExtensions.Contains(ext) => EbookGlyph,
-            ".vcf" or ".vcard" => ContactGlyph,
-            var ext when SubtitleExtensions.Contains(ext) => SubtitleGlyph,
-            _ => "Document",
+            ".pdf" => FileTypeGlyphKind.Pdf,
+            ".txt" => FileTypeGlyphKind.Text,
+            var ext when ArchiveExtensions.Contains(ext) => FileTypeGlyphKind.Archive,
+            var ext when VideoExtensions.Contains(ext) => FileTypeGlyphKind.Video,
+            var ext when ImageExtensions.Contains(ext) => FileTypeGlyphKind.Image,
+            var ext when AudioExtensions.Contains(ext) => FileTypeGlyphKind.Audio,
+            var ext when EmailExtensions.Contains(ext) => FileTypeGlyphKind.Email,
+            var ext when CalendarExtensions.Contains(ext) => FileTypeGlyphKind.Calendar,
+            var ext when OfflineMapExtensions.Contains(ext) => FileTypeGlyphKind.OfflineMap,
+            var ext when DatabaseExtensions.Contains(ext) => FileTypeGlyphKind.Database,
+            var ext when FontExtensions.Contains(ext) => FileTypeGlyphKind.Font,
+            var ext when EbookExtensions.Contains(ext) => FileTypeGlyphKind.Ebook,
+            ".vcf" or ".vcard" => FileTypeGlyphKind.Contact,
+            var ext when SubtitleExtensions.Contains(ext) => FileTypeGlyphKind.Subtitle,
+            _ => FileTypeGlyphKind.Document,
         };
     }
 }

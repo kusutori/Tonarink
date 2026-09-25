@@ -2,6 +2,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Windows.UI;
+using Windows.UI.ViewManagement;
 
 namespace Tonarink.Styling;
 
@@ -23,7 +24,8 @@ static class TonarinkThemeResources
 
     public static Style? TrayMenuPresenterStyle(ElementTheme theme)
     {
-        if (theme == ElementTheme.Default)
+        // Let Windows supply native system-color brushes in contrast themes.
+        if (theme == ElementTheme.Default || new AccessibilitySettings().HighContrast)
             return null;
 
         var dark = theme == ElementTheme.Dark;

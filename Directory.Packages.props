@@ -12,12 +12,12 @@
     <PackageVersion Include="CommunityToolkit.WinUI.Controls.SettingsControls" Version="8.2.251219" />
     <PackageVersion Include="CommunityToolkit.WinUI.Controls.Segmented" Version="8.2.251219" />
     <PackageVersion Include="Microsoft.Graphics.Win2D" Version="1.4.0" />
-    <PackageVersion Include="Microsoft.UI.Reactor.Advanced" Version="0.1.0-preview.15" />
+    <PackageVersion Include="Microsoft.UI.Reactor.Advanced" Version="0.1.0-preview.16" />
     <PackageVersion Include="LottieGen.MsBuild" Version="8.2.250604" />
     <PackageVersion Include="Microsoft.WindowsAppSDK" Version="2.4.0" />
     <PackageVersion Include="Microsoft.WindowsAppSDK.Runtime" Version="2.4.0" />
-    <PackageVersion Include="Microsoft.UI.Reactor" Version="0.1.0-preview.15" />
-    <PackageVersion Include="Microsoft.UI.Reactor.Devtools" Version="0.1.0-preview.15" />
+    <PackageVersion Include="Microsoft.UI.Reactor" Version="0.1.0-preview.16" />
+    <PackageVersion Include="Microsoft.UI.Reactor.Devtools" Version="0.1.0-preview.16" />
     <PackageVersion Include="WinUIEx" Version="2.9.3" />
     <PackageVersion Include="Net.Codecrete.QrCodeGenerator" Version="3.2.1" />
     <PackageVersion Include="Microsoft.AspNetCore.Components.Web" Version="10.0.11" />
