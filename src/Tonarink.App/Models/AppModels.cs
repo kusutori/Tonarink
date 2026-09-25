@@ -143,12 +143,57 @@ sealed record AppRuntimeState(
         AppliedNetworkBlacklist: null);
 }
 
+union AppRuntimeAction(
+    AppRuntimeAction.Starting,
+    AppRuntimeAction.Stopping,
+    AppRuntimeAction.Stopped,
+    AppRuntimeAction.Started,
+    AppRuntimeAction.DevicesChanged,
+    AppRuntimeAction.Refreshed,
+    AppRuntimeAction.IncomingAdded,
+    AppRuntimeAction.IncomingDismissed,
+    AppRuntimeAction.ErrorReported,
+    AppRuntimeAction.Failed)
+{
+    public sealed record Starting;
+
+    public sealed record Stopping;
+
+    public sealed record Stopped;
+
+    public sealed record Started(
+        LocalSendNodeState NodeState,
+        LocalSendIdentity? Identity,
+        IReadOnlyList<LocalSendDevice> Devices,
+        string AppliedMulticastGroup,
+        string? AppliedReceivePin,
+        string? DiscoveryWarning,
+        IReadOnlyList<string>? AppliedNetworkWhitelist,
+        IReadOnlyList<string>? AppliedNetworkBlacklist);
+
+    public sealed record DevicesChanged(
+        IReadOnlyList<LocalSendDevice> Devices,
+        DeviceChange Change);
+
+    public sealed record Refreshed(
+        IReadOnlyList<LocalSendDevice> Devices,
+        string? DiscoveryWarning);
+
+    public sealed record IncomingAdded(IncomingTransferRequest Request);
+
+    public sealed record IncomingDismissed(Guid RequestId);
+
+    public sealed record ErrorReported(string Message);
+
+    public sealed record Failed(LocalSendNodeState NodeState, string Message);
+}
+
 sealed record DeviceActivityEntry(
     DeviceChangeKind Kind,
     DateTimeOffset Timestamp,
     IReadOnlyList<DeviceEndpoint> Endpoints);
 
-sealed record OutgoingTransferViewState(
+sealed record OutgoingTransferSnapshot(
     LocalSendIdentity? Sender,
     LocalSendDevice Receiver,
     string ContentSummary,
@@ -156,10 +201,48 @@ sealed record OutgoingTransferViewState(
     long BytesTransferred,
     long TotalBytes,
     string Status,
-    bool IsPending,
-    bool IsError,
-    Action Cancel,
-    OutgoingPinPrompt? PinPrompt = null);
+    Action Cancel);
+
+union OutgoingTransferViewState(
+    OutgoingTransferViewState.Pending,
+    OutgoingTransferViewState.AwaitingPin,
+    OutgoingTransferViewState.Finished)
+{
+    public sealed record Pending(OutgoingTransferSnapshot Transfer);
+
+    public sealed record AwaitingPin(OutgoingTransferSnapshot Transfer, OutgoingPinPrompt Prompt);
+
+    public sealed record Finished(OutgoingTransferSnapshot Transfer, bool IsError);
+
+    public OutgoingTransferSnapshot Transfer => this switch
+    {
+        Pending(var transfer) => transfer,
+        AwaitingPin(var transfer, _) => transfer,
+        Finished(var transfer, _) => transfer,
+    };
+
+    public LocalSendIdentity? Sender => Transfer.Sender;
+
+    public LocalSendDevice Receiver => Transfer.Receiver;
+
+    public string ContentSummary => Transfer.ContentSummary;
+
+    public TransferState State => Transfer.State;
+
+    public long BytesTransferred => Transfer.BytesTransferred;
+
+    public long TotalBytes => Transfer.TotalBytes;
+
+    public string Status => Transfer.Status;
+
+    public Action Cancel => Transfer.Cancel;
+
+    public bool IsPending => this is Pending;
+
+    public bool IsError => this is Finished { IsError: true };
+
+    public OutgoingPinPrompt? PinPrompt => this is AwaitingPin(_, var prompt) ? prompt : null;
+}
 
 sealed record OutgoingPinPrompt(
     string? Error,

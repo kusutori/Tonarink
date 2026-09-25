@@ -268,19 +268,19 @@ static class WidgetAppHost
 
     private static WidgetTransferFile? OutgoingTransfer(OutgoingTransferViewState? outgoing)
     {
-        if (outgoing is not { IsPending: true })
+        if (outgoing is not OutgoingTransferViewState.Pending(var transfer))
             return null;
 
         return new WidgetTransferFile
         {
             Incoming = false,
-            Title = outgoing.ContentSummary,
-            Peer = outgoing.Receiver.Alias,
-            Status = outgoing.Status,
-            BytesTransferred = outgoing.BytesTransferred,
-            TotalBytes = outgoing.TotalBytes,
-            Indeterminate = outgoing.TotalBytes <= 0
-                            || outgoing.State is TransferState.Preparing or TransferState.WaitingForAcceptance,
+            Title = transfer.ContentSummary,
+            Peer = transfer.Receiver.Alias,
+            Status = transfer.Status,
+            BytesTransferred = transfer.BytesTransferred,
+            TotalBytes = transfer.TotalBytes,
+            Indeterminate = transfer.TotalBytes <= 0
+                            || transfer.State is TransferState.Preparing or TransferState.WaitingForAcceptance,
         };
     }
 

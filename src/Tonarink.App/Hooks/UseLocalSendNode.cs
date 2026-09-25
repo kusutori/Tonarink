@@ -22,7 +22,9 @@ static class LocalSendNodeHooks
         AppSettings settings,
         IntlAccessor t)
     {
-        var (runtime, updateRuntime) = context.UseReducer(AppRuntimeState.Initial);
+        var (runtime, dispatchRuntime) = context.UseReducer<AppRuntimeState, AppRuntimeAction>(
+            ReduceRuntime,
+            AppRuntimeState.Initial);
         var runtimeRef = context.UseRef(runtime);
         runtimeRef.Current = runtime;
         var intlRef = context.UseRef(t);
@@ -37,7 +39,7 @@ static class LocalSendNodeHooks
             () => intlRef.Current,
             () => lifecycle.CurrentNode,
             () => runtimeRef.Current,
-            updateRuntime);
+            dispatchRuntime);
 
         context.UseEffect(() =>
         {
@@ -76,14 +78,7 @@ static class LocalSendNodeHooks
 
         void StartOrRestart()
         {
-            updateRuntime(current => current with
-            {
-                NodeState = LocalSendNodeState.Starting,
-                Devices = [],
-                IncomingTransfers = [],
-                Error = null,
-                DiscoveryWarning = null,
-            });
+            dispatchRuntime(new AppRuntimeAction.Starting());
             setServerDesired(true);
             updateServerEpoch(epoch => epoch + 1);
         }
@@ -104,14 +99,7 @@ static class LocalSendNodeHooks
                     or LocalSendNodeState.Created or LocalSendNodeState.Disposed)
                 return;
 
-            updateRuntime(current => current with
-            {
-                NodeState = LocalSendNodeState.Stopping,
-                Devices = [],
-                IncomingTransfers = [],
-                Error = null,
-                DiscoveryWarning = null,
-            });
+            dispatchRuntime(new AppRuntimeAction.Stopping());
             setServerDesired(false);
         }
 
@@ -121,16 +109,7 @@ static class LocalSendNodeHooks
             try
             {
                 if (desired)
-                {
-                    updateRuntime(current => current with
-                    {
-                        NodeState = LocalSendNodeState.Starting,
-                        Devices = [],
-                        IncomingTransfers = [],
-                        Error = null,
-                        DiscoveryWarning = null,
-                    });
-                }
+                    dispatchRuntime(new AppRuntimeAction.Starting());
 
                 node = await lifecycle.StartSessionAsync(
                     session,
@@ -140,29 +119,19 @@ static class LocalSendNodeHooks
                     cancellationToken).ConfigureAwait(false);
                 if (node is null)
                 {
-                    updateRuntime(current => current with
-                    {
-                        NodeState = LocalSendNodeState.Stopped,
-                        Devices = [],
-                        IncomingTransfers = [],
-                        Error = null,
-                        DiscoveryWarning = null,
-                    });
+                    dispatchRuntime(new AppRuntimeAction.Stopped());
                     return;
                 }
 
-                updateRuntime(current => current with
-                {
-                    NodeState = node.State,
-                    Identity = node.Identity,
-                    Devices = node.GetDevices(),
-                    Error = null,
-                    AppliedMulticastGroup = settings.ResolvedMulticastAddress.ToString(),
-                    AppliedReceivePin = settings.ResolvedReceivePin,
-                    DiscoveryWarning = node.DiscoveryError,
-                    AppliedNetworkWhitelist = settings.NetworkWhitelist,
-                    AppliedNetworkBlacklist = settings.NetworkBlacklist,
-                });
+                dispatchRuntime(new AppRuntimeAction.Started(
+                    node.State,
+                    node.Identity,
+                    node.GetDevices(),
+                    settings.ResolvedMulticastAddress.ToString(),
+                    settings.ResolvedReceivePin,
+                    node.DiscoveryError,
+                    settings.NetworkWhitelist,
+                    settings.NetworkBlacklist));
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
@@ -171,12 +140,9 @@ static class LocalSendNodeHooks
             }
             catch (Exception exception)
             {
-                updateRuntime(current => current with
-                {
-                    NodeState = node?.State ?? lifecycle.CurrentNode?.State ?? LocalSendNodeState.Faulted,
-                    Error = exception.Message,
-                    DiscoveryWarning = null,
-                });
+                dispatchRuntime(new AppRuntimeAction.Failed(
+                    node?.State ?? lifecycle.CurrentNode?.State ?? LocalSendNodeState.Faulted,
+                    exception.Message));
                 return;
             }
 
@@ -199,11 +165,7 @@ static class LocalSendNodeHooks
         {
             await foreach (var change in node.WatchDeviceChangesAsync(cancellationToken).ConfigureAwait(false))
             {
-                updateRuntime(current => current with
-                {
-                    Devices = node.GetDevices(),
-                    DeviceActivity = AppendDeviceActivity(current.DeviceActivity, change),
-                });
+                dispatchRuntime(new AppRuntimeAction.DevicesChanged(node.GetDevices(), change));
             }
         }
 
@@ -216,19 +178,83 @@ static class LocalSendNodeHooks
             try
             {
                 await node.RefreshAsync().ConfigureAwait(false);
-                updateRuntime(current => current with
-                {
-                    Devices = node.GetDevices(),
-                    Error = null,
-                    DiscoveryWarning = node.DiscoveryError,
-                });
+                dispatchRuntime(new AppRuntimeAction.Refreshed(node.GetDevices(), node.DiscoveryError));
             }
             catch (Exception exception)
             {
-                updateRuntime(current => current with { Error = exception.Message });
+                dispatchRuntime(new AppRuntimeAction.ErrorReported(exception.Message));
             }
         }
     }
+
+    private static AppRuntimeState ReduceRuntime(AppRuntimeState state, AppRuntimeAction action) => action switch
+    {
+        AppRuntimeAction.Starting => state with
+        {
+            NodeState = LocalSendNodeState.Starting,
+            Devices = [],
+            IncomingTransfers = [],
+            Error = null,
+            DiscoveryWarning = null,
+        },
+        AppRuntimeAction.Stopping => state with
+        {
+            NodeState = LocalSendNodeState.Stopping,
+            Devices = [],
+            IncomingTransfers = [],
+            Error = null,
+            DiscoveryWarning = null,
+        },
+        AppRuntimeAction.Stopped => state with
+        {
+            NodeState = LocalSendNodeState.Stopped,
+            Devices = [],
+            IncomingTransfers = [],
+            Error = null,
+            DiscoveryWarning = null,
+        },
+        AppRuntimeAction.Started started => state with
+        {
+            NodeState = started.NodeState,
+            Identity = started.Identity,
+            Devices = started.Devices,
+            Error = null,
+            AppliedMulticastGroup = started.AppliedMulticastGroup,
+            AppliedReceivePin = started.AppliedReceivePin,
+            DiscoveryWarning = started.DiscoveryWarning,
+            AppliedNetworkWhitelist = started.AppliedNetworkWhitelist,
+            AppliedNetworkBlacklist = started.AppliedNetworkBlacklist,
+        },
+        AppRuntimeAction.DevicesChanged changed => state with
+        {
+            Devices = changed.Devices,
+            DeviceActivity = AppendDeviceActivity(state.DeviceActivity, changed.Change),
+        },
+        AppRuntimeAction.Refreshed refreshed => state with
+        {
+            Devices = refreshed.Devices,
+            Error = null,
+            DiscoveryWarning = refreshed.DiscoveryWarning,
+        },
+        AppRuntimeAction.IncomingAdded added => state with
+        {
+            IncomingTransfers = (IncomingTransferRequest[])[.. state.IncomingTransfers, added.Request],
+        },
+        AppRuntimeAction.IncomingDismissed dismissed => state with
+        {
+            IncomingTransfers = (IncomingTransferRequest[])
+            [
+                .. state.IncomingTransfers.Where(request => request.RequestId != dismissed.RequestId)
+            ],
+        },
+        AppRuntimeAction.ErrorReported reported => state with { Error = reported.Message },
+        AppRuntimeAction.Failed failed => state with
+        {
+            NodeState = failed.NodeState,
+            Error = failed.Message,
+            DiscoveryWarning = null,
+        },
+    };
 
     private static IReadOnlyDictionary<string, IReadOnlyList<DeviceActivityEntry>> AppendDeviceActivity(
         IReadOnlyDictionary<string, IReadOnlyList<DeviceActivityEntry>> activity,

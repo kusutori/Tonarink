@@ -7,19 +7,10 @@ sealed class IncomingTransferCoordinator(
     Func<IntlAccessor> getIntl,
     Func<LocalSendNode?> getNode,
     Func<AppRuntimeState> getRuntime,
-    Action<Func<AppRuntimeState, AppRuntimeState>> updateRuntime)
+    Action<AppRuntimeAction> dispatchRuntime)
 {
-    public void Dismiss(Guid requestId)
-    {
-        updateRuntime(current => current with
-        {
-            IncomingTransfers = (IncomingTransferRequest[])
-            [
-                .. current.IncomingTransfers
-                    .Where(request => request.RequestId != requestId)
-            ],
-        });
-    }
+    public void Dismiss(Guid requestId) =>
+        dispatchRuntime(new AppRuntimeAction.IncomingDismissed(requestId));
 
     public async Task WatchAsync(LocalSendNode node, CancellationToken cancellationToken)
     {
@@ -44,10 +35,7 @@ sealed class IncomingTransferCoordinator(
                 continue;
             }
 
-            updateRuntime(current => current with
-            {
-                IncomingTransfers = (IncomingTransferRequest[])[.. current.IncomingTransfers, request],
-            });
+            dispatchRuntime(new AppRuntimeAction.IncomingAdded(request));
             AppNotificationService.ShowIncomingRequest(
                 t.Message(new("App", "NotificationIncomingTitle"), ("device", request.Sender.Alias)),
                 TransferOverlayVisuals.IncomingSummary(t, request.Items),
@@ -83,7 +71,7 @@ sealed class IncomingTransferCoordinator(
             }
             catch (Exception exception)
             {
-                updateRuntime(current => current with { Error = exception.Message });
+                dispatchRuntime(new AppRuntimeAction.ErrorReported(exception.Message));
             }
         }
 
@@ -131,7 +119,7 @@ sealed class IncomingTransferCoordinator(
             {
                 var message = result.Failure?.Message ?? t.Message(new("App", "ReceiveFailed"));
                 AppNotificationService.Show(t.Message(new("App", "ReceiveFailed")), message, "receive-failed");
-                updateRuntime(current => current with { Error = message });
+                dispatchRuntime(new AppRuntimeAction.ErrorReported(message));
                 return;
             }
 
@@ -161,7 +149,7 @@ sealed class IncomingTransferCoordinator(
                 t.Message(new("App", "ReceiveFailed")),
                 exception.Message,
                 "receive-failed");
-            updateRuntime(current => current with { Error = exception.Message });
+            dispatchRuntime(new AppRuntimeAction.ErrorReported(exception.Message));
         }
         finally
         {

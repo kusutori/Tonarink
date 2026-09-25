@@ -105,6 +105,42 @@ union TransferUiState(TransferUiState.Idle, TransferUiState.Active)
     };
 }
 
+union SendTransferAction(
+    SendTransferAction.Reset,
+    SendTransferAction.Started,
+    SendTransferAction.Progressed,
+    SendTransferAction.Finished,
+    SendTransferAction.PinRequested,
+    SendTransferAction.Failed,
+    SendTransferAction.MessageChanged)
+{
+    public sealed record Reset(string Message);
+
+    public sealed record Started(TransferUiState.Active State);
+
+    public sealed record Progressed(TransferUiState.Active State);
+
+    public sealed record Finished(TransferUiState.Active State);
+
+    public sealed record PinRequested(TransferUiState.Active State);
+
+    public sealed record Failed(TransferUiState.Active State);
+
+    public sealed record MessageChanged(string Message);
+}
+
+union OutgoingOverlayUpdate(
+    OutgoingOverlayUpdate.Pending,
+    OutgoingOverlayUpdate.AwaitingPin,
+    OutgoingOverlayUpdate.Finished)
+{
+    public sealed record Pending;
+
+    public sealed record AwaitingPin(OutgoingPinPrompt Prompt);
+
+    public sealed record Finished;
+}
+
 sealed class SendPage : Component<SendPageProps>
 {
     public override Element Render()
@@ -142,8 +178,9 @@ sealed class SendPage : Component<SendPageProps>
                 return () => FavoriteDeviceStore.Changed -= listener;
             },
             static () => FavoriteDeviceStore.Entries);
-        var (transfer, updateTransfer) = UseReducer<TransferUiState>(new TransferUiState.Idle(
-            t.Message(new("App", "SendHint"))));
+        var (transfer, dispatchTransfer) = UseReducer<TransferUiState, SendTransferAction>(
+            ReduceTransfer,
+            new TransferUiState.Idle(t.Message(new("App", "SendHint"))));
         var sendCancellationRef = UseRef<CancellationTokenSource?>();
         var searchingPlayerRef = UseRef<AnimatedVisualPlayer?>();
         var shareTargetPayloadId = Props.ShareTargetPayload?.Id ?? Guid.Empty;
@@ -192,15 +229,19 @@ sealed class SendPage : Component<SendPageProps>
                 "send-progress");
             var progress = new Progress<TransferProgress>(value =>
             {
-                TransferUiState next = new TransferUiState.Active(
+                var next = new TransferUiState.Active(
                     value.State,
                     request.Device.Alias,
                     value.BytesTransferred,
                     value.TotalBytes,
                     ProgressMessage(t, value.State, request.Device.Alias),
                     IsError: false);
-                updateTransfer(_ => next);
-                PublishTransferOverlay(request.Device, request.Items, next, isPending: true);
+                dispatchTransfer(new SendTransferAction.Progressed(next));
+                PublishTransferOverlay(
+                    request.Device,
+                    request.Items,
+                    next,
+                    new OutgoingOverlayUpdate.Pending());
                 progressNotification?.Report(
                     ContentSummary(t, request.Items),
                     next.Message,
@@ -836,7 +877,7 @@ sealed class SendPage : Component<SendPageProps>
         {
             updateSelectedItems(current => (SelectedSendItem[])[.. current, .. newItems]);
             setPickerMessage(t.Message(new("App", "ItemsAdded"), ("count", newItems.Count)));
-            updateTransfer(_ => new TransferUiState.Idle(t.Message(new("App", "SendHint"))));
+            dispatchTransfer(new SendTransferAction.Reset(t.Message(new("App", "SendHint"))));
         }
 
         async Task ImportShareTargetPayloadAsync(
@@ -913,24 +954,19 @@ sealed class SendPage : Component<SendPageProps>
             var cancellation = new CancellationTokenSource();
             sendCancellationRef.Current?.Dispose();
             sendCancellationRef.Current = cancellation;
-            updateTransfer(_ => new TransferUiState.Active(
+            var startingState = new TransferUiState.Active(
                 TransferState.Preparing,
                 device.Alias,
                 0,
                 selectedItems.Sum(static item => item.Length),
                 t.Message(new("App", "PreparingForDevice"), ("device", device.Alias)),
-                IsError: false));
+                IsError: false);
+            dispatchTransfer(new SendTransferAction.Started(startingState));
             PublishTransferOverlay(
                 device,
                 (SendItem[])[.. selectedItems.Select(static item => item.Item)],
-                new TransferUiState.Active(
-                    TransferState.Preparing,
-                    device.Alias,
-                    0,
-                    selectedItems.Sum(static item => item.Length),
-                    t.Message(new("App", "PreparingForDevice"), ("device", device.Alias)),
-                    IsError: false),
-                isPending: true);
+                startingState,
+                new OutgoingOverlayUpdate.Pending());
 
             try
             {
@@ -946,12 +982,12 @@ sealed class SendPage : Component<SendPageProps>
                     result,
                     device.Alias,
                     selectedItems.Sum(static item => item.Length));
-                updateTransfer(_ => resultState);
+                dispatchTransfer(new SendTransferAction.Finished(resultState));
                 PublishTransferOverlay(
                     device,
                     (SendItem[])[.. selectedItems.Select(static item => item.Item)],
                     resultState,
-                    isPending: false);
+                    new OutgoingOverlayUpdate.Finished());
                 if (result.IsSuccess)
                 {
                     if (resolvedManualAddress is not null)
@@ -987,50 +1023,55 @@ sealed class SendPage : Component<SendPageProps>
             }
             catch (PinRequiredException exception)
             {
-                TransferUiState waitingState = new TransferUiState.Active(
+                var waitingState = new TransferUiState.Active(
                     TransferState.WaitingForAcceptance,
                     device.Alias,
                     0,
                     selectedItems.Sum(static item => item.Length),
                     t.Message(new("App", "TargetRequiresPin")),
                     exception.InvalidPin);
-                updateTransfer(_ => waitingState);
+                dispatchTransfer(new SendTransferAction.PinRequested(waitingState));
                 PublishTransferOverlay(
                     device,
                     (SendItem[])[.. selectedItems.Select(static item => item.Item)],
                     waitingState,
-                    isPending: false,
-                    new OutgoingPinPrompt(
+                    new OutgoingOverlayUpdate.AwaitingPin(new OutgoingPinPrompt(
                         exception.InvalidPin ? t.Message(new("App", "PinIncorrect")) : null,
                         enteredPin => _ = StartSendAsync(device, enteredPin, resolvedManualAddress),
-                        () => updateTransfer(_ => new TransferUiState.Idle(
-                            t.Message(new("App", "SendHint"))))));
+                        () => dispatchTransfer(new SendTransferAction.Reset(
+                            t.Message(new("App", "SendHint")))))));
             }
             catch (PinRateLimitedException)
             {
-                TransferUiState errorState = new TransferUiState.Active(
+                var errorState = new TransferUiState.Active(
                     TransferState.Failed,
                     device.Alias,
                     0,
                     selectedItems.Sum(static item => item.Length),
                     t.Message(new("App", "PinRateLimited")),
                     IsError: true);
-                updateTransfer(_ => errorState);
-                PublishTransferOverlay(device, (SendItem[])[.. selectedItems.Select(static item => item.Item)], errorState,
-                    false);
+                dispatchTransfer(new SendTransferAction.Failed(errorState));
+                PublishTransferOverlay(
+                    device,
+                    (SendItem[])[.. selectedItems.Select(static item => item.Item)],
+                    errorState,
+                    new OutgoingOverlayUpdate.Finished());
             }
             catch (Exception exception)
             {
-                TransferUiState errorState = new TransferUiState.Active(
+                var errorState = new TransferUiState.Active(
                     TransferState.Failed,
                     device.Alias,
                     0,
                     selectedItems.Sum(static item => item.Length),
                     exception.Message,
                     IsError: true);
-                updateTransfer(_ => errorState);
-                PublishTransferOverlay(device, (SendItem[])[.. selectedItems.Select(static item => item.Item)], errorState,
-                    false);
+                dispatchTransfer(new SendTransferAction.Failed(errorState));
+                PublishTransferOverlay(
+                    device,
+                    (SendItem[])[.. selectedItems.Select(static item => item.Item)],
+                    errorState,
+                    new OutgoingOverlayUpdate.Finished());
             }
             finally
             {
@@ -1303,10 +1344,9 @@ sealed class SendPage : Component<SendPageProps>
             LocalSendDevice device,
             IReadOnlyList<SendItem> items,
             TransferUiState state,
-            bool isPending,
-            OutgoingPinPrompt? pinPrompt = null)
+            OutgoingOverlayUpdate update)
         {
-            Props.SetTransferOverlay(new(
+            var snapshot = new OutgoingTransferSnapshot(
                 Props.Runtime.Identity,
                 device,
                 ContentSummary(t, items),
@@ -1314,15 +1354,20 @@ sealed class SendPage : Component<SendPageProps>
                 state.BytesTransferred,
                 state.TotalBytes,
                 state.Message,
-                isPending,
-                state.IsError,
                 () =>
                 {
                     sendCancellationRef.Current?.Cancel();
-                    updateTransfer(current => current.WithMessage(
+                    dispatchTransfer(new SendTransferAction.MessageChanged(
                         t.Message(new("App", "CancellingTransfer"))));
-                },
-                pinPrompt));
+                });
+            Props.SetTransferOverlay(update switch
+            {
+                OutgoingOverlayUpdate.Pending => new OutgoingTransferViewState.Pending(snapshot),
+                OutgoingOverlayUpdate.AwaitingPin(var prompt) =>
+                    new OutgoingTransferViewState.AwaitingPin(snapshot, prompt),
+                OutgoingOverlayUpdate.Finished =>
+                    new OutgoingTransferViewState.Finished(snapshot, state.IsError),
+            });
         }
     }
 
@@ -1580,7 +1625,7 @@ sealed class SendPage : Component<SendPageProps>
         return new(Guid.NewGuid(), item, fileName, length, "clipboard");
     }
 
-    private static TransferUiState ResultState(
+    private static TransferUiState.Active ResultState(
         IntlAccessor t,
         TransferResult result,
         string deviceAlias,
@@ -1608,6 +1653,19 @@ sealed class SendPage : Component<SendPageProps>
                 result.Failure?.Message ?? t.Message(new("App", "TransferFailed")),
                 IsError: true),
         };
+
+    private static TransferUiState ReduceTransfer(
+        TransferUiState state,
+        SendTransferAction action) => action switch
+    {
+        SendTransferAction.Reset reset => new TransferUiState.Idle(reset.Message),
+        SendTransferAction.Started started => started.State,
+        SendTransferAction.Progressed progressed => progressed.State,
+        SendTransferAction.Finished finished => finished.State,
+        SendTransferAction.PinRequested requested => requested.State,
+        SendTransferAction.Failed failed => failed.State,
+        SendTransferAction.MessageChanged changed => state.WithMessage(changed.Message),
+    };
 
     private static string ProgressMessage(IntlAccessor t, TransferState state, string deviceAlias) => state switch
     {

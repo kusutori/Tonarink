@@ -31,15 +31,11 @@ static class TraySendCoordinator
             ProgressText(0, request.TotalBytes),
             "tray-send-progress");
 
-        void Publish(
+        OutgoingTransferSnapshot Snapshot(
             TransferState state,
             long bytesTransferred,
             long totalBytes,
-            string status,
-            bool isPending,
-            bool isError = false)
-        {
-            setOutgoingTransfer(new(
+            string status) => new(
                 identity,
                 request.Device,
                 summary,
@@ -47,27 +43,40 @@ static class TraySendCoordinator
                 bytesTransferred,
                 totalBytes,
                 status,
-                isPending,
-                isError,
-                cancellation.Cancel));
-        }
+                cancellation.Cancel);
 
-        Publish(
+        void PublishPending(
+            TransferState state,
+            long bytesTransferred,
+            long totalBytes,
+            string status) =>
+            setOutgoingTransfer(new OutgoingTransferViewState.Pending(
+                Snapshot(state, bytesTransferred, totalBytes, status)));
+
+        void PublishFinished(
+            TransferState state,
+            long bytesTransferred,
+            long totalBytes,
+            string status,
+            bool isError) =>
+            setOutgoingTransfer(new OutgoingTransferViewState.Finished(
+                Snapshot(state, bytesTransferred, totalBytes, status),
+                isError));
+
+        PublishPending(
             TransferState.Preparing,
             0,
             request.TotalBytes,
-            t.Message(new("App", "PreparingForDevice"), ("device", request.Device.Alias)),
-            isPending: true);
+            t.Message(new("App", "PreparingForDevice"), ("device", request.Device.Alias)));
 
         var progress = new Progress<TransferProgress>(value =>
         {
             var status = ProgressMessage(t, value.State, request.Device.Alias);
-            Publish(
+            PublishPending(
                 value.State,
                 value.BytesTransferred,
                 value.TotalBytes,
-                status,
-                isPending: true);
+                status);
             progressNotification?.Report(
                 summary,
                 status,
@@ -95,13 +104,12 @@ static class TraySendCoordinator
                 TransferState.Cancelled => t.Message(new("App", "TransferCancelled")),
                 _ => result.Failure?.Message ?? t.Message(new("App", "TransferFailed")),
             };
-            Publish(
+            PublishFinished(
                 result.State,
                 result.BytesTransferred,
                 result.State == TransferState.Completed ? result.BytesTransferred : request.TotalBytes,
                 status,
-                isPending: false,
-                isError: result.State == TransferState.Failed);
+                result.State == TransferState.Failed);
 
             if (result.IsSuccess)
             {
@@ -129,7 +137,7 @@ static class TraySendCoordinator
         }
         catch (Exception exception)
         {
-            Publish(
+            PublishFinished(
                 exception is OperationCanceledException
                     ? TransferState.Cancelled
                     : TransferState.Failed,
@@ -138,8 +146,7 @@ static class TraySendCoordinator
                 exception is OperationCanceledException
                     ? t.Message(new("App", "TransferCancelled"))
                     : exception.Message,
-                isPending: false,
-                isError: exception is not OperationCanceledException);
+                exception is not OperationCanceledException);
             throw;
         }
         finally

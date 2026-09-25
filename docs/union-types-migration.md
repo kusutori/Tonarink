@@ -126,6 +126,19 @@ Reactor 示例中通过抽象基类派生 action 的写法，可以直接由联�
 - 分享、发送、接收、托盘、通知和激活入口的现有行为不回退；
 - 形成一套可复用的命名、case 组织和模式匹配风格。
 
+### 第一阶段实施结果
+
+第一阶段已在 `experiment/dotnet11` 分支完成：
+
+- `UseLocalSendNode` 已使用 `AppRuntimeAction` 和 Redux-style reducer，节点生命周期、设备变化、刷新结果、接收请求与错误报告均通过封闭 action 集合更新；
+- `IncomingTransferOverlay` 已将 `TransferState + IsDecided + IsError` 替换为 `Pending / Receiving / Finished` state union，并使用 `IncomingTransferAction` reducer；
+- `SendPage` 已使用 `SendTransferAction` 表达开始、进度、完成、PIN 请求、失败、重置与状态消息变化；
+- 发送覆盖层已将 `IsPending + IsError + PinPrompt?` 替换为 `Pending / AwaitingPin / Finished`，托盘发送和 Widget 同步使用新模型；
+- 全局审计后保留了设置枚举、协议枚举、动画瞬时标志、对话框开关和计数器，它们没有携带不同负载，也不存在值得用 union 消除的无效组合；
+- Debug、Release 与 win-x64 Native AOT 均已通过零警告构建。
+
+`AppRuntimeState` 本身暂时保留为 record。当前 action union 已经统一了写入口，而 runtime 的身份、设备、警告和应用配置快照需要被多个生命周期阶段共同读取；立即把它拆成多个 case 会引入大量重复负载，收益不足。后续只有在 Core 0.3 的生命周期契约明确后才重新评估。
+
 ## 第二阶段：Core 破坏性 Preview 改造
 
 ### 版本策略
