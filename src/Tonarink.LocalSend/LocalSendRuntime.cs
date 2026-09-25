@@ -127,7 +127,7 @@ public sealed class LocalSendRuntime : ITonarinkRuntime
 
     public Task RefreshAsync(CancellationToken cancellationToken = default) => RequiredNode().RefreshAsync(cancellationToken);
 
-    public async Task SendAsync(NearbyDevice device, IReadOnlyList<ShareItem> items, string? pin = null, IProgress<TransferActivity>? progress = null, CancellationToken cancellationToken = default)
+    public async Task<RuntimeSendResult> SendAsync(NearbyDevice device, IReadOnlyList<ShareItem> items, string? pin = null, IProgress<TransferActivity>? progress = null, CancellationToken cancellationToken = default)
     {
         if (!_devices.TryGetValue(device.Id, out var target))
             throw new InvalidOperationException("目标设备已离线，请刷新后重试。");
@@ -138,26 +138,62 @@ public sealed class LocalSendRuntime : ITonarinkRuntime
             _state.UpsertTransfer(activity);
             progress?.Report(activity);
         });
-        TransferResult result;
-        try
+        var result = await RequiredNode().SendAsync(
+                target,
+                coreItems,
+                new SendOptions { Pin = pin, ComputeSha256 = true },
+                reporter,
+                cancellationToken)
+            .ConfigureAwait(false);
+        if (result is SendOutcome.PinRequired required)
+            return new RuntimeSendResult.PinRequired(required.InvalidPin);
+        if (result is SendOutcome.PinRateLimited)
+            return new RuntimeSendResult.PinRateLimited();
+
+        var (transferId, status, bytesTransferred, runtimeResult) = result switch
         {
-            result = await RequiredNode().SendAsync(target, coreItems, new SendOptions { Pin = pin, ComputeSha256 = true }, reporter, cancellationToken).ConfigureAwait(false);
-        }
-        catch (PinRequiredException exception)
-        {
-            throw new TransferPinRequiredException(exception.InvalidPin, exception);
-        }
-        catch (PinRateLimitedException exception)
-        {
-            throw new TransferPinRateLimitedException(exception);
-        }
-        _state.UpsertTransfer(new TransferActivity(result.TransferId.ToString("N"), AppTransferDirection.Send, target.Alias,
-            $"{items.Count} 项", MapStatus(result.State), result.Items.Sum(static item => item.BytesTransferred), items.Sum(static item => item.Size), DateTimeOffset.UtcNow));
-        if (result.IsSuccess)
+            SendOutcome.Completed completed => (
+                completed.TransferId,
+                AppTransferStatus.Completed,
+                completed.Items.Sum(static item => item.BytesTransferred),
+                (RuntimeSendResult)new RuntimeSendResult.Completed()),
+            SendOutcome.Cancelled cancelled => (
+                cancelled.TransferId,
+                AppTransferStatus.Cancelled,
+                cancelled.Items.Sum(static item => item.BytesTransferred),
+                new RuntimeSendResult.Cancelled()),
+            SendOutcome.PeerBusy busy => (
+                busy.TransferId,
+                AppTransferStatus.Failed,
+                0,
+                new RuntimeSendResult.PeerBusy()),
+            SendOutcome.Declined declined => (
+                declined.TransferId,
+                AppTransferStatus.Failed,
+                0,
+                new RuntimeSendResult.Declined()),
+            SendOutcome.Failed failed => (
+                failed.TransferId,
+                AppTransferStatus.Failed,
+                failed.Items.Sum(static item => item.BytesTransferred),
+                new RuntimeSendResult.Failed(failed.Failure.Message)),
+            _ => throw new InvalidOperationException("Unexpected send outcome."),
+        };
+        _state.UpsertTransfer(new TransferActivity(
+            transferId.ToString("N"),
+            AppTransferDirection.Send,
+            target.Alias,
+            $"{items.Count} 项",
+            status,
+            bytesTransferred,
+            items.Sum(static item => item.Size),
+            DateTimeOffset.UtcNow));
+        if (runtimeResult is RuntimeSendResult.Completed)
             await _platform.NotifyAsync("发送完成", $"已成功发送给 {target.Alias}", cancellationToken).ConfigureAwait(false);
+        return runtimeResult;
     }
 
-    public async Task SendToAddressAsync(string address, IReadOnlyList<ShareItem> items, string? pin = null, IProgress<TransferActivity>? progress = null, CancellationToken cancellationToken = default)
+    public async Task<RuntimeSendResult> SendToAddressAsync(string address, IReadOnlyList<ShareItem> items, string? pin = null, IProgress<TransferActivity>? progress = null, CancellationToken cancellationToken = default)
     {
         if (!DeviceAddress.TryParse(address, out var ip, out var port))
             throw new ArgumentException("目标地址无效，请使用 IP 或 IP:端口。", nameof(address));
@@ -174,16 +210,7 @@ public sealed class LocalSendRuntime : ITonarinkRuntime
                 ReplaceDevices(RequiredNode().GetDevices());
                 var nearby = new NearbyDevice(device.Fingerprint, device.Alias, device.DeviceModel ?? device.DeviceType.ToString(),
                     device.DeviceType.ToString(), endpoint.Address.ToString(), endpoint.Port, device.LastSeen);
-                await SendAsync(nearby, items, pin, progress, cancellationToken).ConfigureAwait(false);
-                return;
-            }
-            catch (TransferPinRequiredException)
-            {
-                throw;
-            }
-            catch (TransferPinRateLimitedException)
-            {
-                throw;
+                return await SendAsync(nearby, items, pin, progress, cancellationToken).ConfigureAwait(false);
             }
             catch (OperationCanceledException)
             {
@@ -198,19 +225,46 @@ public sealed class LocalSendRuntime : ITonarinkRuntime
         throw lastError ?? new InvalidOperationException("无法连接到该地址。");
     }
 
-    public async Task AcceptAsync(IncomingOffer offer, IReadOnlySet<Guid> acceptedItems, CancellationToken cancellationToken = default)
+    public async Task<RuntimeReceiveResult> AcceptAsync(IncomingOffer offer, IReadOnlySet<Guid> acceptedItems, CancellationToken cancellationToken = default)
     {
         if (!_offers.TryGetValue(offer.Id, out var request))
             throw new InvalidOperationException("接收请求已失效。");
         var ids = request.Items.Where(item => acceptedItems.Contains(StableGuid(item.Id))).Select(static item => item.Id).ToArray();
         var reporter = new Progress<TransferProgress>(value => _state.UpsertTransfer(MapProgress(value, request.Sender.Alias, $"{ids.Length} 项")));
         var result = await RequiredNode().AcceptAsync(request.RequestId, new AcceptTransferOptions { AcceptedItemIds = ids }, reporter, cancellationToken).ConfigureAwait(false);
-        _state.UpsertTransfer(new TransferActivity(result.TransferId.ToString("N"), AppTransferDirection.Receive, request.Sender.Alias,
-            $"{ids.Length} 项", MapStatus(result.State), result.Items.Sum(static item => item.BytesTransferred),
-            request.Items.Where(item => ids.Contains(item.Id, StringComparer.Ordinal)).Sum(static item => item.Size), DateTimeOffset.UtcNow));
-        if (result.IsSuccess)
+        var (transferId, status, bytesTransferred, runtimeResult, receivedItems) = result switch
         {
-            foreach (var item in result.Items.Where(static item => item.SavedPath is not null))
+            ReceiveOutcome.Completed completed => (
+                completed.TransferId,
+                AppTransferStatus.Completed,
+                completed.Items.Sum(static item => item.BytesTransferred),
+                (RuntimeReceiveResult)new RuntimeReceiveResult.Completed(),
+                completed.Items),
+            ReceiveOutcome.Cancelled cancelled => (
+                cancelled.TransferId,
+                AppTransferStatus.Cancelled,
+                cancelled.Items.Sum(static item => item.BytesTransferred),
+                new RuntimeReceiveResult.Cancelled(),
+                cancelled.Items),
+            ReceiveOutcome.Failed failed => (
+                failed.TransferId,
+                AppTransferStatus.Failed,
+                failed.Items.Sum(static item => item.BytesTransferred),
+                new RuntimeReceiveResult.Failed(failed.Failure.Message),
+                failed.Items),
+        };
+        _state.UpsertTransfer(new TransferActivity(
+            transferId.ToString("N"),
+            AppTransferDirection.Receive,
+            request.Sender.Alias,
+            $"{ids.Length} 项",
+            status,
+            bytesTransferred,
+            request.Items.Where(item => ids.Contains(item.Id, StringComparer.Ordinal)).Sum(static item => item.Size),
+            DateTimeOffset.UtcNow));
+        if (runtimeResult is RuntimeReceiveResult.Completed)
+        {
+            foreach (var item in receivedItems.Where(static item => item.SavedPath is not null))
             {
                 var contentType = request.Items.FirstOrDefault(candidate => candidate.Id == item.ItemId)?.ContentType ?? "application/octet-stream";
                 try
@@ -226,6 +280,7 @@ public sealed class LocalSendRuntime : ITonarinkRuntime
         }
         _offers.TryRemove(offer.Id, out _);
         PublishOffers();
+        return runtimeResult;
     }
 
     public async Task DeclineAsync(IncomingOffer offer, CancellationToken cancellationToken = default)

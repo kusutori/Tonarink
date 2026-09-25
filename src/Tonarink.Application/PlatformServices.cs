@@ -49,11 +49,11 @@ public interface ITonarinkRuntime : IAsyncDisposable
 
     Task RefreshAsync(CancellationToken cancellationToken = default);
 
-    Task SendAsync(NearbyDevice device, IReadOnlyList<ShareItem> items, string? pin = null, IProgress<TransferActivity>? progress = null, CancellationToken cancellationToken = default);
+    Task<RuntimeSendResult> SendAsync(NearbyDevice device, IReadOnlyList<ShareItem> items, string? pin = null, IProgress<TransferActivity>? progress = null, CancellationToken cancellationToken = default);
 
-    Task SendToAddressAsync(string address, IReadOnlyList<ShareItem> items, string? pin = null, IProgress<TransferActivity>? progress = null, CancellationToken cancellationToken = default);
+    Task<RuntimeSendResult> SendToAddressAsync(string address, IReadOnlyList<ShareItem> items, string? pin = null, IProgress<TransferActivity>? progress = null, CancellationToken cancellationToken = default);
 
-    Task AcceptAsync(IncomingOffer offer, IReadOnlySet<Guid> acceptedItems, CancellationToken cancellationToken = default);
+    Task<RuntimeReceiveResult> AcceptAsync(IncomingOffer offer, IReadOnlySet<Guid> acceptedItems, CancellationToken cancellationToken = default);
 
     Task DeclineAsync(IncomingOffer offer, CancellationToken cancellationToken = default);
 }
@@ -72,11 +72,11 @@ public sealed class CapabilityOnlyRuntime : ITonarinkRuntime
 
     public Task RefreshAsync(CancellationToken cancellationToken = default) => Unsupported();
 
-    public Task SendAsync(NearbyDevice device, IReadOnlyList<ShareItem> items, string? pin = null, IProgress<TransferActivity>? progress = null, CancellationToken cancellationToken = default) => Unsupported();
+    public Task<RuntimeSendResult> SendAsync(NearbyDevice device, IReadOnlyList<ShareItem> items, string? pin = null, IProgress<TransferActivity>? progress = null, CancellationToken cancellationToken = default) => Unsupported<RuntimeSendResult>();
 
-    public Task SendToAddressAsync(string address, IReadOnlyList<ShareItem> items, string? pin = null, IProgress<TransferActivity>? progress = null, CancellationToken cancellationToken = default) => Unsupported();
+    public Task<RuntimeSendResult> SendToAddressAsync(string address, IReadOnlyList<ShareItem> items, string? pin = null, IProgress<TransferActivity>? progress = null, CancellationToken cancellationToken = default) => Unsupported<RuntimeSendResult>();
 
-    public Task AcceptAsync(IncomingOffer offer, IReadOnlySet<Guid> acceptedItems, CancellationToken cancellationToken = default) => Unsupported();
+    public Task<RuntimeReceiveResult> AcceptAsync(IncomingOffer offer, IReadOnlySet<Guid> acceptedItems, CancellationToken cancellationToken = default) => Unsupported<RuntimeReceiveResult>();
 
     public Task DeclineAsync(IncomingOffer offer, CancellationToken cancellationToken = default) => Unsupported();
 
@@ -84,18 +84,7 @@ public sealed class CapabilityOnlyRuntime : ITonarinkRuntime
 
     private Task Unsupported() => Task.FromException(new PlatformNotSupportedException(
         $"{_capabilities.PlatformName} 当前不能直接运行完整 LocalSend 节点。"));
-}
 
-public sealed class TransferPinRequiredException : Exception
-{
-    public TransferPinRequiredException(bool invalidPin, Exception? innerException = null)
-        : base(invalidPin ? "The supplied PIN is incorrect." : "The receiving device requires a PIN.", innerException) => InvalidPin = invalidPin;
-
-    public bool InvalidPin { get; }
-}
-
-public sealed class TransferPinRateLimitedException : Exception
-{
-    public TransferPinRateLimitedException(Exception? innerException = null)
-        : base("Too many incorrect PIN attempts. Try again later.", innerException) { }
+    private Task<T> Unsupported<T>() => Task.FromException<T>(new PlatformNotSupportedException(
+        $"{_capabilities.PlatformName} 当前不能直接运行完整 LocalSend 节点。"));
 }

@@ -118,6 +118,34 @@ public sealed record TransferActivity(
         : Math.Clamp((double)BytesTransferred / TotalBytes, 0, 1);
 }
 
+public union RuntimeSendResult(
+    RuntimeSendResult.Completed,
+    RuntimeSendResult.Cancelled,
+    RuntimeSendResult.PinRequired,
+    RuntimeSendResult.PinRateLimited,
+    RuntimeSendResult.PeerBusy,
+    RuntimeSendResult.Declined,
+    RuntimeSendResult.Failed)
+{
+    public sealed record Completed;
+    public sealed record Cancelled;
+    public sealed record PinRequired(bool InvalidPin);
+    public sealed record PinRateLimited;
+    public sealed record PeerBusy;
+    public sealed record Declined;
+    public sealed record Failed(string Message);
+}
+
+public union RuntimeReceiveResult(
+    RuntimeReceiveResult.Completed,
+    RuntimeReceiveResult.Cancelled,
+    RuntimeReceiveResult.Failed)
+{
+    public sealed record Completed;
+    public sealed record Cancelled;
+    public sealed record Failed(string Message);
+}
+
 public sealed record IosShareFile(string Name, string Path, long Size, string ContentType);
 
 public sealed record IosSharePayload(string? Text, IReadOnlyList<IosShareFile> Files);

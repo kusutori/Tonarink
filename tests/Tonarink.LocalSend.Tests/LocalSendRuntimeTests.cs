@@ -37,14 +37,15 @@ public sealed class LocalSendRuntimeTests
     }
 
     [Fact(Timeout = 30_000)]
-    public async Task SendWithoutRequiredPinThrowsAndSucceedsWithPin()
+    public async Task SendWithoutRequiredPinReturnsOutcomeAndSucceedsWithPin()
     {
         await using var pair = await RuntimePair.StartAsync(receiver => receiver with { ReceivePin = "2468" });
         var item = new ShareItem(Guid.NewGuid(), "secret.txt", 6, "text/plain", TextContent: "secret");
 
-        var missingPin = await Assert.ThrowsAsync<TransferPinRequiredException>(
-            () => pair.Sender.SendToAddressAsync($"127.0.0.1:{pair.ReceiverPort}", [item]));
-        Assert.False(missingPin.InvalidPin);
+        var missingPin = await pair.Sender.SendToAddressAsync(
+            $"127.0.0.1:{pair.ReceiverPort}",
+            [item]);
+        Assert.False(RequirePinRequired(missingPin).InvalidPin);
 
         var sendTask = pair.Sender.SendToAddressAsync($"127.0.0.1:{pair.ReceiverPort}", [item], pin: "2468");
         var offer = await pair.WaitForOfferAsync();
@@ -98,10 +99,10 @@ public sealed class LocalSendRuntimeTests
         await pair.ReceiverState.UpdateSettingsAsync(settings => settings with { Alias = "Renamed", ReceivePin = "9999" });
         await pair.Receiver.StartAsync();
 
-        var missingPin = await Assert.ThrowsAsync<TransferPinRequiredException>(
-            () => pair.Sender.SendToAddressAsync($"127.0.0.1:{pair.ReceiverPort}",
-                [new ShareItem(Guid.NewGuid(), "ping.txt", 4, "text/plain", TextContent: "ping")]));
-        Assert.False(missingPin.InvalidPin);
+        var missingPin = await pair.Sender.SendToAddressAsync(
+            $"127.0.0.1:{pair.ReceiverPort}",
+            [new ShareItem(Guid.NewGuid(), "ping.txt", 4, "text/plain", TextContent: "ping")]);
+        Assert.False(RequirePinRequired(missingPin).InvalidPin);
 
         var sendTask = pair.Sender.SendToAddressAsync($"127.0.0.1:{pair.ReceiverPort}",
             [new ShareItem(Guid.NewGuid(), "ping.txt", 4, "text/plain", TextContent: "ping")], pin: "9999");
@@ -123,6 +124,12 @@ public sealed class LocalSendRuntimeTests
         }
         throw new TimeoutException("Timed out waiting for the expected condition.");
     }
+
+    private static RuntimeSendResult.PinRequired RequirePinRequired(RuntimeSendResult result) => result switch
+    {
+        RuntimeSendResult.PinRequired required => required,
+        _ => throw new Xunit.Sdk.XunitException("Expected PIN-required result."),
+    };
 }
 
 [CollectionDefinition(nameof(LocalSendRuntimeCollection), DisableParallelization = true)]
