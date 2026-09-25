@@ -9,7 +9,7 @@ using Microsoft.UI.Xaml.Controls;
 using Windows.ApplicationModel.DataTransfer;
 using static Microsoft.UI.Reactor.Factories;
 
-namespace Tonarink.Pages;
+namespace Tonarink.Pages.Web;
 
 sealed record WebSharePageProps(
     LocalSendNode? Node,
