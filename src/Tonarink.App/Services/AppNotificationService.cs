@@ -4,11 +4,23 @@ using Microsoft.Windows.AppNotifications.Builder;
 
 namespace Tonarink.Services;
 
-sealed record AppNotificationActivation(
-    string Action,
-    string Kind,
-    Guid? RequestId,
-    string? Path);
+union AppNotificationActivation(
+    AppNotificationActivation.Open,
+    AppNotificationActivation.IncomingAccept,
+    AppNotificationActivation.IncomingDecline,
+    AppNotificationActivation.OpenFile,
+    AppNotificationActivation.ShowInFolder)
+{
+    public sealed record Open;
+
+    public sealed record IncomingAccept(Guid RequestId);
+
+    public sealed record IncomingDecline(Guid RequestId);
+
+    public sealed record OpenFile(string Path);
+
+    public sealed record ShowInFolder(string Path);
+}
 
 static class AppNotificationService
 {
@@ -26,7 +38,8 @@ static class AppNotificationService
         get
         {
             lock (Gate)
-                return PendingActivations.Any(static activation => activation.Action != "open");
+                return PendingActivations.Any(static activation =>
+                    activation is not AppNotificationActivation.Open);
         }
     }
 
@@ -229,13 +242,13 @@ static class AppNotificationService
         }
     }
 
-    public static bool TryDequeueActivation(out AppNotificationActivation? activation)
+    public static bool TryDequeueActivation(out AppNotificationActivation activation)
     {
         lock (Gate)
         {
             if (PendingActivations.Count == 0)
             {
-                activation = null;
+                activation = default;
                 return false;
             }
 
@@ -300,17 +313,20 @@ static class AppNotificationService
         EventHandler? activated;
         var arguments = args.Arguments;
         arguments.TryGetValue("action", out var action);
-        arguments.TryGetValue("kind", out var kind);
         arguments.TryGetValue("requestId", out var requestIdText);
         arguments.TryGetValue("path", out var path);
-        var requestId = Guid.TryParse(requestIdText, out var parsedRequestId)
-            ? parsedRequestId
-            : (Guid?)null;
-        var activation = new AppNotificationActivation(
-            string.IsNullOrWhiteSpace(action) ? "open" : action,
-            kind ?? string.Empty,
-            requestId,
-            path);
+        AppNotificationActivation activation = action switch
+        {
+            "incoming-accept" when Guid.TryParse(requestIdText, out var requestId) =>
+                new AppNotificationActivation.IncomingAccept(requestId),
+            "incoming-decline" when Guid.TryParse(requestIdText, out var requestId) =>
+                new AppNotificationActivation.IncomingDecline(requestId),
+            "open-file" when !string.IsNullOrWhiteSpace(path) =>
+                new AppNotificationActivation.OpenFile(path),
+            "show-in-folder" when !string.IsNullOrWhiteSpace(path) =>
+                new AppNotificationActivation.ShowInFolder(path),
+            _ => new AppNotificationActivation.Open(),
+        };
         lock (Gate)
         {
             PendingActivations.Enqueue(activation);

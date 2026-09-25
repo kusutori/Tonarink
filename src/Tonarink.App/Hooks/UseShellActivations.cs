@@ -109,10 +109,7 @@ static class ShellActivationHooks
             try
             {
                 while (AppNotificationService.TryDequeueActivation(out var activation))
-                {
-                    if (activation is not null)
-                        _ = HandleNotificationActivationAsync(activation);
-                }
+                    _ = HandleNotificationActivationAsync(activation);
 
                 while (JumpListService.TryDequeue(out var jumpListActivation))
                 {
@@ -157,26 +154,31 @@ static class ShellActivationHooks
 
         async Task HandleNotificationActivationAsync(AppNotificationActivation activation)
         {
-            switch (activation.Action)
+            switch (activation)
             {
-                case "incoming-accept":
-                case "incoming-decline":
-                    if (activation.RequestId is not { } requestId
-                        || !await sessionRef.Current.HandleIncomingActivationAsync(
-                            activation.Action,
+                case AppNotificationActivation.IncomingAccept(var requestId):
+                    if (!await sessionRef.Current.HandleIncomingActivationAsync(
+                            "incoming-accept",
                             requestId).ConfigureAwait(false))
                         restoreWindow();
                     return;
 
-                case "open-file":
-                    ShellLauncher.Open(activation.Path);
+                case AppNotificationActivation.IncomingDecline(var requestId):
+                    if (!await sessionRef.Current.HandleIncomingActivationAsync(
+                            "incoming-decline",
+                            requestId).ConfigureAwait(false))
+                        restoreWindow();
                     return;
 
-                case "show-in-folder":
-                    ShellLauncher.Reveal(activation.Path);
+                case AppNotificationActivation.OpenFile(var path):
+                    ShellLauncher.Open(path);
                     return;
 
-                default:
+                case AppNotificationActivation.ShowInFolder(var path):
+                    ShellLauncher.Reveal(path);
+                    return;
+
+                case AppNotificationActivation.Open:
                     restoreWindow();
                     return;
             }

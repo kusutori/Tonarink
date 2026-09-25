@@ -473,11 +473,11 @@ sealed class TrayFlyoutPanel : Component<TrayFlyoutPanelProps>
                             items: tabItems)
                         .HAlign(HorizontalAlignment.Stretch)
                         .WithKey("tray-segmented"),
-                    dropStatus is null
+                    dropStatus is not { } status
                         ? null
-                        : Caption(dropStatus.Message)
-                            .Foreground(dropStatus.IsError ? Theme.SystemCritical : Theme.SecondaryText)
-                            .LiveRegion(dropStatus.IsError
+                        : Caption(status.Message)
+                            .Foreground(status.IsError ? Theme.SystemCritical : Theme.SecondaryText)
+                            .LiveRegion(status.IsError
                                 ? AutomationLiveSetting.Assertive
                                 : AutomationLiveSetting.Polite)
                             .TextWrapping(TextWrapping.WrapWholeWords),
@@ -546,7 +546,8 @@ sealed class TrayFlyoutPanel : Component<TrayFlyoutPanelProps>
                     var payload = await DroppedSendItemReader.ReadAsync(data);
                     if (payload.Items.Count == 0)
                     {
-                        setDropStatus(new(t.Message(new("App", "DroppedItemsEmpty")), IsError: true));
+                        setDropStatus(new TrayDropStatus.Error(
+                            t.Message(new("App", "DroppedItemsEmpty"))));
                         return;
                     }
 
@@ -555,9 +556,9 @@ sealed class TrayFlyoutPanel : Component<TrayFlyoutPanelProps>
                 catch (Exception exception)
                 {
                     AppDiagnostics.Report("Could not prepare files dropped on a tray device", exception);
-                    setDropStatus(new(t.Message(
+                    setDropStatus(new TrayDropStatus.Error(t.Message(
                         new("App", "DropItemsFailed"),
-                        ("error", exception.Message)), IsError: true));
+                        ("error", exception.Message))));
                 }
             }
 
@@ -567,15 +568,13 @@ sealed class TrayFlyoutPanel : Component<TrayFlyoutPanelProps>
                 string? pin)
             {
                 setSending(true);
-                setDropStatus(new(
-                    t.Message(new("App", "SendingToDevice"), ("device", device.Alias)),
-                    IsError: false));
+                setDropStatus(new TrayDropStatus.Information(
+                    t.Message(new("App", "SendingToDevice"), ("device", device.Alias))));
                 try
                 {
                     await TrayFlyoutStore.SendAsync(new(device, payload.Items, payload.TotalBytes, pin));
-                    setDropStatus(new(
-                        t.Message(new("App", "SentToDevice"), ("device", device.Alias)),
-                        IsError: false));
+                    setDropStatus(new TrayDropStatus.Information(
+                        t.Message(new("App", "SentToDevice"), ("device", device.Alias))));
                 }
                 catch (PinRequiredException exception)
                 {
@@ -587,16 +586,18 @@ sealed class TrayFlyoutPanel : Component<TrayFlyoutPanelProps>
                 }
                 catch (PinRateLimitedException)
                 {
-                    setDropStatus(new(t.Message(new("App", "PinRateLimited")), IsError: true));
+                    setDropStatus(new TrayDropStatus.Error(
+                        t.Message(new("App", "PinRateLimited"))));
                 }
                 catch (OperationCanceledException)
                 {
-                    setDropStatus(new(t.Message(new("App", "TransferCancelled")), IsError: false));
+                    setDropStatus(new TrayDropStatus.Information(
+                        t.Message(new("App", "TransferCancelled"))));
                 }
                 catch (Exception exception)
                 {
                     AppDiagnostics.Report("Could not send files from the tray flyout", exception);
-                    setDropStatus(new(exception.Message, IsError: true));
+                    setDropStatus(new TrayDropStatus.Error(exception.Message));
                 }
                 finally
                 {
@@ -614,7 +615,20 @@ sealed record TrayPendingSend(
     DroppedSendPayload Payload,
     string? Error);
 
-sealed record TrayDropStatus(string Message, bool IsError);
+union TrayDropStatus(TrayDropStatus.Information, TrayDropStatus.Error)
+{
+    public sealed record Information(string Message);
+
+    public sealed record Error(string Message);
+
+    public string Message => this switch
+    {
+        Information(var message) => message,
+        Error(var message) => message,
+    };
+
+    public bool IsError => this is Error;
+}
 
 sealed record TrayFlyoutTransfer(
     string Title,

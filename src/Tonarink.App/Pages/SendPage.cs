@@ -510,14 +510,13 @@ sealed class SendPage : Component<SendPageProps>
                     showFavoritesDialog,
                     SendFavorite,
                     () => setShowFavoritesDialog(false),
-                    () => setFavoriteEdit(new FavoriteDeviceEdit(
+                    () => setFavoriteEdit(new FavoriteDeviceEdit.Create(
                         new FavoriteDevice(
                             $"manual:{Guid.NewGuid():N}",
                             string.Empty,
                             string.Empty,
-                            LocalSendOptions.DefaultPort),
-                        IsNew: true)),
-                    favorite => setFavoriteEdit(new FavoriteDeviceEdit(favorite, IsNew: false)),
+                            LocalSendOptions.DefaultPort))),
+                    favorite => setFavoriteEdit(new FavoriteDeviceEdit.Update(favorite)),
                     setFavoriteToDelete,
                     () =>
                     {
@@ -529,8 +528,12 @@ sealed class SendPage : Component<SendPageProps>
             favoriteEdit is null
                 ? null
                 : Component<FavoriteDeviceDialog, FavoriteDeviceDialogProps>(new(
-                        favoriteEdit.Device,
-                        favoriteEdit.IsNew,
+                        favoriteEdit switch
+                        {
+                            FavoriteDeviceEdit.Create(var device) => device,
+                            FavoriteDeviceEdit.Update(var device) => device,
+                        },
+                        favoriteEdit is FavoriteDeviceEdit.Create,
                         Props.Theme,
                         FavoriteDeviceStore.Upsert,
                         () =>

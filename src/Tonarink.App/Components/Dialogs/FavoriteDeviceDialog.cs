@@ -15,7 +15,12 @@ sealed record FavoriteDeviceDialogProps(
     Action<FavoriteDevice> Save,
     Action Close);
 
-sealed record FavoriteDeviceEdit(FavoriteDevice Device, bool IsNew);
+union FavoriteDeviceEdit(FavoriteDeviceEdit.Create, FavoriteDeviceEdit.Update)
+{
+    public sealed record Create(FavoriteDevice Device);
+
+    public sealed record Update(FavoriteDevice Device);
+}
 
 /// <summary>Reusable editor for creating or updating a favorite device.</summary>
 sealed class FavoriteDeviceDialog : Component<FavoriteDeviceDialogProps>
