@@ -7,7 +7,7 @@ using Windows.ApplicationModel.Activation;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage;
 
-namespace Tonarink.Services;
+namespace Tonarink.Services.Activation;
 
 static class ShareTargetActivationBroker
 {

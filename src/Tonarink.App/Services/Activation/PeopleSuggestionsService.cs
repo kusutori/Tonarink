@@ -5,7 +5,7 @@ using Windows.ApplicationModel.UserDataAccounts;
 using Windows.Foundation.Metadata;
 using Windows.Storage.Streams;
 
-namespace Tonarink.Services;
+namespace Tonarink.Services.Activation;
 
 static class PeopleSuggestionsService
 {

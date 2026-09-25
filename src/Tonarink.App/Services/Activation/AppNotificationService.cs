@@ -2,7 +2,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Windows.AppNotifications;
 using Microsoft.Windows.AppNotifications.Builder;
 
-namespace Tonarink.Services;
+namespace Tonarink.Services.Activation;
 
 union AppNotificationActivation(
     AppNotificationActivation.Open,

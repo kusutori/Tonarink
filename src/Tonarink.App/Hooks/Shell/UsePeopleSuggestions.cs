@@ -1,7 +1,7 @@
 using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Core;
 
-namespace Tonarink.Hooks;
+namespace Tonarink.Hooks.Shell;
 
 static class PeopleSuggestionHooks
 {

@@ -5,7 +5,7 @@ using Microsoft.UI.Reactor.Localization;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
-namespace Tonarink.Hooks;
+namespace Tonarink.Hooks.Shell;
 
 sealed record ShellWindowController(Action Restore, Action Hide);
 

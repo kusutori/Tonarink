@@ -2,7 +2,7 @@ using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Core;
 using Microsoft.UI.Reactor.Navigation;
 
-namespace Tonarink.Hooks;
+namespace Tonarink.Hooks.Shell;
 
 sealed record ShellActivationState(
     ShareTargetPayload? ShareTargetPayload,

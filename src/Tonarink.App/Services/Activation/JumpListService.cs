@@ -3,7 +3,7 @@ using LocalSendDotNet;
 using Tonarink.Utilities;
 using Windows.UI.StartScreen;
 
-namespace Tonarink.Services;
+namespace Tonarink.Services.Activation;
 
 union JumpListActivation(JumpListActivation.Favorite, JumpListActivation.History)
 {

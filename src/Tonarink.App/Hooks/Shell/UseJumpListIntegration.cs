@@ -2,7 +2,7 @@ using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Core;
 using Microsoft.UI.Reactor.Localization;
 
-namespace Tonarink.Hooks;
+namespace Tonarink.Hooks.Shell;
 
 static class JumpListHooks
 {
