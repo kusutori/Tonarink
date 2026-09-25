@@ -13,7 +13,7 @@ sealed class IncomingTransferCoordinator(
     {
         updateRuntime(current => current with
         {
-            IncomingTransfers =
+            IncomingTransfers = (IncomingTransferRequest[])
             [
                 .. current.IncomingTransfers
                     .Where(request => request.RequestId != requestId)
@@ -46,7 +46,7 @@ sealed class IncomingTransferCoordinator(
 
             updateRuntime(current => current with
             {
-                IncomingTransfers = [.. current.IncomingTransfers, request],
+                IncomingTransfers = (IncomingTransferRequest[])[.. current.IncomingTransfers, request],
             });
             AppNotificationService.ShowIncomingRequest(
                 t.Message(new("App", "NotificationIncomingTitle"), ("device", request.Sender.Alias)),

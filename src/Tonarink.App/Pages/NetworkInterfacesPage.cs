@@ -126,7 +126,7 @@ sealed class NetworkInterfacesPage : Component<NetworkInterfacesPageProps>
                 return;
             }
 
-            WriteList([.. currentList.Take(index), .. currentList.Skip(index + 1)]);
+            WriteList((string[])[.. currentList.Take(index), .. currentList.Skip(index + 1)]);
         }
 
         void AddPattern()

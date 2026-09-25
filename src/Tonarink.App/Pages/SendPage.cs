@@ -264,8 +264,10 @@ sealed class SendPage : Component<SendPageProps>
             [
                 .. selectedItems.Select((item, index) => SelectedItemRow(
                         item,
-                        () => updateSelectedItems(current =>
-                            [.. current.Where(candidate => candidate.Id != item.Id)]),
+                        () => updateSelectedItems(current => (SelectedSendItem[])
+                        [
+                            .. current.Where(candidate => candidate.Id != item.Id)
+                        ]),
                         t)
                     .PositionInSet(index + 1, selectedItems.Count)
                     .WithKey(item.Id.ToString("N")))
@@ -424,7 +426,10 @@ sealed class SendPage : Component<SendPageProps>
 
                                         if (Props.Node?.State != LocalSendNodeState.Running)
                                             return;
-                                        WebShareLaunch.Items = [.. selectedItems.Select(static item => item.Item)];
+                                        WebShareLaunch.Items = (SendItem[])
+                                        [
+                                            .. selectedItems.Select(static item => item.Item)
+                                        ];
                                         navigation.Navigate(AppRoute.WebShare, AppNavigation.DrillIn);
                                     })
                                     .AutomationName(t.Message(new("App", "WebShareTitle")))
@@ -595,7 +600,7 @@ sealed class SendPage : Component<SendPageProps>
                 if (result == ContentDialogResult.Primary && !string.IsNullOrWhiteSpace(text))
                 {
                     var item = new SendTextItem(text);
-                    AddSelectedItems([
+                    AddSelectedItems((SelectedSendItem[])[
                         new(
                                 Guid.NewGuid(),
                                 item,
@@ -756,7 +761,7 @@ sealed class SendPage : Component<SendPageProps>
                     if (!string.IsNullOrWhiteSpace(clipboardText))
                     {
                         var item = new SendTextItem(clipboardText, "clipboard.txt");
-                        AddSelectedItems([
+                        AddSelectedItems((SelectedSendItem[])[
                             new(
                                 Guid.NewGuid(),
                                 item,
@@ -771,7 +776,7 @@ sealed class SendPage : Component<SendPageProps>
                 if (data.Contains(StandardDataFormats.Bitmap))
                 {
                     var bitmap = await FromClipboardBitmapAsync(data, CancellationToken.None);
-                    AddSelectedItems([
+                    AddSelectedItems((SelectedSendItem[])[
                         bitmap with
                         {
                             DisplayName = t.Message(new("App", "ClipboardImage")),
@@ -792,7 +797,7 @@ sealed class SendPage : Component<SendPageProps>
 
         void AddSelectedItems(IReadOnlyCollection<SelectedSendItem> newItems)
         {
-            updateSelectedItems(current => [.. current, .. newItems]);
+            updateSelectedItems(current => (SelectedSendItem[])[.. current, .. newItems]);
             setPickerMessage(t.Message(new("App", "ItemsAdded"), ("count", newItems.Count)));
             updateTransfer(_ => TransferUiState.Idle(t.Message(new("App", "SendHint"))));
         }
@@ -880,7 +885,7 @@ sealed class SendPage : Component<SendPageProps>
                 IsError: false));
             PublishTransferOverlay(
                 device,
-                [.. selectedItems.Select(static item => item.Item)],
+                (SendItem[])[.. selectedItems.Select(static item => item.Item)],
                 new(
                     TransferState.Preparing,
                     device.Alias,
@@ -895,7 +900,7 @@ sealed class SendPage : Component<SendPageProps>
                 var result = await sendMutation.RunAsync(new(
                     Guid.NewGuid(),
                     device,
-                    [.. selectedItems.Select(static item => item.Item)],
+                    (SendItem[])[.. selectedItems.Select(static item => item.Item)],
                     selectedItems.Sum(static item => item.Length),
                     pin,
                     cancellation.Token));
@@ -907,7 +912,7 @@ sealed class SendPage : Component<SendPageProps>
                 updateTransfer(_ => resultState);
                 PublishTransferOverlay(
                     device,
-                    [.. selectedItems.Select(static item => item.Item)],
+                    (SendItem[])[.. selectedItems.Select(static item => item.Item)],
                     resultState,
                     isPending: false);
                 if (result.IsSuccess)
@@ -954,7 +959,7 @@ sealed class SendPage : Component<SendPageProps>
                 updateTransfer(_ => waitingState);
                 PublishTransferOverlay(
                     device,
-                    [.. selectedItems.Select(static item => item.Item)],
+                    (SendItem[])[.. selectedItems.Select(static item => item.Item)],
                     waitingState,
                     isPending: false,
                     new OutgoingPinPrompt(
@@ -972,7 +977,7 @@ sealed class SendPage : Component<SendPageProps>
                     t.Message(new("App", "PinRateLimited")),
                     IsError: true);
                 updateTransfer(_ => errorState);
-                PublishTransferOverlay(device, [.. selectedItems.Select(static item => item.Item)], errorState,
+                PublishTransferOverlay(device, (SendItem[])[.. selectedItems.Select(static item => item.Item)], errorState,
                     false);
             }
             catch (Exception exception)
@@ -985,7 +990,7 @@ sealed class SendPage : Component<SendPageProps>
                     exception.Message,
                     IsError: true);
                 updateTransfer(_ => errorState);
-                PublishTransferOverlay(device, [.. selectedItems.Select(static item => item.Item)], errorState,
+                PublishTransferOverlay(device, (SendItem[])[.. selectedItems.Select(static item => item.Item)], errorState,
                     false);
             }
             finally
@@ -1464,7 +1469,7 @@ sealed class SendPage : Component<SendPageProps>
         if (!folder.Exists)
             throw new DirectoryNotFoundException($"The shared folder is no longer available: {folderPath}");
 
-        return
+        return (SelectedSendItem[])
         [
             .. Directory.EnumerateFiles(folder.FullName, "*", SearchOption.AllDirectories)
                 .Select(path =>

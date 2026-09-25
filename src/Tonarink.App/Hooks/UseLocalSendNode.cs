@@ -240,7 +240,7 @@ static class LocalSendNodeHooks
             StringComparer.Ordinal);
         var existing = updated.GetValueOrDefault(change.Device.Fingerprint)
                        ?? [];
-        updated[change.Device.Fingerprint] =
+        updated[change.Device.Fingerprint] = (DeviceActivityEntry[])
         [
             .. existing
                 .Append(new DeviceActivityEntry(change.Kind, DateTimeOffset.Now, change.Device.Endpoints))

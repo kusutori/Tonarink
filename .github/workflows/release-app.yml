@@ -39,7 +39,7 @@ jobs:
       - name: Set up .NET
         uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: 10.0.x
+          dotnet-version: 11.0.100-rc.1.26425.128
 
       - name: Resolve release version
         id: release
@@ -132,7 +132,7 @@ jobs:
       - name: Set up .NET
         uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: 10.0.x
+          dotnet-version: 11.0.100-rc.1.26425.128
 
       - name: Install WinApp CLI
         shell: pwsh
@@ -325,7 +325,7 @@ jobs:
       - name: Set up .NET
         uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: 10.0.x
+          dotnet-version: 11.0.100-rc.1.26425.128
 
       - name: Install WinApp CLI
         shell: pwsh
@@ -541,7 +541,7 @@ jobs:
       - name: Set up .NET
         uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: 10.0.x
+          dotnet-version: 11.0.100-rc.1.26425.128
 
       - name: Resolve release version
         id: release
@@ -593,7 +593,7 @@ jobs:
       - name: Set up .NET
         uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: 10.0.x
+          dotnet-version: 11.0.100-rc.1.26425.128
 
       - name: Set up Java
         uses: actions/setup-java@v4
@@ -675,7 +675,7 @@ jobs:
           foreach ($format in @('apk', 'aab')) {
             $publishDir = Join-Path $env:RUNNER_TEMP "android-$format"
             dotnet publish $project `
-              -f net10.0-android `
+              -f net11.0-android `
               -c Release `
               -p:ApplicationDisplayVersion=${{ steps.release.outputs.version }} `
               -p:ApplicationVersion=${{ steps.release.outputs.code }} `

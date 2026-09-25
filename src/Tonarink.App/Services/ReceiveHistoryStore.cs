@@ -47,11 +47,11 @@ static class ReceiveHistoryStore
         if (added.Count == 0)
             return;
 
-        Mutate(current => [.. added, .. current]);
+        Mutate(current => (ReceiveHistoryEntry[])[.. added, .. current]);
     }
 
     public static void Remove(Guid id) =>
-        Mutate(current => [.. current.Where(entry => entry.Id != id)]);
+        Mutate(current => (ReceiveHistoryEntry[])[.. current.Where(entry => entry.Id != id)]);
 
     public static void Clear() => Mutate(_ => []);
 
@@ -61,7 +61,7 @@ static class ReceiveHistoryStore
         {
             var next = update(_entries ??= LoadUnlocked());
             if (next.Count > MaxEntries)
-                next = [.. next.Take(MaxEntries)];
+                next = (ReceiveHistoryEntry[])[.. next.Take(MaxEntries)];
             _entries = next;
             SaveUnlocked(next);
         }
@@ -123,7 +123,7 @@ sealed class ReceiveHistoryFile
         if (Items is not { Count: > 0 })
             return [];
 
-        return
+        return (ReceiveHistoryEntry[])
         [
             .. Items
                 .Where(static item => item.Id != Guid.Empty && !string.IsNullOrWhiteSpace(item.Path))

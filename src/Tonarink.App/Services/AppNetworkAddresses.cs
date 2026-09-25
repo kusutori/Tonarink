@@ -56,7 +56,7 @@ static class AppNetworkAddresses
                 (address, AddressPriority(IPAddress.Parse(address), hasGateway))));
         }
 
-        return
+        return ((string Address, int Priority)[])
         [
             .. addresses
                 .GroupBy(static item => item.Address, StringComparer.Ordinal)
@@ -66,12 +66,13 @@ static class AppNetworkAddresses
 
     private static IReadOnlyList<string> OrderAddresses(
         IEnumerable<(string Address, int Priority)> addresses) =>
-    [
-        .. addresses
-            .OrderBy(static item => item.Priority)
-            .ThenBy(static item => item.Address, StringComparer.Ordinal)
-            .Select(static item => item.Address)
-    ];
+        (string[])
+        [
+            .. addresses
+                .OrderBy(static item => item.Priority)
+                .ThenBy(static item => item.Address, StringComparer.Ordinal)
+                .Select(static item => item.Address)
+        ];
 
     private static int AddressPriority(IPAddress address, bool hasGateway)
     {
