@@ -5,7 +5,7 @@ using Microsoft.UI.Dispatching;
 using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Localization;
 
-namespace Tonarink.Services;
+namespace Tonarink.Services.Widgets;
 
 static class WidgetAppHost
 {

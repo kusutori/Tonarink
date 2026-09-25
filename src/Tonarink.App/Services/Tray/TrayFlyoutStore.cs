@@ -1,6 +1,6 @@
 using LocalSendDotNet;
 
-namespace Tonarink.Services;
+namespace Tonarink.Services.Tray;
 
 sealed record TrayFlyoutSnapshot(
     AppRuntimeState Runtime,

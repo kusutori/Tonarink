@@ -2,7 +2,7 @@ using LocalSendDotNet;
 using Microsoft.UI.Reactor.Input;
 using Windows.Storage;
 
-namespace Tonarink.Services;
+namespace Tonarink.Services.Tray;
 
 sealed record DroppedSendPayload(
     IReadOnlyList<SendItem> Items,

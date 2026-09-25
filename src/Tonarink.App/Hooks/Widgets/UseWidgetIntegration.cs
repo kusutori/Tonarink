@@ -1,6 +1,6 @@
 using Microsoft.UI.Reactor.Core;
 
-namespace Tonarink.Hooks;
+namespace Tonarink.Hooks.Widgets;
 
 static class WidgetIntegrationHooks
 {

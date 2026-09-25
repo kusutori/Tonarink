@@ -2,7 +2,7 @@ using LocalSendDotNet;
 using Microsoft.UI.Reactor.Localization;
 using static Tonarink.Utilities.ByteSize;
 
-namespace Tonarink.Services;
+namespace Tonarink.Services.Tray;
 
 /// <summary>Runs a transfer initiated by dropping files onto the tray flyout.</summary>
 static class TraySendCoordinator

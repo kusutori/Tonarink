@@ -15,7 +15,7 @@ using static Tonarink.Components.Devices.DeviceVisuals;
 using static Tonarink.Controls.SegmentedElement;
 using static Tonarink.Utilities.ByteSize;
 
-namespace Tonarink.Components;
+namespace Tonarink.Components.Tray;
 
 sealed class TrayFlyoutRoot : Component
 {
