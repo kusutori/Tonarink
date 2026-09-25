@@ -159,7 +159,7 @@ public sealed class WebShareTests
             upload.EnsureSuccessStatusCode();
 
             var result = await acceptTask;
-            Assert.Equal(TransferState.Completed, result.State);
+            _ = result.RequireCompleted();
             Assert.Equal("browser-body", await File.ReadAllTextAsync(Path.Combine(root, "downloads", "from-browser.txt")));
         }
         finally { Directory.Delete(root, recursive: true); }

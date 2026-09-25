@@ -344,9 +344,7 @@ public sealed class LocalSendNode : IAsyncDisposable
     /// <param name="progress">Optional aggregate progress callback.</param>
     /// <param name="cancellationToken">Cancels negotiation or upload.</param>
     /// <returns>The final transfer outcome.</returns>
-    /// <exception cref="PinRequiredException">The peer requires a PIN or rejected the supplied PIN.</exception>
-    /// <exception cref="PinRateLimitedException">The peer temporarily rate-limited PIN attempts.</exception>
-    public async Task<TransferResult> SendAsync(
+    public async Task<SendOutcome> SendAsync(
         LocalSendDevice device,
         IReadOnlyCollection<SendItem> items,
         SendOptions? options = null,
@@ -384,7 +382,8 @@ public sealed class LocalSendNode : IAsyncDisposable
             if (prepared is null)
             {
                 progress?.Report(new(transferId, null, TransferDirection.Send, TransferState.Completed, totalBytes, totalBytes));
-                return new(transferId, TransferDirection.Send, TransferState.Completed,
+                return new SendOutcome.Completed(
+                    transferId,
                     itemMap.Select(static item => new TransferredItemResult(item.Id, item.Item.FileName, item.Length, null)).ToArray());
             }
             _outgoingSessions[prepared.SessionId] = (endpoint.Address, linked);
@@ -403,23 +402,47 @@ public sealed class LocalSendNode : IAsyncDisposable
                 results.Add(new(id, item.FileName, length, null));
             }
             progress?.Report(new(transferId, null, TransferDirection.Send, TransferState.Completed, completedBytes, totalBytes));
-            return new(transferId, TransferDirection.Send, TransferState.Completed, results);
+            return new SendOutcome.Completed(transferId, results);
         }
-        catch (PinRequiredException) { throw; }
-        catch (PinRateLimitedException) { throw; }
+        catch (PinRequiredException exception)
+        {
+            return new SendOutcome.PinRequired(transferId, exception.InvalidPin);
+        }
+        catch (PinRateLimitedException)
+        {
+            return new SendOutcome.PinRateLimited(transferId);
+        }
+        catch (PeerBusyException)
+        {
+            return new SendOutcome.PeerBusy(transferId);
+        }
+        catch (TransferDeclinedException)
+        {
+            return new SendOutcome.Declined(transferId);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            if (prepared is not null)
+                await TryCancelRemoteAsync(endpoint, device.Fingerprint, prepared.SessionId).ConfigureAwait(false);
+            throw;
+        }
         catch (OperationCanceledException)
         {
             if (prepared is not null)
                 await TryCancelRemoteAsync(endpoint, device.Fingerprint, prepared.SessionId).ConfigureAwait(false);
-            return new(transferId, TransferDirection.Send, TransferState.Cancelled, results);
+            return new SendOutcome.Cancelled(transferId, results);
         }
         catch (Exception exception)
         {
             if (prepared is not null)
                 await TryCancelRemoteAsync(endpoint, device.Fingerprint, prepared.SessionId).ConfigureAwait(false);
             _logger.LogWarning(exception, "Outgoing transfer {TransferId} failed", transferId);
-            return new(transferId, TransferDirection.Send, TransferState.Failed, results,
-                new(ClassifyFailure(exception, prepared is null ? TransferFailureCodes.PrepareFailed : TransferFailureCodes.UploadFailed), exception.GetBaseException().Message));
+            return new SendOutcome.Failed(
+                transferId,
+                results,
+                new TransferFailure(
+                    ClassifyFailure(exception, prepared is null ? TransferFailureCodes.PrepareFailed : TransferFailureCodes.UploadFailed),
+                    exception.GetBaseException().Message));
         }
         finally
         {
@@ -435,7 +458,7 @@ public sealed class LocalSendNode : IAsyncDisposable
     /// <param name="progress">Optional aggregate receive progress callback.</param>
     /// <param name="cancellationToken">Cancels receiving and notifies the sender.</param>
     /// <returns>The final receive outcome.</returns>
-    public async Task<TransferResult> AcceptAsync(Guid requestId, AcceptTransferOptions? options = null, IProgress<TransferProgress>? progress = null, CancellationToken cancellationToken = default)
+    public async Task<ReceiveOutcome> AcceptAsync(Guid requestId, AcceptTransferOptions? options = null, IProgress<TransferProgress>? progress = null, CancellationToken cancellationToken = default)
     {
         EnsureStarted();
         if (!_pending.TryGetValue(requestId, out var session))
@@ -461,7 +484,7 @@ public sealed class LocalSendNode : IAsyncDisposable
             {
                 await TryCancelRemoteAsync(endpoint, session.PublicRequest.Sender.Fingerprint, session.SessionId).ConfigureAwait(false);
             }
-            return new(session.TransferId, TransferDirection.Receive, TransferState.Cancelled, []);
+            throw;
         }
     }
 
@@ -653,7 +676,7 @@ public sealed class LocalSendNode : IAsyncDisposable
         if (!decision.Accepted)
         {
             _transferSlots.Release();
-            session.Completion.TrySetResult(new(transferId, TransferDirection.Receive, TransferState.Cancelled, []));
+            session.Completion.TrySetResult(new ReceiveOutcome.Cancelled(transferId, []));
             return new(HttpStatusCode.Forbidden, Message: "Transfer declined");
         }
 
@@ -663,7 +686,7 @@ public sealed class LocalSendNode : IAsyncDisposable
         if (selected.Count == 0)
         {
             _transferSlots.Release();
-            session.Completion.TrySetResult(new(transferId, TransferDirection.Receive, TransferState.Completed, []));
+            session.Completion.TrySetResult(new ReceiveOutcome.Completed(transferId, []));
             return new(HttpStatusCode.NoContent);
         }
 
@@ -673,7 +696,8 @@ public sealed class LocalSendNode : IAsyncDisposable
             if (message.Preview is not null && message.FileType.StartsWith("text/", StringComparison.OrdinalIgnoreCase))
             {
                 _transferSlots.Release();
-                session.Completion.TrySetResult(new(transferId, TransferDirection.Receive, TransferState.Completed,
+                session.Completion.TrySetResult(new ReceiveOutcome.Completed(
+                    transferId,
                     [new(message.Id, message.FileName, message.Size, null)]));
                 return new(HttpStatusCode.NoContent);
             }

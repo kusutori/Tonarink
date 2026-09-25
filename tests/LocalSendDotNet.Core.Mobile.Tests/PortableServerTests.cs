@@ -24,10 +24,9 @@ public sealed class PortableServerTests
                 [new DeviceEndpoint(IPAddress.Loopback, receiverPort, LocalSendProtocol.Https)], DateTimeOffset.UtcNow);
 
             var sent = await sender.SendAsync(device, [new SendTextItem("portable hello")]);
-            Assert.True(sent.IsSuccess, sent.Failure?.Message);
+            _ = RequireCompleted(sent);
             var received = await receiveTask;
-            Assert.True(received.IsSuccess, received.Failure?.Message);
-            var item = Assert.Single(received.Items);
+            var item = Assert.Single(RequireCompleted(received).Items);
             Assert.Equal("message.txt", item.FileName);
             Assert.Null(item.SavedPath);
         }
@@ -72,11 +71,11 @@ public sealed class PortableServerTests
         {
             await Task.WhenAll(receiver.StartAsync(), sender.StartAsync());
             var device = DeviceFor(receiver, receiverPort);
-            await Assert.ThrowsAsync<PinRequiredException>(() => sender.SendAsync(device, [new SendTextItem("secret")]));
+            Assert.True((await sender.SendAsync(device, [new SendTextItem("secret")])) is SendOutcome.PinRequired);
             var receiveTask = AcceptNextAsync(receiver);
             var sent = await sender.SendAsync(device, [new SendTextItem("secret")], new SendOptions { Pin = "2468" });
-            Assert.True(sent.IsSuccess, sent.Failure?.Message);
-            Assert.True((await receiveTask).IsSuccess);
+            _ = RequireCompleted(sent);
+            _ = RequireCompleted(await receiveTask);
         }
         finally
         {
@@ -99,8 +98,8 @@ public sealed class PortableServerTests
             var receiveTask = AcceptNamedAsync(receiver, "keep.txt");
             var sent = await sender.SendAsync(DeviceFor(receiver, receiverPort),
                 [new SendTextItem("keep", "keep.txt"), new SendTextItem("skip", "skip.txt")]);
-            Assert.True(sent.IsSuccess, sent.Failure?.Message);
-            Assert.True((await receiveTask).IsSuccess);
+            _ = RequireCompleted(sent);
+            _ = RequireCompleted(await receiveTask);
             Assert.Equal("keep", await File.ReadAllTextAsync(Path.Combine(downloads, "keep.txt")));
             Assert.False(File.Exists(Path.Combine(downloads, "skip.txt")));
         }
@@ -124,14 +123,14 @@ public sealed class PortableServerTests
     private static LocalSendDevice DeviceFor(LocalSendNode node, int port) => new("Receiver", "2.2", null, LocalSendDeviceType.Mobile,
         node.Identity!.Fingerprint, false, [new DeviceEndpoint(IPAddress.Loopback, port, LocalSendProtocol.Https)], DateTimeOffset.UtcNow);
 
-    private static async Task<TransferResult> AcceptNextAsync(LocalSendNode node)
+    private static async Task<ReceiveOutcome> AcceptNextAsync(LocalSendNode node)
     {
         await foreach (var request in node.WatchIncomingTransfersAsync())
             return await node.AcceptAsync(request.RequestId);
         throw new InvalidOperationException("Incoming request stream ended.");
     }
 
-    private static async Task<TransferResult> AcceptNamedAsync(LocalSendNode node, string fileName)
+    private static async Task<ReceiveOutcome> AcceptNamedAsync(LocalSendNode node, string fileName)
     {
         await foreach (var request in node.WatchIncomingTransfersAsync())
         {
@@ -140,6 +139,18 @@ public sealed class PortableServerTests
         }
         throw new InvalidOperationException("Incoming request stream ended.");
     }
+
+    private static SendOutcome.Completed RequireCompleted(SendOutcome outcome) => outcome switch
+    {
+        SendOutcome.Completed completed => completed,
+        _ => throw new Xunit.Sdk.XunitException("Expected completed send outcome."),
+    };
+
+    private static ReceiveOutcome.Completed RequireCompleted(ReceiveOutcome outcome) => outcome switch
+    {
+        ReceiveOutcome.Completed completed => completed,
+        _ => throw new Xunit.Sdk.XunitException("Expected completed receive outcome."),
+    };
 
     private static string CreateTemporaryDirectory()
     {

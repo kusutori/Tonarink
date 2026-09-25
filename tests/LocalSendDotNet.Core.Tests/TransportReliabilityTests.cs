@@ -28,8 +28,7 @@ public sealed class TransportReliabilityTests
             await Task.WhenAll(files.Select(pair => UploadAsync(setup, prepared, pair.Value, pair.Key == "a" ? "alpha" : "bravo")));
             var result = await receiveTask;
 
-            Assert.Equal(TransferState.Completed, result.State);
-            Assert.Equal(2, result.Items.Count);
+            Assert.Equal(2, result.RequireCompleted().Items.Count);
             Assert.Equal("alpha", await System.IO.File.ReadAllTextAsync(Path.Combine(setup.Downloads, "a.txt")));
             Assert.Equal("bravo", await System.IO.File.ReadAllTextAsync(Path.Combine(setup.Downloads, "b.txt")));
         }
@@ -51,8 +50,7 @@ public sealed class TransportReliabilityTests
             _ = await prepareTask;
 
             var result = await receiveTask;
-            Assert.Equal(TransferState.Failed, result.State);
-            Assert.Equal("transfer_timeout", result.Failure!.Code);
+            Assert.Equal("transfer_timeout", result.RequireFailed().Failure.Code);
         }
         finally { setup.Delete(); }
     }
@@ -94,8 +92,7 @@ public sealed class TransportReliabilityTests
 
             await Assert.ThrowsAsync<HttpRequestException>(() => UploadAsync(setup, prepared, file, "expected"));
             var result = await receiveTask;
-            Assert.Equal(TransferState.Failed, result.State);
-            Assert.Equal("checksum_mismatch", result.Failure!.Code);
+            Assert.Equal("checksum_mismatch", result.RequireFailed().Failure.Code);
             Assert.False(System.IO.File.Exists(Path.Combine(setup.Downloads, "bad.txt")));
             Assert.Empty(Directory.EnumerateFiles(setup.Downloads, "*.part-*"));
         }
@@ -123,7 +120,7 @@ public sealed class TransportReliabilityTests
                 prepared.SessionId, file.Id, validToken + "wrong", new MemoryStream(bytes), bytes.Length, file.FileType, default));
             await UploadAsync(setup, prepared, file, "retry");
 
-            Assert.Equal(TransferState.Completed, (await receiveTask).State);
+            _ = (await receiveTask).RequireCompleted();
             Assert.Equal("retry", await System.IO.File.ReadAllTextAsync(Path.Combine(setup.Downloads, "retry.txt")));
         }
         finally { setup.Delete(); }
@@ -147,7 +144,7 @@ public sealed class TransportReliabilityTests
             await Assert.ThrowsAnyAsync<Exception>(() => setup.Client.UploadAsync(setup.Endpoint, setup.ReceiverFingerprint,
                 prepared.SessionId, file.Id, prepared.Files[file.Id], new MemoryStream([1, 2]), file.Size, file.FileType, default));
             var result = await receiveTask;
-            Assert.True(result.State is TransferState.Cancelled or TransferState.Failed);
+            Assert.True(result is ReceiveOutcome.Cancelled or ReceiveOutcome.Failed);
             Assert.False(System.IO.File.Exists(Path.Combine(setup.Downloads, "interrupted.txt")));
             Assert.Empty(Directory.EnumerateFiles(setup.Downloads, "*.part-*"));
         }

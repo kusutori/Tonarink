@@ -21,7 +21,7 @@ internal sealed class IncomingSession
     public required PrepareUploadRequestDto Request { get; init; }
     public required IncomingTransferRequest PublicRequest { get; init; }
     public required TaskCompletionSource<IncomingDecision> Decision { get; init; }
-    public required TaskCompletionSource<TransferResult> Completion { get; init; }
+    public required TaskCompletionSource<ReceiveOutcome> Completion { get; init; }
     public Dictionary<string, string> Tokens { get; } = new(StringComparer.Ordinal);
     public Dictionary<string, string> Destinations { get; } = new(StringComparer.Ordinal);
     public bool VerifySha256 { get; set; } = true;
@@ -57,7 +57,7 @@ internal sealed class IncomingSession
         {
             _results.Add(new(itemId, fileName, bytes, path));
             if (Interlocked.Decrement(ref _remaining) == 0)
-                Completion.TrySetResult(new(TransferId, TransferDirection.Receive, TransferState.Completed, _results.ToArray()));
+                Completion.TrySetResult(new ReceiveOutcome.Completed(TransferId, _results.ToArray()));
         }
     }
 
@@ -72,9 +72,12 @@ internal sealed class IncomingSession
 
     public void Fail(string code, string message, string? itemId = null)
     {
-        Completion.TrySetResult(new(TransferId, TransferDirection.Receive, TransferState.Failed, _results.ToArray(), new(code, message, itemId)));
+        Completion.TrySetResult(new ReceiveOutcome.Failed(
+            TransferId,
+            _results.ToArray(),
+            new TransferFailure(code, message, itemId)));
         Cancellation.Cancel();
     }
 
-    public void Cancel() => Completion.TrySetResult(new(TransferId, TransferDirection.Receive, TransferState.Cancelled, _results.ToArray()));
+    public void Cancel() => Completion.TrySetResult(new ReceiveOutcome.Cancelled(TransferId, _results.ToArray()));
 }

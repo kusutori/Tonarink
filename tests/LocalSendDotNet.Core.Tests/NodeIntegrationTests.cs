@@ -35,9 +35,9 @@ public sealed class NodeIntegrationTests
             var received = await receiver.AcceptAsync(request.RequestId);
             var sent = await sendTask;
 
-            Assert.Equal(TransferState.Completed, sent.State);
-            Assert.Equal(TransferState.Completed, received.State);
-            Assert.Null(Assert.Single(received.Items).SavedPath);
+            _ = sent.RequireCompleted();
+            var receivedCompleted = received.RequireCompleted();
+            Assert.Null(Assert.Single(receivedCompleted.Items).SavedPath);
             Assert.Empty(Directory.EnumerateFiles(downloads));
         }
         finally { Directory.Delete(root, recursive: true); }
@@ -70,7 +70,7 @@ public sealed class NodeIntegrationTests
             Assert.NotEqual(Guid.Empty, request.TransferId);
             Assert.True(await sender.CancelTransferAsync(progress.Last!.TransferId));
             var result = await sendTask;
-            Assert.Equal(TransferState.Cancelled, result.State);
+            _ = result.RequireCancelled();
 
             await sender.StopAsync();
             Assert.Equal(LocalSendNodeState.Stopped, sender.State);
@@ -102,8 +102,8 @@ public sealed class NodeIntegrationTests
             var sent = await sender.SendAsync(device, [item]);
             var received = await receiveTask;
 
-            Assert.True(sent.IsSuccess, sent.Failure?.Message);
-            Assert.True(received.IsSuccess, received.Failure?.Message);
+            _ = sent.RequireCompleted();
+            _ = received.RequireCompleted();
             Assert.Equal(length, new FileInfo(Path.Combine(downloads, "large.bin")).Length);
         }
         finally { Directory.Delete(root, recursive: true); }
@@ -128,8 +128,9 @@ public sealed class NodeIntegrationTests
                 [new DeviceEndpoint(IPAddress.Loopback, receiverPort, LocalSendProtocol.Https)], DateTimeOffset.UtcNow);
             var items = new SendItem[] { new SendTextItem("one", "one.txt"), new SendTextItem("two", "two.txt") };
 
-            await Assert.ThrowsAsync<PinRequiredException>(() => sender.SendAsync(device, items));
-            var wrong = await Assert.ThrowsAsync<PinRequiredException>(() => sender.SendAsync(device, items, new SendOptions { Pin = "0000" }));
+            var missing = (await sender.SendAsync(device, items)).RequirePinRequired();
+            Assert.False(missing.InvalidPin);
+            var wrong = (await sender.SendAsync(device, items, new SendOptions { Pin = "0000" })).RequirePinRequired();
             Assert.True(wrong.InvalidPin);
 
             var receiveTask = AcceptNextAsync(receiver, request => [request.Items.Single(static x => x.FileName == "one.txt").Id]);
@@ -137,9 +138,10 @@ public sealed class NodeIntegrationTests
             var sent = await sender.SendAsync(device, items, new SendOptions { Pin = "2468" });
             var received = await receiveTask;
 
-            Assert.Equal(TransferState.Completed, sent.State);
-            Assert.Single(sent.Items);
-            Assert.Equal("one.txt", Assert.Single(received.Items).FileName);
+            var sentCompleted = sent.RequireCompleted();
+            var receivedCompleted = received.RequireCompleted();
+            Assert.Single(sentCompleted.Items);
+            Assert.Equal("one.txt", Assert.Single(receivedCompleted.Items).FileName);
             Assert.Equal("one", await File.ReadAllTextAsync(Path.Combine(downloads, "one.txt")));
             Assert.False(File.Exists(Path.Combine(downloads, "two.txt")));
         }
@@ -157,7 +159,7 @@ public sealed class NodeIntegrationTests
         ReceivePin = receivePin
     });
 
-    private static async Task<TransferResult> AcceptNextAsync(LocalSendNode node)
+    private static async Task<ReceiveOutcome> AcceptNextAsync(LocalSendNode node)
     {
         await foreach (var request in node.WatchIncomingTransfersAsync())
             return await node.AcceptAsync(request.RequestId);
@@ -171,7 +173,7 @@ public sealed class NodeIntegrationTests
         throw new InvalidOperationException("Incoming request stream ended.");
     }
 
-    private static async Task<TransferResult> AcceptNextAsync(LocalSendNode node, Func<IncomingTransferRequest, IReadOnlyCollection<string>> select)
+    private static async Task<ReceiveOutcome> AcceptNextAsync(LocalSendNode node, Func<IncomingTransferRequest, IReadOnlyCollection<string>> select)
     {
         await foreach (var request in node.WatchIncomingTransfersAsync())
             return await node.AcceptAsync(request.RequestId, new AcceptTransferOptions { AcceptedItemIds = select(request) });
