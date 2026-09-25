@@ -118,14 +118,13 @@ static class ShellActivationHooks
                 {
                     switch (jumpListActivation)
                     {
-                        case { Kind: JumpListActivationKind.Favorite, Value: var fingerprint }
+                        case JumpListActivation.Favorite(var fingerprint)
                             when FavoriteDeviceStore.Contains(fingerprint):
                             setJumpListFavoriteFingerprint(fingerprint);
                             break;
 
-                        case { Kind: JumpListActivationKind.History, Value: var historyIdText }
-                            when Guid.TryParseExact(historyIdText, "N", out var historyId)
-                                 && ReceiveHistoryStore.Entries.Any(entry => entry.Id == historyId):
+                        case JumpListActivation.History(var historyId)
+                            when ReceiveHistoryStore.Entries.Any(entry => entry.Id == historyId):
                             setJumpListHistoryId(historyId);
                             break;
 

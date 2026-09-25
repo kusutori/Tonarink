@@ -21,13 +21,12 @@ sealed record FavoriteDevicesDialogProps(
 /// <summary>Displays saved devices and routes create, edit, and delete actions after the dialog closes.</summary>
 sealed class FavoriteDevicesDialog : Component<FavoriteDevicesDialogProps>
 {
-    private enum DialogAction
+    private union PendingAction(PendingAction.Edit, PendingAction.Delete)
     {
-        Edit,
-        Delete,
-    }
+        public sealed record Edit(FavoriteDevice Device);
 
-    private sealed record PendingAction(DialogAction Action, FavoriteDevice Device);
+        public sealed record Delete(FavoriteDevice Device);
+    }
 
     public override Element Render()
     {
@@ -74,10 +73,10 @@ sealed class FavoriteDevicesDialog : Component<FavoriteDevicesDialogProps>
 
                 switch (pending)
                 {
-                    case { Action: DialogAction.Edit, Device: var device }:
+                    case PendingAction.Edit(var device):
                         Props.Edit(device);
                         return;
-                    case { Action: DialogAction.Delete, Device: var device }:
+                    case PendingAction.Delete(var device):
                         Props.Delete(device);
                         return;
                 }
@@ -107,7 +106,7 @@ sealed class FavoriteDevicesDialog : Component<FavoriteDevicesDialogProps>
                                 ("device", favorite.Name)))
                             .GhostButton()
                             .Grid(column: 0),
-                        Button(Icon("\uE70F").AccessibilityHidden(), () => Queue(DialogAction.Edit, favorite))
+                        Button(Icon("\uE70F").AccessibilityHidden(), () => Queue(new PendingAction.Edit(favorite)))
                             .AutomationName(t.Message(
                                 new("App", "EditFavoriteDevice"),
                                 ("device", favorite.Name)))
@@ -116,7 +115,7 @@ sealed class FavoriteDevicesDialog : Component<FavoriteDevicesDialogProps>
                             .MinHeight(40)
                             .SubtleButton()
                             .Grid(column: 1),
-                        Button(Icon("\uE74D").AccessibilityHidden(), () => Queue(DialogAction.Delete, favorite))
+                        Button(Icon("\uE74D").AccessibilityHidden(), () => Queue(new PendingAction.Delete(favorite)))
                             .AutomationName(t.Message(
                                 new("App", "RemoveFavoriteDevice"),
                                 ("device", favorite.Name)))
@@ -127,9 +126,9 @@ sealed class FavoriteDevicesDialog : Component<FavoriteDevicesDialogProps>
                             .Grid(column: 2))
                     .HAlign(HorizontalAlignment.Stretch));
 
-        void Queue(DialogAction action, FavoriteDevice favorite)
+        void Queue(PendingAction action)
         {
-            pendingActionRef.Current = new(action, favorite);
+            pendingActionRef.Current = action;
             Props.Hide();
         }
     }

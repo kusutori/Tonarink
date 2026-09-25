@@ -171,11 +171,11 @@ sealed record ShareTargetPayload(
     IReadOnlyList<ShareTargetItem> Items,
     string? SuggestedContactFingerprint = null);
 
-abstract record ShareTargetItem
+union ShareTargetItem(ShareTargetItem.FileSystem, ShareTargetItem.Text)
 {
-    public sealed record FileSystem(string Path, bool IsDirectory) : ShareTargetItem;
+    public sealed record FileSystem(string Path, bool IsDirectory);
 
-    public sealed record Text(string Value, string FileName) : ShareTargetItem;
+    public sealed record Text(string Value, string FileName);
 }
 
 sealed record ReceiveHistoryEntry(

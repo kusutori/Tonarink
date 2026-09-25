@@ -5,13 +5,12 @@ using Windows.UI.StartScreen;
 
 namespace Tonarink.Services;
 
-enum JumpListActivationKind
+union JumpListActivation(JumpListActivation.Favorite, JumpListActivation.History)
 {
-    Favorite,
-    History,
-}
+    public sealed record Favorite(string Fingerprint);
 
-sealed record JumpListActivation(JumpListActivationKind Kind, string Value);
+    public sealed record History(Guid Id);
+}
 
 sealed record JumpListLabels(
     string FavoritesGroup,
@@ -34,7 +33,7 @@ static class JumpListService
 
     public static bool HasPendingActivations => !PendingActivations.IsEmpty;
 
-    public static bool TryDequeue(out JumpListActivation? activation) =>
+    public static bool TryDequeue(out JumpListActivation activation) =>
         PendingActivations.TryDequeue(out activation);
 
     public static bool TryEnqueueActivation(string? arguments)
@@ -48,14 +47,14 @@ static class JumpListService
             if (fingerprint.Length == 0)
                 return false;
 
-            PendingActivations.Enqueue(new(JumpListActivationKind.Favorite, fingerprint));
+            PendingActivations.Enqueue(new JumpListActivation.Favorite(fingerprint));
             return true;
         }
 
         if (arguments.StartsWith(HistoryPrefix, StringComparison.Ordinal)
             && Guid.TryParseExact(arguments[HistoryPrefix.Length..], "N", out var historyId))
         {
-            PendingActivations.Enqueue(new(JumpListActivationKind.History, historyId.ToString("N")));
+            PendingActivations.Enqueue(new JumpListActivation.History(historyId));
             return true;
         }
 
