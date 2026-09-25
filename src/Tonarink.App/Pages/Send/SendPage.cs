@@ -14,7 +14,7 @@ using Windows.System;
 using static Microsoft.UI.Reactor.Factories;
 using static Tonarink.Utilities.ByteSize;
 using static Tonarink.Components.DeviceVisuals;
-using static Tonarink.Components.TransferOverlayVisuals;
+using static Tonarink.Components.Transfers.TransferOverlayVisuals;
 
 namespace Tonarink.Pages.Send;
 

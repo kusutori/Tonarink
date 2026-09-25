@@ -8,7 +8,7 @@ using Microsoft.UI.Xaml.Controls;
 using static Microsoft.UI.Reactor.Factories;
 using static Tonarink.Utilities.ByteSize;
 
-namespace Tonarink.Components;
+namespace Tonarink.Components.Transfers;
 
 sealed record IncomingFileCardModel(
     IncomingTransferRequest Request,

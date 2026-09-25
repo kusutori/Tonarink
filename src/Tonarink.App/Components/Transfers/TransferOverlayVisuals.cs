@@ -4,7 +4,7 @@ using Microsoft.UI.Reactor.Core;
 using Microsoft.UI.Reactor.Localization;
 using static Microsoft.UI.Reactor.Factories;
 
-namespace Tonarink.Components;
+namespace Tonarink.Components.Transfers;
 
 static class TransferOverlayVisuals
 {
