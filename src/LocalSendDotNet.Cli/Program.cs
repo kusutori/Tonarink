@@ -92,8 +92,19 @@ internal static class Cli
         {
             var progress = new Progress<TransferProgress>(PrintProgress);
             var result = await node.AcceptAsync(request.RequestId, progress: progress, cancellationToken: cancellationToken).ConfigureAwait(false);
-            Console.WriteLine($"Receive {result.State}: {result.Items.Count} item(s)");
-            foreach (var item in result.Items) Console.WriteLine($"  {item.SavedPath}");
+            switch (result)
+            {
+                case ReceiveOutcome.Completed completed:
+                    Console.WriteLine($"Receive completed: {completed.Items.Count} item(s)");
+                    foreach (var item in completed.Items) Console.WriteLine($"  {item.SavedPath}");
+                    break;
+                case ReceiveOutcome.Cancelled cancelled:
+                    Console.WriteLine($"Receive cancelled: {cancelled.Items.Count} item(s)");
+                    break;
+                case ReceiveOutcome.Failed failed:
+                    Console.Error.WriteLine($"Receive failed: {failed.Failure.Message}");
+                    break;
+            }
         }
         catch (Exception exception) { Console.Error.WriteLine($"receive error: {exception.Message}"); }
     }
@@ -131,9 +142,30 @@ internal static class Cli
             ?? throw new InvalidOperationException($"Device '{target}' was not discovered.");
         PrintDevice(device);
         var result = await node.SendAsync(device, items, new SendOptions { Pin = pin, ComputeSha256 = computeSha256 }, new Progress<TransferProgress>(PrintProgress), cancellationToken).ConfigureAwait(false);
-        Console.WriteLine($"Transfer {result.State}: {result.Items.Count} item(s)");
-        if (result.Failure is not null) Console.Error.WriteLine(result.Failure.Message);
-        return result.State == TransferState.Completed ? 0 : 1;
+        return result switch
+        {
+            SendOutcome.Completed completed => ReportSend("completed", completed.Items, exitCode: 0),
+            SendOutcome.Cancelled cancelled => ReportSend("cancelled", cancelled.Items, exitCode: 1),
+            SendOutcome.PinRequired required => ReportSendFailure(required.InvalidPin
+                ? "The supplied PIN is incorrect."
+                : "The receiving device requires a PIN."),
+            SendOutcome.PinRateLimited => ReportSendFailure("Too many incorrect PIN attempts. Try again later."),
+            SendOutcome.PeerBusy => ReportSendFailure("The receiving device is busy."),
+            SendOutcome.Declined => ReportSendFailure("The receiving device declined the transfer."),
+            SendOutcome.Failed failed => ReportSendFailure(failed.Failure.Message),
+        };
+
+        static int ReportSend(string status, IReadOnlyList<TransferredItemResult> transferred, int exitCode)
+        {
+            Console.WriteLine($"Transfer {status}: {transferred.Count} item(s)");
+            return exitCode;
+        }
+
+        static int ReportSendFailure(string message)
+        {
+            Console.Error.WriteLine(message);
+            return 1;
+        }
     }
 
     private static void PrintProgress(TransferProgress progress) => Console.WriteLine($"{progress.Direction,-7} {progress.State,-20} {progress.BytesTransferred}/{progress.TotalBytes}");
