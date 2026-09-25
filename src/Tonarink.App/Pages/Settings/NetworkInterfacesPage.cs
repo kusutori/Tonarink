@@ -11,7 +11,7 @@ using Microsoft.UI.Xaml.Automation.Peers;
 using Windows.UI.Text;
 using static Microsoft.UI.Reactor.Factories;
 
-namespace Tonarink.Pages;
+namespace Tonarink.Pages.Settings;
 
 sealed record NetworkInterfacesPageProps(
     AppSettings Settings,

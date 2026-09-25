@@ -11,7 +11,7 @@ using static Microsoft.UI.Reactor.Factories;
 using static Tonarink.Controls.SettingsCardElement;
 using static Tonarink.Controls.SettingsExpanderElement;
 
-namespace Tonarink.Pages;
+namespace Tonarink.Pages.Settings;
 
 sealed record SettingsPageProps(
     AppSettings Settings,
