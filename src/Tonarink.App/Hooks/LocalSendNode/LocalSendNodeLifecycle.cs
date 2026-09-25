@@ -1,6 +1,7 @@
 using LocalSendDotNet;
+using CoreLocalSendNode = LocalSendDotNet.LocalSendNode;
 
-namespace Tonarink.Services;
+namespace Tonarink.Hooks.LocalSendNode;
 
 sealed class LocalSendNodeLifecycle
 {
@@ -8,11 +9,11 @@ sealed class LocalSendNodeLifecycle
     private int _nextSession;
     private int _ownerSession;
 
-    public LocalSendNode? CurrentNode { get; private set; }
+    public CoreLocalSendNode? CurrentNode { get; private set; }
 
     public int CreateSession() => Interlocked.Increment(ref _nextSession);
 
-    public async Task<LocalSendNode?> StartSessionAsync(
+    public async Task<CoreLocalSendNode?> StartSessionAsync(
         int session,
         bool desired,
         AppSettings settings,
@@ -26,7 +27,7 @@ sealed class LocalSendNodeLifecycle
             if (!desired || cancellationToken.IsCancellationRequested)
                 return null;
 
-            var node = new LocalSendNode(CreateOptions(settings, httpsOverride), AppDiagnostics.LoggerFactory);
+            var node = new CoreLocalSendNode(CreateOptions(settings, httpsOverride), AppDiagnostics.LoggerFactory);
             CurrentNode = node;
             _ownerSession = session;
             await node.StartAsync(cancellationToken).ConfigureAwait(false);

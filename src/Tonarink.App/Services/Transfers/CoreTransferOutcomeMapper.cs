@@ -1,6 +1,6 @@
 using LocalSendDotNet;
 
-namespace Tonarink.Services;
+namespace Tonarink.Services.Transfers;
 
 static class CoreTransferOutcomeMapper
 {

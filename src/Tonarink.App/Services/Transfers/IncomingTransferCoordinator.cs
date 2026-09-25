@@ -1,7 +1,7 @@
 using LocalSendDotNet;
 using Microsoft.UI.Reactor.Localization;
 
-namespace Tonarink.Services;
+namespace Tonarink.Services.Transfers;
 
 sealed class IncomingTransferCoordinator(
     Func<IntlAccessor> getIntl,

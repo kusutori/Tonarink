@@ -12,7 +12,7 @@ using Microsoft.UI.Xaml.Controls.Primitives;
 using static Microsoft.UI.Reactor.Factories;
 using static Tonarink.Controls.SegmentedElement;
 
-namespace Tonarink.Pages;
+namespace Tonarink.Pages.Receive;
 
 sealed record ReceivePageProps(
     AppRuntimeState Runtime,
