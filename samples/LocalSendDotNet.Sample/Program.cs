@@ -19,3 +19,17 @@ try
         Console.WriteLine($"{change.Kind}: {change.Device.Alias} at {change.Device.PreferredEndpoint}");
 }
 catch (OperationCanceledException) when (stop.IsCancellationRequested) { }
+
+internal static class OutcomeFormatting
+{
+    public static string Describe(SendOutcome outcome) => outcome switch
+    {
+        SendOutcome.Completed completed => $"Sent {completed.Items.Count} item(s).",
+        SendOutcome.Cancelled cancelled => $"Cancelled after {cancelled.Items.Count} item(s).",
+        SendOutcome.PinRequired required => required.InvalidPin ? "Incorrect PIN." : "PIN required.",
+        SendOutcome.PinRateLimited => "PIN attempts are rate-limited.",
+        SendOutcome.PeerBusy => "The peer is busy.",
+        SendOutcome.Declined => "The peer declined the transfer.",
+        SendOutcome.Failed failed => failed.Failure.Message,
+    };
+}
