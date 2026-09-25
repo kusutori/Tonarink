@@ -26,13 +26,13 @@ For a manually entered address, call `ProbeDeviceAsync(endpoint)` first. HTTPS p
 
 Use `SendFileItem`, `SendTextItem`, or `SendStreamItem`. The stream factory makes sandboxed file pickers and virtual content usable without an intermediate file. `LocalSendItems.FromDirectory` builds items with protocol-safe relative names. `SendOptions.ComputeSha256` performs a complete pre-read and includes the digest in prepare-upload; enable it when integrity is more important than avoiding a second read.
 
-`SendAsync` reports a transfer ID in its first progress callback. Retain that ID to call `CancelTransferAsync`. Cancellation also attempts the remote `/cancel` route with a short bounded timeout. PIN-required and PIN-rate-limited responses use dedicated exceptions; normal transport failures are returned as `TransferResult` with a code from `TransferFailureCodes`.
+`SendAsync` reports a transfer ID in its first progress callback. Retain that ID to call `CancelTransferAsync`. Cancellation also attempts the remote `/cancel` route with a short bounded timeout. Its `SendOutcome` return value separates completion, internal cancellation, PIN requirements, PIN rate limiting, peer capacity, rejection, and structured failure. Expected peer responses do not use exceptions. Caller cancellation still throws `OperationCanceledException`.
 
 ## Receiving
 
 `WatchIncomingTransfersAsync` is a reliable bounded stream: when a subscriber is slow, producers wait instead of silently dropping a request requiring a decision. Call `AcceptAsync` with item IDs for partial acceptance or `DeclineAsync`. Unknown IDs are rejected before a decision is sent.
 
-Accepted files are streamed to `.part-*`, length-checked, optionally SHA-256 checked, and atomically renamed. Absolute paths, traversal, linked subdirectories, and platform-invalid names are rejected. Abandoned accepted sessions fail after `IncomingTransferTimeout`, release their concurrency slot, and remove temporary files. When all slots are occupied, new sessions receive an immediate busy response instead of waiting indefinitely.
+Accepted files are streamed to `.part-*`, length-checked, optionally SHA-256 checked, and atomically renamed. Absolute paths, traversal, linked subdirectories, and platform-invalid names are rejected. `AcceptAsync` returns `ReceiveOutcome.Completed`, `ReceiveOutcome.Cancelled`, or `ReceiveOutcome.Failed`; caller cancellation still throws `OperationCanceledException`. Abandoned accepted sessions fail after `IncomingTransferTimeout`, release their concurrency slot, and remove temporary files. When all slots are occupied, new sessions receive an immediate busy response instead of waiting indefinitely.
 
 ## Limits
 

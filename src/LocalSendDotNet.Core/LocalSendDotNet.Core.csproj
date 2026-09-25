@@ -4,7 +4,7 @@
     <RootNamespace>LocalSendDotNet</RootNamespace>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageId>LocalSendDotNet.Core</PackageId>
-    <Version>0.2.0-preview.5</Version>
+    <Version>0.3.0-preview.1</Version>
     <Description>A UI-independent .NET implementation of the LocalSend v2.2 protocol.</Description>
     <Authors>kusutori; LocalSendDotNet contributors</Authors>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>

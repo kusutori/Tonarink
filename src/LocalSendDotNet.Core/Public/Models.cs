@@ -319,25 +319,6 @@ public sealed record TransferredItemResult(string ItemId, string FileName, long 
 /// <param name="ItemId">The failing item ID, when applicable.</param>
 public sealed record TransferFailure(string Code, string Message, string? ItemId = null);
 
-/// <summary>Contains the final outcome of a send or receive operation.</summary>
-/// <param name="TransferId">The transfer identifier.</param>
-/// <param name="Direction">The transfer direction.</param>
-/// <param name="State">The final state.</param>
-/// <param name="Items">Successfully transferred items.</param>
-/// <param name="Failure">Failure details when <paramref name="State"/> is failed.</param>
-public sealed record TransferResult(
-    Guid TransferId,
-    TransferDirection Direction,
-    TransferState State,
-    IReadOnlyList<TransferredItemResult> Items,
-    TransferFailure? Failure = null)
-{
-    /// <summary>Gets whether the transfer completed successfully.</summary>
-    public bool IsSuccess => State == TransferState.Completed;
-    /// <summary>Gets the sum of successfully transferred item bytes.</summary>
-    public long BytesTransferred => Items.Sum(static item => item.BytesTransferred);
-}
-
 /// <summary>Stable failure-code constants for application error handling.</summary>
 public static class TransferFailureCodes
 {

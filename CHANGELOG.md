@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.0-preview.1
+
+- Replace `TransferResult` with exhaustive `SendOutcome` and `ReceiveOutcome` unions.
+- Return expected PIN, rate-limit, busy, and declined responses as send outcome cases instead of public exceptions.
+- Preserve `OperationCanceledException` for caller-requested cancellation while representing transfer-initiated cancellation explicitly.
+
 ## 0.2.0-preview.5
 
 - Add `NetworkWhitelist` and `NetworkBlacklist` on `LocalSendOptions` so discovery, announcements, and HTTP subnet scans can follow LocalSend-style IPv4 interface patterns.

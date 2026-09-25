@@ -9,23 +9,6 @@ public class LocalSendException : Exception
     public LocalSendException(string message, Exception innerException) : base(message, innerException) { }
 }
 
-/// <summary>Indicates that the peer requires a PIN or rejected the supplied PIN.</summary>
-public sealed class PinRequiredException : LocalSendException
-{
-    /// <summary>Creates a PIN response exception.</summary>
-    /// <param name="invalidPin">Whether a supplied PIN was rejected.</param>
-    public PinRequiredException(bool invalidPin) : base(invalidPin ? "The remote device rejected the PIN." : "The remote device requires a PIN.") => InvalidPin = invalidPin;
-    /// <summary>Gets whether the caller supplied an incorrect PIN.</summary>
-    public bool InvalidPin { get; }
-}
-
-/// <summary>Indicates that the peer temporarily rate-limited PIN attempts.</summary>
-public sealed class PinRateLimitedException : LocalSendException
-{
-    /// <summary>Creates a PIN rate-limit exception.</summary>
-    public PinRateLimitedException() : base("The remote device has rate-limited PIN attempts.") { }
-}
-
 /// <summary>Indicates that a peer certificate or advertised fingerprint failed validation.</summary>
 public sealed class PeerIdentityException : LocalSendException
 {
@@ -33,20 +16,6 @@ public sealed class PeerIdentityException : LocalSendException
     public PeerIdentityException(string message) : base(message) { }
     /// <summary>Creates a peer identity exception with its underlying cause.</summary>
     public PeerIdentityException(string message, Exception innerException) : base(message, innerException) { }
-}
-
-/// <summary>Indicates that a receiver has no free transfer capacity.</summary>
-public sealed class PeerBusyException : LocalSendException
-{
-    /// <summary>Creates a peer busy exception.</summary>
-    public PeerBusyException() : base("The remote device is handling the maximum number of transfers.") { }
-}
-
-/// <summary>Indicates that a receiver declined an outgoing offer.</summary>
-public sealed class TransferDeclinedException : LocalSendException
-{
-    /// <summary>Creates a transfer declined exception.</summary>
-    public TransferDeclinedException() : base("The remote device declined the transfer.") { }
 }
 
 /// <summary>Indicates that the persistent local certificate identity is incomplete or corrupt.</summary>
