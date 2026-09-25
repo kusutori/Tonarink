@@ -6,6 +6,7 @@ global using Tonarink.Components.Shell;
 global using Tonarink.Controls;
 global using Tonarink.Models;
 global using Tonarink.Pages;
+global using Tonarink.Pages.Send;
 global using Tonarink.Services;
 global using Tonarink.Styling;
 global using Tonarink.Utilities;
