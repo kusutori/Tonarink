@@ -10,7 +10,7 @@ using Windows.System;
 using static Microsoft.UI.Reactor.Factories;
 using static Tonarink.Utilities.ByteSize;
 
-namespace Tonarink.Pages;
+namespace Tonarink.Pages.History;
 
 sealed record HistoryPageProps(
     string DownloadDirectory,

@@ -4,9 +4,9 @@ using Microsoft.UI.Reactor.Core;
 using Microsoft.UI.Reactor.Layout;
 using Microsoft.UI.Xaml;
 using static Microsoft.UI.Reactor.Factories;
-using static Tonarink.Components.DeviceVisuals;
+using static Tonarink.Components.Devices.DeviceVisuals;
 
-namespace Tonarink.Components;
+namespace Tonarink.Components.Devices;
 
 sealed record DeviceIdentityCardProps(
     string Alias,

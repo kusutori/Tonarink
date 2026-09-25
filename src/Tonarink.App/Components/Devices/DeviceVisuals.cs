@@ -6,7 +6,7 @@ using Microsoft.UI.Xaml;
 using System.Net.Sockets;
 using static Microsoft.UI.Reactor.Factories;
 
-namespace Tonarink.Components;
+namespace Tonarink.Components.Devices;
 
 static class DeviceVisuals
 {

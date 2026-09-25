@@ -2,7 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using LocalSendDotNet;
 
-namespace Tonarink.Services;
+namespace Tonarink.Services.History;
 
 static class ReceiveHistoryStore
 {

@@ -5,9 +5,9 @@ using Microsoft.UI.Reactor.Localization;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
 using static Microsoft.UI.Reactor.Factories;
-using static Tonarink.Components.DeviceVisuals;
+using static Tonarink.Components.Devices.DeviceVisuals;
 
-namespace Tonarink.Pages;
+namespace Tonarink.Pages.Devices;
 
 sealed record DeviceDetailsPageProps(
     AppRuntimeState Runtime,

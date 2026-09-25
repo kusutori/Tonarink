@@ -12,7 +12,7 @@ using Windows.System;
 using BasicConnectedAnimationConfiguration = Microsoft.UI.Xaml.Media.Animation.BasicConnectedAnimationConfiguration;
 using static Microsoft.UI.Reactor.Factories;
 using static Tonarink.Utilities.ByteSize;
-using static Tonarink.Components.DeviceVisuals;
+using static Tonarink.Components.Devices.DeviceVisuals;
 using static Tonarink.Components.Transfers.TransferOverlayVisuals;
 
 namespace Tonarink.Components.Transfers;
@@ -218,4 +218,3 @@ sealed class OutgoingTransferOverlay : Component<OutgoingTransferOverlayProps>
         _ => t.Message(new("App", "SendFailed")),
     };
 }
-

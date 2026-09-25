@@ -3,7 +3,7 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Animation;
 using System.Runtime.InteropServices;
 
-namespace Tonarink.Services;
+namespace Tonarink.Services.Devices;
 
 internal static class DeviceConnectedAnimation
 {

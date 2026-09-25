@@ -11,7 +11,7 @@ using Microsoft.UI.Xaml.Controls;
 using Windows.ApplicationModel.DataTransfer;
 using static Microsoft.UI.Reactor.Factories;
 using Tonarink.Components.Animations;
-using static Tonarink.Components.DeviceVisuals;
+using static Tonarink.Components.Devices.DeviceVisuals;
 using static Tonarink.Controls.SegmentedElement;
 using static Tonarink.Utilities.ByteSize;
 
