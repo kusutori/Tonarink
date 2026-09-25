@@ -5,6 +5,7 @@ global using Tonarink.Components.Dialogs;
 global using Tonarink.Components.Shell;
 global using Tonarink.Components.Transfers;
 global using Tonarink.Controls;
+global using Tonarink.Hooks.LocalSendNode;
 global using Tonarink.Models;
 global using Tonarink.Pages;
 global using Tonarink.Pages.Send;
