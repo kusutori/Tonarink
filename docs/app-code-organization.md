@@ -4,6 +4,20 @@
 
 这是一项面向整个 App 的统一规范，而不是只针对发送、接收等少数模块的局部约定。最终所有现有代码和新增代码都应遵循本文档；当前仅因为 Core 0.3 改造优先级更高而分批迁移，不把阶段性的混合结构视为长期结果。
 
+## 统一范围与分阶段实施
+
+“分批迁移”只描述执行顺序，不缩小最终范围。仓库允许在迁移期间暂时同时存在旧结构和新结构，但这种混合状态必须满足三个条件：有明确的后续批次、每一批都能独立验证、完成 Core 高优先级改造后继续收敛。不能因为某个文件当前较短、暂时没有第二个调用方，便永久保留与同类代码不同的目录或命名空间规范。
+
+最终需要逐项审查 `Pages`、`Components`、`Hooks`、`Services`、`Models` 和 `Utilities` 中的全部内容。审查后的结果不一定都是“拆成更多文件”：简单且内聚的实现可以原样保留，但它的位置、命名空间、所有权和同类代码必须一致。换句话说，全量统一要求所有代码都经过相同规则判断，而不是要求所有代码拥有相同数量的文件。
+
+迁移期间遵循以下约束：
+
+- 新增代码从一开始就使用最终规范，不再制造新的待迁移结构；
+- 修改旧模块时，如果能够保持提交纯粹且风险可控，应顺手迁移到目标位置；
+- 暂缓的模块必须留在迁移批次清单中，不能以“首批未处理”为最终结论；
+- 不为追求一次性完成而把结构迁移、行为修改和 Core API 改造塞进同一提交；
+- 一个批次只有在目录、命名空间、引用、构建与测试都完成后才算收敛。
+
 ## 总体原则
 
 应用继续使用按技术角色划分的一级目录：
@@ -199,17 +213,26 @@ var (transfer, dispatchTransfer) =
 
 “可以复用”不意味着立刻上移。只有出现真实的第二个调用方，或者逻辑本身明确属于更低层抽象时，才移动到共享位置。
 
-## Tonarink 首批拆分结果
+## Tonarink 分批拆分进度
 
-Core 0.3 preview 改造前的受控拆分已经完成，当前结构为：
+Core 0.3 preview 改造前的受控拆分已经完成，并在 Core 与主 App 迁移完成后继续按功能区域整理。当前已经建立的主要边界包括：
 
 ```text
 Pages/
+  Devices/
+  History/
+  Receive/
   Send/
     SendPage.cs
     SendTransferWorkflow.cs
+  Settings/
+  Web/
 
 Components/
+  Devices/
+  Settings/
+  Shell/
+  Tray/
   Transfers/
     IncomingTransferOverlay.cs
     IncomingTransferWorkflow.cs
@@ -219,6 +242,18 @@ Hooks/
   LocalSendNode/
     UseLocalSendNode.cs
     LocalSendNodeRuntime.cs
+    LocalSendNodeLifecycle.cs
+  Shell/
+  Widgets/
+
+Services/
+  Activation/
+  Devices/
+  History/
+  Transfers/
+  Tray/
+  WebShare/
+  Widgets/
 ```
 
 建议职责如下：
@@ -229,9 +264,7 @@ Hooks/
 - UI 文件继续负责 Hook 调用、控件树和异步调用；
 - `OutgoingTransferViewState` 根据实际共享范围放在 `Components/Transfers` 或稳定的共享模型文件中，不继续堆入通用 `AppModels.cs`。
 
-首批没有搬动设置、历史记录、网络页面及其他小型文件。更广泛的目录整理将在 Core 迁移完成后按计划分批进行。
-
-这里的“首批没有搬动”只表示暂缓，不表示它们被排除在规范之外。Core 迁移完成后，应继续按批次审查所有一级目录，使相同性质的代码最终拥有一致的组织方式。
+设置、网络、历史记录、设备详情、Web 分享、Shell 激活、托盘、Widget、接收和传输协调等批次现已完成初步归类。尚未处理的文件仍属于本次全量工程，接下来重点是拆除 `AppModels.cs` 的聚合职责、归类剩余平台与配置服务，并执行完整目录和命名空间审计。
 
 首批拆分保持了原有行为边界，并已通过 Debug、Release、win-x64 Native AOT 构建，以及 Application 与 LocalSend 自动化测试。后续 Core 迁移应直接依赖这些已经稳定的模块边界，不再把状态机移回通用 `Models`。
 
@@ -260,6 +293,8 @@ Hooks/
 4. **Shell 与激活入口**：导航、通知、Share Target、Jump List 和启动流程；
 5. **托盘与 Widget**：托盘面板、发送协调器、窗口宿主和 Widget 投影；
 6. **剩余 Components、Services、Models 和 Utilities**：处理此前未达到拆分阈值但目录或命名空间仍不一致的内容。
+
+批次编号不是可选范围。前一批因优先级先完成，后一批因风险和依赖关系延后，但六个批次都属于同一项迁移；除非文档经过新的架构决策明确修改，否则不能在中间批次结束后把工程视为完成。
 
 每个批次都应独立提交，并以“移动和整理”为主。若审查过程中发现需要行为修改，应拆成后续单独提交，避免结构迁移掩盖功能变化。
 
