@@ -54,6 +54,12 @@ sealed record SuggestedContactSend(
     Guid Id,
     string Fingerprint);
 
+sealed record ResolvedDevice(LocalSendDevice Device);
+
+sealed record DeviceResolutionFailure(Exception Cause);
+
+union DeviceResolution(ResolvedDevice, DeviceResolutionFailure);
+
 union TransferUiState(TransferUiState.Idle, TransferUiState.Active)
 {
     public sealed record Idle(string Message);
@@ -1138,66 +1144,94 @@ sealed class SendPage : Component<SendPageProps>
             setResolvingAddress(true);
             try
             {
-                var node = Props.Node ?? throw new InvalidOperationException();
-                var preferredProtocol = Props.Runtime.Identity?.Protocol ?? LocalSendProtocol.Https;
-                Exception? lastError = null;
-                foreach (var protocol in new[]
-                         {
-                             preferredProtocol,
-                             preferredProtocol == LocalSendProtocol.Https
-                                 ? LocalSendProtocol.Http
-                                 : LocalSendProtocol.Https,
-                         })
+                DeviceResolution resolution = Props.Node is { } node
+                    ? await ResolveDeviceAsync(
+                            node,
+                            address,
+                            port,
+                            Props.Runtime.Identity?.Protocol ?? LocalSendProtocol.Https,
+                            expectedFingerprint)
+                        .ConfigureAwait(true)
+                    : new DeviceResolutionFailure(new InvalidOperationException(
+                        "The LocalSend node is not running."));
+                switch (resolution)
                 {
-                    try
-                    {
-                        var endpoint = new DeviceEndpoint(address, port, protocol);
-                        var probe = await node.ProbeDeviceAsync(endpoint).ConfigureAwait(true);
-                        if (expectedFingerprint is not null
-                            && !string.Equals(
-                                probe.Device.Fingerprint,
-                                expectedFingerprint,
-                                StringComparison.Ordinal))
-                            throw new LocalSendException("The saved address now belongs to a different device.");
-                        var device = await node.AddKnownDeviceAsync(
-                            endpoint,
-                            probe.Device.Fingerprint).ConfigureAwait(true);
-                        setResolvingAddress(false);
-                        await StartSendAsync(device, pin: null, normalizedAddress).ConfigureAwait(true);
+                    case ResolvedDevice(var device):
+                        await StartSendAsync(device, pin: null, normalizedAddress)
+                            .ConfigureAwait(true);
                         return;
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        throw;
-                    }
-                    catch (Exception exception)
-                    {
-                        lastError = exception;
-                    }
-                }
 
-                throw lastError ?? new LocalSendException("No compatible device responded.");
-            }
-            catch (Exception)
-            {
-                if (showDialogOnFailure)
-                {
-                    setManualAddressError(t.Message(
-                        new("App", "DeviceAddressNotFound"),
-                        ("address", normalizedAddress)));
-                    setShowAddressDialog(true);
-                }
-                else
-                {
-                    setPickerMessage(t.Message(
-                        new("App", "ShareSuggestedDeviceOffline"),
-                        ("device", suggestedDeviceName ?? normalizedAddress)));
+                    case DeviceResolutionFailure:
+                        if (showDialogOnFailure)
+                        {
+                            setManualAddressError(t.Message(
+                                new("App", "DeviceAddressNotFound"),
+                                ("address", normalizedAddress)));
+                            setShowAddressDialog(true);
+                        }
+                        else
+                        {
+                            setPickerMessage(t.Message(
+                                new("App", "ShareSuggestedDeviceOffline"),
+                                ("device", suggestedDeviceName ?? normalizedAddress)));
+                        }
+                        return;
                 }
             }
             finally
             {
                 setResolvingAddress(false);
             }
+        }
+
+        static async Task<DeviceResolution> ResolveDeviceAsync(
+            LocalSendNode node,
+            IPAddress address,
+            int port,
+            LocalSendProtocol preferredProtocol,
+            string? expectedFingerprint)
+        {
+            Exception? lastError = null;
+            LocalSendProtocol[] protocols =
+            [
+                preferredProtocol,
+                preferredProtocol == LocalSendProtocol.Https
+                    ? LocalSendProtocol.Http
+                    : LocalSendProtocol.Https,
+            ];
+            foreach (var protocol in protocols)
+            {
+                try
+                {
+                    var endpoint = new DeviceEndpoint(address, port, protocol);
+                    var probe = await node.ProbeDeviceAsync(endpoint).ConfigureAwait(true);
+                    if (expectedFingerprint is not null
+                        && !string.Equals(
+                            probe.Device.Fingerprint,
+                            expectedFingerprint,
+                            StringComparison.Ordinal))
+                    {
+                        throw new LocalSendException(
+                            "The saved address now belongs to a different device.");
+                    }
+
+                    var device = await node.AddKnownDeviceAsync(
+                        endpoint,
+                        probe.Device.Fingerprint).ConfigureAwait(true);
+                    return new ResolvedDevice(device);
+                }
+                catch (OperationCanceledException)
+                {
+                    throw;
+                }
+                catch (Exception exception)
+                {
+                    lastError = exception;
+                }
+            }
+
+            return new DeviceResolutionFailure(lastError
+                ?? new LocalSendException("No compatible device responded."));
         }
 
         static bool TryParseAddress(string value, out IPAddress address, out int port)
