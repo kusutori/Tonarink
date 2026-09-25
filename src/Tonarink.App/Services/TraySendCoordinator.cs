@@ -7,7 +7,7 @@ namespace Tonarink.Services;
 /// <summary>Runs a transfer initiated by dropping files onto the tray flyout.</summary>
 static class TraySendCoordinator
 {
-    public static async Task SendAsync(
+    public static async Task<OutgoingTransferResult> SendAsync(
         TraySendRequest request,
         LocalSendNode? node,
         LocalSendIdentity? identity,
@@ -87,31 +87,59 @@ static class TraySendCoordinator
 
         try
         {
-            var result = await node.SendAsync(
-                request.Device,
-                request.Items,
-                new SendOptions
-                {
-                    Pin = request.Pin,
-                    ComputeSha256 = settings.VerifyChecksumsOnSend,
-                },
-                progress,
-                cancellation.Token);
-            var status = result.State switch
+            var result = CoreTransferOutcomeMapper.Map(await node.SendAsync(
+                    request.Device,
+                    request.Items,
+                    new SendOptions
+                    {
+                        Pin = request.Pin,
+                        ComputeSha256 = settings.VerifyChecksumsOnSend,
+                    },
+                    progress,
+                    cancellation.Token)
+                .ConfigureAwait(false));
+            if (result is OutgoingTransferResult.PinRequired)
             {
-                TransferState.Completed =>
+                setOutgoingTransfer(null);
+                return result;
+            }
+
+            var (state, bytesTransferred, status, isError) = result switch
+            {
+                OutgoingTransferResult.Completed completed => (
+                    TransferState.Completed,
+                    completed.Items.Sum(static item => item.BytesTransferred),
                     t.Message(new("App", "SentToDevice"), ("device", request.Device.Alias)),
-                TransferState.Cancelled => t.Message(new("App", "TransferCancelled")),
-                _ => result.Failure?.Message ?? t.Message(new("App", "TransferFailed")),
+                    false),
+                OutgoingTransferResult.Cancelled cancelled => (
+                    TransferState.Cancelled,
+                    cancelled.Items.Sum(static item => item.BytesTransferred),
+                    t.Message(new("App", "TransferCancelled")),
+                    false),
+                OutgoingTransferResult.PinRateLimited => (
+                    TransferState.Failed,
+                    0,
+                    t.Message(new("App", "PinRateLimited")),
+                    true),
+                OutgoingTransferResult.Failed failed => (
+                    TransferState.Failed,
+                    failed.Items.Sum(static item => item.BytesTransferred),
+                    failed.Failure.Message,
+                    true),
+                _ => (
+                    TransferState.Failed,
+                    0,
+                    t.Message(new("App", "TransferFailed")),
+                    true),
             };
             PublishFinished(
-                result.State,
-                result.BytesTransferred,
-                result.State == TransferState.Completed ? result.BytesTransferred : request.TotalBytes,
+                state,
+                bytesTransferred,
+                state == TransferState.Completed ? bytesTransferred : request.TotalBytes,
                 status,
-                result.State == TransferState.Failed);
+                isError);
 
-            if (result.IsSuccess)
+            if (result is OutgoingTransferResult.Completed)
             {
                 AppNotificationService.ShowTransferComplete(
                     t.Message(new("App", "NotificationSendCompleteTitle")),
@@ -129,11 +157,7 @@ static class TraySendCoordinator
                     t.Message(new("App", "NotificationOpenFile")),
                     t.Message(new("App", "NotificationShowInFolder")));
             }
-        }
-        catch (PinRequiredException)
-        {
-            setOutgoingTransfer(null);
-            throw;
+            return result;
         }
         catch (Exception exception)
         {

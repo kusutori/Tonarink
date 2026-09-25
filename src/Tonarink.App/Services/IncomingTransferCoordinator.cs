@@ -106,25 +106,31 @@ sealed class IncomingTransferCoordinator(
                     value.BytesTransferred,
                     value.TotalBytes,
                     ProgressText(value.BytesTransferred, value.TotalBytes)));
-            var result = await node.AcceptAsync(
-                request.RequestId,
-                new AcceptTransferOptions
-                {
-                    DestinationDirectory = downloadDirectory,
-                    VerifySha256 = verifyChecksums,
-                },
-                progress,
-                cancellationToken: cancellationToken).ConfigureAwait(false);
-            if (!result.IsSuccess)
+            var result = CoreTransferOutcomeMapper.Map(await node.AcceptAsync(
+                    request.RequestId,
+                    new AcceptTransferOptions
+                    {
+                        DestinationDirectory = downloadDirectory,
+                        VerifySha256 = verifyChecksums,
+                    },
+                    progress,
+                    cancellationToken: cancellationToken)
+                .ConfigureAwait(false));
+            if (result is not IncomingTransferResult.Completed completed)
             {
-                var message = result.Failure?.Message ?? t.Message(new("App", "ReceiveFailed"));
+                var message = result switch
+                {
+                    IncomingTransferResult.Cancelled => t.Message(new("App", "ReceiveCancelled")),
+                    IncomingTransferResult.Failed failed => failed.Failure.Message,
+                    _ => t.Message(new("App", "ReceiveFailed")),
+                };
                 AppNotificationService.Show(t.Message(new("App", "ReceiveFailed")), message, "receive-failed");
                 dispatchRuntime(new AppRuntimeAction.ErrorReported(message));
                 return;
             }
 
             if (AppSettingsStore.Load().SaveReceiveHistory)
-                ReceiveHistoryStore.Record(request.Sender.Alias, result);
+                ReceiveHistoryStore.Record(request.Sender.Alias, completed);
             AppNotificationService.ShowTransferComplete(
                 t.Message(new("App", "NotificationReceiveCompleteTitle")),
                 request.Items.Count == 1
@@ -134,7 +140,7 @@ sealed class IncomingTransferCoordinator(
                         ("count", request.Items.Count),
                         ("device", request.Sender.Alias)),
                 "receive-complete",
-                result.Items.Select(static item => item.SavedPath ?? string.Empty),
+                completed.Items.Select(static item => item.SavedPath ?? string.Empty),
                 AppSettingsStore.Load().NotificationDefaultAction,
                 t.Message(new("App", "NotificationOpenFile")),
                 t.Message(new("App", "NotificationShowInFolder")));

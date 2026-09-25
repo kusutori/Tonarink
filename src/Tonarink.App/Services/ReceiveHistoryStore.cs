@@ -22,11 +22,8 @@ static class ReceiveHistoryStore
         }
     }
 
-    public static void Record(string senderAlias, TransferResult result)
+    public static void Record(string senderAlias, IncomingTransferResult.Completed result)
     {
-        if (!result.IsSuccess)
-            return;
-
         var sender = string.IsNullOrWhiteSpace(senderAlias) ? "?" : senderAlias.Trim();
         var receivedAt = DateTimeOffset.UtcNow;
         var added = new List<ReceiveHistoryEntry>();

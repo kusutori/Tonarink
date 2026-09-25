@@ -572,22 +572,40 @@ sealed class TrayFlyoutPanel : Component<TrayFlyoutPanelProps>
                     t.Message(new("App", "SendingToDevice"), ("device", device.Alias))));
                 try
                 {
-                    await TrayFlyoutStore.SendAsync(new(device, payload.Items, payload.TotalBytes, pin));
-                    setDropStatus(new TrayDropStatus.Information(
-                        t.Message(new("App", "SentToDevice"), ("device", device.Alias))));
-                }
-                catch (PinRequiredException exception)
-                {
-                    setDropStatus(null);
-                    setPendingPin(new(
+                    var result = await TrayFlyoutStore.SendAsync(new(
                         device,
-                        payload,
-                        exception.InvalidPin ? t.Message(new("App", "PinIncorrect")) : null));
-                }
-                catch (PinRateLimitedException)
-                {
-                    setDropStatus(new TrayDropStatus.Error(
-                        t.Message(new("App", "PinRateLimited"))));
+                        payload.Items,
+                        payload.TotalBytes,
+                        pin));
+                    switch (result)
+                    {
+                        case OutgoingTransferResult.Completed:
+                            setDropStatus(new TrayDropStatus.Information(
+                                t.Message(new("App", "SentToDevice"), ("device", device.Alias))));
+                            break;
+                        case OutgoingTransferResult.PinRequired required:
+                            setDropStatus(null);
+                            setPendingPin(new(
+                                device,
+                                payload,
+                                required.InvalidPin ? t.Message(new("App", "PinIncorrect")) : null));
+                            break;
+                        case OutgoingTransferResult.PinRateLimited:
+                            setDropStatus(new TrayDropStatus.Error(
+                                t.Message(new("App", "PinRateLimited"))));
+                            break;
+                        case OutgoingTransferResult.Cancelled:
+                            setDropStatus(new TrayDropStatus.Information(
+                                t.Message(new("App", "TransferCancelled"))));
+                            break;
+                        case OutgoingTransferResult.Failed failed:
+                            setDropStatus(new TrayDropStatus.Error(failed.Failure.Message));
+                            break;
+                        default:
+                            setDropStatus(new TrayDropStatus.Error(
+                                t.Message(new("App", "TransferFailed"))));
+                            break;
+                    }
                 }
                 catch (OperationCanceledException)
                 {

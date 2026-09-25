@@ -92,7 +92,7 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
         }, view.State, view.BytesTransferred, view.TotalBytes, view.Status, request.RequestId);
 
         var acceptMutation =
-            UseMutation<IncomingAcceptConfiguration, TransferResult>(async (configuration, mutationToken) =>
+            UseMutation<IncomingAcceptConfiguration, IncomingTransferResult>(async (configuration, mutationToken) =>
             {
                 using var linked = CancellationTokenSource.CreateLinkedTokenSource(
                     cancellationRef.Current?.Token ?? CancellationToken.None,
@@ -127,17 +127,19 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                 });
                 try
                 {
-                    return await Props.Node.AcceptAsync(
-                        request.RequestId,
-                        new AcceptTransferOptions
-                        {
-                            DestinationDirectory = configuration.DestinationDirectory,
-                            AcceptedItemIds = configuration.AcceptedItemIds,
-                            TargetFileNames = configuration.TargetFileNames,
-                            VerifySha256 = Props.VerifyChecksums,
-                        },
-                        progress,
-                        linked.Token).ConfigureAwait(false);
+                    var outcome = await Props.Node.AcceptAsync(
+                            request.RequestId,
+                            new AcceptTransferOptions
+                            {
+                                DestinationDirectory = configuration.DestinationDirectory,
+                                AcceptedItemIds = configuration.AcceptedItemIds,
+                                TargetFileNames = configuration.TargetFileNames,
+                                VerifySha256 = Props.VerifyChecksums,
+                            },
+                            progress,
+                            linked.Token)
+                        .ConfigureAwait(false);
+                    return CoreTransferOutcomeMapper.Map(outcome);
                 }
                 finally
                 {
@@ -432,10 +434,10 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                     destinationDirectory,
                     selectedItemIds.ToArray(),
                     new Dictionary<string, string>(targetFileNames, StringComparer.Ordinal)));
-                if (result.IsSuccess)
+                if (result is IncomingTransferResult.Completed completed)
                 {
                     if (Props.SaveReceiveHistory)
-                        ReceiveHistoryStore.Record(request.Sender.Alias, result);
+                        ReceiveHistoryStore.Record(request.Sender.Alias, completed);
                     AppNotificationService.ShowTransferComplete(
                         t.Message(new("App", "NotificationReceiveCompleteTitle")),
                         request.Items.Count == 1
@@ -447,28 +449,41 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                                 ("count", request.Items.Count),
                                 ("device", request.Sender.Alias)),
                         "receive-complete",
-                        result.Items.Select(static item => item.SavedPath ?? string.Empty),
+                        completed.Items.Select(static item => item.SavedPath ?? string.Empty),
                         AppSettingsStore.Load().NotificationDefaultAction,
                         t.Message(new("App", "NotificationOpenFile")),
                         t.Message(new("App", "NotificationShowInFolder")));
                 }
 
-                var receivedText = showText && result.IsSuccess
-                    ? await ReadReceivedTextAsync(result)
-                    : view.Text;
-                dispatchView(new IncomingTransferAction.Completed(
-                    result.State,
-                    result.BytesTransferred,
-                    result.State switch
-                    {
-                        TransferState.Completed => showText
+                var (state, bytesTransferred, status, receivedText, isError) = result switch
+                {
+                    IncomingTransferResult.Completed value => (
+                        TransferState.Completed,
+                        value.Items.Sum(static item => item.BytesTransferred),
+                        showText
                             ? t.Message(new("App", "TextReceived"))
                             : t.Message(new("App", "ContentSaved")),
-                        TransferState.Cancelled => t.Message(new("App", "ReceiveCancelled")),
-                        _ => result.Failure?.Message ?? t.Message(new("App", "ReceiveFailed")),
-                    },
+                        showText ? await ReadReceivedTextAsync(value) : view.Text,
+                        false),
+                    IncomingTransferResult.Cancelled value => (
+                        TransferState.Cancelled,
+                        value.Items.Sum(static item => item.BytesTransferred),
+                        t.Message(new("App", "ReceiveCancelled")),
+                        view.Text,
+                        false),
+                    IncomingTransferResult.Failed value => (
+                        TransferState.Failed,
+                        value.Items.Sum(static item => item.BytesTransferred),
+                        value.Failure.Message,
+                        view.Text,
+                        true),
+                };
+                dispatchView(new IncomingTransferAction.Completed(
+                    state,
+                    bytesTransferred,
+                    status,
                     receivedText,
-                    result.State == TransferState.Failed));
+                    isError));
             }
             catch (Exception exception)
             {
@@ -584,7 +599,7 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
         }
     }
 
-    private static async Task<string?> ReadReceivedTextAsync(TransferResult result)
+    private static async Task<string?> ReadReceivedTextAsync(IncomingTransferResult.Completed result)
     {
         var texts = new List<string>();
         foreach (var item in result.Items)

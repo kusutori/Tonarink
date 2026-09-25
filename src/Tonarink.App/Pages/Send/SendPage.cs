@@ -132,7 +132,7 @@ sealed class SendPage : Component<SendPageProps>
             };
         }, shareTargetPayloadId);
 
-        var sendMutation = UseMutation<SendRequest, TransferResult>(async (request, mutationToken) =>
+        var sendMutation = UseMutation<SendRequest, OutgoingTransferResult>(async (request, mutationToken) =>
         {
             using var linkedCancellation = CancellationTokenSource.CreateLinkedTokenSource(
                 request.CancellationToken,
@@ -171,16 +171,18 @@ sealed class SendPage : Component<SendPageProps>
 
             try
             {
-                return await Props.Node!.SendAsync(
-                    request.Device,
-                    request.Items,
-                    new SendOptions
-                    {
-                        Pin = request.Pin,
-                        ComputeSha256 = Props.VerifyChecksums,
-                    },
-                    progress,
-                    linkedCancellation.Token).ConfigureAwait(false);
+                var outcome = await Props.Node!.SendAsync(
+                        request.Device,
+                        request.Items,
+                        new SendOptions
+                        {
+                            Pin = request.Pin,
+                            ComputeSha256 = Props.VerifyChecksums,
+                        },
+                        progress,
+                        linkedCancellation.Token)
+                    .ConfigureAwait(false);
+                return CoreTransferOutcomeMapper.Map(outcome);
             }
             finally
             {
@@ -896,6 +898,46 @@ sealed class SendPage : Component<SendPageProps>
                     selectedItems.Sum(static item => item.Length),
                     pin,
                     cancellation.Token));
+                if (result is OutgoingTransferResult.PinRequired pinRequired)
+                {
+                    var waitingState = new TransferUiState.Active(
+                        TransferState.WaitingForAcceptance,
+                        device.Alias,
+                        0,
+                        selectedItems.Sum(static item => item.Length),
+                        t.Message(new("App", "TargetRequiresPin")),
+                        pinRequired.InvalidPin);
+                    dispatchTransfer(new SendTransferAction.PinRequested(waitingState));
+                    PublishTransferOverlay(
+                        device,
+                        (SendItem[])[.. selectedItems.Select(static item => item.Item)],
+                        waitingState,
+                        new OutgoingOverlayUpdate.AwaitingPin(new OutgoingPinPrompt(
+                            pinRequired.InvalidPin ? t.Message(new("App", "PinIncorrect")) : null,
+                            enteredPin => _ = StartSendAsync(device, enteredPin, resolvedManualAddress),
+                            () => dispatchTransfer(new SendTransferAction.Reset(
+                                t.Message(new("App", "SendHint")))))));
+                    return;
+                }
+
+                if (result is OutgoingTransferResult.PinRateLimited)
+                {
+                    var errorState = new TransferUiState.Active(
+                        TransferState.Failed,
+                        device.Alias,
+                        0,
+                        selectedItems.Sum(static item => item.Length),
+                        t.Message(new("App", "PinRateLimited")),
+                        IsError: true);
+                    dispatchTransfer(new SendTransferAction.Failed(errorState));
+                    PublishTransferOverlay(
+                        device,
+                        (SendItem[])[.. selectedItems.Select(static item => item.Item)],
+                        errorState,
+                        new OutgoingOverlayUpdate.Finished());
+                    return;
+                }
+
                 var resultState = ResultState(
                     t,
                     result,
@@ -907,7 +949,7 @@ sealed class SendPage : Component<SendPageProps>
                     (SendItem[])[.. selectedItems.Select(static item => item.Item)],
                     resultState,
                     new OutgoingOverlayUpdate.Finished());
-                if (result.IsSuccess)
+                if (result is OutgoingTransferResult.Completed)
                 {
                     if (resolvedManualAddress is not null)
                     {
@@ -939,42 +981,6 @@ sealed class SendPage : Component<SendPageProps>
                         setPickerMessage(t.Message(new("App", "NothingSelected")));
                     }
                 }
-            }
-            catch (PinRequiredException exception)
-            {
-                var waitingState = new TransferUiState.Active(
-                    TransferState.WaitingForAcceptance,
-                    device.Alias,
-                    0,
-                    selectedItems.Sum(static item => item.Length),
-                    t.Message(new("App", "TargetRequiresPin")),
-                    exception.InvalidPin);
-                dispatchTransfer(new SendTransferAction.PinRequested(waitingState));
-                PublishTransferOverlay(
-                    device,
-                    (SendItem[])[.. selectedItems.Select(static item => item.Item)],
-                    waitingState,
-                    new OutgoingOverlayUpdate.AwaitingPin(new OutgoingPinPrompt(
-                        exception.InvalidPin ? t.Message(new("App", "PinIncorrect")) : null,
-                        enteredPin => _ = StartSendAsync(device, enteredPin, resolvedManualAddress),
-                        () => dispatchTransfer(new SendTransferAction.Reset(
-                            t.Message(new("App", "SendHint")))))));
-            }
-            catch (PinRateLimitedException)
-            {
-                var errorState = new TransferUiState.Active(
-                    TransferState.Failed,
-                    device.Alias,
-                    0,
-                    selectedItems.Sum(static item => item.Length),
-                    t.Message(new("App", "PinRateLimited")),
-                    IsError: true);
-                dispatchTransfer(new SendTransferAction.Failed(errorState));
-                PublishTransferOverlay(
-                    device,
-                    (SendItem[])[.. selectedItems.Select(static item => item.Item)],
-                    errorState,
-                    new OutgoingOverlayUpdate.Finished());
             }
             catch (Exception exception)
             {
@@ -1546,30 +1552,37 @@ sealed class SendPage : Component<SendPageProps>
 
     private static TransferUiState.Active ResultState(
         IntlAccessor t,
-        TransferResult result,
+        OutgoingTransferResult result,
         string deviceAlias,
-        long requestedBytes) => result.State switch
+        long requestedBytes) => result switch
         {
-            TransferState.Completed => new TransferUiState.Active(
-                result.State,
+            OutgoingTransferResult.Completed completed => new TransferUiState.Active(
+                TransferState.Completed,
                 deviceAlias,
-                result.BytesTransferred,
-                result.BytesTransferred,
+                completed.Items.Sum(static item => item.BytesTransferred),
+                completed.Items.Sum(static item => item.BytesTransferred),
                 t.Message(new("App", "SentToDevice"), ("device", deviceAlias)),
                 IsError: false),
-            TransferState.Cancelled => new TransferUiState.Active(
-                result.State,
+            OutgoingTransferResult.Cancelled cancelled => new TransferUiState.Active(
+                TransferState.Cancelled,
                 deviceAlias,
-                result.BytesTransferred,
+                cancelled.Items.Sum(static item => item.BytesTransferred),
                 requestedBytes,
                 t.Message(new("App", "TransferCancelled")),
                 IsError: false),
-            _ => new TransferUiState.Active(
-                result.State,
+            OutgoingTransferResult.Failed failed => new TransferUiState.Active(
+                TransferState.Failed,
                 deviceAlias,
-                result.BytesTransferred,
+                failed.Items.Sum(static item => item.BytesTransferred),
                 requestedBytes,
-                result.Failure?.Message ?? t.Message(new("App", "TransferFailed")),
+                failed.Failure.Message,
+                IsError: true),
+            _ => new TransferUiState.Active(
+                TransferState.Failed,
+                deviceAlias,
+                0,
+                requestedBytes,
+                t.Message(new("App", "TransferFailed")),
                 IsError: true),
         };
 

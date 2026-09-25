@@ -36,8 +36,9 @@ static class TrayFlyoutStore
 
     public static Action StopServer { get; set; } = static () => { };
 
-    public static Func<TraySendRequest, Task> SendAsync { get; set; } =
-        static _ => Task.FromException(new InvalidOperationException("The send service is unavailable."));
+    public static Func<TraySendRequest, Task<OutgoingTransferResult>> SendAsync { get; set; } =
+        static _ => Task.FromException<OutgoingTransferResult>(
+            new InvalidOperationException("The send service is unavailable."));
 
     public static TrayFlyoutSnapshot Snapshot
     {
