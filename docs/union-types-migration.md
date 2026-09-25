@@ -229,6 +229,20 @@ Core 的这一阶段明确允许破坏性变更，不为旧签名长期维护双
 - NuGet 打包、公开 API 检查和 Native AOT smoke test 通过；
 - 发布 `0.3.0-preview.1`，并提供从 `0.2.x` 迁移的简短说明。
 
+### 第二阶段实施结果
+
+Core 0.3 的破坏性契约已经在实验分支完成：
+
+- `LocalSendNode.SendAsync` 返回穷尽的 `SendOutcome`，分别表达完成、内部取消、需要 PIN、PIN 限流、对端忙、拒绝和结构化失败；
+- `LocalSendNode.AcceptAsync` 返回 `ReceiveOutcome`，分别表达完成、内部取消和结构化失败；
+- 调用方主动取消继续抛出 `OperationCanceledException`，不会与传输自身的 `Cancelled` case 混淆；
+- `TransferResult` 以及公开的 PIN、限流、忙碌和拒绝异常已经删除；transport 内部仍可使用私有异常完成 HTTP 状态到领域 outcome 的映射；
+- 包版本、changelog、API 指南和公开 API 基线已更新到 `0.3.0-preview.1`；
+- Core 65 个测试、Mobile Core 4 个测试、Interop 测试和 NuGet 打包均通过；
+- 使用生成的 NuGet 包完成了仓库外消费形式的 win-x64 Native AOT 示例发布，验证公开 union 可以被包引用、模式匹配和 AOT 编译。
+
+实验分支不会自动推送标签或触发外部 NuGet 发布；这里的“完成”表示可发布产物与契约已经准备好，真正发布仍应在分支评审和明确授权后执行。
+
 ## 第三阶段：主应用迁移到新 Core
 
 ### 目标
@@ -297,6 +311,19 @@ Core outcome -> application action/result -> UI state
 - JIT、Native AOT、打包模式和非打包模式验证通过；
 - 托盘发送、Share Target、通知操作和前台发送行为一致；
 - Core 0.3 preview 可以被仓库外的最小示例项目正常引用。
+
+### 第三阶段实施结果
+
+主应用和仓库内消费端已经迁移到新契约：
+
+- `CoreTransferOutcomeMapper` 是主应用解释 Core outcome 的唯一边界，并映射为 `OutgoingTransferResult` / `IncomingTransferResult`；
+- `SendPage`、发送覆盖层、托盘发送、接收覆盖层、自动接收、历史记录和通知不再读取旧 `.State + nullable Failure` 结果；
+- PIN 和 PIN 限流通过 reducer/result case 驱动界面，不再跨层捕获业务异常；
+- `Tonarink.Application` 与 `Tonarink.LocalSend` 使用独立的 `RuntimeSendResult` / `RuntimeReceiveResult`，旧的 `TransferPinRequiredException` 包装已删除；
+- CLI 已按 outcome case 输出明确结果和退出码；
+- Application、LocalSend、Core、Mobile Core 与 Interop 测试通过，主应用 Debug、Release 和 win-x64 Native AOT 构建通过。
+
+Android 多目标构建仍需要本机安装 Android API 37；同一 Mobile 项目的 `net11.0`、iOS 和 Mac Catalyst 目标已成功编译，该环境依赖不属于 outcome 迁移回归。
 
 ## 提交与分支策略
 
