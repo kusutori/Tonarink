@@ -250,6 +250,9 @@ Services/
   Activation/
   Devices/
   History/
+  Localization/
+  Platform/
+  Settings/
   Transfers/
   Tray/
   WebShare/
@@ -262,9 +265,11 @@ Services/
 - `IncomingTransferWorkflow.cs`：接收覆盖层 state、action 与纯 reducer；
 - `LocalSendNodeRuntime.cs`：`AppRuntimeState`、`AppRuntimeAction` 与纯 reducer；
 - UI 文件继续负责 Hook 调用、控件树和异步调用；
-- `OutgoingTransferViewState` 根据实际共享范围放在 `Components/Transfers` 或稳定的共享模型文件中，不继续堆入通用 `AppModels.cs`。
+- `OutgoingTransferWorkflow.cs`：跨发送页、托盘和 Widget 使用的 `OutgoingTransferViewState`、快照与 PIN 提示模型；
+- Share Target 与接收历史模型分别由 `Services/Activation` 和 `Services/History` 所有；
+- `Models` 仅保留导航、设置和跨传输链路共享的应用结果，不再承担功能私有状态。
 
-设置、网络、历史记录、设备详情、Web 分享、Shell 激活、托盘、Widget、接收和传输协调等批次现已完成初步归类。尚未处理的文件仍属于本次全量工程，接下来重点是拆除 `AppModels.cs` 的聚合职责、归类剩余平台与配置服务，并执行完整目录和命名空间审计。
+设置、网络、历史记录、设备详情、Web 分享、Shell 激活、托盘、Widget、接收和传输协调等批次现已完成归类。`AppModels.cs` 已被删除，剩余平台、配置、本地化和设备服务也已归入稳定区域；完整目录与命名空间审计未发现功能目录不匹配。
 
 首批拆分保持了原有行为边界，并已通过 Debug、Release、win-x64 Native AOT 构建，以及 Application 与 LocalSend 自动化测试。后续 Core 迁移应直接依赖这些已经稳定的模块边界，不再把状态机移回通用 `Models`。
 
@@ -277,22 +282,22 @@ Services/
 - 可复用 Component 按 `Transfers`、`Dialogs`、`Shell`、`Animations` 等稳定区域组织；
 - 复杂 Hook 拥有自己的二级目录，内部状态和 action 不再散落到全局 `Models`；
 - Service 按系统集成、传输协调、持久化等真实职责归类，消除含义模糊的通用文件；
-- `Models` 只保留真实跨模块共享模型，并逐步拆除当前 `AppModels.cs` 的聚合职责；
+- `Models` 只保留真实跨模块共享模型，`AppModels.cs` 的聚合职责已拆除；
 - 所有命名空间与最终目录完全一致；
 - 不再存在功能相同但因迁移时间不同而采用两种组织方式的模块。
 
 统一并不意味着每个 Page 都必须拥有二级目录和 workflow。简单页面可以继续使用单文件；但判断标准必须一致：简单且内聚的代码共置，复杂或可复用的代码按本文档拆分，而不是根据新旧代码来源区别对待。
 
-### 后续迁移批次
+### 迁移批次与完成状态
 
-在发送、接收和节点生命周期完成首批拆分，并完成 Core 0.3 与主 App 迁移后，建议按以下顺序继续：
+在发送、接收和节点生命周期完成首批拆分，并完成 Core 0.3 与主 App 迁移后，已按以下顺序完成全量整理：
 
-1. **设置与网络**：`SettingsPage`、网络接口页面、延迟写入控件及相关设置服务；
-2. **历史记录与设备详情**：页面、命令、对话框和对应存储服务；
-3. **Web 分享与接收**：页面状态、链接栏、二维码和 Web 服务生命周期；
-4. **Shell 与激活入口**：导航、通知、Share Target、Jump List 和启动流程；
-5. **托盘与 Widget**：托盘面板、发送协调器、窗口宿主和 Widget 投影；
-6. **剩余 Components、Services、Models 和 Utilities**：处理此前未达到拆分阈值但目录或命名空间仍不一致的内容。
+1. **设置与网络（完成）**：`SettingsPage`、网络接口页面、延迟写入控件及相关设置服务；
+2. **历史记录与设备详情（完成）**：页面、命令、对话框和对应存储服务；
+3. **Web 分享与接收（完成）**：页面状态、链接栏、二维码和 Web 服务生命周期；
+4. **Shell 与激活入口（完成）**：导航、通知、Share Target、Jump List 和启动流程；
+5. **托盘与 Widget（完成）**：托盘面板、发送协调器、窗口宿主和 Widget 投影；
+6. **剩余 Components、Services、Models 和 Utilities（完成）**：归类平台、设置、本地化和设备服务，拆除 `AppModels.cs`，并审计简单且适合继续共置的通用控件与无状态 Utility。
 
 批次编号不是可选范围。前一批因优先级先完成，后一批因风险和依赖关系延后，但六个批次都属于同一项迁移；除非文档经过新的架构决策明确修改，否则不能在中间批次结束后把工程视为完成。
 
@@ -309,6 +314,17 @@ Services/
 - 不存在为了兼容旧位置而保留的转发类型、旧命名空间或重复模型；
 - 文档中的示例结构与仓库实际结构一致；
 - 每个迁移批次均通过 Debug、Release、Native AOT 和相关自动化测试。
+
+### 实施结果
+
+本轮全量整理已经达到上述完成标准：
+
+- `Pages`、`Components`、`Hooks` 和 `Services` 根目录不再混放功能文件，功能代码均位于稳定的二级目录；
+- `Controls`、`Styling`、`Utilities` 和 `Windowing` 经审查后继续保留一级目录，它们本身就是内聚的跨功能基础设施，不需要为了形式再增加一层；
+- `Models` 中只剩导航模型、设置模型和跨发送/接收链路共享的应用结果；
+- 自动审计确认文件命名空间与其目录一致，顶级 `App.cs` 与 `GlobalUsings.cs` 是有意保留的例外；
+- 最终结构通过 Debug、Release、打包 Release 与 win-x64 Native AOT 构建，Core、Mobile Core（`net11.0`）、Application、LocalSend、Interop 和 Blazor Shared 测试全部通过；
+- Core `0.3.0-preview.1` NuGet 包可以正常生成。
 
 ## 与 Core 改造的执行顺序
 
