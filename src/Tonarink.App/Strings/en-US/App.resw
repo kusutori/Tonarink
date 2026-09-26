@@ -24,6 +24,8 @@
   <data name="ChooseItem" xml:space="preserve"><value>Choose {item}</value></data>
   <data name="DropFilesCaption" xml:space="preserve"><value>Add to send list</value></data>
   <data name="DropFilesOrFolders" xml:space="preserve"><value>Drop files or folders here</value></data>
+  <data name="DropFilesOrFoldersAnywhere" xml:space="preserve"><value>Drop files or folders anywhere in the app</value></data>
+  <data name="DropFilesAnywherePrompt" xml:space="preserve"><value>Release to add files or folders to the send list</value></data>
   <data name="DropItemsFailed" xml:space="preserve"><value>Could not add dropped items: {error}</value></data>
   <data name="DroppedItemsEmpty" xml:space="preserve"><value>The dropped items contain no accessible files.</value></data>
   <data name="ReleaseFilesToAdd" xml:space="preserve"><value>Release to add</value></data>
@@ -291,6 +293,8 @@
   <data name="SettingsTrayClickOpensFlyoutDescription" xml:space="preserve"><value>When off, clicking the tray icon opens the app window instead.</value></data>
   <data name="SettingsReceive" xml:space="preserve"><value>Receive</value></data>
   <data name="SettingsSend" xml:space="preserve"><value>Send</value></data>
+  <data name="SettingsExpandDragDrop" xml:space="preserve"><value>App-wide drag and drop</value></data>
+  <data name="SettingsExpandDragDropDescription" xml:space="preserve"><value>Drop files or folders anywhere in the app to add them to the send list.</value></data>
   <data name="SettingsVerifyChecksumsOnReceive" xml:space="preserve"><value>Verify checksums when receiving files</value></data>
   <data name="SettingsVerifyChecksumsOnReceiveDescription" xml:space="preserve"><value>Use sender-provided SHA-256 checksums to verify file integrity.</value></data>
   <data name="SettingsVerifyChecksumsOnSend" xml:space="preserve"><value>Verify checksums when sending files</value></data>

@@ -31,6 +31,7 @@ sealed record SendPageProps(
     bool KeepItemsForMultipleReceivers,
     Action<bool> SetKeepItemsForMultipleReceivers,
     bool VerifyChecksums,
+    bool ExpandDragDropToEntireApp,
     Action<LocalSendDevice> OpenDeviceDetails,
     string? JumpListFavoriteFingerprint,
     Action<string> ConsumeJumpListFavorite);
@@ -255,6 +256,7 @@ sealed class SendPage : Component<SendPageProps>
             [] => EmptySelection(
                 isFileDropActive,
                 pickerMessage,
+                Props.ExpandDragDropToEntireApp,
                 t),
             _ => VStack(8,
             [
@@ -300,32 +302,35 @@ sealed class SendPage : Component<SendPageProps>
         if (isWideLayout)
             selectedItemsCard = selectedItemsCard.Flex(grow: 1, shrink: 1, basis: 320);
 
-        selectedItemsCard = selectedItemsCard
-            .OnDragEnter(args =>
-            {
-                if (!args.Data.HasFormat(StandardDataFormats.StorageItems))
-                    return;
+        if (!Props.ExpandDragDropToEntireApp)
+        {
+            selectedItemsCard = selectedItemsCard
+                .OnDragEnter(args =>
+                {
+                    if (!args.Data.HasFormat(StandardDataFormats.StorageItems))
+                        return;
 
-                args.AcceptedOperation = DragOperations.Copy;
-                setFileDropActive(true);
-            })
-            .OnDragOver(args =>
-            {
-                if (!args.Data.HasFormat(StandardDataFormats.StorageItems))
-                    return;
+                    args.AcceptedOperation = DragOperations.Copy;
+                    setFileDropActive(true);
+                })
+                .OnDragOver(args =>
+                {
+                    if (!args.Data.HasFormat(StandardDataFormats.StorageItems))
+                        return;
 
-                args.AcceptedOperation = DragOperations.Copy;
-                args.UIOverride.Caption = t.Message(new("App", "DropFilesCaption"));
-                args.UIOverride.IsCaptionVisible = true;
-                args.UIOverride.IsGlyphVisible = true;
-            })
-            .OnDragLeave(_ => setFileDropActive(false))
-            .OnDrop(args =>
-            {
-                setFileDropActive(false);
-                args.AcceptedOperation = DragOperations.Copy;
-                _ = AddDroppedItemsAsync(args.Data);
-            }, acceptedOps: DragOperations.Copy);
+                    args.AcceptedOperation = DragOperations.Copy;
+                    args.UIOverride.Caption = t.Message(new("App", "DropFilesCaption"));
+                    args.UIOverride.IsCaptionVisible = true;
+                    args.UIOverride.IsGlyphVisible = true;
+                })
+                .OnDragLeave(_ => setFileDropActive(false))
+                .OnDrop(args =>
+                {
+                    setFileDropActive(false);
+                    args.AcceptedOperation = DragOperations.Copy;
+                    _ = AddDroppedItemsAsync(args.Data);
+                }, acceptedOps: DragOperations.Copy);
+        }
 
         if (isFileDropActive)
         {
@@ -689,7 +694,10 @@ sealed class SendPage : Component<SendPageProps>
 
                 var selected = new List<SelectedSendItem>(files.Count);
                 foreach (var file in files)
-                    selected.Add(await FromStorageFileAsync(file, file.Name, CancellationToken.None));
+                    selected.Add(await SelectedSendItemReader.FromStorageFileAsync(
+                        file,
+                        file.Name,
+                        CancellationToken.None));
                 AddSelectedItems(selected);
             }
             catch (Exception exception)
@@ -708,7 +716,7 @@ sealed class SendPage : Component<SendPageProps>
                 if (folder is null)
                     return;
 
-                var selected = await FromFolderAsync(folder, CancellationToken.None);
+                var selected = await SelectedSendItemReader.FromFolderAsync(folder, CancellationToken.None);
                 if (selected.Count == 0)
                 {
                     setPickerMessage(t.Message(new("App", "FolderEmpty")));
@@ -739,10 +747,15 @@ sealed class SendPage : Component<SendPageProps>
                         switch (storageItem)
                         {
                             case StorageFile file:
-                                selected.Add(await FromStorageFileAsync(file, file.Name, CancellationToken.None));
+                                selected.Add(await SelectedSendItemReader.FromStorageFileAsync(
+                                    file,
+                                    file.Name,
+                                    CancellationToken.None));
                                 break;
                             case StorageFolder folder:
-                                selected.AddRange(await FromFolderAsync(folder, CancellationToken.None));
+                                selected.AddRange(await SelectedSendItemReader.FromFolderAsync(
+                                    folder,
+                                    CancellationToken.None));
                                 break;
                         }
                     }
@@ -814,7 +827,7 @@ sealed class SendPage : Component<SendPageProps>
                     switch (sharedItem)
                     {
                         case ShareTargetItem.FileSystem { IsDirectory: true } directory:
-                            imported.AddRange(await FromFolderPathAsync(
+                            imported.AddRange(await SelectedSendItemReader.FromFolderPathAsync(
                                 directory.Path,
                                 cancellationToken));
                             break;
@@ -1231,23 +1244,7 @@ sealed class SendPage : Component<SendPageProps>
         {
             try
             {
-                var storageItems = await dragData.GetFilesAsync();
-                var selected = new List<SelectedSendItem>();
-                foreach (var storageItem in storageItems)
-                {
-                    if (!IsSafeLocalStorageItem(storageItem))
-                        continue;
-
-                    switch (storageItem)
-                    {
-                        case StorageFile file:
-                            selected.Add(await FromStorageFileAsync(file, file.Name, CancellationToken.None));
-                            break;
-                        case StorageFolder folder:
-                            selected.AddRange(await FromFolderAsync(folder, CancellationToken.None));
-                            break;
-                    }
-                }
+                var selected = await SelectedSendItemReader.ReadDroppedAsync(dragData);
 
                 if (selected.Count == 0)
                 {
@@ -1323,12 +1320,15 @@ sealed class SendPage : Component<SendPageProps>
     private static Element EmptySelection(
         bool isDropActive,
         string pickerMessage,
+        bool expandDragDropToEntireApp,
         IntlAccessor t)
     {
         var nothingSelected = t.Message(new("App", "NothingSelected"));
         var dropText = isDropActive
             ? t.Message(new("App", "ReleaseFilesToAdd"))
-            : t.Message(new("App", "DropFilesOrFolders"));
+            : t.Message(new("App", expandDragDropToEntireApp
+                ? "DropFilesOrFoldersAnywhere"
+                : "DropFilesOrFolders"));
 
         return (FlexColumn(
                     Image("ms-appx:///Assets/FileDrop.svg")
@@ -1348,31 +1348,6 @@ sealed class SendPage : Component<SendPageProps>
             .MinHeight(280)
             .HAlign(HorizontalAlignment.Stretch)
             .VAlign(VerticalAlignment.Stretch);
-    }
-
-    private static bool IsSafeLocalStorageItem(IStorageItem storageItem)
-    {
-        try
-        {
-            var path = storageItem.Path;
-            if (string.IsNullOrWhiteSpace(path)
-                || path.StartsWith(@"\\", StringComparison.Ordinal)
-                || !Path.IsPathFullyQualified(path))
-            {
-                return false;
-            }
-
-            var attributes = File.GetAttributes(path);
-            return (attributes & System.IO.FileAttributes.ReparsePoint) == 0;
-        }
-        catch (Exception exception) when (exception is ArgumentException
-                                              or IOException
-                                              or UnauthorizedAccessException
-                                              or NotSupportedException)
-        {
-            AppDiagnostics.Report("Could not inspect a dropped storage item", exception);
-            return false;
-        }
     }
 
     private static Element SelectedItemRow(SelectedSendItem item, Action remove, IntlAccessor t) =>
@@ -1470,57 +1445,6 @@ sealed class SendPage : Component<SendPageProps>
         if (play)
             _ = player.PlayAsync(fromProgress: 0, toProgress: 1, looped: true);
     }
-
-    private static async Task<SelectedSendItem> FromStorageFileAsync(
-        StorageFile file,
-        string protocolName,
-        CancellationToken cancellationToken)
-    {
-        var properties = await file.GetBasicPropertiesAsync().AsTask(cancellationToken).ConfigureAwait(false);
-        var item = new SendStreamItem(
-            protocolName.Replace('\\', '/'),
-            checked((long)properties.Size),
-            async token =>
-            {
-                token.ThrowIfCancellationRequested();
-                return await file.OpenStreamForReadAsync().ConfigureAwait(false);
-            });
-        return new(Guid.NewGuid(), item, protocolName, checked((long)properties.Size), "file");
-    }
-
-    private static Task<IReadOnlyList<SelectedSendItem>> FromFolderAsync(
-        StorageFolder folder,
-        CancellationToken cancellationToken) => FromFolderPathAsync(folder.Path, cancellationToken);
-
-    private static Task<IReadOnlyList<SelectedSendItem>> FromFolderPathAsync(
-        string folderPath,
-        CancellationToken cancellationToken) => Task.Run<IReadOnlyList<SelectedSendItem>>(() =>
-    {
-        cancellationToken.ThrowIfCancellationRequested();
-        if (string.IsNullOrWhiteSpace(folderPath))
-            throw new IOException("The selected folder has no accessible local path.");
-
-        var folder = new DirectoryInfo(folderPath);
-        if (!folder.Exists)
-            throw new DirectoryNotFoundException($"The shared folder is no longer available: {folderPath}");
-
-        return (SelectedSendItem[])
-        [
-            .. Directory.EnumerateFiles(folder.FullName, "*", SearchOption.AllDirectories)
-                .Select(path =>
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-                    var relativeName = Path.GetRelativePath(folder.FullName, path).Replace('\\', '/');
-                    var protocolName = $"{folder.Name}/{relativeName}";
-                    return new SelectedSendItem(
-                        Guid.NewGuid(),
-                        new SendFileItem(path, protocolName),
-                        protocolName,
-                        new FileInfo(path).Length,
-                        "folder");
-                })
-        ];
-    }, cancellationToken);
 
     private static async Task<SelectedSendItem> FromClipboardBitmapAsync(
         DataPackageView data,

@@ -2,6 +2,7 @@ using LocalSendDotNet;
 using Microsoft.UI.Input;
 using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Core;
+using Microsoft.UI.Reactor.Input;
 using Microsoft.UI.Reactor.Localization;
 using Microsoft.UI.Reactor.Navigation;
 using Microsoft.UI.Windowing;
@@ -9,6 +10,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using Windows.ApplicationModel.DataTransfer;
 using Tonarink.Hooks;
 using static Microsoft.UI.Reactor.Factories;
 
@@ -112,6 +114,8 @@ sealed record LocalizedAppShellProps(
     string Locale,
     bool IsSplashVisible);
 
+sealed record ShellDropFeedback(Guid Id, string Message, InfoBarSeverity Severity);
+
 sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
 {
     public override Element Render() => RenderEachTime(context =>
@@ -145,11 +149,41 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
         var (detailsDevice, setDetailsDevice) = context.UseState<LocalSendDevice?>(null);
         var (selectedSendItems, updateSelectedSendItems) =
             context.UseReducer<IReadOnlyList<SelectedSendItem>>([]);
+        var (isAppDropActive, setAppDropActive) = context.UseState(false);
+        var (dropFeedback, setDropFeedback) = context.UseState<ShellDropFeedback?>(null);
         var (outgoingTransfer, setOutgoingTransfer) = context.UseState<OutgoingTransferViewState?>(null);
         var mouseBackHandler = context.UseRef<PointerEventHandler?>();
         var nodeSession = context.UseLocalSendNode(settings, t);
         var runtime = nodeSession.Runtime;
         var windowController = context.UseShellWindow(window, settings.MinimizeToTray, t);
+
+        context.UseEffect(() =>
+        {
+            if (dropFeedback is null)
+                return static () => { };
+
+            var cancellation = new CancellationTokenSource();
+            _ = DismissDropFeedbackAsync(cancellation.Token);
+            return () =>
+            {
+                cancellation.Cancel();
+                cancellation.Dispose();
+            };
+
+            async Task DismissDropFeedbackAsync(CancellationToken cancellationToken)
+            {
+                try
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(4), cancellationToken);
+                    setDropFeedback(null);
+                }
+                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                {
+                    // A newer feedback message replaced this timer, or the InfoBar was closed manually.
+                }
+            }
+        }, dropFeedback?.Id ?? Guid.Empty);
+
         var activations = context.UseShellActivations(
             navigation,
             nodeSession,
@@ -239,6 +273,7 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
                         KeepItemsForMultipleReceivers = value,
                     }),
                     settings.VerifyChecksumsOnSend,
+                    settings.ExpandDragDropToEntireApp,
                     device =>
                     {
                         setDetailsDevice(device);
@@ -364,7 +399,8 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
                     .Grid(row: 0, column: 0))
             .Flex(grow: 1, basis: 0);
 
-        var root = FlexColumn(titleBar, contentLayer)
+        var shellContent = FlexColumn(titleBar, contentLayer)
+            .Opacity(isAppDropActive ? 0.2 : 1)
             .OnMountAdd(element =>
             {
                 void OnPointerPressed(object sender, PointerRoutedEventArgs e)
@@ -390,7 +426,107 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
                     element.RemoveHandler(UIElement.PointerPressedEvent, handler);
             });
 
+        Element root = Grid(
+            columns: [GridSize.Star()],
+            rows: [GridSize.Star()],
+            shellContent.Grid(row: 0, column: 0),
+            isAppDropActive
+                ? Grid(
+                        columns: [GridSize.Star()],
+                        rows: [GridSize.Star()],
+                        Border(null)
+                            .Background(Theme.Ref("SmokeFillColorDefaultBrush"))
+                            .Grid(row: 0, column: 0),
+                        Card(
+                                HStack(12,
+                                    Icon("\uF413").AccessibilityHidden(),
+                                    BodyStrong(t.Message(new("App", "DropFilesAnywherePrompt")))))
+                            .Padding(20)
+                            .HAlign(HorizontalAlignment.Center)
+                            .VAlign(VerticalAlignment.Center)
+                            .Grid(row: 0, column: 0))
+                    .IsHitTestVisible(false)
+                    .Grid(row: 0, column: 0)
+                : null,
+            dropFeedback is not { } feedback
+                ? null
+                : (InfoBar(
+                        t.Message(new("App", "DropFilesCaption")),
+                        feedback.Message) with
+                    {
+                        IsOpen = true,
+                        IsClosable = true,
+                        OnClosed = () => setDropFeedback(null),
+                    })
+                    .Severity(feedback.Severity)
+                    .Margin(left: 24, top: 72, right: 24, bottom: 0)
+                    .HAlign(HorizontalAlignment.Center)
+                    .VAlign(VerticalAlignment.Top)
+                    .Grid(row: 0, column: 0));
+
+        if (settings.ExpandDragDropToEntireApp && !Props.IsSplashVisible)
+        {
+            root = root
+                .OnDragEnter(args =>
+                {
+                    if (!args.Data.HasFormat(StandardDataFormats.StorageItems))
+                        return;
+
+                    args.AcceptedOperation = DragOperations.Copy;
+                    setAppDropActive(true);
+                })
+                .OnDragOver(args =>
+                {
+                    if (!args.Data.HasFormat(StandardDataFormats.StorageItems))
+                        return;
+
+                    args.AcceptedOperation = DragOperations.Copy;
+                    args.UIOverride.Caption = t.Message(new("App", "DropFilesCaption"));
+                    args.UIOverride.IsCaptionVisible = true;
+                    args.UIOverride.IsGlyphVisible = true;
+                })
+                .OnDragLeave(_ => setAppDropActive(false))
+                .OnDrop(args =>
+                {
+                    setAppDropActive(false);
+                    args.AcceptedOperation = DragOperations.Copy;
+                    _ = AddDroppedItemsAsync(args.Data);
+                }, acceptedOps: DragOperations.Copy);
+        }
+
         return root;
+
+        async Task AddDroppedItemsAsync(DragData dragData)
+        {
+            try
+            {
+                var selected = await SelectedSendItemReader.ReadDroppedAsync(dragData);
+                if (selected.Count == 0)
+                {
+                    setDropFeedback(new(
+                        Guid.NewGuid(),
+                        t.Message(new("App", "DroppedItemsEmpty")),
+                        InfoBarSeverity.Warning));
+                    return;
+                }
+
+                updateSelectedSendItems(current => (SelectedSendItem[])[.. current, .. selected]);
+                setDropFeedback(new(
+                    Guid.NewGuid(),
+                    t.Message(new("App", "ItemsAdded"), ("count", selected.Count)),
+                    InfoBarSeverity.Success));
+                if (navigation.CurrentRoute != AppRoute.Send)
+                    navigation.Navigate(AppRoute.Send);
+            }
+            catch (Exception exception)
+            {
+                AppDiagnostics.Report("Could not add items dropped on the application", exception);
+                setDropFeedback(new(
+                    Guid.NewGuid(),
+                    t.Message(new("App", "DropItemsFailed"), ("error", exception.Message)),
+                    InfoBarSeverity.Error));
+            }
+        }
     });
 
     private static string RouteTag(AppRoute route) => route switch

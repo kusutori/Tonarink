@@ -311,6 +311,17 @@ sealed class SettingsPage : Component<SettingsPageProps>
         var sendCards = SettingsGroup(
             t.Message(new("App", "SettingsSend")),
             SettingsCard(
+                header: t.Message(new("App", "SettingsExpandDragDrop")),
+                description: t.Message(new("App", "SettingsExpandDragDropDescription")),
+                headerIcon: HeaderGlyph("\uF413"),
+                isClickEnabled: false,
+                isActionIconVisible: false,
+                content:
+                ToggleSwitch(Props.Settings.ExpandDragDropToEntireApp, value =>
+                        Props.UpdateSettings(settings => settings with { ExpandDragDropToEntireApp = value }))
+                    .AutomationName(t.Message(new("App", "SettingsExpandDragDrop")))
+                    .HelpText(t.Message(new("App", "SettingsExpandDragDropDescription")))),
+            SettingsCard(
                 header: t.Message(new("App", "SettingsVerifyChecksumsOnSend")),
                 description: t.Message(new("App", "SettingsVerifyChecksumsOnSendDescription")),
                 headerIcon: HeaderGlyph("\uF32A"),

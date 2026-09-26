@@ -24,6 +24,8 @@
   <data name="ChooseItem" xml:space="preserve"><value>选择{item}</value></data>
   <data name="DropFilesCaption" xml:space="preserve"><value>添加到待发送列表</value></data>
   <data name="DropFilesOrFolders" xml:space="preserve"><value>拖放文件或文件夹到此处</value></data>
+  <data name="DropFilesOrFoldersAnywhere" xml:space="preserve"><value>拖放文件或文件夹到应用内任意位置</value></data>
+  <data name="DropFilesAnywherePrompt" xml:space="preserve"><value>松开以添加文件或文件夹到待发送列表</value></data>
   <data name="DropItemsFailed" xml:space="preserve"><value>无法添加拖放的项目：{error}</value></data>
   <data name="DroppedItemsEmpty" xml:space="preserve"><value>拖放的项目中没有可访问的文件。</value></data>
   <data name="ReleaseFilesToAdd" xml:space="preserve"><value>释放以添加</value></data>
@@ -291,6 +293,8 @@
   <data name="SettingsTrayClickOpensFlyoutDescription" xml:space="preserve"><value>关闭后，单击将打开应用主窗口。</value></data>
   <data name="SettingsReceive" xml:space="preserve"><value>接收</value></data>
   <data name="SettingsSend" xml:space="preserve"><value>发送</value></data>
+  <data name="SettingsExpandDragDrop" xml:space="preserve"><value>扩展拖放范围</value></data>
+  <data name="SettingsExpandDragDropDescription" xml:space="preserve"><value>允许将文件或文件夹拖放到应用内任意位置并添加到待发送列表。</value></data>
   <data name="SettingsVerifyChecksumsOnReceive" xml:space="preserve"><value>接收文件时验证校验和</value></data>
   <data name="SettingsVerifyChecksumsOnReceiveDescription" xml:space="preserve"><value>使用发送方提供的 SHA-256 校验和验证文件完整性。</value></data>
   <data name="SettingsVerifyChecksumsOnSend" xml:space="preserve"><value>发送文件时验证校验和</value></data>

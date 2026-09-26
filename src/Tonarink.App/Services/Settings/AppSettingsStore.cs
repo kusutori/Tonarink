@@ -62,6 +62,7 @@ sealed class AppSettingsFile
     public string? NotificationDefaultAction { get; set; }
     public bool? KeepItemsForMultipleReceivers { get; set; }
     public bool? VerifyChecksumsOnSend { get; set; }
+    public bool? ExpandDragDropToEntireApp { get; set; }
     public bool? SaveReceiveHistory { get; set; }
     public bool? VerifyChecksumsOnReceive { get; set; }
     public bool? ReceivePinEnabled { get; set; }
@@ -93,6 +94,7 @@ sealed class AppSettingsFile
         NotificationDefaultAction = settings.NotificationDefaultAction.ToString(),
         KeepItemsForMultipleReceivers = settings.KeepItemsForMultipleReceivers,
         VerifyChecksumsOnSend = settings.VerifyChecksumsOnSend,
+        ExpandDragDropToEntireApp = settings.ExpandDragDropToEntireApp,
         SaveReceiveHistory = settings.SaveReceiveHistory,
         VerifyChecksumsOnReceive = settings.VerifyChecksumsOnReceive,
         ReceivePinEnabled = settings.ReceivePinEnabled,
@@ -141,6 +143,7 @@ sealed class AppSettingsFile
                     : defaults.NotificationDefaultAction,
             KeepItemsForMultipleReceivers = KeepItemsForMultipleReceivers ?? defaults.KeepItemsForMultipleReceivers,
             VerifyChecksumsOnSend = VerifyChecksumsOnSend ?? defaults.VerifyChecksumsOnSend,
+            ExpandDragDropToEntireApp = ExpandDragDropToEntireApp ?? defaults.ExpandDragDropToEntireApp,
             SaveReceiveHistory = SaveReceiveHistory ?? defaults.SaveReceiveHistory,
             VerifyChecksumsOnReceive = VerifyChecksumsOnReceive ?? defaults.VerifyChecksumsOnReceive,
             ReceivePinEnabled = ReceivePinEnabled ?? defaults.ReceivePinEnabled,
