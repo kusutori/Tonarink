@@ -114,8 +114,6 @@ sealed record LocalizedAppShellProps(
     string Locale,
     bool IsSplashVisible);
 
-sealed record ShellDropFeedback(Guid Id, string Message, InfoBarSeverity Severity);
-
 sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
 {
     public override Element Render() => RenderEachTime(context =>
@@ -150,39 +148,13 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
         var (selectedSendItems, updateSelectedSendItems) =
             context.UseReducer<IReadOnlyList<SelectedSendItem>>([]);
         var (isAppDropActive, setAppDropActive) = context.UseState(false);
-        var (dropFeedback, setDropFeedback) = context.UseState<ShellDropFeedback?>(null);
+        var (dropFeedbacks, updateDropFeedbacks) =
+            context.UseReducer<IReadOnlyList<TransientInfoBarMessage>>([]);
         var (outgoingTransfer, setOutgoingTransfer) = context.UseState<OutgoingTransferViewState?>(null);
         var mouseBackHandler = context.UseRef<PointerEventHandler?>();
         var nodeSession = context.UseLocalSendNode(settings, t);
         var runtime = nodeSession.Runtime;
         var windowController = context.UseShellWindow(window, settings.MinimizeToTray, t);
-
-        context.UseEffect(() =>
-        {
-            if (dropFeedback is null)
-                return static () => { };
-
-            var cancellation = new CancellationTokenSource();
-            _ = DismissDropFeedbackAsync(cancellation.Token);
-            return () =>
-            {
-                cancellation.Cancel();
-                cancellation.Dispose();
-            };
-
-            async Task DismissDropFeedbackAsync(CancellationToken cancellationToken)
-            {
-                try
-                {
-                    await Task.Delay(TimeSpan.FromSeconds(4), cancellationToken);
-                    setDropFeedback(null);
-                }
-                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-                {
-                    // A newer feedback message replaced this timer, or the InfoBar was closed manually.
-                }
-            }
-        }, dropFeedback?.Id ?? Guid.Empty);
 
         var activations = context.UseShellActivations(
             navigation,
@@ -448,20 +420,13 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
                     .IsHitTestVisible(false)
                     .Grid(row: 0, column: 0)
                 : null,
-            dropFeedback is not { } feedback
+            dropFeedbacks.Count == 0
                 ? null
-                : (InfoBar(
-                        t.Message(new("App", "DropFilesCaption")),
-                        feedback.Message) with
-                    {
-                        IsOpen = true,
-                        IsClosable = true,
-                        OnClosed = () => setDropFeedback(null),
-                    })
-                    .Severity(feedback.Severity)
-                    .Margin(left: 24, top: 72, right: 24, bottom: 0)
-                    .HAlign(HorizontalAlignment.Center)
-                    .VAlign(VerticalAlignment.Top)
+                : Component<TransientInfoBarStack, TransientInfoBarStackProps>(new(
+                        dropFeedbacks,
+                        id => updateDropFeedbacks(current =>
+                            (TransientInfoBarMessage[])
+                            [.. current.Where(message => message.Id != id)])))
                     .Grid(row: 0, column: 0));
 
         if (settings.ExpandDragDropToEntireApp && !Props.IsSplashVisible)
@@ -503,30 +468,42 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
                 var selected = await SelectedSendItemReader.ReadDroppedAsync(dragData);
                 if (selected.Count == 0)
                 {
-                    setDropFeedback(new(
+                    AddDropFeedback(
                         Guid.NewGuid(),
                         t.Message(new("App", "DroppedItemsEmpty")),
-                        InfoBarSeverity.Warning));
+                        InfoBarSeverity.Warning);
                     return;
                 }
 
                 updateSelectedSendItems(current => (SelectedSendItem[])[.. current, .. selected]);
-                setDropFeedback(new(
+                AddDropFeedback(
                     Guid.NewGuid(),
                     t.Message(new("App", "ItemsAdded"), ("count", selected.Count)),
-                    InfoBarSeverity.Success));
+                    InfoBarSeverity.Success);
                 if (navigation.CurrentRoute != AppRoute.Send)
                     navigation.Navigate(AppRoute.Send);
             }
             catch (Exception exception)
             {
                 AppDiagnostics.Report("Could not add items dropped on the application", exception);
-                setDropFeedback(new(
+                AddDropFeedback(
                     Guid.NewGuid(),
                     t.Message(new("App", "DropItemsFailed"), ("error", exception.Message)),
-                    InfoBarSeverity.Error));
+                    InfoBarSeverity.Error);
             }
         }
+
+        void AddDropFeedback(Guid id, string message, InfoBarSeverity severity) =>
+            updateDropFeedbacks(current =>
+                (TransientInfoBarMessage[])
+                [
+                    new TransientInfoBarMessage(
+                        id,
+                        t.Message(new("App", "DropFilesCaption")),
+                        message,
+                        severity),
+                    .. current,
+                ]);
     });
 
     private static string RouteTag(AppRoute route) => route switch
