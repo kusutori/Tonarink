@@ -6,7 +6,6 @@ using Microsoft.UI.Reactor.Localization;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
-using Windows.ApplicationModel.DataTransfer;
 using static Microsoft.UI.Reactor.Factories;
 
 namespace Tonarink.Pages.Web;
@@ -268,7 +267,8 @@ sealed class WebSharePage : Component<WebSharePageProps>
 
         async Task CopyWithFeedbackAsync(string url)
         {
-            if (!await CopyAsync(url).ConfigureAwait(true) || !alive.Current)
+            if (!await ClipboardTextService.TryCopyAsync(url, "web share link").ConfigureAwait(true)
+                || !alive.Current)
                 return;
 
             var version = ++nextCopyFeedbackVersion.Current;
@@ -355,53 +355,6 @@ sealed class WebSharePage : Component<WebSharePageProps>
             .ToolTip(name)
             .MinWidth(40)
             .MinHeight(40);
-
-    private static async Task<bool> CopyAsync(string url)
-    {
-        const int maximumAttempts = 3;
-
-        for (var attempt = 1; attempt <= maximumAttempts; attempt++)
-        {
-            try
-            {
-                var package = new DataPackage();
-                package.SetText(url);
-
-                if (!Clipboard.SetContentWithOptions(package, new ClipboardContentOptions()))
-                {
-                    if (attempt < maximumAttempts)
-                        await Task.Delay(50).ConfigureAwait(true);
-                    continue;
-                }
-
-                try
-                {
-                    Clipboard.Flush();
-                }
-                catch (Exception exception)
-                {
-                    // The text is already available for this app lifetime. Flush only
-                    // keeps it available after exit and may fail if another process
-                    // briefly locks the clipboard.
-                    AppDiagnostics.Report("Could not persist clipboard text after copying a share link", exception);
-                }
-
-                return true;
-            }
-            catch (Exception exception) when (attempt < maximumAttempts)
-            {
-                AppDiagnostics.Report($"Clipboard copy attempt {attempt} failed", exception);
-                await Task.Delay(50).ConfigureAwait(true);
-            }
-            catch (Exception exception)
-            {
-                AppDiagnostics.Report("Could not copy the share link", exception);
-                return false;
-            }
-        }
-
-        return false;
-    }
 
     private static string RandomPin()
     {

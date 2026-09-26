@@ -7,7 +7,6 @@ using Microsoft.UI.Reactor.Localization;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
-using Windows.ApplicationModel.DataTransfer;
 using Windows.System;
 using BasicConnectedAnimationConfiguration = Microsoft.UI.Xaml.Media.Animation.BasicConnectedAnimationConfiguration;
 using static Microsoft.UI.Reactor.Factories;
@@ -44,6 +43,8 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
             IncomingTransferReducer.Reduce,
             IncomingTransferViewState.Initial(request, IncomingSummary(t, request.Items)));
         var (copied, setCopied) = UseState(false);
+        var alive = UseRef(true);
+        var copyInProgress = UseRef(false);
         var (showVerification, setShowVerification) = UseState(false);
         var (showFileOptions, setShowFileOptions) = UseState(false);
         var (destinationDirectory, setDestinationDirectory) = UseState(Props.DownloadDirectory);
@@ -68,6 +69,8 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
             view.BytesTransferred,
             view.TotalBytes,
             view.Status);
+
+        UseEffect(() => () => alive.Current = false);
 
         UseEffect(() => UpdateTaskbarProgress(window, taskbarProgress), taskbarProgress);
         UseEffect(() => () => ClearTaskbarProgress(window));
@@ -336,7 +339,7 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                                     TextBlock(copied
                                         ? t.Message(new("App", "Copied"))
                                         : t.Message(new("App", "Copy")))),
-                                CopyText)
+                                () => _ = CopyTextAsync())
                             .AutomationName(t.Message(new("App", "CopyReceivedText")))
                             .IsEnabled(!string.IsNullOrEmpty(view.Text))
                             .MinWidth(120))
@@ -511,16 +514,27 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
 
         void CancelReceive() => cancellationRef.Current?.Cancel();
 
-        void CopyText()
+        async Task CopyTextAsync()
         {
-            if (string.IsNullOrEmpty(view.Text))
+            if (string.IsNullOrEmpty(view.Text) || copyInProgress.Current)
                 return;
-            var package = new DataPackage();
-            package.SetText(view.Text);
-            Clipboard.SetContent(package);
-            Clipboard.Flush();
-            setCopied(true);
-            announce.Announce(t.Message(new("App", "Copied")));
+
+            copyInProgress.Current = true;
+            try
+            {
+                if (!await ClipboardTextService.TryCopyAsync(view.Text, "received text").ConfigureAwait(true)
+                    || !alive.Current)
+                {
+                    return;
+                }
+
+                setCopied(true);
+                announce.Announce(t.Message(new("App", "Copied")));
+            }
+            finally
+            {
+                copyInProgress.Current = false;
+            }
         }
 
         void ToggleFileOptions()
