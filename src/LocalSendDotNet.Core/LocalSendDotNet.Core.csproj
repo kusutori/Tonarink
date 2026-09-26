@@ -1,5 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+    <Features>$(Features);runtime-async=on</Features>
     <AssemblyName>LocalSendDotNet.Core</AssemblyName>
     <RootNamespace>LocalSendDotNet</RootNamespace>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>

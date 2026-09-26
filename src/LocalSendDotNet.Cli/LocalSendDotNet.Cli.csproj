@@ -1,5 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+    <Features>$(Features);runtime-async=on</Features>
     <OutputType>Exe</OutputType>
     <AssemblyName>localsend-dotnet</AssemblyName>
     <RootNamespace>LocalSendDotNet.Cli</RootNamespace>

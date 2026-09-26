@@ -2,6 +2,7 @@
 
     <PropertyGroup>
         <!-- Keep the normal build unpackaged; opt into MSIX with -p:TonarinkPackaged=true. -->
+        <Features>$(Features);runtime-async=on</Features>
         <TonarinkPackaged Condition="'$(TonarinkPackaged)' == ''">false</TonarinkPackaged>
         <NativeAot Condition="'$(NativeAot)' == ''">false</NativeAot>
         <!-- Widgets add a Native AOT COM host. Keep them off the default package. -->

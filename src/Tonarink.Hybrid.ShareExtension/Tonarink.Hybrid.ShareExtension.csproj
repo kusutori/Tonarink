@@ -1,6 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net11.0-ios</TargetFramework>
+    <Features>$(Features);runtime-async=on</Features>
+    <UseMonoRuntime>false</UseMonoRuntime>
     <OutputType>Library</OutputType>
     <ApplicationId>dev.tonarink.app.share</ApplicationId>
     <ApplicationDisplayVersion>0.1.10</ApplicationDisplayVersion>
