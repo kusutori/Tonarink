@@ -19,9 +19,10 @@ For the first submission:
 1. Reserve `Tonarink` in Partner Center and associate the package identity with
    `src/Tonarink.App/Package.appxmanifest`. Replace the development identity and
    publisher values with the exact values assigned by Partner Center.
-2. Select one supported product package. The standard managed MSIX is the safest
-   first Store package; keep experimental Widgets packages out of the main Store
-   listing. Include x64 and ARM64 in one submission.
+2. Submit the self-contained Native AOT MSIX bundle produced by
+   `.github/workflows/store-package.yml`; keep experimental Widgets packages out
+   of the main Store listing. Include x64 and ARM64 in one submission. The Store
+   build does not require users to install .NET Desktop Runtime separately.
 3. Complete category, properties, age rating, privacy URL, support URL, pricing,
    and the English and Simplified Chinese listings. Each listing needs at least a
    description and screenshot; use the final screenshots and video prepared for

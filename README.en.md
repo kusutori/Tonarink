@@ -61,7 +61,8 @@
 
 For everyday use, install Tonarink directly from the
 [Microsoft Store](https://apps.microsoft.com/detail/9P29ZJGFWPJR) to receive the appropriate
-architecture and future updates automatically.
+architecture and future updates automatically. The Store build is self-contained
+Native AOT and does not require a separate .NET Desktop Runtime installation.
 
 Standalone packages remain available from
 [GitHub Releases](https://github.com/kusutori/Tonarink/releases/latest). Choose an MSIX build when
@@ -82,7 +83,7 @@ MSIX ZIP and run `Install.ps1`; see the
 
 Tonarink is powered by
 [LocalSendDotNet.Core](src/LocalSendDotNet.Core/README.md), a UI-independent
-.NET 10 implementation of the LocalSend v2.2 protocol maintained in this
+.NET 11 implementation of the LocalSend v2.2 protocol maintained in this
 repository and also available as a NuGet package.
 
 The library keeps the `LocalSendDotNet.Core` package name and public API so it
@@ -92,7 +93,7 @@ under [`src/LocalSendDotNet.Core`](src/LocalSendDotNet.Core).
 
 ## Build from source
 
-The production Windows application is built with .NET 10, Windows App SDK, and
+The production Windows application is built with .NET 11, Windows App SDK, and
 Microsoft UI Reactor.
 
 ```powershell

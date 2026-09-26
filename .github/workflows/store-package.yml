@@ -28,7 +28,7 @@ env:
 
 jobs:
   build:
-    name: Build Store MSIX ${{ matrix.platform }}
+    name: Build Store Native AOT MSIX ${{ matrix.platform }}
     runs-on: windows-latest
     strategy:
       fail-fast: false
@@ -36,8 +36,10 @@ jobs:
         include:
           - platform: x64
             rid: win-x64
+            architecture: x64
           - platform: ARM64
             rid: win-arm64
+            architecture: arm64
 
     steps:
       - name: Check out repository
@@ -86,18 +88,18 @@ jobs:
             -Publisher $env:STORE_PUBLISHER `
             -PublisherDisplayName $env:STORE_PUBLISHER_DISPLAY_NAME
 
-      - name: Restore
+      - name: Restore Native AOT application
         shell: pwsh
         run: |
           dotnet restore $env:APP_PROJECT `
             -p:Platform=${{ matrix.platform }} `
-            -p:RuntimeIdentifier=${{ matrix.rid }} `
-            -p:TonarinkPackaged=true
+            -p:NativeAot=true `
+            -r ${{ matrix.rid }}
           dotnet restore src/Tonarink.ExplorerCommand/Tonarink.ExplorerCommand.csproj `
             -p:Platform=${{ matrix.platform }} `
             -r ${{ matrix.rid }}
 
-      - name: Build and pack unsigned Store MSIX with WinApp CLI
+      - name: Publish and pack unsigned Store Native AOT MSIX with WinApp CLI
         id: build
         shell: pwsh
         run: |
@@ -105,28 +107,55 @@ jobs:
           dotnet publish $env:APP_PROJECT --no-restore -c Release `
             -r ${{ matrix.rid }} `
             -p:Platform=${{ matrix.platform }} `
-            -p:TonarinkPackaged=true `
+            -p:NativeAot=true `
+            -p:TonarinkPackaged=false `
+            -p:WindowsPackageType=None `
             -p:TonarinkWidgets=false `
-            -p:GenerateAppxPackageOnBuild=false `
+            -p:Version=${{ steps.package.outputs.version }} `
             -o $layout
           if ($LASTEXITCODE -ne 0) {
-            throw 'Publishing the Store layout failed for ${{ matrix.platform }}.'
+            throw 'Publishing the Store Native AOT layout failed for ${{ matrix.platform }}.'
           }
 
-          $appxLayouts = @(Get-ChildItem 'src/Tonarink.App/bin' -Recurse -Filter AppxManifest.xml -File |
-            Where-Object { $_.Directory.Name -eq '${{ matrix.rid }}' -and $_.FullName -match '[\\/]Release[\\/]' })
-          if ($appxLayouts.Count -ne 1) {
-            throw "Expected one generated Release manifest for ${{ matrix.rid }}, found $($appxLayouts.Count)."
+          foreach ($requiredFile in @('Tonarink.exe', 'Tonarink.pri')) {
+            if (-not (Test-Path (Join-Path $layout $requiredFile))) {
+              throw "Store Native AOT layout is missing $requiredFile."
+            }
           }
-          Copy-Item -LiteralPath $appxLayouts[0].FullName -Destination (Join-Path $layout 'AppxManifest.xml')
+
+          Get-ChildItem -LiteralPath $layout -Filter '*.pdb' -File |
+            Remove-Item -Force -ErrorAction SilentlyContinue
+
+          $assets = Join-Path $layout 'Assets'
+          New-Item -ItemType Directory -Path $assets -Force | Out-Null
+          Copy-Item 'src/Tonarink.App/Assets/*.png' -Destination $assets
+          Copy-Item 'src/Tonarink.App/Assets/*.ico' -Destination $assets
+
+          $manifestPath = Join-Path $layout 'AppxManifest.xml'
+          Copy-Item $env:APP_MANIFEST -Destination $manifestPath
+          [xml]$manifest = Get-Content -LiteralPath $manifestPath -Raw
+          $manifest.Package.Identity.SetAttribute('ProcessorArchitecture', '${{ matrix.architecture }}')
+          $manifest.Package.Applications.Application.SetAttribute('EntryPoint', 'Windows.FullTrustApplication')
+          $settings = [Xml.XmlWriterSettings]::new()
+          $settings.Indent = $true
+          $settings.Encoding = [Text.UTF8Encoding]::new($false)
+          $writer = [Xml.XmlWriter]::Create($manifestPath, $settings)
+          try {
+            $manifest.Save($writer)
+          }
+          finally {
+            $writer.Dispose()
+          }
+
+          ./tools/New-AotMsixResourcesPri.ps1 -LayoutPath $layout
           if (-not (Test-Path (Join-Path $layout 'resources.pri'))) {
-            throw 'The Store MSIX layout is missing resources.pri.'
+            throw 'The Store Native AOT MSIX layout is missing resources.pri.'
           }
 
           $destination = Join-Path $env:RUNNER_TEMP 'Tonarink-Store-${{ steps.package.outputs.version }}-${{ matrix.platform }}.msix'
           winapp package $layout --skip-pri --output $destination
           if ($LASTEXITCODE -ne 0) {
-            throw 'WinApp CLI failed to pack the Store MSIX.'
+            throw 'WinApp CLI failed to pack the Store Native AOT MSIX.'
           }
 
           $layoutArchive = Join-Path $env:RUNNER_TEMP 'store-layout-${{ matrix.platform }}.zip'
@@ -159,7 +188,7 @@ jobs:
           if ($identity.Name -ne $env:STORE_IDENTITY_NAME -or
               $identity.Publisher -ne $env:STORE_PUBLISHER -or
               $identity.Version -ne '${{ steps.package.outputs.version }}' -or
-              $identity.ProcessorArchitecture -ne '${{ matrix.platform }}') {
+              $identity.ProcessorArchitecture -ne '${{ matrix.architecture }}') {
             throw "Generated package identity is invalid: $($identity.OuterXml)"
           }
 

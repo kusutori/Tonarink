@@ -56,7 +56,8 @@
 ## 下载
 
 日常使用推荐直接[从 Microsoft Store 安装](https://apps.microsoft.com/detail/9P29ZJGFWPJR)，
-可以自动获取适合当前设备架构的版本及后续更新。
+可以自动获取适合当前设备架构的版本及后续更新。商店版本采用自包含 Native AOT，
+无需单独安装 .NET Desktop Runtime。
 
 也可以从 [GitHub Releases](https://github.com/kusutori/Tonarink/releases/latest)
 下载独立发行包。建议选择 MSIX，因为 Windows 分享菜单和文件资源管理器右键菜单等
@@ -75,7 +76,7 @@ MSIX ZIP 后运行 `Install.ps1`，详细步骤请参阅[安装指南](docs/deve
 ## LocalSendDotNet.Core
 
 Tonarink 基于 [LocalSendDotNet.Core](src/LocalSendDotNet.Core/README.md) 构建。
-它是与 UI 无关的 LocalSend v2.2 协议 .NET 10 实现，由本仓库维护，
+它是与 UI 无关的 LocalSend v2.2 协议 .NET 11 实现，由本仓库维护，
 同时也作为独立 NuGet 包发布。
 
 核心库继续使用 `LocalSendDotNet.Core` 包名和公开 API，其他 .NET 应用可以独立引用。
@@ -84,7 +85,7 @@ Tonarink 基于 [LocalSendDotNet.Core](src/LocalSendDotNet.Core/README.md) 构�
 
 ## 从源代码构建
 
-正式 Windows 客户端使用 .NET 10、Windows App SDK 和 Microsoft UI Reactor 构建。
+正式 Windows 客户端使用 .NET 11、Windows App SDK 和 Microsoft UI Reactor 构建。
 
 ```powershell
 dotnet restore Tonarink.slnx

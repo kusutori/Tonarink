@@ -1,6 +1,6 @@
 # LocalSendDotNet.Core
 
-`LocalSendDotNet.Core` is a UI-independent .NET 10 implementation of the
+`LocalSendDotNet.Core` is a UI-independent .NET 11 implementation of the
 LocalSend v2.2 protocol. It provides discovery, secure transfer, and receiving
 APIs for desktop apps, services, command-line tools, and other .NET hosts.
 
@@ -15,7 +15,7 @@ project.
 dotnet add package LocalSendDotNet.Core --prerelease
 ```
 
-The library targets .NET 10 and uses the ASP.NET Core shared framework for its
+The library targets .NET 11 and uses the ASP.NET Core shared framework for its
 embedded HTTP server.
 
 ## Features

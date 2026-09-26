@@ -128,7 +128,7 @@ Build the Web host and Android Hybrid target:
 
 ```powershell
 dotnet build src/Tonarink.Web/Tonarink.Web.csproj
-dotnet build src/Tonarink.Hybrid/Tonarink.Hybrid.csproj -f net10.0-android
+dotnet build src/Tonarink.Hybrid/Tonarink.Hybrid.csproj -f net11.0-android
 ```
 
 Run the Web host:

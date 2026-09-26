@@ -113,8 +113,9 @@ generated manifest only gained a WinAppCli build marker. Use `--skip-pri` to
 retain the merged PRI created above. The CLI does not replace the publish,
 widget-payload, manifest, asset, or PRI preparation steps. GitHub Release CI
 uses WinApp CLI for managed and Native AOT MSIX packages, then signs them with
-the Windows SDK's `signtool`. Store CI also uses it for unsigned MSIX packages
-and the submission bundle.
+the Windows SDK's `signtool`. Store CI publishes self-contained Native AOT x64
+and ARM64 layouts, uses WinApp CLI for the unsigned MSIX packages, and combines
+them into the submission bundle.
 
 ```powershell
 dotnet publish src/Tonarink.App/Tonarink.App.csproj -c Release `
