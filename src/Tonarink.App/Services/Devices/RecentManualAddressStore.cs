@@ -1,4 +1,4 @@
-namespace Tonarink.Services;
+namespace Tonarink.Services.Devices;
 
 static class RecentManualAddressStore
 {

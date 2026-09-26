@@ -3,7 +3,7 @@ using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using LocalSendDotNet;
 
-namespace Tonarink.Services;
+namespace Tonarink.Services.Platform;
 
 static class AppNetworkAddresses
 {

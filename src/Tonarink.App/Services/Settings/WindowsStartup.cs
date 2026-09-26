@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 using Windows.ApplicationModel;
 using Windows.System;
 
-namespace Tonarink.Services;
+namespace Tonarink.Services.Settings;
 
 static class WindowsStartup
 {

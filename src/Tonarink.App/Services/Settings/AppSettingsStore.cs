@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 using LocalSendDotNet;
 using Tonarink.Application;
 
-namespace Tonarink.Services;
+namespace Tonarink.Services.Settings;
 
 static class AppSettingsStore
 {

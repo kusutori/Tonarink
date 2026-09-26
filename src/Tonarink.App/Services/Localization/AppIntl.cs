@@ -1,6 +1,6 @@
 using Microsoft.UI.Reactor.Localization;
 
-namespace Tonarink.Services;
+namespace Tonarink.Services.Localization;
 
 static class AppIntl
 {

@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 
-namespace Tonarink.Services;
+namespace Tonarink.Services.Platform;
 
 static class AppDiagnostics
 {

@@ -1,7 +1,7 @@
 using Tonarink.Application;
 using Windows.System.UserProfile;
 
-namespace Tonarink.Services;
+namespace Tonarink.Services.Localization;
 
 static class AppLocale
 {

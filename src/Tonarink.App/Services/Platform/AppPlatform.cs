@@ -5,7 +5,7 @@ using Package = Windows.ApplicationModel.Package;
 using WinAppStorage = Microsoft.Windows.Storage;
 using WinRtStorage = Windows.Storage;
 
-namespace Tonarink.Services;
+namespace Tonarink.Services.Platform;
 
 static class AppPlatform
 {
