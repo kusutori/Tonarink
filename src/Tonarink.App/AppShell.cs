@@ -401,7 +401,9 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
         Element root = Grid(
             columns: [GridSize.Star()],
             rows: [GridSize.Star()],
-            shellContent.Grid(row: 0, column: 0),
+            shellContent
+                .WithKey("shell-content")
+                .Grid(row: 0, column: 0),
             isAppDropActive
                 ? Grid(
                         columns: [GridSize.Star()],
@@ -418,6 +420,7 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
                             .VAlign(VerticalAlignment.Center)
                             .Grid(row: 0, column: 0))
                     .IsHitTestVisible(false)
+                    .WithKey("app-drop-overlay")
                     .Grid(row: 0, column: 0)
                 : null,
             dropFeedbacks.Count == 0
@@ -426,7 +429,13 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
                         dropFeedbacks,
                         id => updateDropFeedbacks(current =>
                             (TransientInfoBarMessage[])
+                            [.. current.Select(message => message.Id == id
+                                ? message with { HasEntered = true }
+                                : message)]),
+                        id => updateDropFeedbacks(current =>
+                            (TransientInfoBarMessage[])
                             [.. current.Where(message => message.Id != id)])))
+                    .WithKey("drop-feedback-stack")
                     .Grid(row: 0, column: 0));
 
         if (settings.ExpandDragDropToEntireApp && !Props.IsSplashVisible)
@@ -501,7 +510,8 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
                         id,
                         t.Message(new("App", "DropFilesCaption")),
                         message,
-                        severity),
+                        severity,
+                        Environment.TickCount64 + TransientInfoBarMessage.LifetimeMilliseconds),
                     .. current,
                 ]);
     });

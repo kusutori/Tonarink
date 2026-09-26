@@ -10,10 +10,16 @@ sealed record TransientInfoBarMessage(
     Guid Id,
     string Title,
     string Message,
-    InfoBarSeverity Severity);
+    InfoBarSeverity Severity,
+    long ExpiresAtTick,
+    bool HasEntered = false)
+{
+    public const int LifetimeMilliseconds = 4_000;
+}
 
 sealed record TransientInfoBarStackProps(
     IReadOnlyList<TransientInfoBarMessage> Messages,
+    Action<Guid> MarkEntered,
     Action<Guid> Remove);
 
 /// <summary>
@@ -32,6 +38,7 @@ sealed class TransientInfoBarStack : Component<TransientInfoBarStackProps>
                 [.. Props.Messages.Select(message =>
                     Component<TransientInfoBarItem, TransientInfoBarItemProps>(new(
                             message,
+                            Props.MarkEntered,
                             Props.Remove))
                         .WithKey(message.Id.ToString("N"))
                         .LayoutAnimation(reduceMotion ? TimeSpan.Zero : RepositionDuration))])
@@ -45,18 +52,17 @@ sealed class TransientInfoBarStack : Component<TransientInfoBarStackProps>
 
 sealed record TransientInfoBarItemProps(
     TransientInfoBarMessage Message,
+    Action<Guid> MarkEntered,
     Action<Guid> Remove);
 
 sealed class TransientInfoBarItem : Component<TransientInfoBarItemProps>
 {
-    private static readonly TimeSpan VisibleDuration = TimeSpan.FromSeconds(4);
     private static readonly TimeSpan EnterDuration = TimeSpan.FromMilliseconds(260);
     private static readonly TimeSpan ExitDuration = TimeSpan.FromMilliseconds(180);
 
     public override Element Render()
     {
         var reduceMotion = UseReducedMotion();
-        var (hasEntered, setEntered) = UseState(false);
         var (isDismissing, setDismissing) = UseState(false);
         var message = Props.Message;
 
@@ -74,12 +80,16 @@ sealed class TransientInfoBarItem : Component<TransientInfoBarItemProps>
             {
                 try
                 {
-                    // Let WinUI commit the initial off-screen visual before starting the entrance.
-                    await Task.Yield();
-                    cancellationToken.ThrowIfCancellationRequested();
-                    setEntered(true);
+                    if (!message.HasEntered)
+                    {
+                        // Let WinUI commit the initial off-screen visual before starting the entrance.
+                        await Task.Yield();
+                        cancellationToken.ThrowIfCancellationRequested();
+                        Props.MarkEntered(message.Id);
+                    }
 
-                    await Task.Delay(VisibleDuration, cancellationToken);
+                    var remaining = Math.Max(0, message.ExpiresAtTick - Environment.TickCount64);
+                    await Task.Delay(TimeSpan.FromMilliseconds(remaining), cancellationToken);
                     setDismissing(true);
 
                     if (!reduceMotion)
@@ -100,12 +110,12 @@ sealed class TransientInfoBarItem : Component<TransientInfoBarItemProps>
                 OnClosed = () => Props.Remove(message.Id),
             })
             .Severity(message.Severity)
-            .Translation(0, hasEntered ? 0 : -72, 0)
+            .Translation(0, message.HasEntered ? 0 : -72, 0)
             .TranslationTransition(new()
             {
                 Duration = reduceMotion ? TimeSpan.Zero : EnterDuration,
             })
-            .Opacity(isDismissing || !hasEntered ? 0 : 1)
+            .Opacity(isDismissing || !message.HasEntered ? 0 : 1)
             .OpacityTransition(reduceMotion ? TimeSpan.Zero :
                 isDismissing ? ExitDuration : EnterDuration);
     }
