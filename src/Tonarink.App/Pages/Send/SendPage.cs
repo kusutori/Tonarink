@@ -32,6 +32,8 @@ sealed record SendPageProps(
     Action<bool> SetKeepItemsForMultipleReceivers,
     bool VerifyChecksums,
     bool ExpandDragDropToEntireApp,
+    bool PowerToysPeekPreviewEnabled,
+    string PowerToysPeekExecutablePath,
     Action<LocalSendDevice> OpenDeviceDetails,
     string? JumpListFavoriteFingerprint,
     Action<string> ConsumeJumpListFavorite);
@@ -41,7 +43,8 @@ sealed record SelectedSendItem(
     SendItem Item,
     string DisplayName,
     long Length,
-    string Kind);
+    string Kind,
+    string? LocalPath = null);
 
 sealed record SendRequest(
     Guid TransferId,
@@ -80,6 +83,7 @@ sealed class SendPage : Component<SendPageProps>
         var updateSelectedItems = Props.UpdateSelectedItems;
         var (pickerMessage, setPickerMessage) = UseState(t.Message(new("App", "NothingSelected")));
         var (isFileDropActive, setFileDropActive) = UseState(false);
+        var (selectedPreviewItemId, setSelectedPreviewItemId) = UseState<Guid?>(null);
         var (text, setText) = UseState(string.Empty);
         var (showTextDialog, setShowTextDialog) = UseState(false);
         var (showAddressDialog, setShowAddressDialog) = UseState(false);
@@ -118,6 +122,12 @@ sealed class SendPage : Component<SendPageProps>
             if (Props.JumpListFavoriteFingerprint is not null)
                 setShowFavoritesDialog(true);
         }, Props.JumpListFavoriteFingerprint);
+
+        UseEffect(() =>
+        {
+            if (!Props.PowerToysPeekPreviewEnabled)
+                setSelectedPreviewItemId(null);
+        }, Props.PowerToysPeekPreviewEnabled);
 
         UseEffect(() =>
         {
@@ -262,10 +272,22 @@ sealed class SendPage : Component<SendPageProps>
             [
                 .. selectedItems.Select((item, index) => SelectedItemRow(
                         item,
-                        () => updateSelectedItems(current => (SelectedSendItem[])
-                        [
-                            .. current.Where(candidate => candidate.Id != item.Id)
-                        ]),
+                        selectedPreviewItemId == item.Id,
+                        Props.PowerToysPeekPreviewEnabled
+                        && PowerToysPeekLauncher.CanPreview(
+                            item.LocalPath,
+                            Props.PowerToysPeekExecutablePath),
+                        Props.PowerToysPeekExecutablePath,
+                        () => setSelectedPreviewItemId(item.Id),
+                        () =>
+                        {
+                            if (selectedPreviewItemId == item.Id)
+                                setSelectedPreviewItemId(null);
+                            updateSelectedItems(current => (SelectedSendItem[])
+                            [
+                                .. current.Where(candidate => candidate.Id != item.Id)
+                            ]);
+                        },
                         t)
                     .PositionInSet(index + 1, selectedItems.Count)
                     .WithKey(item.Id.ToString("N")))
@@ -288,6 +310,7 @@ sealed class SendPage : Component<SendPageProps>
                                     : Button(t.Message(new("App", "Clear")), () =>
                                     {
                                         updateSelectedItems(_ => []);
+                                        setSelectedPreviewItemId(null);
                                         setPickerMessage(t.Message(new("App", "NothingSelected")));
                                     }).AutomationName(t.Message(new("App", "Clear")))) with
                         {
@@ -841,7 +864,8 @@ sealed class SendPage : Component<SendPageProps>
                                 new SendFileItem(fileInfo.FullName, fileInfo.Name),
                                 fileInfo.Name,
                                 fileInfo.Length,
-                                "file"));
+                                "file",
+                                fileInfo.FullName));
                             break;
 
                         case ShareTargetItem.Text sharedText:
@@ -1350,32 +1374,90 @@ sealed class SendPage : Component<SendPageProps>
             .VAlign(VerticalAlignment.Stretch);
     }
 
-    private static Element SelectedItemRow(SelectedSendItem item, Action remove, IntlAccessor t) =>
-        Grid(
-                columns: [GridSize.Auto, GridSize.Star(), GridSize.Auto],
-                rows: [GridSize.Auto],
-                Icon(ItemIcon(item)).AccessibilityHidden()
-                    .VAlign(VerticalAlignment.Center)
-                    .Grid(column: 0),
-                VStack(2,
-                        TextBlock(item.DisplayName)
-                            .TextTrimming(TextTrimming.CharacterEllipsis)
-                            .ToolTip(item.DisplayName),
-                        Caption(t.Message(
-                                new("App", "ItemKindAndSize"),
-                                ("kind", ItemKindLabel(t, item.Kind)),
-                                ("size", FormatBytes(item.Length))))
-                            .Foreground(Theme.SecondaryText))
-                    .Margin(horizontal: 12, vertical: 0)
-                    .Grid(column: 1),
-                Button(Icon("Delete").AccessibilityHidden(), remove)
-                    .AutomationName(t.Message(new("App", "RemoveItem"), ("item", item.DisplayName)))
-                    .ToolTip(t.Message(new("App", "Remove")))
-                    .Grid(column: 2))
+    private static Element SelectedItemRow(
+        SelectedSendItem item,
+        bool isSelected,
+        bool previewEnabled,
+        string peekExecutablePath,
+        Action select,
+        Action remove,
+        IntlAccessor t)
+    {
+        void Preview() => PowerToysPeekLauncher.TryPreview(item.LocalPath, peekExecutablePath);
+
+        var previewCommand = new Command
+        {
+            Label = t.Message(new("App", "PreviewWithPowerToysPeek")),
+            Icon = new FontIconData("\uE890"),
+            Execute = Preview,
+        };
+        var removeCommand = new Command
+        {
+            Label = t.Message(new("App", "Remove")),
+            Icon = new SymbolIconData("Delete"),
+            Execute = remove,
+        };
+        Element ContextMenu() => previewEnabled
+            ? MenuItems(MenuItem(previewCommand), MenuItem(removeCommand))
+            : MenuItems(MenuItem(removeCommand));
+        var content = Grid(
+            columns: [GridSize.Auto, GridSize.Star()],
+            rows: [GridSize.Auto],
+            Icon(ItemIcon(item)).AccessibilityHidden()
+                .VAlign(VerticalAlignment.Center)
+                .Grid(column: 0),
+            VStack(2,
+                    TextBlock(item.DisplayName)
+                        .TextTrimming(TextTrimming.CharacterEllipsis)
+                        .ToolTip(item.DisplayName),
+                    Caption(t.Message(
+                            new("App", "ItemKindAndSize"),
+                            ("kind", ItemKindLabel(t, item.Kind)),
+                            ("size", FormatBytes(item.Length))))
+                        .Foreground(Theme.SecondaryText))
+                .Margin(horizontal: 12, vertical: 0)
+                .Grid(column: 1));
+        Element itemContent = previewEnabled
+            ? Button(content, select)
+                .GhostButton()
+                .HAlign(HorizontalAlignment.Stretch)
+                .HorizontalContentAlignment(HorizontalAlignment.Stretch)
+                .AutomationName(t.Message(
+                    new("App", "SelectSendItemForPreview"),
+                    ("item", item.DisplayName)))
+                .HelpText(t.Message(new("App", "SendItemPreviewHint")))
+                .WithKey($"{item.Id:N}:{peekExecutablePath}")
+                .OnMount(element => element.PreviewKeyDown += (_, args) =>
+                {
+                    if (args.Key != VirtualKey.Space)
+                        return;
+
+                    args.Handled = true;
+                    select();
+                    Preview();
+                })
+            : content;
+
+        return Border(
+                Grid(
+                    columns: [GridSize.Star(), GridSize.Auto],
+                    rows: [GridSize.Auto],
+                    itemContent
+                        .WithContextFlyout(ContextMenu())
+                        .Grid(column: 0),
+                    Button(Icon("Delete").AccessibilityHidden(), remove)
+                        .AutomationName(t.Message(new("App", "RemoveItem"), ("item", item.DisplayName)))
+                        .ToolTip(t.Message(new("App", "Remove")))
+                        .WithContextFlyout(ContextMenu())
+                        .Grid(column: 1)))
             .Padding(12)
             .CornerRadius(8)
             .Background(Theme.SubtleFill)
-            .WithBorder(Theme.CardStroke);
+            .WithBorder(
+                previewEnabled && isSelected ? Theme.Accent : Theme.CardStroke,
+                previewEnabled ? 2 : 1)
+            .WithContextFlyout(ContextMenu());
+    }
 
     private static Element DeviceCard(
         LocalSendDevice device,

@@ -503,6 +503,48 @@ sealed class SettingsPage : Component<SettingsPageProps>
                     expander.Description = t.Message(new("App", "SettingsAdvancedDescription"));
                 }));
 
+        var experimentalCards = SettingsGroup(
+            t.Message(new("App", "SettingsExperimental")),
+            SettingsExpander(
+                    headerIcon: HeaderGlyph("\uE890"),
+                    items:
+                    [
+                        SettingsCard(
+                            header: t.Message(new("App", "SettingsPowerToysPeekEnabled")),
+                            description: t.Message(new("App", "SettingsPowerToysPeekEnabledDescription")),
+                            isClickEnabled: false,
+                            isActionIconVisible: false,
+                            content:
+                            ToggleSwitch(Props.Settings.PowerToysPeekPreviewEnabled, value =>
+                                    Props.UpdateSettings(settings => settings with
+                                    {
+                                        PowerToysPeekPreviewEnabled = value,
+                                    }))
+                                .AutomationName(t.Message(new("App", "SettingsPowerToysPeekEnabled")))
+                                .HelpText(t.Message(new("App", "SettingsPowerToysPeekEnabledDescription")))),
+                        SettingsCard(
+                            header: t.Message(new("App", "SettingsPowerToysPeekPath")),
+                            description: t.Message(new("App", "SettingsPowerToysPeekPathDescription")),
+                            isClickEnabled: false,
+                            isActionIconVisible: false,
+                            content:
+                            Component<DeferredTextSetting, DeferredTextSettingProps>(new(
+                                    Props.Settings.PowerToysPeekExecutablePath,
+                                    value => Props.UpdateSettings(settings => settings with
+                                    {
+                                        PowerToysPeekExecutablePath = value,
+                                    }),
+                                    t.Message(new("App", "SettingsPowerToysPeekPath")),
+                                    PlaceholderText: PowerToysPeekLauncher.DefaultExecutablePath,
+                                    MinWidth: 280))
+                                .IsEnabled(Props.Settings.PowerToysPeekPreviewEnabled)),
+                    ])
+                .Set(expander =>
+                {
+                    expander.Header = t.Message(new("App", "SettingsPowerToysPeek"));
+                    expander.Description = t.Message(new("App", "SettingsPowerToysPeekDescription"));
+                }));
+
         var version = typeof(SettingsPage).Assembly.GetName().Version is { } assemblyVersion
             ? $"{assemblyVersion.Major}.{assemblyVersion.Minor}.{assemblyVersion.Build}"
             : "dev";
@@ -594,6 +636,7 @@ sealed class SettingsPage : Component<SettingsPageProps>
                         receiveCards,
                         sendCards,
                         networkCards,
+                        experimentalCards,
                         aboutSection,
                         ContentDialog(
                                 t.Message(new("App", "SettingsEncryptionDisabledTitle")),

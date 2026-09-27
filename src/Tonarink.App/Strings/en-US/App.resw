@@ -187,6 +187,16 @@
   <data name="Port" xml:space="preserve"><value>Port</value></data>
   <data name="PortInUseHint" xml:space="preserve"><value>Check whether port 53317 is in use by Tonarink or another LocalSend-compatible app.</value></data>
   <data name="PreparingForDevice" xml:space="preserve"><value>Preparing to send to {device}…</value></data>
+  <data name="PreviewWithPowerToysPeek" xml:space="preserve"><value>Preview with PowerToys Peek</value></data>
+  <data name="SelectSendItemForPreview" xml:space="preserve"><value>Select {item} for preview</value></data>
+  <data name="SendItemPreviewHint" xml:space="preserve"><value>Press Space to preview with PowerToys Peek.</value></data>
+  <data name="SettingsExperimental" xml:space="preserve"><value>Experimental extensions</value></data>
+  <data name="SettingsPowerToysPeek" xml:space="preserve"><value>PowerToys Peek</value></data>
+  <data name="SettingsPowerToysPeekDescription" xml:space="preserve"><value>Optional integration with the PowerToys Peek file previewer.</value></data>
+  <data name="SettingsPowerToysPeekEnabled" xml:space="preserve"><value>Enable file preview</value></data>
+  <data name="SettingsPowerToysPeekEnabledDescription" xml:space="preserve"><value>Select a file in the send list and press Space to preview it with PowerToys Peek.</value></data>
+  <data name="SettingsPowerToysPeekPath" xml:space="preserve"><value>Peek executable path</value></data>
+  <data name="SettingsPowerToysPeekPathDescription" xml:space="preserve"><value>Path to PowerToys.Peek.UI.exe. PowerToys must be installed separately.</value></data>
   <data name="ReceiveCancelled" xml:space="preserve"><value>Receive cancelled</value></data>
   <data name="ReceivedMessage" xml:space="preserve"><value>Sent you a message:</value></data>
   <data name="ReceivedTextContent" xml:space="preserve"><value>Received text content</value></data>

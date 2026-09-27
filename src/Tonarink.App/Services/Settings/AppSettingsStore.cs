@@ -63,6 +63,8 @@ sealed class AppSettingsFile
     public bool? KeepItemsForMultipleReceivers { get; set; }
     public bool? VerifyChecksumsOnSend { get; set; }
     public bool? ExpandDragDropToEntireApp { get; set; }
+    public bool? PowerToysPeekPreviewEnabled { get; set; }
+    public string? PowerToysPeekExecutablePath { get; set; }
     public bool? SaveReceiveHistory { get; set; }
     public bool? VerifyChecksumsOnReceive { get; set; }
     public bool? ReceivePinEnabled { get; set; }
@@ -95,6 +97,8 @@ sealed class AppSettingsFile
         KeepItemsForMultipleReceivers = settings.KeepItemsForMultipleReceivers,
         VerifyChecksumsOnSend = settings.VerifyChecksumsOnSend,
         ExpandDragDropToEntireApp = settings.ExpandDragDropToEntireApp,
+        PowerToysPeekPreviewEnabled = settings.PowerToysPeekPreviewEnabled,
+        PowerToysPeekExecutablePath = settings.PowerToysPeekExecutablePath,
         SaveReceiveHistory = settings.SaveReceiveHistory,
         VerifyChecksumsOnReceive = settings.VerifyChecksumsOnReceive,
         ReceivePinEnabled = settings.ReceivePinEnabled,
@@ -144,6 +148,10 @@ sealed class AppSettingsFile
             KeepItemsForMultipleReceivers = KeepItemsForMultipleReceivers ?? defaults.KeepItemsForMultipleReceivers,
             VerifyChecksumsOnSend = VerifyChecksumsOnSend ?? defaults.VerifyChecksumsOnSend,
             ExpandDragDropToEntireApp = ExpandDragDropToEntireApp ?? defaults.ExpandDragDropToEntireApp,
+            PowerToysPeekPreviewEnabled = PowerToysPeekPreviewEnabled ?? defaults.PowerToysPeekPreviewEnabled,
+            PowerToysPeekExecutablePath = string.IsNullOrWhiteSpace(PowerToysPeekExecutablePath)
+                ? defaults.PowerToysPeekExecutablePath
+                : PowerToysPeekExecutablePath.Trim().Trim('"'),
             SaveReceiveHistory = SaveReceiveHistory ?? defaults.SaveReceiveHistory,
             VerifyChecksumsOnReceive = VerifyChecksumsOnReceive ?? defaults.VerifyChecksumsOnReceive,
             ReceivePinEnabled = ReceivePinEnabled ?? defaults.ReceivePinEnabled,

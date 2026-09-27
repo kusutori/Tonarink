@@ -47,7 +47,7 @@ static class SelectedSendItemReader
                 token.ThrowIfCancellationRequested();
                 return await file.OpenStreamForReadAsync().ConfigureAwait(false);
             });
-        return new(Guid.NewGuid(), item, protocolName, length, "file");
+        return new(Guid.NewGuid(), item, protocolName, length, "file", file.Path);
     }
 
     public static Task<IReadOnlyList<SelectedSendItem>> FromFolderAsync(
@@ -79,7 +79,8 @@ static class SelectedSendItemReader
                         new SendFileItem(path, protocolName),
                         protocolName,
                         new FileInfo(path).Length,
-                        "folder");
+                        "folder",
+                        path);
                 })
         ];
     }, cancellationToken);

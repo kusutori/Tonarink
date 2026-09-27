@@ -246,6 +246,8 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
                     }),
                     settings.VerifyChecksumsOnSend,
                     settings.ExpandDragDropToEntireApp,
+                    settings.PowerToysPeekPreviewEnabled,
+                    settings.PowerToysPeekExecutablePath,
                     device =>
                     {
                         setDetailsDevice(device);
