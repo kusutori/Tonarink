@@ -188,8 +188,10 @@
   <data name="PortInUseHint" xml:space="preserve"><value>Check whether port 53317 is in use by Tonarink or another LocalSend-compatible app.</value></data>
   <data name="PreparingForDevice" xml:space="preserve"><value>Preparing to send to {device}…</value></data>
   <data name="Preview" xml:space="preserve"><value>Preview</value></data>
-  <data name="SelectSendItemForPreview" xml:space="preserve"><value>Select {item} for preview</value></data>
+  <data name="SelectSendItem" xml:space="preserve"><value>Select {item}</value></data>
+  <data name="DeselectSendItem" xml:space="preserve"><value>Deselect {item}</value></data>
   <data name="SendItemPreviewHint" xml:space="preserve"><value>Press Space to preview with PowerToys Peek.</value></data>
+  <data name="SendItemRenamed" xml:space="preserve"><value>Renamed · {kind} · {size}</value></data>
   <data name="SettingsExperimental" xml:space="preserve"><value>Experimental extensions</value></data>
   <data name="SettingsPowerToysPeek" xml:space="preserve"><value>PowerToys Peek</value></data>
   <data name="SettingsPowerToysPeekDescription" xml:space="preserve"><value>Optional integration with the PowerToys Peek file previewer.</value></data>

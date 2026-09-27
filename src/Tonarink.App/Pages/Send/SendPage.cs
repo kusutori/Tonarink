@@ -44,7 +44,13 @@ sealed record SelectedSendItem(
     string DisplayName,
     long Length,
     string Kind,
-    string? LocalPath = null);
+    string? LocalPath = null,
+    string? OriginalFileName = null,
+    string? OriginalDisplayName = null)
+{
+    public bool IsRenamed => OriginalFileName is not null
+                             && !string.Equals(Item.FileName, OriginalFileName, StringComparison.Ordinal);
+}
 
 sealed record SendRequest(
     Guid TransferId,
@@ -87,6 +93,8 @@ sealed class SendPage : Component<SendPageProps>
         var (text, setText) = UseState(string.Empty);
         var (showTextDialog, setShowTextDialog) = UseState(false);
         var (showAddressDialog, setShowAddressDialog) = UseState(false);
+        var (renameItemId, setRenameItemId) = UseState<Guid?>(null);
+        var (renameFileName, setRenameFileName) = UseState(string.Empty);
         var (showFavoritesDialog, setShowFavoritesDialog) = UseState(false);
         var (favoriteEdit, setFavoriteEdit) = UseState<FavoriteDeviceEdit?>(null);
         var (favoriteToDelete, setFavoriteToDelete) = UseState<FavoriteDevice?>(null);
@@ -273,12 +281,19 @@ sealed class SendPage : Component<SendPageProps>
                 .. selectedItems.Select((item, index) => SelectedItemRow(
                         item,
                         selectedPreviewItemId == item.Id,
+                        Props.PowerToysPeekPreviewEnabled,
                         Props.PowerToysPeekPreviewEnabled
                         && PowerToysPeekLauncher.CanPreview(
                             item.LocalPath,
                             Props.PowerToysPeekExecutablePath),
                         Props.PowerToysPeekExecutablePath,
-                        () => setSelectedPreviewItemId(item.Id),
+                        () => setSelectedPreviewItemId(
+                            selectedPreviewItemId == item.Id ? null : item.Id),
+                        () =>
+                        {
+                            setRenameFileName(ProtocolLeafName(item.Item.FileName));
+                            setRenameItemId(item.Id);
+                        },
                         () =>
                         {
                             if (selectedPreviewItemId == item.Id)
@@ -527,6 +542,7 @@ sealed class SendPage : Component<SendPageProps>
             pageContainer.Grid(row: 0, column: 0),
             TextDialog().Grid(row: 0, column: 0),
             AddressDialog().Grid(row: 0, column: 0),
+            RenameDialog().Grid(row: 0, column: 0),
             Component<FavoriteDevicesDialog, FavoriteDevicesDialogProps>(new(
                     favorites,
                     Props.JumpListFavoriteFingerprint,
@@ -703,6 +719,49 @@ sealed class SendPage : Component<SendPageProps>
                     setShowAddressDialog(false);
                     if (result == ContentDialogResult.Primary)
                         _ = SendToAddressAsync(manualAddress);
+                },
+            }).Themed(Props.Theme);
+        }
+
+        Element RenameDialog()
+        {
+            var validName = IncomingFileCard.IsValidTargetFileName(renameFileName);
+            return (ContentDialog(
+                    t.Message(new("App", "Rename")),
+                    VStack(6,
+                        TextBox(renameFileName, setRenameFileName)
+                            .Header(t.Message(new("App", "Name")))
+                            .AutomationName(t.Message(new("App", "Name")))
+                            .HelpText(validName || string.IsNullOrWhiteSpace(renameFileName)
+                                ? string.Empty
+                                : t.Message(new("App", "InvalidFileName")))
+                            .Required(),
+                        validName || string.IsNullOrWhiteSpace(renameFileName)
+                            ? null
+                            : Caption(t.Message(new("App", "InvalidFileName")))
+                                .Foreground(Theme.SystemCritical)
+                                .LiveRegion(AutomationLiveSetting.Assertive)),
+                    primaryButtonText: t.Message(new("App", "Save"))) with
+            {
+                IsOpen = renameItemId is not null,
+                SecondaryButtonText = t.Message(new("App", "Cancel")),
+                DefaultButton = ContentDialogButton.Primary,
+                IsPrimaryButtonEnabled = validName,
+                OnClosed = result =>
+                {
+                    var itemId = renameItemId;
+                    if (result == ContentDialogResult.Primary && itemId is not null && validName)
+                    {
+                        updateSelectedItems(current => (SelectedSendItem[])
+                        [
+                            .. current.Select(item => item.Id == itemId
+                                ? RenameSelectedItem(item, renameFileName.Trim())
+                                : item)
+                        ]);
+                    }
+
+                    setRenameItemId(null);
+                    setRenameFileName(string.Empty);
                 },
             }).Themed(Props.Theme);
         }
@@ -1377,9 +1436,11 @@ sealed class SendPage : Component<SendPageProps>
     private static Element SelectedItemRow(
         SelectedSendItem item,
         bool isSelected,
-        bool previewEnabled,
+        bool isSelectable,
+        bool canPreview,
         string peekExecutablePath,
         Action select,
+        Action rename,
         Action remove,
         IntlAccessor t)
     {
@@ -1389,6 +1450,7 @@ sealed class SendPage : Component<SendPageProps>
         {
             Label = t.Message(new("App", "Preview")),
             Icon = new FontIconData("\uE890"),
+            CanExecute = canPreview,
             Execute = Preview,
         };
         var removeCommand = new Command
@@ -1397,9 +1459,15 @@ sealed class SendPage : Component<SendPageProps>
             Icon = new SymbolIconData("Delete"),
             Execute = remove,
         };
-        Element ContextMenu() => previewEnabled
-            ? MenuItems(MenuItem(previewCommand), MenuItem(removeCommand))
-            : MenuItems(MenuItem(removeCommand));
+        var renameCommand = new Command
+        {
+            Label = t.Message(new("App", "Rename")),
+            Icon = new FontIconData("\uE70F"),
+            Execute = rename,
+        };
+        Element ContextMenu() => isSelectable
+            ? MenuItems(MenuItem(previewCommand), MenuItem(renameCommand), MenuItem(removeCommand))
+            : MenuItems(MenuItem(renameCommand), MenuItem(removeCommand));
         var content = Grid(
             columns: [GridSize.Auto, GridSize.Star()],
             rows: [GridSize.Auto],
@@ -1409,32 +1477,39 @@ sealed class SendPage : Component<SendPageProps>
             VStack(2,
                     TextBlock(item.DisplayName)
                         .TextTrimming(TextTrimming.CharacterEllipsis)
-                        .ToolTip(item.DisplayName),
-                    Caption(t.Message(
-                            new("App", "ItemKindAndSize"),
-                            ("kind", ItemKindLabel(t, item.Kind)),
-                            ("size", FormatBytes(item.Length))))
-                        .Foreground(Theme.SecondaryText))
+                        .ToolTip(item.DisplayName)
+                        .Foreground(item.IsRenamed ? Theme.SystemCaution : Theme.PrimaryText),
+                    Caption(item.IsRenamed
+                            ? t.Message(
+                                new("App", "SendItemRenamed"),
+                                ("kind", ItemKindLabel(t, item.Kind)),
+                                ("size", FormatBytes(item.Length)))
+                            : t.Message(
+                                new("App", "ItemKindAndSize"),
+                                ("kind", ItemKindLabel(t, item.Kind)),
+                                ("size", FormatBytes(item.Length))))
+                        .Foreground(item.IsRenamed ? Theme.SystemCaution : Theme.SecondaryText))
                 .Margin(horizontal: 12, vertical: 0)
                 .Grid(column: 1));
-        Element itemContent = previewEnabled
+        Element itemContent = isSelectable
             ? Button(content.Margin(right: 52), select)
                 .GhostButton()
                 .Padding(12)
                 .HAlign(HorizontalAlignment.Stretch)
                 .HorizontalContentAlignment(HorizontalAlignment.Stretch)
                 .AutomationName(t.Message(
-                    new("App", "SelectSendItemForPreview"),
+                    new("App", isSelected ? "DeselectSendItem" : "SelectSendItem"),
                     ("item", item.DisplayName)))
-                .HelpText(t.Message(new("App", "SendItemPreviewHint")))
-                .WithKey($"{item.Id:N}:{peekExecutablePath}")
+                .HelpText(canPreview
+                    ? t.Message(new("App", "SendItemPreviewHint"))
+                    : string.Empty)
+                .WithKey($"{item.Id:N}:{peekExecutablePath}:{canPreview}")
                 .OnMount(element => element.PreviewKeyDown += (_, args) =>
                 {
-                    if (args.Key != VirtualKey.Space)
+                    if (args.Key != VirtualKey.Space || !canPreview)
                         return;
 
                     args.Handled = true;
-                    select();
                     Preview();
                 })
             : content.Margin(left: 12, top: 12, right: 64, bottom: 12);
@@ -1457,9 +1532,33 @@ sealed class SendPage : Component<SendPageProps>
             .CornerRadius(8)
             .Background(Theme.SubtleFill)
             .WithBorder(
-                previewEnabled && isSelected ? Theme.Accent : Theme.CardStroke,
+                isSelectable && isSelected ? Theme.Accent : Theme.CardStroke,
                 1)
             .WithContextFlyout(ContextMenu());
+    }
+
+    private static SelectedSendItem RenameSelectedItem(SelectedSendItem item, string leafName)
+    {
+        var originalFileName = item.OriginalFileName ?? item.Item.FileName;
+        var originalDisplayName = item.OriginalDisplayName ?? item.DisplayName;
+        var separator = item.Item.FileName.LastIndexOf('/');
+        var protocolName = separator < 0
+            ? leafName
+            : $"{item.Item.FileName[..(separator + 1)]}{leafName}";
+        var isRenamed = !string.Equals(protocolName, originalFileName, StringComparison.Ordinal);
+        return item with
+        {
+            Item = item.Item with { FileName = protocolName },
+            DisplayName = isRenamed ? protocolName : originalDisplayName,
+            OriginalFileName = originalFileName,
+            OriginalDisplayName = originalDisplayName,
+        };
+    }
+
+    private static string ProtocolLeafName(string protocolName)
+    {
+        var separator = protocolName.LastIndexOf('/');
+        return separator < 0 ? protocolName : protocolName[(separator + 1)..];
     }
 
     private static Element DeviceCard(
