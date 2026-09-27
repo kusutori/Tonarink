@@ -1504,20 +1504,17 @@ sealed class SendPage : Component<SendPageProps>
                 Execute = Props.Remove,
             });
 
-            Element ContextMenu()
-            {
-                MenuFlyoutItemBase[] items =
+            Element ContextMenu() =>
+                MenuItems(
                 [
-                    .. (Props.IsSelectable
+                    .. Props.IsSelectable
                         ? [MenuItem(previewCommand)]
-                        : Array.Empty<MenuFlyoutItemBase>()),
+                        : Array.Empty<MenuFlyoutItemBase>(),
                     MenuItem(shareCommand),
                     MenuItem(renameCommand),
                     MenuItem(undoRenameCommand),
                     MenuItem(removeCommand),
-                ];
-                return MenuItems(items);
-            }
+                ]);
             var content = Grid(
                 columns: [GridSize.Auto, GridSize.Star()],
                 rows: [GridSize.Auto],
