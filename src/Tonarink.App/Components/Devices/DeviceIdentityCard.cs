@@ -50,7 +50,7 @@ sealed class DeviceIdentityCard : Component<DeviceIdentityCardProps>
                                 .ToolTip(Props.Alias)
                                 .Flex(shrink: 1),
                             Props.IsFavorite
-                                ? TextBlock("\uEC61")
+                                ? TextBlock(AppIcons.FavoriteIndicator)
                                     .FontFamily("Segoe Fluent Icons")
                                     .FontSize(16)
                                     .Foreground(Theme.AccentText)

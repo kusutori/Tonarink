@@ -157,7 +157,7 @@ sealed class NetworkInterfacesPage : Component<NetworkInterfacesPageProps>
                         onChanged,
                         t.Message(new("App", "SettingsNetworkInterfacesPattern"), ("index", index + 1))))
                     .Grid(column: 0),
-                Button(Icon("\uE711").AccessibilityHidden(), onRemove)
+                Button(Icon(AppIcons.Cancel).AccessibilityHidden(), onRemove)
                     .SubtleButton()
                     .AutomationName(t.Message(new("App", "SettingsNetworkInterfacesRemovePattern")))
                     .ToolTip(t.Message(new("App", "SettingsNetworkInterfacesRemovePattern")))

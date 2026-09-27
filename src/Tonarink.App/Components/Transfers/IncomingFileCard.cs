@@ -60,7 +60,7 @@ static class IncomingFileCard
                                 .VAlign(VerticalAlignment.Center)
                                 .Grid(column: 0),
                             Button(
-                                    Icon(model.Expanded ? "\uE73F" : "\uE740").AccessibilityHidden(),
+                                    Icon(model.Expanded ? AppIcons.Contract : AppIcons.Expand).AccessibilityHidden(),
                                     model.ToggleExpanded)
                                 .AutomationName(t.Message(new(
                                     "App",
@@ -214,7 +214,7 @@ static class IncomingFileCard
                                         .ToolTip(model.DestinationDirectory))
                                 .Grid(column: 0),
                             Button(
-                                    Icon("\uE8DA").AccessibilityHidden(),
+                                    Icon(AppIcons.OpenFolder).AccessibilityHidden(),
                                     () => _ = model.PickDirectory())
                                 .AutomationName(t.Message(new("App", "ChangeSaveLocation")))
                                 .ToolTip(t.Message(new("App", "ChangeSaveLocation")))
@@ -236,7 +236,7 @@ static class IncomingFileCard
                                     .SemiBold()
                                     .VAlign(VerticalAlignment.Center),
                                 Button(
-                                        Icon("\uEF60").AccessibilityHidden(),
+                                        Icon(AppIcons.QuickActions).AccessibilityHidden(),
                                         model.OpenQuickActions)
                                     .AutomationName(t.Message(new("App", "QuickActionsTitle")))
                                     .ToolTip(t.Message(new("App", "QuickActionsTitle")))
@@ -245,7 +245,7 @@ static class IncomingFileCard
                                     .MinHeight(40)
                                     .VAlign(VerticalAlignment.Center),
                                 Button(
-                                        Icon("\uE7A7").AccessibilityHidden(),
+                                        Icon(AppIcons.Undo).AccessibilityHidden(),
                                         model.Reset)
                                     .AutomationName(t.Message(new("App", "ResetReceiveOptions")))
                                     .ToolTip(t.Message(new("App", "ResetReceiveOptions")))

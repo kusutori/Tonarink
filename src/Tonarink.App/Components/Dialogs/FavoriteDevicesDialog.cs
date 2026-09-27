@@ -106,7 +106,7 @@ sealed class FavoriteDevicesDialog : Component<FavoriteDevicesDialogProps>
                                 ("device", favorite.Name)))
                             .GhostButton()
                             .Grid(column: 0),
-                        Button(Icon("\uE70F").AccessibilityHidden(), () => Queue(new PendingAction.Edit(favorite)))
+                        Button(Icon(AppIcons.Edit).AccessibilityHidden(), () => Queue(new PendingAction.Edit(favorite)))
                             .AutomationName(t.Message(
                                 new("App", "EditFavoriteDevice"),
                                 ("device", favorite.Name)))
@@ -115,7 +115,7 @@ sealed class FavoriteDevicesDialog : Component<FavoriteDevicesDialogProps>
                             .MinHeight(40)
                             .SubtleButton()
                             .Grid(column: 1),
-                        Button(Icon("\uE74D").AccessibilityHidden(), () => Queue(new PendingAction.Delete(favorite)))
+                        Button(Icon(AppIcons.Delete).AccessibilityHidden(), () => Queue(new PendingAction.Delete(favorite)))
                             .AutomationName(t.Message(
                                 new("App", "RemoveFavoriteDevice"),
                                 ("device", favorite.Name)))

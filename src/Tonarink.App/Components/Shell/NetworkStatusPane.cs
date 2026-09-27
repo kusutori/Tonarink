@@ -36,7 +36,7 @@ sealed class NetworkStatusPane : Component<NetworkStatusPaneProps>
                 Grid(
                         columns: [GridSize.Auto, GridSize.Star(), GridSize.Auto],
                         rows: [GridSize.Auto],
-                        Icon("\uE704")
+                        Icon(AppIcons.Network)
                             .VAlign(VerticalAlignment.Center)
                             .AccessibilityHidden()
                             .Grid(column: 0),

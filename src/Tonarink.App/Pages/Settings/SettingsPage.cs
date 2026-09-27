@@ -86,7 +86,7 @@ sealed class SettingsPage : Component<SettingsPageProps>
             SettingsCard(
                 header: t.Message(new("App", "SettingsTheme")),
                 description: t.Message(new("App", "SettingsThemeDescription")),
-                headerIcon: HeaderGlyph("\uE771"),
+                headerIcon: HeaderGlyph(AppIcons.Theme),
                 isClickEnabled: false,
                 isActionIconVisible: false,
                 content:
@@ -101,7 +101,7 @@ sealed class SettingsPage : Component<SettingsPageProps>
             SettingsCard(
                 header: t.Message(new("App", "SettingsLanguage")),
                 description: t.Message(new("App", "SettingsLanguageDescription")),
-                headerIcon: HeaderGlyph("\uF2B7"),
+                headerIcon: HeaderGlyph(AppIcons.Language),
                 isClickEnabled: false,
                 isActionIconVisible: false,
                 content:
@@ -116,7 +116,7 @@ sealed class SettingsPage : Component<SettingsPageProps>
             SettingsCard(
                 header: t.Message(new("App", "SettingsMinimizeToTray")),
                 description: t.Message(new("App", "SettingsMinimizeToTrayDescription")),
-                headerIcon: HeaderGlyph("\uED1A"),
+                headerIcon: HeaderGlyph(AppIcons.MinimizeToTray),
                 isClickEnabled: false,
                 isActionIconVisible: false,
                 content:
@@ -127,7 +127,7 @@ sealed class SettingsPage : Component<SettingsPageProps>
             SettingsCard(
                 header: t.Message(new("App", "SettingsTrayClickOpensFlyout")),
                 description: t.Message(new("App", "SettingsTrayClickOpensFlyoutDescription")),
-                headerIcon: HeaderGlyph("\uEB3B"),
+                headerIcon: HeaderGlyph(AppIcons.TrayFlyout),
                 isClickEnabled: false,
                 isActionIconVisible: false,
                 content:
@@ -139,7 +139,7 @@ sealed class SettingsPage : Component<SettingsPageProps>
             SettingsCard(
                 header: t.Message(new("App", "SettingsStartWithWindows")),
                 description: t.Message(new("App", "SettingsStartWithWindowsDescription")),
-                headerIcon: HeaderGlyph("\uEC4A"),
+                headerIcon: HeaderGlyph(AppIcons.StartWithWindows),
                 isClickEnabled: false,
                 isActionIconVisible: false,
                 content:
@@ -150,7 +150,7 @@ sealed class SettingsPage : Component<SettingsPageProps>
             SettingsCard(
                 header: t.Message(new("App", "SettingsWindowsShareSuggestions")),
                 description: t.Message(new("App", "SettingsWindowsShareSuggestionsDescription")),
-                headerIcon: HeaderGlyph("\uE716"),
+                headerIcon: HeaderGlyph(AppIcons.Contact),
                 isClickEnabled: false,
                 isActionIconVisible: false,
                 content:
@@ -163,7 +163,7 @@ sealed class SettingsPage : Component<SettingsPageProps>
                     .HelpText(t.Message(new("App", "SettingsWindowsShareSuggestionsDescription")))
                     .IsEnabled(AppPlatform.HasPackageIdentity())),
             SettingsExpander(
-                    headerIcon: HeaderGlyph("\uEA8F"),
+                    headerIcon: HeaderGlyph(AppIcons.Notification),
                     items:
                     [
                         SettingsCard(
@@ -228,7 +228,7 @@ sealed class SettingsPage : Component<SettingsPageProps>
             SettingsCard(
                 header: t.Message(new("App", "SettingsExplorerContextMenu")),
                 description: t.Message(new("App", "SettingsExplorerContextMenuDescription")),
-                headerIcon: HeaderGlyph("\uE7AC"),
+                headerIcon: HeaderGlyph(AppIcons.ContextMenu),
                 isClickEnabled: false,
                 isActionIconVisible: false,
                 content:
@@ -243,20 +243,20 @@ sealed class SettingsPage : Component<SettingsPageProps>
             SettingsCard(
                 header: t.Message(new("App", "SettingsSaveLocation")),
                 description: Props.Settings.DownloadDirectory,
-                headerIcon: HeaderGlyph("\uE8B7"),
+                headerIcon: HeaderGlyph(AppIcons.Folder),
                 isClickEnabled: false,
                 isActionIconVisible: false,
                 content:
                 Button(
                         HStack(8,
-                            Icon("\uE8DA").AccessibilityHidden(),
+                            Icon(AppIcons.OpenFolder).AccessibilityHidden(),
                             TextBlock(t.Message(new("App", "Change")))),
                         () => _ = PickDownloadDirectoryAsync())
                     .AutomationName(t.Message(new("App", "ChangeSaveLocation")))),
             SettingsCard(
                 header: t.Message(new("App", "SettingsSaveReceiveHistory")),
                 description: t.Message(new("App", "SettingsSaveReceiveHistoryDescription")),
-                headerIcon: HeaderGlyph("\uE81C"),
+                headerIcon: HeaderGlyph(AppIcons.HistorySettings),
                 isClickEnabled: false,
                 isActionIconVisible: false,
                 content:
@@ -267,7 +267,7 @@ sealed class SettingsPage : Component<SettingsPageProps>
             SettingsCard(
                 header: t.Message(new("App", "SettingsVerifyChecksumsOnReceive")),
                 description: t.Message(new("App", "SettingsVerifyChecksumsOnReceiveDescription")),
-                headerIcon: HeaderGlyph("\uF32A"),
+                headerIcon: HeaderGlyph(AppIcons.Checksum),
                 isClickEnabled: false,
                 isActionIconVisible: false,
                 content:
@@ -276,7 +276,7 @@ sealed class SettingsPage : Component<SettingsPageProps>
                     .AutomationName(t.Message(new("App", "SettingsVerifyChecksumsOnReceive")))
                     .HelpText(t.Message(new("App", "SettingsVerifyChecksumsOnReceiveDescription")))),
             SettingsExpander(
-                    headerIcon: HeaderGlyph("\uE72E"),
+                    headerIcon: HeaderGlyph(AppIcons.PinCode),
                     items:
                     [
                         SettingsCard(
@@ -314,7 +314,7 @@ sealed class SettingsPage : Component<SettingsPageProps>
             SettingsCard(
                 header: t.Message(new("App", "SettingsExpandDragDrop")),
                 description: t.Message(new("App", "SettingsExpandDragDropDescription")),
-                headerIcon: HeaderGlyph("\uF413"),
+                headerIcon: HeaderGlyph(AppIcons.DragDrop),
                 isClickEnabled: false,
                 isActionIconVisible: false,
                 content:
@@ -325,7 +325,7 @@ sealed class SettingsPage : Component<SettingsPageProps>
             SettingsCard(
                 header: t.Message(new("App", "SettingsVerifyChecksumsOnSend")),
                 description: t.Message(new("App", "SettingsVerifyChecksumsOnSendDescription")),
-                headerIcon: HeaderGlyph("\uF32A"),
+                headerIcon: HeaderGlyph(AppIcons.Checksum),
                 isClickEnabled: false,
                 isActionIconVisible: false,
                 content:
@@ -354,7 +354,7 @@ sealed class SettingsPage : Component<SettingsPageProps>
                     ? t.Message(new("App", "DeviceServer"))
                     : t.Message(new("App", "SettingsServerOffline")),
                 description: serverDescription,
-                headerIcon: HeaderGlyph("\uE703"),
+                headerIcon: HeaderGlyph(AppIcons.Server),
                 isClickEnabled: false,
                 isActionIconVisible: false,
                 content:
@@ -376,7 +376,7 @@ sealed class SettingsPage : Component<SettingsPageProps>
             SettingsCard(
                 header: t.Message(new("App", "SettingsDeviceName")),
                 description: t.Message(new("App", "SettingsDeviceNameDescription")),
-                headerIcon: HeaderGlyph("\uE8AC"),
+                headerIcon: HeaderGlyph(AppIcons.Rename),
                 isClickEnabled: false,
                 isActionIconVisible: false,
                 content:
@@ -386,7 +386,7 @@ sealed class SettingsPage : Component<SettingsPageProps>
                     t.Message(new("App", "SettingsDeviceName")),
                     MinWidth: 240))),
             SettingsExpander(
-                    headerIcon: HeaderGlyph("\uE756"),
+                    headerIcon: HeaderGlyph(AppIcons.Fingerprint),
                     items:
                     [
                         SettingsCard(
@@ -506,7 +506,7 @@ sealed class SettingsPage : Component<SettingsPageProps>
         var experimentalCards = SettingsGroup(
             t.Message(new("App", "SettingsExperimental")),
             SettingsExpander(
-                    headerIcon: HeaderGlyph("\uE890"),
+                    headerIcon: HeaderGlyph(AppIcons.Preview),
                     items:
                     [
                         SettingsCard(

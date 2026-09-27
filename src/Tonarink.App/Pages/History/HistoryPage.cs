@@ -42,7 +42,7 @@ sealed class HistoryPage : Component<HistoryPageProps>
             UseCommand(UseMemo(() => new Command<ReceiveHistoryEntry>
                 {
                     Label = t.Message(new("App", "HistoryOpenFile")),
-                    Icon = new SymbolIconData("OpenFile"),
+                    Icon = new FontIconData(AppIcons.OpenFile),
                     Accelerator = Accelerator(VirtualKey.Enter),
                     Execute = entry =>
                     {
@@ -54,7 +54,7 @@ sealed class HistoryPage : Component<HistoryPageProps>
             UseCommand(UseMemo(() => new Command<ReceiveHistoryEntry>
                 {
                     Label = t.Message(new("App", "HistoryShowInFolder")),
-                    Icon = new SymbolIconData("Folder"),
+                    Icon = new FontIconData(AppIcons.Folder),
                     Execute = entry =>
                     {
                         if (PathExists(entry.Path))
@@ -65,14 +65,14 @@ sealed class HistoryPage : Component<HistoryPageProps>
             UseCommand(UseMemo(() => new Command<ReceiveHistoryEntry>
                 {
                     Label = t.Message(new("App", "HistoryInfo")),
-                    Icon = new FontIconData("\uE946"),
+                    Icon = new FontIconData(AppIcons.Details),
                     Execute = entry => setInfoEntry(entry),
                 },
                 t.Locale)),
             UseCommand(UseMemo(() => new Command<ReceiveHistoryEntry>
                 {
                     Label = t.Message(new("App", "HistoryDeleteItem")),
-                    Icon = new SymbolIconData("Delete"),
+                    Icon = new FontIconData(AppIcons.Delete),
                     Accelerator = Accelerator(VirtualKey.Delete),
                     Execute = entry => ReceiveHistoryStore.Remove(entry.Id),
                 },
@@ -91,10 +91,10 @@ sealed class HistoryPage : Component<HistoryPageProps>
         }, Props.JumpListHistoryId, entries);
 
         var actions = FlexRow(
-                Button(HStack(Icon("\uE8DA").AccessibilityHidden(), t.Message(new("App", "HistoryOpenDirectory"))),
+                Button(HStack(Icon(AppIcons.OpenFolder).AccessibilityHidden(), t.Message(new("App", "HistoryOpenDirectory"))),
                         OpenDownloadDirectory)
                     .AutomationName(t.Message(new("App", "HistoryOpenDirectory"))),
-                Button(HStack(Icon("\uE74D").AccessibilityHidden(), t.Message(new("App", "HistoryDeleteAll"))),
+                Button(HStack(Icon(AppIcons.Delete).AccessibilityHidden(), t.Message(new("App", "HistoryDeleteAll"))),
                         () => setConfirmClear(true))
                     .AutomationName(t.Message(new("App", "HistoryDeleteAll")))
                     .IsEnabled(entries.Count > 0)
@@ -210,7 +210,7 @@ sealed class HistoryPage : Component<HistoryPageProps>
                         .Margin(horizontal: 12, vertical: 0)
                         .VAlign(VerticalAlignment.Center)
                         .Grid(column: 1),
-                    Button(Icon("\uE712").AccessibilityHidden())
+                    Button(Icon(AppIcons.More).AccessibilityHidden())
                         .SubtleButton()
                         .AutomationName(t.Message(new("App", "HistoryEntryActions"), ("file", entry.FileName)))
                         .MinWidth(40)

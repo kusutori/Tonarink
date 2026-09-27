@@ -293,9 +293,9 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
 
         var navigationView = ((NavigationView(
                     [
-                        NavItem(t.Message(new("App", "NavReceive")), icon: "\uE701", tag: RouteTag(AppRoute.Receive)),
-                        NavItem(t.Message(new("App", "NavSend")), icon: "Send", tag: RouteTag(AppRoute.Send)),
-                        NavItem(t.Message(new("App", "NavSettings")), icon: "Setting",
+                        NavItem(t.Message(new("App", "NavReceive")), icon: AppIcons.Receive, tag: RouteTag(AppRoute.Receive)),
+                        NavItem(t.Message(new("App", "NavSend")), icon: AppIcons.Send, tag: RouteTag(AppRoute.Send)),
+                        NavItem(t.Message(new("App", "NavSettings")), icon: AppIcons.Settings,
                             tag: RouteTag(AppRoute.Settings)),
                     ],
                     content)
@@ -415,7 +415,7 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
                             .Grid(row: 0, column: 0),
                         Card(
                                 HStack(12,
-                                    Icon("\uF413").AccessibilityHidden(),
+                                    Icon(AppIcons.DragDrop).AccessibilityHidden(),
                                     BodyStrong(t.Message(new("App", "DropFilesAnywherePrompt")))))
                             .Padding(20)
                             .HAlign(HorizontalAlignment.Center)

@@ -90,7 +90,7 @@ sealed class ReceivePage : Component<ReceivePageProps>
                         .HAlign(HorizontalAlignment.Center),
                 Button(
                         HStack(8,
-                            Icon("\uE774").AccessibilityHidden(),
+                            Icon(AppIcons.Web).AccessibilityHidden(),
                             TextBlock(t.Message(new("App", "WebReceiveTitle")))),
                         () => navigation.Navigate(AppRoute.WebReceive, AppNavigation.DrillIn))
                     .HAlign(HorizontalAlignment.Center)
@@ -160,13 +160,13 @@ sealed class ReceivePage : Component<ReceivePageProps>
         AppSettings settings,
         LocalSendIdentity? identity) =>
         FlexRow(
-                Button(Icon(FontIcon("\uE121")).AccessibilityHidden(),
+                Button(Icon(FontIcon(AppIcons.History)).AccessibilityHidden(),
                         () => navigation.Navigate(AppRoute.History, AppNavigation.DrillIn))
                     .SubtleButton()
                     .AutomationName(t.Message(new("App", "HistoryOpenReceiveHistory")))
                     .MinWidth(40)
                     .MinHeight(40),
-                Button(Icon("\uF167").AccessibilityHidden())
+                Button(Icon(AppIcons.DeviceInfo).AccessibilityHidden())
                     .SubtleButton()
                     .AutomationName(t.Message(new("App", "DeviceInfo")))
                     .MinWidth(40)

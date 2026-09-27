@@ -61,7 +61,7 @@ static class TransferOverlayVisuals
         bool isEnabled = true) =>
         Button(
                 HStack(8,
-                    Icon("\uF760").AccessibilityHidden(),
+                    Icon(AppIcons.Verify).AccessibilityHidden(),
                     TextBlock(t.Message(new("App", "VerifyAction")))),
                 onClick)
             .AutomationName(t.Message(new("App", "VerifyAction")))

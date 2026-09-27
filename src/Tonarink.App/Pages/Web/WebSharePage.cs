@@ -302,11 +302,11 @@ sealed class WebSharePage : Component<WebSharePageProps>
                             .MinWidth(40)
                             .MinHeight(40)
                             .Grid(column: 1),
-                        IconButton("\uED14", t.Message(new("App", "WebShareQr")), () => showQr(url))
+                        IconButton(AppIcons.QrCode, t.Message(new("App", "WebShareQr")), () => showQr(url))
                             .Grid(column: 2),
-                        IconButton("\uE7F4", t.Message(new("App", "WebShareZoom")), () => setZoom(url))
+                        IconButton(AppIcons.Zoom, t.Message(new("App", "WebShareZoom")), () => setZoom(url))
                             .Grid(column: 3),
-                        IconButton("\uE72D", t.Message(new("App", "WebShareSystemShare")), share)
+                        IconButton(AppIcons.Share, t.Message(new("App", "WebShareSystemShare")), share)
                             .Grid(column: 4)) with
                 {
                     ColumnSpacing = 4,

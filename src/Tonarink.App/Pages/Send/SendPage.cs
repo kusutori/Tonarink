@@ -457,7 +457,7 @@ sealed class SendPage : Component<SendPageProps>
                                     t.Message(new("App", "RefreshDevices")),
                                     () => _ = Props.RefreshAsync(),
                                     isEnabled: !sendMutation.IsPending),
-                                Button(Icon("\uF272").AccessibilityHidden(), OpenAddressDialog)
+                                Button(Icon(AppIcons.IpAddress).AccessibilityHidden(), OpenAddressDialog)
                                     .AutomationName(t.Message(new("App", "SendToAddress")))
                                     .ToolTip(t.Message(new("App", "SendToAddress")))
                                     .MinWidth(40)
@@ -465,7 +465,7 @@ sealed class SendPage : Component<SendPageProps>
                                     .IsEnabled(!sendMutation.IsPending
                                                && !isResolvingAddress
                                                && Props.Runtime.NodeState == LocalSendNodeState.Running),
-                                Button(Icon("\uEB52").AccessibilityHidden(), OpenFavoritesDialog)
+                                Button(Icon(AppIcons.Favorite).AccessibilityHidden(), OpenFavoritesDialog)
                                     .AutomationName(t.Message(new("App", "FavoritesTitle")))
                                     .ToolTip(t.Message(new("App", "FavoritesTitle")))
                                     .MinWidth(40)
@@ -473,7 +473,7 @@ sealed class SendPage : Component<SendPageProps>
                                     .IsEnabled(!sendMutation.IsPending
                                                && !isResolvingAddress
                                                && Props.Runtime.NodeState == LocalSendNodeState.Running),
-                                Button(Icon("\uE71B").AccessibilityHidden(), () =>
+                                Button(Icon(AppIcons.Link).AccessibilityHidden(), () =>
                                     {
                                         if (selectedItems.Count == 0)
                                         {
@@ -496,7 +496,7 @@ sealed class SendPage : Component<SendPageProps>
                                     .IsEnabled(!sendMutation.IsPending
                                                && Props.Runtime.NodeState == LocalSendNodeState.Running),
                                 ToggleButton(
-                                        "\uF22C",
+                                        AppIcons.MultipleReceivers,
                                         Props.KeepItemsForMultipleReceivers,
                                         Props.SetKeepItemsForMultipleReceivers)
                                     .FontFamily("Segoe Fluent Icons")
@@ -1466,7 +1466,7 @@ sealed class SendPage : Component<SendPageProps>
             var previewCommand = UseCommand(new Command
             {
                 Label = t.Message(new("App", "Preview")),
-                Icon = new FontIconData("\uE890"),
+                Icon = new FontIconData(AppIcons.Preview),
                 Accelerator = Accelerator(VirtualKey.Space),
                 CanExecute = Props.CanPreview,
                 Execute = () => PowerToysPeekLauncher.TryPreview(
@@ -1476,14 +1476,14 @@ sealed class SendPage : Component<SendPageProps>
             var renameCommand = UseCommand(new Command
             {
                 Label = t.Message(new("App", "Rename")),
-                Icon = new FontIconData("\uE8AC"),
+                Icon = new FontIconData(AppIcons.Rename),
                 Accelerator = Accelerator(VirtualKey.F2),
                 Execute = Props.Rename,
             });
             var shareCommand = UseCommand(new Command
             {
                 Label = t.Message(new("App", "Share")),
-                Icon = new FontIconData("\uE72D"),
+                Icon = new FontIconData(AppIcons.Share),
                 Accelerator = Accelerator(VirtualKey.F8),
                 CanExecute = Props.CanShare,
                 ExecuteAsync = Props.Share,
@@ -1491,7 +1491,7 @@ sealed class SendPage : Component<SendPageProps>
             var undoRenameCommand = UseCommand(new Command
             {
                 Label = t.Message(new("App", "Undo")),
-                Icon = new FontIconData("\uE7A7"),
+                Icon = new FontIconData(AppIcons.Undo),
                 Accelerator = Accelerator(VirtualKey.Z, VirtualKeyModifiers.Control),
                 CanExecute = item.IsRenamed,
                 Execute = Props.UndoRename,
@@ -1499,7 +1499,7 @@ sealed class SendPage : Component<SendPageProps>
             var removeCommand = UseCommand(new Command
             {
                 Label = t.Message(new("App", "Remove")),
-                Icon = new SymbolIconData("Delete"),
+                Icon = new FontIconData(AppIcons.Delete),
                 Accelerator = Accelerator(VirtualKey.Delete),
                 Execute = Props.Remove,
             });
@@ -1638,7 +1638,7 @@ sealed class SendPage : Component<SendPageProps>
             isEnabled,
             TrailingReserve: 64,
             AnimationRole: DeviceIdentityCardAnimationRole.Source,
-            SecondaryGlyph: "\uE946",
+            SecondaryGlyph: AppIcons.Details,
             SecondaryAutomationName: t.Message(
                 new("App", "OpenDeviceDetails"),
                 ("device", displayName)),
@@ -1654,7 +1654,7 @@ sealed class SendPage : Component<SendPageProps>
         FlexColumn(
                 state switch
                 {
-                    LocalSendNodeState.Faulted => Icon("\uE783").AccessibilityHidden(),
+                    LocalSendNodeState.Faulted => Icon(AppIcons.Error).AccessibilityHidden(),
                     _ => searchingAnimation,
                 },
                 Subtitle(state switch

@@ -58,7 +58,7 @@ sealed class OutgoingTransferOverlay : Component<OutgoingTransferOverlayProps>
                         transfer.Sender?.DeviceType ?? LocalSendDeviceType.Desktop,
                         LocalDeviceNumber(transfer.Sender)))
                     .Transition(Transition.Enter(Transition.Slide(Edge.Top))),
-                Icon(FontIcon("\uE74B", fontSize: 28)).AccessibilityHidden()
+                Icon(FontIcon(AppIcons.SendFile, fontSize: 28)).AccessibilityHidden()
                     .HAlign(HorizontalAlignment.Center),
                 Component<DeviceIdentityCard, DeviceIdentityCardProps>(new(
                     transfer.Receiver.Alias,
@@ -101,7 +101,7 @@ sealed class OutgoingTransferOverlay : Component<OutgoingTransferOverlayProps>
                 (transfer.IsPending
                     ? Button(
                             HStack(8,
-                                Icon("\uE711").AccessibilityHidden(),
+                                Icon(AppIcons.Cancel).AccessibilityHidden(),
                                 TextBlock(t.Message(new("App", "Cancel")))),
                             transfer.Cancel)
                         .AutomationName(t.Message(new("App", "CancelCurrentSend")))
@@ -109,7 +109,7 @@ sealed class OutgoingTransferOverlay : Component<OutgoingTransferOverlayProps>
                         .MinWidth(120)
                     : Button(
                             HStack(8,
-                                Icon("\uE711").AccessibilityHidden(),
+                                Icon(AppIcons.Cancel).AccessibilityHidden(),
                                 TextBlock(t.Message(new("App", "Close")))),
                             CloseOverlay)
                         .AutomationName(t.Message(new("App", "Close")))

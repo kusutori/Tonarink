@@ -122,7 +122,7 @@ sealed class TrayFlyoutPanel : Component<TrayFlyoutPanelProps>
                                     .ToolTip(statusText)))
                     .Flex(grow: 1, basis: 0),
                 ToggleButton(
-                        snapshot.ServerDesired ? "\uE768" : "\uE71A",
+                        snapshot.ServerDesired ? AppIcons.Start : AppIcons.Stop,
                         snapshot.ServerDesired,
                         on =>
                         {
@@ -140,7 +140,7 @@ sealed class TrayFlyoutPanel : Component<TrayFlyoutPanelProps>
                         ? t.Message(new("App", "TrayReceiveOn"))
                         : t.Message(new("App", "TrayReceiveOff"))),
                 ToggleButton(
-                        isPinned ? "\uE77A" : "\uE718",
+                        isPinned ? AppIcons.Unpin : AppIcons.Pin,
                         isPinned,
                         setPinned)
                     .FontFamily("Segoe Fluent Icons")

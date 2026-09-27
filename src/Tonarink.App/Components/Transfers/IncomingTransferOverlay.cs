@@ -166,7 +166,7 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
         var renameFileCommand = UseCommand(UseMemo(() => new Command<IncomingFileCommandTarget>
             {
                 Label = t.Message(new("App", "Rename")),
-                Icon = new FontIconData("\uE8AC"),
+                Icon = new FontIconData(AppIcons.Rename),
                 Accelerator = Accelerator(VirtualKey.F2),
                 CanExecute = canEdit,
                 Execute = target => OpenRenameDialog(target.ItemId, target.DisplayName),
@@ -176,7 +176,7 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
         var undoRenameCommand = UseCommand(UseMemo(() => new Command<IncomingFileCommandTarget>
             {
                 Label = t.Message(new("App", "UndoIncomingFileRename")),
-                Icon = new FontIconData("\uE7A7"),
+                Icon = new FontIconData(AppIcons.Undo),
                 Accelerator = Accelerator(VirtualKey.Z, VirtualKeyModifiers.Control),
                 CanExecute = canEdit,
                 Execute = target => updateTargetFileNames(current =>
@@ -348,7 +348,7 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                         verificationButton,
                         Button(
                                 HStack(8,
-                                    Icon("\uE8C8").AccessibilityHidden(),
+                                    Icon(AppIcons.Copy).AccessibilityHidden(),
                                     TextBlock(copied
                                         ? t.Message(new("App", "Copied"))
                                         : t.Message(new("App", "Copy")))),
@@ -374,7 +374,7 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
             HStack(12,
                     Button(
                             HStack(8,
-                                Icon("\uE711").AccessibilityHidden(),
+                                Icon(AppIcons.Cancel).AccessibilityHidden(),
                                 TextBlock(t.Message(new("App", "Decline")))),
                             () => _ = DeclineAsync())
                         .AutomationName(t.Message(new("App", "Decline")))
@@ -383,7 +383,7 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                         .CriticalButton(highContrast),
                     Button(
                             HStack(8,
-                                Icon("\uE8FB").AccessibilityHidden(),
+                                Icon(AppIcons.Accept).AccessibilityHidden(),
                                 TextBlock(t.Message(new("App", "Accept")))),
                             () => _ = AcceptAsync())
                         .AutomationName(t.Message(new("App", "Accept")))
@@ -407,7 +407,7 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                         .HAlign(HorizontalAlignment.Center),
                     Button(
                             HStack(8,
-                                Icon("\uE711").AccessibilityHidden(),
+                                Icon(AppIcons.Cancel).AccessibilityHidden(),
                                 TextBlock(t.Message(new("App", "Cancel")))),
                             CancelReceive)
                         .AutomationName(t.Message(new("App", "Cancel")))
@@ -425,7 +425,7 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                         .LiveRegion(AutomationLiveSetting.Polite),
                     Button(
                             HStack(8,
-                                Icon("\uE711").AccessibilityHidden(),
+                                Icon(AppIcons.Cancel).AccessibilityHidden(),
                                 TextBlock(t.Message(new("App", "Close")))),
                             () => Props.Dismiss(request.RequestId))
                         .AutomationName(t.Message(new("App", "Close")))

@@ -51,7 +51,7 @@ sealed class DeviceDetailsPage : Component<DeviceDetailsPageProps>
                     .HAlign(HorizontalAlignment.Stretch),
                 HStack(12,
                         ActionButton(
-                            favorite is null ? "\uEB51" : "\uEB52",
+                            favorite is null ? AppIcons.FavoriteOutline : AppIcons.Favorite,
                             favorite is null
                                 ? t.Message(new("App", "FavoriteAction"))
                                 : t.Message(new("App", "RemoveFavoriteAction")),
@@ -64,7 +64,7 @@ sealed class DeviceDetailsPage : Component<DeviceDetailsPageProps>
                             },
                             accent: favorite is not null),
                         ActionButton(
-                            "\uF760",
+                            AppIcons.Verify,
                             t.Message(new("App", "VerifyAction")),
                             () => setShowVerification(true)))
                     .HAlign(HorizontalAlignment.Center),

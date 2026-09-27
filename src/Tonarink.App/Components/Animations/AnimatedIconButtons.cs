@@ -57,7 +57,7 @@ sealed class AnimatedCopyButton : Component<AnimatedCopyButtonProps>
 
             previousVersion.Current = Props.SuccessVersion;
         }, Props.SuccessVersion, Props.SuccessAnnouncement);
-        var copyIcon = Border(Icon("\uE8C8").AccessibilityHidden())
+        var copyIcon = Border(Icon(AppIcons.Copy).AccessibilityHidden())
             .OnMount(BindCompositionCenterPoint)
             .Keyframes("copy-feedback-out", Props.SuccessVersion, keyframes => playing
                 ? keyframes
@@ -73,7 +73,7 @@ sealed class AnimatedCopyButton : Component<AnimatedCopyButtonProps>
                     .Duration(1)
                     .At(0f, opacity: 1, scale: new(1, 1, 1))
                     .At(1f, opacity: 1, scale: new(1, 1, 1)));
-        var successIcon = Border(Icon("\uE73E").AccessibilityHidden())
+        var successIcon = Border(Icon(AppIcons.Success).AccessibilityHidden())
             .OnMount(BindCompositionCenterPoint)
             .Opacity(0)
             .Keyframes("copy-feedback-in", Props.SuccessVersion, keyframes => playing
