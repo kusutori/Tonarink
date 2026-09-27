@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <defs>
+    <linearGradient id="plate" x1="0.18" y1="0" x2="0.82" y2="1">
+      <stop offset="0%" stop-color="#14C4C2"/>
+      <stop offset="48%" stop-color="#009BA3"/>
+      <stop offset="100%" stop-color="#0B6570"/>
+    </linearGradient>
+    <radialGradient id="spot" cx="28%" cy="18%" r="70%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity=".16"/>
+      <stop offset="40%" stop-color="#FFFFFF" stop-opacity=".04"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="sheen" x1="0.5" y1="0" x2="0.5" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity=".12"/>
+      <stop offset="40%" stop-color="#FFFFFF" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#00343C" stop-opacity=".14"/>
+    </linearGradient>
+    <linearGradient id="rim" x1="0.5" y1="0" x2="0.5" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity=".36"/>
+      <stop offset="52%" stop-color="#FFFFFF" stop-opacity=".10"/>
+      <stop offset="100%" stop-color="#002E34" stop-opacity=".20"/>
+    </linearGradient>
+    <linearGradient id="glyph" x1="0.5" y1="0" x2="0.5" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#E7FFFC"/>
+    </linearGradient>
+    <filter id="glyphLift" x="-25%" y="-25%" width="150%" height="150%" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="3" stdDeviation="2.4" flood-color="#014247" flood-opacity=".28"/>
+    </filter>
+    <clipPath id="plateClip"><rect width="256" height="256" rx="56"/></clipPath>
+  </defs>
+  <g clip-path="url(#plateClip)">
+    <rect width="256" height="256" rx="56" fill="url(#plate)"/>
+    <rect width="256" height="256" fill="url(#spot)"/>
+    <rect width="256" height="256" fill="url(#sheen)"/>
+  </g>
+  <rect x="1.25" y="1.25" width="253.5" height="253.5" rx="54.75" fill="none" stroke="url(#rim)" stroke-width="2.5"/>
+  <g fill="none" stroke="url(#glyph)" stroke-width="18" stroke-linecap="round" stroke-linejoin="round" filter="url(#glyphLift)">
+    <path d="M204.000 128.000 A 76 76 0 0 1 163.891 194.991"/>
+    <path d="M143.276 202.449 A 76 76 0 0 1 69.590 176.624"/>
+    <path d="M58.141 157.928 A 76 76 0 0 1 68.628 80.555"/>
+    <path d="M84.641 65.582 A 76 76 0 0 1 162.543 60.304"/>
+    <path d="M180.429 72.980 A 76 76 0 0 1 204.000 128.000"/>
+    <path d="M79 128h98M150 99l29 29-29 29"/>
+  </g>
+</svg>

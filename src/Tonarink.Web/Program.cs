@@ -1,4 +1,4 @@
-using BlazorBlueprint.Components;
+using Microsoft.FluentUI.AspNetCore.Components;
 using Tonarink.Application;
 using Tonarink.Web;
 using Tonarink.Web.Components;
@@ -10,14 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
-builder.Services.AddBlazorBlueprintComponents(configureTheme: options =>
-{
-    options.DefaultBaseColor = BaseColor.Zinc;
-    options.DefaultPrimaryColor = PrimaryColor.Teal;
-    options.DetectSystemPreference = true;
-    options.DefaultRadius = 0.5;
-    options.PersistToLocalStorage = true;
-});
+builder.Services.AddFluentUIComponents();
 builder.Services.AddSingleton<IPlatformServices, BrowserPlatformServices>();
 builder.Services.AddSingleton<TonarinkAppState>();
 builder.Services.AddSingleton<ITonarinkRuntime, LocalSendRuntime>();

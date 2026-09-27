@@ -115,6 +115,10 @@
   <data name="ThemeLight" xml:space="preserve"><value>Light</value></data>
   <data name="ThemeSystem" xml:space="preserve"><value>System</value></data>
   <data name="TooManyPinAttempts" xml:space="preserve"><value>Too many PIN attempts. Try again later.</value></data>
+  <data name="ClipboardReadFailed" xml:space="preserve"><value>Could not read the clipboard.</value></data>
+  <data name="ClipboardWriteFailed" xml:space="preserve"><value>Could not write to the clipboard.</value></data>
+  <data name="DeviceBusy" xml:space="preserve"><value>The receiving device is busy.</value></data>
+  <data name="TransferDeclined" xml:space="preserve"><value>The receiving device declined the transfer.</value></data>
   <data name="TransferCompleted" xml:space="preserve"><value>Transfer completed</value></data>
   <data name="ViewAll" xml:space="preserve"><value>View all</value></data>
   <data name="WaitingNearby" xml:space="preserve"><value>Waiting for nearby devices</value></data>

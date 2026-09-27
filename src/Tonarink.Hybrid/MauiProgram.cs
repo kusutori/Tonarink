@@ -1,4 +1,4 @@
-using BlazorBlueprint.Components;
+using Microsoft.FluentUI.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
 using Tonarink.Application;
 using Tonarink.LocalSend;
@@ -16,14 +16,7 @@ public static class MauiProgram
 
         builder.Services.AddMauiBlazorWebView();
         builder.Services.AddLocalization();
-        builder.Services.AddBlazorBlueprintComponents(configureTheme: options =>
-        {
-            options.DefaultBaseColor = BaseColor.Zinc;
-            options.DefaultPrimaryColor = PrimaryColor.Teal;
-            options.DetectSystemPreference = true;
-            options.DefaultRadius = 0.5;
-            options.PersistToLocalStorage = true;
-        });
+        builder.Services.AddFluentUIComponents();
         builder.Services.AddSingleton<IPlatformServices, MauiPlatformServices>();
         builder.Services.AddSingleton<TonarinkAppState>();
         builder.Services.AddSingleton<ITonarinkRuntime, LocalSendRuntime>();

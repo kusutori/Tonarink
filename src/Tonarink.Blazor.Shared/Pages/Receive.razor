@@ -2,105 +2,74 @@
 @inherits StatefulComponentBase
 
 <PageTitle>@T("Receive") · Tonarink</PageTitle>
-
 <div class="page">
     <header class="page-header">
-        <div>
-            <h1>@AppState.Settings.Alias</h1>
-            <p>@T("ReceiveDescription")</p>
-        </div>
-        <BbBadge Variant="@(AppState.RuntimeRunning ? BadgeVariant.Default : BadgeVariant.Secondary)">
+        <div><h1>@T("Receive")</h1><p>@T("ReceiveDescription")</p></div>
+        <FluentBadge Appearance="@(AppState.RuntimeRunning ? BadgeAppearance.Filled : BadgeAppearance.Outline)" Color="@(AppState.RuntimeRunning ? BadgeColor.Success : BadgeColor.Informative)">
             @(AppState.RuntimeRunning ? T("ReadyToReceive") : T("NotConnected"))
-        </BbBadge>
+        </FluentBadge>
     </header>
 
     @if (!AppState.Platform.Capabilities.CanRunLocalSendNode)
     {
-        <BbAlert Variant="AlertVariant.Warning" AccentBorder>
-            <Icon><LucideIcon Name="info" Class="h-4 w-4" /></Icon>
-            <ChildContent>
-                <BbAlertTitle>@T("BrowserLimitationsTitle")</BbAlertTitle>
-                <BbAlertDescription>@T("BrowserLimitationsDescription")</BbAlertDescription>
-            </ChildContent>
-        </BbAlert>
+        <StatusMessage Intent="warning" Title="@T("BrowserLimitationsTitle")">
+            <Icon><FluentIcon Value="@(new Icons.Regular.Size20.Info())" /></Icon>
+            <ChildContent>@T("BrowserLimitationsDescription")</ChildContent>
+        </StatusMessage>
     }
     else if (AppState.RuntimeError is { } runtimeError)
     {
-        <BbAlert Variant="AlertVariant.Danger" AccentBorder>
-            <Icon><LucideIcon Name="circle-alert" Class="h-4 w-4" /></Icon>
-            <ChildContent>
-                <BbAlertTitle>@T("NodeStartFailed")</BbAlertTitle>
-                <BbAlertDescription>@runtimeError</BbAlertDescription>
-            </ChildContent>
-        </BbAlert>
+        <StatusMessage Intent="error" Title="@T("NodeStartFailed")">
+            <Icon><FluentIcon Value="@(new Icons.Regular.Size20.ErrorCircle())" /></Icon>
+            <ChildContent>@runtimeError</ChildContent>
+        </StatusMessage>
     }
 
-    <BbCard>
-        <BbCardHeader>
-            <BbCardTitle>@T("WaitingNearby")</BbCardTitle>
-            <BbCardDescription>@T("AdvertisedAs", AppState.Settings.Alias)</BbCardDescription>
-        </BbCardHeader>
-        <BbCardContent>
-            <div class="settings-row" style="border:0;padding:0">
-                <div>
-                    <strong>@T("AutoAccept")</strong>
-                    <small>@T("AutoAcceptDescription")</small>
-                </div>
-                <BbSwitch Checked="@AppState.Settings.AutoAccept" CheckedChanged="ToggleAutoAccept" AriaLabel="@T("AutoAccept")" />
-            </div>
-        </BbCardContent>
-    </BbCard>
+    <section class="receive-hero">
+        <div class="device-avatar"><FluentIcon Value="@(new Icons.Regular.Size32.Desktop())" /></div>
+        <h2>@AppState.Settings.Alias</h2>
+        <p>@T("AdvertisedAs", AppState.Settings.Alias)</p>
+    </section>
 
-    <BbCard>
-        <BbCardHeader>
-            <BbCardTitle>@T("IncomingRequests")</BbCardTitle>
-            <BbCardDescription>@T("IncomingRequestsDescription")</BbCardDescription>
-            <BbCardAction>
-                <BbBadge Variant="BadgeVariant.Secondary">@AppState.IncomingOffers.Count</BbBadge>
-            </BbCardAction>
-        </BbCardHeader>
-        <BbCardContent>
+    <AppCard Title="@T("WaitingNearby")" Description="@T("IncomingRequestsDescription")">
+        <div class="settings-row compact">
+            <div><strong>@T("AutoAccept")</strong><small>@T("AutoAcceptDescription")</small></div>
+            <FluentSwitch Value="@AppState.Settings.AutoAccept" ValueChanged="ToggleAutoAccept" aria-label="@T("AutoAccept")" />
+        </div>
+    </AppCard>
+
+    <div class="dashboard-grid">
+        <AppCard Title="@T("IncomingRequests")" Description="@T("IncomingRequestsDescription")">
+            <HeaderAction><FluentBadge Appearance="BadgeAppearance.Tint">@AppState.IncomingOffers.Count</FluentBadge></HeaderAction>
+            <ChildContent>
             @if (AppState.IncomingOffers.Count == 0)
             {
-                <BbEmpty Title="@T("NoPendingRequests")"
-                         Description="@T("PendingRequestsHint")"
-                         Size="EmptySize.Small">
-                    <Icon><LucideIcon Name="inbox" /></Icon>
-                </BbEmpty>
+                <EmptyState Title="@T("NoPendingRequests")" Description="@T("PendingRequestsHint")">
+                    <Icon><FluentIcon Value="@(new Icons.Regular.Size32.MailInbox())" /></Icon>
+                </EmptyState>
             }
             else
             {
                 <div class="list-stack">
                     @foreach (var offer in AppState.IncomingOffers)
                     {
-                        <BbButton Variant="ButtonVariant.Outline" Class="row-item h-auto py-3" Href="@($"/receive/{offer.Id}")">
-                            <BbAvatar Size="AvatarSize.Small"><BbAvatarFallback>@DeviceInitial(offer.SenderAlias)</BbAvatarFallback></BbAvatar>
-                            <div>
-                                <strong>@offer.SenderAlias</strong>
-                                <small>@offer.SenderModel · @offer.Items.Count @T("Items")</small>
-                            </div>
-                            <LucideIcon Name="chevron-right" Class="h-4 w-4" />
-                        </BbButton>
+                        <a class="row-item interactive" href="@($"/receive/{offer.Id}")">
+                            <span class="initial-avatar">@DeviceInitial(offer.SenderAlias)</span>
+                            <span><strong>@offer.SenderAlias</strong><small>@offer.SenderModel · @offer.Items.Count @T("Items")</small></span>
+                            <FluentIcon Value="@(new Icons.Regular.Size20.ChevronRight())" />
+                        </a>
                     }
                 </div>
             }
-        </BbCardContent>
-    </BbCard>
+            </ChildContent>
+        </AppCard>
 
-    <BbCard>
-        <BbCardHeader>
-            <BbCardTitle>@T("RecentActivity")</BbCardTitle>
-            <BbCardDescription>@T("RecentActivityDescription")</BbCardDescription>
-            <BbCardAction>
-                <BbButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Small" Href="/history">@T("ViewAll")</BbButton>
-            </BbCardAction>
-        </BbCardHeader>
-        <BbCardContent>
+        <AppCard Title="@T("RecentActivity")" Description="@T("RecentActivityDescription")">
+            <HeaderAction><FluentButton Appearance="ButtonAppearance.Subtle" Href="/history">@T("ViewAll")</FluentButton></HeaderAction>
+            <ChildContent>
             @if (AppState.Transfers.Count == 0)
             {
-                <BbEmpty Title="@T("NoTransfers")" Size="EmptySize.Small">
-                    <Icon><LucideIcon Name="history" /></Icon>
-                </BbEmpty>
+                <EmptyState Title="@T("NoTransfers")"><Icon><FluentIcon Value="@(new Icons.Regular.Size32.History())" /></Icon></EmptyState>
             }
             else
             {
@@ -108,23 +77,22 @@
                     @foreach (var transfer in AppState.Transfers.Take(5))
                     {
                         <div class="row-item">
-                            <LucideIcon Name="@(transfer.Direction == TransferDirection.Send ? "arrow-up" : "arrow-down")" Class="h-4 w-4" />
-                            <div>
-                                <strong>@transfer.PeerAlias</strong>
-                                <small>@transfer.Summary</small>
-                            </div>
-                            <BbBadge Variant="BadgeVariant.Outline">@transfer.Status</BbBadge>
+                            <FluentIcon Value="@TransferIcon(transfer.Direction)" />
+                            <span><strong>@transfer.PeerAlias</strong><small>@transfer.Summary</small></span>
+                            <FluentBadge Appearance="BadgeAppearance.Outline">@transfer.Status</FluentBadge>
                         </div>
                     }
                 </div>
             }
-        </BbCardContent>
-    </BbCard>
+            </ChildContent>
+        </AppCard>
+    </div>
 </div>
 
 @code {
-    private Task ToggleAutoAccept(bool enabled) =>
-        AppState.UpdateSettingsAsync(settings => settings with { AutoAccept = enabled });
-
+    private static Icon TransferIcon(TransferDirection direction) => direction == TransferDirection.Send
+        ? new Icons.Regular.Size20.ArrowUpload()
+        : new Icons.Regular.Size20.ArrowDownload();
+    private Task ToggleAutoAccept(bool enabled) => AppState.UpdateSettingsAsync(settings => settings with { AutoAccept = enabled });
     private static string DeviceInitial(string alias) => string.IsNullOrWhiteSpace(alias) ? "?" : alias[..1].ToUpperInvariant();
 }

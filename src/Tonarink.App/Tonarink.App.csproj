@@ -234,10 +234,10 @@
         <ProjectReference Include="..\Tonarink.Application\Tonarink.Application.csproj" />
     </ItemGroup>
 
-    <!-- Windows App SDK 2.4's self-contained payload omits this aggregate-runtime
-         resource even though AppNotificationManager.Register still loads it.
-         Extract the architecture-matched copy from the SDK runtime MSIX until the
-         upstream missing-resource fix ships in a stable SDK release. -->
+    <!-- Windows App SDK 2.5.1's self-contained payload still omits this
+         aggregate-runtime resource even though AppNotificationManager.Register
+         loads it (WindowsAppSDK #6774). Extract the architecture-matched copy
+         from the SDK runtime MSIX until the upstream fix ships. -->
     <PropertyGroup>
         <_WinAppRuntimeArchitecture>x64</_WinAppRuntimeArchitecture>
         <_WinAppRuntimeArchitecture Condition="'$(RuntimeIdentifier)' == 'win-x86' Or '$(Platform)' == 'X86' Or '$(Platform)' == 'x86'">x86</_WinAppRuntimeArchitecture>

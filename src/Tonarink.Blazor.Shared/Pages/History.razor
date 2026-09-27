@@ -2,46 +2,40 @@
 @inherits StatefulComponentBase
 
 <PageTitle>@T("History") · Tonarink</PageTitle>
-
 <div class="page">
     <header class="page-header">
-        <div>
-            <h1>@T("History")</h1>
-            <p>@T("HistoryDescription")</p>
-        </div>
-        <BbButton Variant="ButtonVariant.Outline" Href="/">@T("BackToReceive")</BbButton>
+        <div><h1>@T("History")</h1><p>@T("HistoryDescription")</p></div>
+        <FluentButton Appearance="ButtonAppearance.Outline" Href="/" IconStart="@(new Icons.Regular.Size20.ArrowLeft())">@T("BackToReceive")</FluentButton>
     </header>
-
-    <BbCard>
-        <BbCardContent>
-            @if (AppState.Transfers.Count == 0)
-            {
-                <BbEmpty Title="@T("NoTransfers")" Description="@T("NoTransfersHint")">
-                    <Icon><LucideIcon Name="history" /></Icon>
-                </BbEmpty>
-            }
-            else
-            {
-                <div class="list-stack">
-                    @foreach (var transfer in AppState.Transfers)
-                    {
-                        <div class="row-item">
-                            <LucideIcon Name="@(transfer.Direction == TransferDirection.Send ? "arrow-up" : "arrow-down")" Class="h-4 w-4" />
-                            <div>
-                                <strong>@transfer.PeerAlias</strong>
-                                <small>@transfer.Summary · @StatusText(transfer.Status)</small>
-                                <BbProgress Value="@(transfer.Progress * 100)" />
-                            </div>
-                            <time class="text-xs text-muted-foreground">@transfer.UpdatedAt.ToLocalTime().ToString("g")</time>
-                        </div>
-                    }
-                </div>
-            }
-        </BbCardContent>
-    </BbCard>
+    <AppCard>
+        @if (AppState.Transfers.Count == 0)
+        {
+            <EmptyState Title="@T("NoTransfers")" Description="@T("NoTransfersHint")"><Icon><FluentIcon Value="@(new Icons.Regular.Size32.History())" /></Icon></EmptyState>
+        }
+        else
+        {
+            <div class="list-stack history-list">
+                @foreach (var transfer in AppState.Transfers)
+                {
+                    <div class="row-item transfer-row">
+                        <span class="file-icon"><FluentIcon Value="@TransferIcon(transfer.Direction)" /></span>
+                        <span>
+                            <strong>@transfer.PeerAlias</strong>
+                            <small>@transfer.Summary · @StatusText(transfer.Status)</small>
+                            <FluentProgressBar Value="@((int)(transfer.Progress * 100))" Min="0" Max="100" />
+                        </span>
+                        <time>@transfer.UpdatedAt.ToLocalTime().ToString("g")</time>
+                    </div>
+                }
+            </div>
+        }
+    </AppCard>
 </div>
 
 @code {
+    private static Icon TransferIcon(TransferDirection direction) => direction == TransferDirection.Send
+        ? new Icons.Regular.Size20.ArrowUpload()
+        : new Icons.Regular.Size20.ArrowDownload();
     private string StatusText(TransferStatus status) => status switch
     {
         TransferStatus.Waiting => T("StatusWaiting"),

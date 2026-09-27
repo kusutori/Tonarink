@@ -115,6 +115,10 @@
   <data name="ThemeLight" xml:space="preserve"><value>浅色</value></data>
   <data name="ThemeSystem" xml:space="preserve"><value>跟随系统</value></data>
   <data name="TooManyPinAttempts" xml:space="preserve"><value>PIN 尝试次数过多，请稍后重试。</value></data>
+  <data name="ClipboardReadFailed" xml:space="preserve"><value>无法读取剪贴板。</value></data>
+  <data name="ClipboardWriteFailed" xml:space="preserve"><value>无法写入剪贴板。</value></data>
+  <data name="DeviceBusy" xml:space="preserve"><value>接收设备正忙。</value></data>
+  <data name="TransferDeclined" xml:space="preserve"><value>接收设备拒绝了传输。</value></data>
   <data name="TransferCompleted" xml:space="preserve"><value>传输完成</value></data>
   <data name="ViewAll" xml:space="preserve"><value>查看全部</value></data>
   <data name="WaitingNearby" xml:space="preserve"><value>等待附近设备</value></data>

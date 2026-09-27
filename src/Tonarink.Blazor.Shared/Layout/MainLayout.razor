@@ -1,112 +1,95 @@
 @inherits StatefulComponentBase
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
-@inject ThemeService ThemeService
+@inject IThemeService ThemeService
 
-<BbSidebarProvider DefaultOpen="true" Variant="SidebarVariant.Sidebar">
-    <BbSidebar>
-        <BbSidebarHeader>
-            <BbSidebarHeaderContent>
-                <div class="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">T</div>
-                <BbSidebarHeaderInfo>
-                    <span class="truncate font-semibold">Tonarink</span>
-                    <span class="truncate text-xs text-muted-foreground">@AppState.Platform.Capabilities.PlatformName</span>
-                </BbSidebarHeaderInfo>
-            </BbSidebarHeaderContent>
-        </BbSidebarHeader>
-        <BbSidebarContent>
-            <BbSidebarGroup>
-                <BbSidebarGroupLabel>@T("Navigate")</BbSidebarGroupLabel>
-                <BbSidebarMenu>
-                    <BbSidebarMenuItem>
-                        <BbSidebarMenuButton Href="/" Match="NavLinkMatch.All" Tooltip="@T("Receive")">
-                            <LucideIcon Name="inbox" Class="h-4 w-4" />
-                            <span>@T("Receive")</span>
-                            @if (AppState.IncomingOffers.Count > 0)
-                            {
-                                <BbSidebarMenuBadge>@AppState.IncomingOffers.Count</BbSidebarMenuBadge>
-                            }
-                        </BbSidebarMenuButton>
-                    </BbSidebarMenuItem>
-                    <BbSidebarMenuItem>
-                        <BbSidebarMenuButton Href="/send" Tooltip="@T("Send")">
-                            <LucideIcon Name="send" Class="h-4 w-4" />
-                            <span>@T("Send")</span>
-                        </BbSidebarMenuButton>
-                    </BbSidebarMenuItem>
-                    <BbSidebarMenuItem>
-                        <BbSidebarMenuButton Href="/settings" Tooltip="@T("Settings")">
-                            <LucideIcon Name="settings" Class="h-4 w-4" />
-                            <span>@T("Settings")</span>
-                        </BbSidebarMenuButton>
-                    </BbSidebarMenuItem>
-                </BbSidebarMenu>
-            </BbSidebarGroup>
-        </BbSidebarContent>
-        <BbSidebarFooter>
-            <BbBadge Variant="@(AppState.RuntimeRunning ? BadgeVariant.Default : BadgeVariant.Secondary)">
-                @(AppState.RuntimeRunning ? T("NodeRunning") : T("NodeStopped"))
-            </BbBadge>
-        </BbSidebarFooter>
-    </BbSidebar>
-    <BbSidebarInset>
-        <header class="flex items-center gap-2 px-4 py-3 border-b">
-            <BbSidebarTrigger />
-            <BbSeparator Orientation="SeparatorOrientation.Vertical" Class="h-4" />
-            <span class="text-sm text-muted-foreground">@AppState.Settings.Alias</span>
-        </header>
-        <div class="flex-1 overflow-auto">
-            @Body
+<FluentLayout Class="app-shell" Width="100%" Height="100vh" MobileBreakdownWidth="768" GlobalScrollbar="false">
+    <FluentLayoutItem Area="LayoutArea.Header" Class="app-titlebar" Height="52px" Padding="Padding.All0">
+        <FluentLayoutHamburger Display="HamburgerDisplay.MobileOnly"
+                               IconTitle="@T("Navigate")"
+                               PanelHeader="Tonarink"
+                               PanelSize="DialogSize.Small" />
+        <img class="brand-mark" src="_content/Tonarink.Blazor.Shared/tonarink.svg" alt="" />
+        <strong>Tonarink</strong>
+    </FluentLayoutItem>
+
+    <FluentLayoutItem Area="LayoutArea.Navigation" Class="app-navigation" Width="240px" Padding="Padding.All0">
+        <div class="navigation-surface">
+            <FluentNav UseIcons="true" Width="100%" aria-label="@T("Navigate")">
+                <FluentNavItem Href="/" Match="NavLinkMatch.All"
+                               Tooltip="@T("Receive")"
+                               IconRest="@(new Icons.Regular.Size24.ArrowDownload())"
+                               IconActive="@(new Icons.Filled.Size24.ArrowDownload())">
+                    @T("Receive")
+                </FluentNavItem>
+                <FluentNavItem Href="/send"
+                               Tooltip="@T("Send")"
+                               IconRest="@(new Icons.Regular.Size24.Send())"
+                               IconActive="@(new Icons.Filled.Size24.Send())">
+                    @T("Send")
+                </FluentNavItem>
+                <FluentNavItem Href="/settings"
+                               Tooltip="@T("Settings")"
+                               IconRest="@(new Icons.Regular.Size24.Settings())"
+                               IconActive="@(new Icons.Filled.Size24.Settings())">
+                    @T("Settings")
+                </FluentNavItem>
+            </FluentNav>
+
+            <div class="network-status @(AppState.RuntimeRunning ? "online" : "offline")">
+                <FluentIcon Value="@(new Icons.Regular.Size24.Wifi1())" />
+                <div>
+                    <strong>@(AppState.RuntimeRunning ? T("NodeRunning") : T("NodeStopped"))</strong>
+                    <small>@AppState.Settings.Alias</small>
+                </div>
+                <span class="status-dot" aria-hidden="true"></span>
+            </div>
         </div>
-    </BbSidebarInset>
-</BbSidebarProvider>
-<BbPortalHost />
-<BbDialogProvider />
+    </FluentLayoutItem>
+
+    <FluentLayoutItem Area="LayoutArea.Content" Class="app-main" Padding="Padding.All0">
+        <main class="app-content">@Body</main>
+    </FluentLayoutItem>
+</FluentLayout>
+<FluentDialogProvider />
+<FluentToastProvider />
+<FluentTooltipProvider />
 
 @code {
-    [Parameter]
-    public RenderFragment? Body { get; set; }
-
+    [Parameter] public RenderFragment? Body { get; set; }
     private readonly HashSet<string> _notifiedOffers = [];
     private readonly HashSet<string> _notifiedTransfers = [];
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (!firstRender)
-            return;
-        await ThemeService.InitializeAsync();
-        await ApplyAppThemeAsync();
+        if (firstRender) await ApplyAppThemeAsync();
     }
 
     protected override void OnAppStateChanged()
     {
-        if (AppState.TakeRequestedRoute() is { } route)
-            Navigation.NavigateTo(route);
-        if (!AppState.Platform.Capabilities.IsNative)
-            _ = NotifyBrowserAsync();
+        if (AppState.TakeRequestedRoute() is { } route) Navigation.NavigateTo(route);
+        if (!AppState.Platform.Capabilities.IsNative) _ = NotifyBrowserAsync();
         _ = ApplyAppThemeAsync();
     }
 
-    private async Task ApplyAppThemeAsync()
-    {
-        var dark = AppState.Settings.Theme switch
+    private Task ApplyAppThemeAsync() => ThemeService.SetThemeAsync(new ThemeSettings(
+        "#0f8f95",
+        0,
+        0,
+        AppState.Settings.Theme switch
         {
-            TonarinkTheme.Dark => true,
-            TonarinkTheme.Light => false,
-            _ => ThemeService.IsDarkMode,
-        };
-        if (AppState.Settings.Theme != TonarinkTheme.System)
-            await ThemeService.SetDarkModeAsync(dark);
-        await ThemeService.SetPrimaryColorAsync(PrimaryColor.Teal);
-    }
+            TonarinkTheme.Dark => ThemeMode.Dark,
+            TonarinkTheme.Light => ThemeMode.Light,
+            _ => ThemeMode.System,
+        },
+        false));
 
     private async Task NotifyBrowserAsync()
     {
         try
         {
             foreach (var offer in AppState.IncomingOffers.Where(offer => _notifiedOffers.Add(offer.Id)))
-                await JS.InvokeVoidAsync("tonarink.notify", T("IncomingTransfer"),
-                    T("IncomingNotifyBody", offer.SenderAlias, offer.Items.Count));
+                await JS.InvokeVoidAsync("tonarink.notify", T("IncomingTransfer"), T("IncomingNotifyBody", offer.SenderAlias, offer.Items.Count));
             foreach (var transfer in AppState.Transfers.Where(transfer => transfer.Status == TransferStatus.Completed && _notifiedTransfers.Add(transfer.Id)))
                 await JS.InvokeVoidAsync("tonarink.notify", T("TransferCompleted"), transfer.Summary);
         }

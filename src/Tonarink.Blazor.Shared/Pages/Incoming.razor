@@ -7,15 +7,15 @@
 
 <PageTitle>@T("IncomingRequest") · Tonarink</PageTitle>
 
-<div class="page">
+<div class="page incoming-page">
     @if (Offer is null)
     {
-        <BbEmpty Title="@T("RequestExpired")" Description="@T("RequestExpiredDescription")">
-            <Icon><LucideIcon Name="circle-alert" /></Icon>
+        <EmptyState Title="@T("RequestExpired")" Description="@T("RequestExpiredDescription")">
+            <Icon><FluentIcon Value="@(new Icons.Regular.Size32.Alert())" /></Icon>
             <ChildContent>
-                <BbButton Href="/">@T("BackToReceive")</BbButton>
+                <FluentButton Appearance="ButtonAppearance.Primary" OnClick="BackToReceive">@T("BackToReceive")</FluentButton>
             </ChildContent>
-        </BbEmpty>
+        </EmptyState>
     }
     else
     {
@@ -24,65 +24,77 @@
                 <h1>@Offer.SenderAlias</h1>
                 <p>@T("WantsToSend", Offer.SenderModel, Offer.Items.Count)</p>
             </div>
-            <BbButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Small" OnClick="ToggleAll">
+            <FluentButton Appearance="ButtonAppearance.Subtle" OnClick="ToggleAll">
                 @(_selected.Count == Offer.Items.Count ? T("SelectNone") : T("SelectAll"))
-            </BbButton>
+            </FluentButton>
         </header>
 
         @if (_error is not null)
         {
-            <BbAlert Variant="AlertVariant.Danger" AccentBorder>
-                <BbAlertTitle>@T("CouldNotComplete")</BbAlertTitle>
-                <BbAlertDescription>@_error</BbAlertDescription>
-            </BbAlert>
+            <StatusMessage Intent="error" Title="@T("CouldNotComplete")">
+                <Icon><FluentIcon Value="@(new Icons.Regular.Size20.ErrorCircle())" /></Icon>
+                <ChildContent>@_error</ChildContent>
+            </StatusMessage>
         }
 
-        <BbCard>
-            <BbCardHeader>
-                <BbCardTitle>@T("ChooseWhatToReceive")</BbCardTitle>
-            </BbCardHeader>
-            <BbCardContent>
-                <div class="list-stack">
+        <AppCard Title="@T("ChooseWhatToReceive")">
+            <ChildContent>
+                <div class="list-stack incoming-list">
                     @foreach (var item in Offer.Items)
                     {
                         var selected = _selected.Contains(item.Id);
-                        <BbButton Variant="ButtonVariant.Outline" Class="row-item h-auto py-3" OnClick="() => Toggle(item.Id)">
-                            <LucideIcon Name="@(selected ? "square-check" : "square")" Class="h-4 w-4" />
-                            <div>
+                        <button type="button" class="row-item interactive selectable @(selected ? "selected" : null)" @onclick="() => Toggle(item.Id)" aria-pressed="@selected">
+                            @if (selected)
+                            {
+                                <FluentIcon Value="@(new Icons.Filled.Size20.CheckboxChecked())" />
+                            }
+                            else
+                            {
+                                <FluentIcon Value="@(new Icons.Regular.Size20.CheckboxUnchecked())" />
+                            }
+                            <span>
                                 <strong>@item.Name</strong>
                                 <small>@item.ContentType · @FormatBytes(item.Size)</small>
-                            </div>
-                            <LucideIcon Name="@(item.TextContent is null ? "file" : "file-text")" Class="h-4 w-4" />
-                        </BbButton>
+                            </span>
+                            <FluentIcon Value="@IncomingItemIcon(item)" />
+                        </button>
                         @if (item.TextContent is { } text)
                         {
-                            <BbCard>
-                                <BbCardContent>
-                                    <pre class="text-sm whitespace-pre-wrap">@text</pre>
-                                    <BbButton Variant="ButtonVariant.Outline" Size="ButtonSize.Small" OnClick="() => CopyTextAsync(text)">@T("Copy")</BbButton>
-                                </BbCardContent>
-                            </BbCard>
+                            <section class="text-preview" aria-label="@item.Name">
+                                <pre>@text</pre>
+                                <FluentButton Appearance="ButtonAppearance.Outline" IconStart="@(new Icons.Regular.Size20.Copy())" OnClick="() => CopyTextAsync(text)">@T("Copy")</FluentButton>
+                            </section>
                         }
                     }
                 </div>
-            </BbCardContent>
-        </BbCard>
+            </ChildContent>
+        </AppCard>
 
         <footer class="decision-bar">
             @if (_receiveCancellation is not null)
             {
-                <BbButton Variant="ButtonVariant.Outline" OnClick="CancelReceive">@T("CancelReceive")</BbButton>
+                <FluentButton Appearance="ButtonAppearance.Outline" OnClick="CancelReceive">@T("CancelReceive")</FluentButton>
             }
-            <BbButton Variant="ButtonVariant.Destructive" OnClick="DeclineAsync" Disabled="@_busy">@T("Decline")</BbButton>
-            <BbButton OnClick="AcceptAsync" Disabled="@(_busy || _selected.Count == 0)">@T("ReceiveNItems", _selected.Count)</BbButton>
+            <FluentButton Appearance="ButtonAppearance.Outline" Class="danger-button" IconStart="@(new Icons.Regular.Size20.Dismiss())" OnClick="DeclineAsync" Disabled="@_busy">@T("Decline")</FluentButton>
+            <FluentButton Appearance="ButtonAppearance.Primary" IconStart="@(new Icons.Regular.Size20.Checkmark())" OnClick="AcceptAsync" Disabled="@(_busy || _selected.Count == 0)">
+                @if (_busy)
+                {
+                    <FluentSpinner aria-label="@T("Receiving")" />
+                }
+                else
+                {
+                    @T("ReceiveNItems", _selected.Count)
+                }
+            </FluentButton>
         </footer>
     }
 </div>
 
 @code {
     [Parameter] public string Id { get; set; } = string.Empty;
+
     private readonly HashSet<Guid> _selected = [];
-    private bool _initialized;
+    private string? _initializedOfferId;
     private bool _busy;
     private string? _error;
     private CancellationTokenSource? _receiveCancellation;
@@ -90,11 +102,12 @@
 
     protected override void OnParametersSet()
     {
-        if (!_initialized && Offer is { } offer)
-        {
-            _selected.UnionWith(offer.Items.Select(static item => item.Id));
-            _initialized = true;
-        }
+        if (Offer is not { } offer || StringComparer.Ordinal.Equals(_initializedOfferId, offer.Id))
+            return;
+
+        _selected.Clear();
+        _selected.UnionWith(offer.Items.Select(static item => item.Id));
+        _initializedOfferId = offer.Id;
     }
 
     private void Toggle(Guid id)
@@ -105,8 +118,13 @@
 
     private void ToggleAll()
     {
-        if (Offer is not { } offer) return;
-        if (_selected.Count == offer.Items.Count) _selected.Clear(); else _selected.UnionWith(offer.Items.Select(static item => item.Id));
+        if (Offer is not { } offer)
+            return;
+
+        if (_selected.Count == offer.Items.Count)
+            _selected.Clear();
+        else
+            _selected.UnionWith(offer.Items.Select(static item => item.Id));
     }
 
     private async Task AcceptAsync()
@@ -116,22 +134,53 @@
         _receiveCancellation.Dispose();
         _receiveCancellation = null;
     }
-    private async Task DeclineAsync() => await DecideAsync(offer => Runtime.DeclineAsync(offer));
+
+    private Task DeclineAsync() => DecideAsync(offer => Runtime.DeclineAsync(offer));
+    private void BackToReceive() => Navigation.NavigateTo("/");
     private void CancelReceive() => _receiveCancellation?.Cancel();
+
     private async Task DecideAsync(Func<IncomingOffer, Task> action)
     {
-        if (Offer is not { } offer) return;
-        _busy = true; _error = null;
-        try { await action(offer); Navigation.NavigateTo("/"); }
-        catch (Exception exception) { _error = exception.Message; }
-        finally { _busy = false; }
+        if (Offer is not { } offer)
+            return;
+
+        _busy = true;
+        _error = null;
+        try
+        {
+            await action(offer);
+            Navigation.NavigateTo("/");
+        }
+        catch (OperationCanceledException) when (_receiveCancellation?.IsCancellationRequested is true)
+        {
+            _error = T("TransferCanceled");
+        }
+        catch (Exception exception)
+        {
+            _error = exception.Message;
+        }
+        finally
+        {
+            _busy = false;
+        }
     }
 
     private async Task CopyTextAsync(string text)
     {
-        if (Platform.Capabilities.IsNative)
-            await Platform.WriteClipboardTextAsync(text);
-        else
-            await JS.InvokeVoidAsync("tonarink.writeClipboard", text);
+        try
+        {
+            if (Platform.Capabilities.IsNative)
+                await Platform.WriteClipboardTextAsync(text);
+            else
+                await JS.InvokeVoidAsync("tonarink.writeClipboard", text);
+        }
+        catch (Exception exception)
+        {
+            _error = exception.Message;
+        }
     }
+
+    private static Icon IncomingItemIcon(ShareItem item) => item.TextContent is null
+        ? new Icons.Regular.Size20.Document()
+        : new Icons.Regular.Size20.DocumentText();
 }

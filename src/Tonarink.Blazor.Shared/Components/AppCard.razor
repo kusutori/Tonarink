@@ -1,0 +1,28 @@
+<FluentCard Class="app-card">
+    @if (!string.IsNullOrEmpty(Title) || HeaderAction is not null)
+    {
+        <header class="app-card-header">
+            <div>
+                @if (!string.IsNullOrEmpty(Title))
+                {
+                    <h2>@Title</h2>
+                }
+                @if (!string.IsNullOrEmpty(Description))
+                {
+                    <p>@Description</p>
+                }
+            </div>
+            @HeaderAction
+        </header>
+    }
+    <div class="app-card-content">
+        @ChildContent
+    </div>
+</FluentCard>
+
+@code {
+    [Parameter] public string? Title { get; set; }
+    [Parameter] public string? Description { get; set; }
+    [Parameter] public RenderFragment? HeaderAction { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

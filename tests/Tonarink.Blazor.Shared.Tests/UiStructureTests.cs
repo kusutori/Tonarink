@@ -11,7 +11,11 @@ public sealed class UiStructureTests
         Assert.Contains("Href=\"/\"", layout);
         Assert.Contains("Href=\"/send\"", layout);
         Assert.Contains("Href=\"/settings\"", layout);
-        Assert.Contains("BbSidebarMenuButton", layout);
+        Assert.Contains("FluentLayout", layout);
+        Assert.Contains("FluentLayoutHamburger", layout);
+        Assert.Contains("FluentNav", layout);
+        Assert.Contains("FluentNavItem", layout);
+        Assert.Contains("MobileBreakdownWidth=\"768\"", layout);
         Assert.DoesNotContain("Href=\"/history\"", layout);
         Assert.DoesNotContain("◉", layout);
         Assert.DoesNotContain("➤", layout);
@@ -23,15 +27,16 @@ public sealed class UiStructureTests
     public void SendExposesFourActionsAndTwoPanesWithSecondaryAddress()
     {
         var send = Read("Pages", "Send.razor");
-        Assert.Contains("LucideIcon Name=\"file\"", send);
-        Assert.Contains("LucideIcon Name=\"folder\"", send);
-        Assert.Contains("LucideIcon Name=\"text\"", send);
-        Assert.Contains("LucideIcon Name=\"clipboard\"", send);
+        Assert.Contains("Size24.Document", send);
+        Assert.Contains("Size24.Folder", send);
+        Assert.Contains("Size24.TextDescription", send);
+        Assert.Contains("Size24.ClipboardPaste", send);
         Assert.Contains("split-panes", send);
         Assert.Contains("T(\"ReadyToSend\")", send);
         Assert.Contains("T(\"NearbyDevices\")", send);
         Assert.Contains("_showAddress", send);
-        Assert.Contains("BbDialog", send);
+        Assert.Contains("class=\"modal-layer\"", send);
+        Assert.Contains("role=\"dialog\"", send);
         Assert.DoesNotContain("▱", send);
         Assert.DoesNotContain("▣", send);
         Assert.DoesNotContain("✎", send);
@@ -47,8 +52,9 @@ public sealed class UiStructureTests
         Assert.Contains("T(\"AutoAccept\")", settings);
         Assert.Contains("T(\"ReceivePin\")", settings);
         Assert.Contains("settings-row", settings);
-        Assert.Contains("BbSwitch", settings);
-        Assert.Contains("BbSelect", settings);
+        Assert.Contains("FluentSwitch", settings);
+        Assert.Contains("FluentSelect", settings);
+        Assert.Contains("FluentTextInput", settings);
     }
 
     [Fact]
@@ -58,17 +64,18 @@ public sealed class UiStructureTests
         Assert.Contains("/receive/", receive);
         Assert.Contains("Href=\"/history\"", receive);
         Assert.Contains("T(\"IncomingRequests\")", receive);
-        Assert.Contains("BbCard", receive);
-        Assert.Contains("LucideIcon", receive);
+        Assert.Contains("AppCard", receive);
+        Assert.Contains("FluentIcon", receive);
     }
 
     [Fact]
-    public void HybridHostIncludesBlueprintThemeCss()
+    public void HybridHostIncludesFluentThemeCss()
     {
         var host = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "ShippedHost", "index.html"));
-        Assert.Contains("BlazorBlueprint.Components/blazorblueprint.css", host);
-        Assert.Contains("BlazorBlueprint.Components/css/themes.css", host);
+        Assert.Contains("Microsoft.FluentUI.AspNetCore.Components/css/reboot.css", host);
         Assert.Contains("Tonarink.Blazor.Shared/theme.css", host);
+        Assert.Contains("Tonarink.Blazor.Shared/tonarink.css", host);
+        Assert.DoesNotContain("BlazorBlueprint", host);
         Assert.DoesNotContain("bootstrap", host);
     }
 

@@ -1,0 +1,19 @@
+<div class="empty-state" role="status">
+    @if (Icon is not null)
+    {
+        <div class="empty-state-icon" aria-hidden="true">@Icon</div>
+    }
+    <strong>@Title</strong>
+    @if (!string.IsNullOrEmpty(Description))
+    {
+        <p>@Description</p>
+    }
+    @ChildContent
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string Title { get; set; } = string.Empty;
+    [Parameter] public string? Description { get; set; }
+    [Parameter] public RenderFragment? Icon { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

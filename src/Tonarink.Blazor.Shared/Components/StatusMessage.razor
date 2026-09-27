@@ -1,0 +1,18 @@
+<div class="status-message @CssClass" role="alert">
+    @if (Icon is not null)
+    {
+        <span class="status-message-icon" aria-hidden="true">@Icon</span>
+    }
+    <div>
+        <strong>@Title</strong>
+        <p>@ChildContent</p>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string Title { get; set; } = string.Empty;
+    [Parameter] public string Intent { get; set; } = "info";
+    [Parameter] public RenderFragment? Icon { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    private string CssClass => $"status-message-{Intent}";
+}

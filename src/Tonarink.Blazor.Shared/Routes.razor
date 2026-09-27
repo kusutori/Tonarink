@@ -8,13 +8,13 @@
     <NotFound>
         <LayoutView Layout="typeof(MainLayout)">
             <div class="page">
-                <BbEmpty Title="@Loc["PageNotFound"]"
-                         Description="@Loc["PageNotFoundDescription"]">
-                    <Icon><LucideIcon Name="circle-question-mark" /></Icon>
+                <EmptyState Title="@Loc["PageNotFound"]"
+                            Description="@Loc["PageNotFoundDescription"]">
+                    <Icon><FluentIcon Value="@(new Icons.Regular.Size32.QuestionCircle())" /></Icon>
                     <ChildContent>
-                        <BbButton Href="/">@Loc["BackToReceivePage"]</BbButton>
+                        <FluentButton Appearance="ButtonAppearance.Primary" Href="/">@Loc["BackToReceivePage"]</FluentButton>
                     </ChildContent>
-                </BbEmpty>
+                </EmptyState>
             </div>
         </LayoutView>
     </NotFound>

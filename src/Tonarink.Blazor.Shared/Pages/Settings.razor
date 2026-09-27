@@ -4,161 +4,70 @@
 @inject IJSRuntime JS
 
 <PageTitle>@T("Settings") · Tonarink</PageTitle>
-
-<div class="page">
-    <header class="page-header">
-        <div>
-            <h1>@T("Settings")</h1>
-            <p>@T("SettingsDescription")</p>
-        </div>
-    </header>
-
+<div class="page settings-page">
+    <header class="page-header"><div><h1>@T("Settings")</h1><p>@T("SettingsDescription")</p></div></header>
     @if (_error is not null)
     {
-        <BbAlert Variant="AlertVariant.Danger" AccentBorder Dismissible OnDismiss="() => _error = null">
-            <BbAlertTitle>@T("CouldNotSave")</BbAlertTitle>
-            <BbAlertDescription>@_error</BbAlertDescription>
-        </BbAlert>
+        <StatusMessage Intent="error" Title="@T("CouldNotSave")"><ChildContent>@_error</ChildContent></StatusMessage>
     }
 
-    <BbCard>
-        <BbCardHeader>
-            <BbCardTitle>@T("DeviceIdentity")</BbCardTitle>
-            <BbCardDescription>@T("DeviceIdentityDescription")</BbCardDescription>
-        </BbCardHeader>
-        <BbCardContent>
-            <div class="settings-row">
-                <div>
-                    <strong>@T("DeviceName")</strong>
-                    <small>@T("DeviceNameDescription")</small>
-                </div>
-                <BbInput Value="@AppState.Settings.Alias" ValueChanged="ChangeAlias" />
-            </div>
-            <div class="settings-row">
-                <div>
-                    <strong>@T("DownloadDirectory")</strong>
-                    <small>@T("DownloadDirectoryDescription")</small>
-                </div>
-                <BbInput Value="@AppState.Settings.DownloadDirectory" Disabled="true" />
-            </div>
-        </BbCardContent>
-    </BbCard>
+    <AppCard Title="@T("DeviceIdentity")" Description="@T("DeviceIdentityDescription")">
+        <div class="settings-row">
+            <div><strong>@T("DeviceName")</strong><small>@T("DeviceNameDescription")</small></div>
+            <FluentTextInput Value="@AppState.Settings.Alias" ValueChanged="ChangeAlias" />
+        </div>
+        <div class="settings-row">
+            <div><strong>@T("DownloadDirectory")</strong><small>@T("DownloadDirectoryDescription")</small></div>
+            <FluentTextInput Value="@AppState.Settings.DownloadDirectory" Disabled="true" />
+        </div>
+    </AppCard>
 
-    <BbCard>
-        <BbCardHeader>
-            <BbCardTitle>@T("Appearance")</BbCardTitle>
-            <BbCardDescription>@T("AppearanceDescription")</BbCardDescription>
-        </BbCardHeader>
-        <BbCardContent>
-            <div class="settings-row">
-                <div>
-                    <strong>@T("Theme")</strong>
-                    <small>@T("ThemeDescription")</small>
-                </div>
-                <BbSelect TValue="string" Value="@AppState.Settings.Theme.ToString()" ValueChanged="ChangeTheme" Options="@ThemeOptions" />
-            </div>
-            <div class="settings-row">
-                <div>
-                    <strong>@T("Language")</strong>
-                    <small>@T("LanguageDescription")</small>
-                </div>
-                <BbSelect TValue="string" Value="@AppState.Settings.Language.ToString()" ValueChanged="ChangeLanguage" Options="@LanguageOptions" />
-            </div>
-        </BbCardContent>
-    </BbCard>
+    <AppCard Title="@T("Appearance")" Description="@T("AppearanceDescription")">
+        <div class="settings-row">
+            <div><strong>@T("Theme")</strong><small>@T("ThemeDescription")</small></div>
+            <FluentSelect TValue="string" TOption="string" Value="@AppState.Settings.Theme.ToString()" ValueChanged="ChangeTheme">
+                <FluentOption Value="@nameof(TonarinkTheme.System)">@T("ThemeSystem")</FluentOption>
+                <FluentOption Value="@nameof(TonarinkTheme.Light)">@T("ThemeLight")</FluentOption>
+                <FluentOption Value="@nameof(TonarinkTheme.Dark)">@T("ThemeDark")</FluentOption>
+            </FluentSelect>
+        </div>
+        <div class="settings-row">
+            <div><strong>@T("Language")</strong><small>@T("LanguageDescription")</small></div>
+            <FluentSelect TValue="string" TOption="string" Value="@AppState.Settings.Language.ToString()" ValueChanged="ChangeLanguage">
+                @foreach (var choice in AppLanguages.Choices)
+                {
+                    <FluentOption Value="@choice.Language.ToString()">@T(choice.NameKey)</FluentOption>
+                }
+            </FluentSelect>
+        </div>
+    </AppCard>
 
-    <BbCard>
-        <BbCardHeader>
-            <BbCardTitle>@T("ReceiveSection")</BbCardTitle>
-            <BbCardDescription>@T("ReceiveSectionDescription")</BbCardDescription>
-        </BbCardHeader>
-        <BbCardContent>
+    <AppCard Title="@T("ReceiveSection")" Description="@T("ReceiveSectionDescription")">
+        <div class="settings-row">
+            <div><strong>@T("AutoAccept")</strong><small>@T("AutoAcceptDescription")</small></div>
+            <FluentSwitch Value="@AppState.Settings.AutoAccept" ValueChanged="ChangeAutoAccept" aria-label="@T("AutoAccept")" />
+        </div>
+        <div class="settings-row">
+            <div><strong>@T("ReceivePin")</strong><small>@T("ReceivePinDescription")</small></div>
+            <FluentTextInput TextInputType="TextInputType.Password" Value="@AppState.Settings.ReceivePin" ValueChanged="ChangeReceivePin" Placeholder="@T("Optional")" />
+        </div>
+        @if (!AppState.Platform.Capabilities.IsNative)
+        {
             <div class="settings-row">
-                <div>
-                    <strong>@T("AutoAccept")</strong>
-                    <small>@T("AutoAcceptDescription")</small>
-                </div>
-                <BbSwitch Checked="@AppState.Settings.AutoAccept" CheckedChanged="ChangeAutoAccept" AriaLabel="@T("AutoAccept")" />
+                <div><strong>@T("BrowserNotifications")</strong><small>@T("BrowserNotificationsDescription")</small></div>
+                <FluentButton Appearance="ButtonAppearance.Outline" OnClick="EnableBrowserNotificationsAsync" IconStart="@(new Icons.Regular.Size20.Alert())">@T("EnableNotifications")</FluentButton>
             </div>
-            <div class="settings-row">
-                <div>
-                    <strong>@T("ReceivePin")</strong>
-                    <small>@T("ReceivePinDescription")</small>
-                </div>
-                <BbInput Type="InputType.Password" Value="@AppState.Settings.ReceivePin" ValueChanged="ChangeReceivePin" Placeholder="@T("Optional")" />
-            </div>
-            @if (!AppState.Platform.Capabilities.IsNative)
-            {
-                <div class="settings-row">
-                    <div>
-                        <strong>@T("BrowserNotifications")</strong>
-                        <small>@T("BrowserNotificationsDescription")</small>
-                    </div>
-                    <BbButton Variant="ButtonVariant.Outline" OnClick="EnableBrowserNotificationsAsync">@T("EnableNotifications")</BbButton>
-                </div>
-            }
-        </BbCardContent>
-    </BbCard>
+        }
+    </AppCard>
 </div>
 
 @code {
     private string? _error;
-
-    private List<SelectOption<string>> ThemeOptions =>
-    [
-        new(nameof(TonarinkTheme.System), T("ThemeSystem")),
-        new(nameof(TonarinkTheme.Light), T("ThemeLight")),
-        new(nameof(TonarinkTheme.Dark), T("ThemeDark")),
-    ];
-
-    private List<SelectOption<string>> LanguageOptions =>
-        [.. AppLanguages.Choices.Select(choice => new SelectOption<string>(choice.Language.ToString(), T(choice.NameKey)))];
-
-    private async Task ChangeAlias(string? alias)
-    {
-        alias = alias?.Trim();
-        if (string.IsNullOrWhiteSpace(alias) || string.Equals(alias, AppState.Settings.Alias, StringComparison.Ordinal))
-            return;
-        await AppState.UpdateSettingsAsync(settings => settings with { Alias = alias });
-        await RestartRuntimeIfRunningAsync();
-    }
-    private async Task ChangeReceivePin(string? pin)
-    {
-        var normalized = string.IsNullOrWhiteSpace(pin) ? null : pin.Trim();
-        if (string.Equals(normalized, AppState.Settings.ReceivePin, StringComparison.Ordinal))
-            return;
-        await AppState.UpdateSettingsAsync(settings => settings with { ReceivePin = normalized });
-        await RestartRuntimeIfRunningAsync();
-    }
-    private Task ChangeAutoAccept(bool enabled) =>
-        AppState.UpdateSettingsAsync(settings => settings with { AutoAccept = enabled });
-    private Task ChangeTheme(string? value) =>
-        AppState.UpdateSettingsAsync(settings => settings with { Theme = Enum.TryParse<TonarinkTheme>(value, out var parsed) ? parsed : TonarinkTheme.System });
-    private Task ChangeLanguage(string? value) =>
-        AppState.UpdateSettingsAsync(settings => settings with { Language = Enum.TryParse<TonarinkLanguage>(value, out var parsed) ? parsed : TonarinkLanguage.System });
-    private async Task RestartRuntimeIfRunningAsync()
-    {
-        if (!Runtime.IsRunning)
-            return;
-        try
-        {
-            await Runtime.StopAsync();
-            await Runtime.StartAsync();
-            AppState.SetRuntimeStatus(running: true);
-            _error = null;
-        }
-        catch (Exception exception)
-        {
-            _error = exception.GetBaseException().Message;
-            AppState.SetRuntimeStatus(running: false, _error);
-        }
-    }
-    private async Task EnableBrowserNotificationsAsync()
-    {
-        var permission = await JS.InvokeAsync<string>("tonarink.requestNotifications");
-        if (!string.Equals(permission, "granted", StringComparison.OrdinalIgnoreCase))
-            _error = T("NotificationPermissionDenied");
-        else
-            _error = null;
-    }
+    private async Task ChangeAlias(string? alias) { alias = alias?.Trim(); if (string.IsNullOrWhiteSpace(alias) || string.Equals(alias, AppState.Settings.Alias, StringComparison.Ordinal)) return; await AppState.UpdateSettingsAsync(settings => settings with { Alias = alias }); await RestartRuntimeIfRunningAsync(); }
+    private async Task ChangeReceivePin(string? pin) { var normalized = string.IsNullOrWhiteSpace(pin) ? null : pin.Trim(); if (string.Equals(normalized, AppState.Settings.ReceivePin, StringComparison.Ordinal)) return; await AppState.UpdateSettingsAsync(settings => settings with { ReceivePin = normalized }); await RestartRuntimeIfRunningAsync(); }
+    private Task ChangeAutoAccept(bool enabled) => AppState.UpdateSettingsAsync(settings => settings with { AutoAccept = enabled });
+    private Task ChangeTheme(string? value) => AppState.UpdateSettingsAsync(settings => settings with { Theme = Enum.TryParse<TonarinkTheme>(value, out var parsed) ? parsed : TonarinkTheme.System });
+    private Task ChangeLanguage(string? value) => AppState.UpdateSettingsAsync(settings => settings with { Language = Enum.TryParse<TonarinkLanguage>(value, out var parsed) ? parsed : TonarinkLanguage.System });
+    private async Task RestartRuntimeIfRunningAsync() { if (!Runtime.IsRunning) return; try { await Runtime.StopAsync(); await Runtime.StartAsync(); AppState.SetRuntimeStatus(running: true); _error = null; } catch (Exception exception) { _error = exception.GetBaseException().Message; AppState.SetRuntimeStatus(running: false, _error); } }
+    private async Task EnableBrowserNotificationsAsync() { try { var permission = await JS.InvokeAsync<string>("tonarink.requestNotifications"); _error = string.Equals(permission, "granted", StringComparison.OrdinalIgnoreCase) ? null : T("NotificationPermissionDenied"); } catch (JSException exception) { _error = exception.Message; } }
 }

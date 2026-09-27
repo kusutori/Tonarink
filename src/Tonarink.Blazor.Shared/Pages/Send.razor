@@ -5,271 +5,127 @@
 @inject IJSRuntime JS
 
 <PageTitle>@T("Send") · Tonarink</PageTitle>
-
 <div class="page">
     <header class="page-header">
-        <div>
-            <h1>@T("Send")</h1>
-            <p>@T("SendDescription")</p>
-        </div>
-        <div class="flex items-center gap-2">
-            @if (_sendCancellation is not null)
-            {
-                <BbButton Variant="ButtonVariant.Destructive" Size="ButtonSize.Small" OnClick="CancelSend">@T("CancelTransfer")</BbButton>
-            }
-            <BbButton Variant="ButtonVariant.Outline" Size="ButtonSize.Icon" AriaLabel="@T("RefreshDevices")" OnClick="RefreshAsync" Disabled="@_busy">
-                <LucideIcon Name="refresh-cw" Class="h-4 w-4" />
-            </BbButton>
-            <BbButton Variant="ButtonVariant.Outline" Size="ButtonSize.Small" OnClick="() => _showAddress = true" Disabled="@(AppState.SendItems.Count == 0 || _busy)">
-                <LucideIcon Name="laptop" Class="h-4 w-4" />
-                @T("SendToAddress")
-            </BbButton>
+        <div><h1>@T("Send")</h1><p>@T("SendDescription")</p></div>
+        <div class="button-row">
+            @if (_sendCancellation is not null) { <FluentButton Appearance="ButtonAppearance.Outline" Class="danger-button" OnClick="CancelSend">@T("CancelTransfer")</FluentButton> }
+            <FluentButton Appearance="ButtonAppearance.Outline" IconOnly="true" Title="@T("RefreshDevices")" IconStart="@(new Icons.Regular.Size20.ArrowClockwise())" OnClick="RefreshAsync" Disabled="@_busy" />
+            <FluentButton Appearance="ButtonAppearance.Outline" OnClick="() => _showAddress = true" Disabled="@(AppState.SendItems.Count == 0 || _busy)" IconStart="@(new Icons.Regular.Size20.Desktop())">@T("SendToAddress")</FluentButton>
         </div>
     </header>
 
     <section class="action-grid">
         @if (Platform.Capabilities.IsNative)
         {
-            <BbButton Variant="ButtonVariant.Outline" Class="h-24 flex-col gap-2" OnClick="PickFilesAsync" Disabled="@(!Platform.Capabilities.CanPickFiles || _busy)">
-                <LucideIcon Name="file" Class="h-5 w-5" />
-                <span>@T("Files")</span>
-            </BbButton>
-            <BbButton Variant="ButtonVariant.Outline" Class="h-24 flex-col gap-2" OnClick="PickFoldersAsync" Disabled="@(!Platform.Capabilities.CanPickFolders || _busy)">
-                <LucideIcon Name="folder" Class="h-5 w-5" />
-                <span>@T("Folder")</span>
-            </BbButton>
+            <FluentButton Appearance="ButtonAppearance.Outline" Class="action-tile" OnClick="PickFilesAsync" Disabled="@(!Platform.Capabilities.CanPickFiles || _busy)" IconStart="@(new Icons.Regular.Size24.Document())">@T("Files")</FluentButton>
+            <FluentButton Appearance="ButtonAppearance.Outline" Class="action-tile" OnClick="PickFoldersAsync" Disabled="@(!Platform.Capabilities.CanPickFolders || _busy)" IconStart="@(new Icons.Regular.Size24.Folder())">@T("Folder")</FluentButton>
         }
         else
         {
-            <label class="file-picker">
-                <InputFile OnChange="BrowserFilesSelected" multiple />
-                <BbButton Variant="ButtonVariant.Outline" Class="h-24 flex-col gap-2 w-full">
-                    <LucideIcon Name="file" Class="h-5 w-5" />
-                    <span>@T("Files")</span>
-                </BbButton>
-            </label>
+            <label class="file-picker"><InputFile OnChange="BrowserFilesSelected" multiple /><FluentButton Appearance="ButtonAppearance.Outline" Class="action-tile" IconStart="@(new Icons.Regular.Size24.Document())">@T("Files")</FluentButton></label>
         }
-        <BbButton Variant="ButtonVariant.Outline" Class="h-24 flex-col gap-2" OnClick="() => _showText = true">
-            <LucideIcon Name="text" Class="h-5 w-5" />
-            <span>@T("Text")</span>
-        </BbButton>
-        <BbButton Variant="ButtonVariant.Outline" Class="h-24 flex-col gap-2" OnClick="PasteAsync" Disabled="@(!Platform.Capabilities.CanUseClipboard || _busy)">
-            <LucideIcon Name="clipboard" Class="h-5 w-5" />
-            <span>@T("Clipboard")</span>
-        </BbButton>
+        <FluentButton Appearance="ButtonAppearance.Outline" Class="action-tile" OnClick="() => _showText = true" IconStart="@(new Icons.Regular.Size24.TextDescription())">@T("Text")</FluentButton>
+        <FluentButton Appearance="ButtonAppearance.Outline" Class="action-tile" OnClick="PasteAsync" Disabled="@(!Platform.Capabilities.CanUseClipboard || _busy)" IconStart="@(new Icons.Regular.Size24.ClipboardPaste())">@T("Clipboard")</FluentButton>
     </section>
 
     @if (_error is not null)
     {
-        <BbAlert Variant="AlertVariant.Danger" AccentBorder Dismissible OnDismiss="() => _error = null">
-            <BbAlertTitle>@T("SendFailed")</BbAlertTitle>
-            <BbAlertDescription>@_error</BbAlertDescription>
-        </BbAlert>
+        <StatusMessage Intent="error" Title="@T("SendFailed")"><ChildContent>@_error</ChildContent></StatusMessage>
     }
 
     <div class="split-panes">
-        <BbCard>
-            <BbCardHeader>
-                <BbCardTitle>@T("ReadyToSend")</BbCardTitle>
-                <BbCardDescription>
-                    @(AppState.SendItems.Count == 0
-                        ? T("NoContentSelected")
-                        : T("QueueSummary", AppState.SendItems.Count, FormatBytes(AppState.SendItems.Sum(static item => item.Size))))
-                </BbCardDescription>
-                <BbCardAction>
-                    <BbButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Small" OnClick="AppState.ClearSendItems" Disabled="@(AppState.SendItems.Count == 0)">@T("Clear")</BbButton>
-                </BbCardAction>
-            </BbCardHeader>
-            <BbCardContent>
-                @if (AppState.SendItems.Count == 0)
-                {
-                    <BbEmpty Title="@T("NoContentSelected")" Description="@T("NoContentHint")" Size="EmptySize.Small">
-                        <Icon><LucideIcon Name="plus" /></Icon>
-                    </BbEmpty>
-                }
-                else
-                {
-                    <div class="list-stack">
-                        @foreach (var item in AppState.SendItems)
-                        {
-                            <div class="row-item">
-                                <LucideIcon Name="@(item.TextContent is null ? "file" : "file-text")" Class="h-4 w-4" />
-                                <div>
-                                    <strong>@item.Name</strong>
-                                    <small>@item.ContentType · @FormatBytes(item.Size)</small>
-                                </div>
-                                <BbButton Variant="ButtonVariant.Ghost" Size="ButtonSize.IconSmall" AriaLabel="@T("Remove")" OnClick="() => AppState.RemoveSendItem(item.Id)">
-                                    <LucideIcon Name="x" Class="h-4 w-4" />
-                                </BbButton>
-                            </div>
-                        }
-                    </div>
-                }
-            </BbCardContent>
-        </BbCard>
+        <AppCard Title="@T("ReadyToSend")" Description="@(AppState.SendItems.Count == 0 ? T("NoContentSelected") : T("QueueSummary", AppState.SendItems.Count, FormatBytes(AppState.SendItems.Sum(static item => item.Size))))">
+            <HeaderAction><FluentButton Appearance="ButtonAppearance.Subtle" OnClick="AppState.ClearSendItems" Disabled="@(AppState.SendItems.Count == 0)">@T("Clear")</FluentButton></HeaderAction>
+            <ChildContent>
+            @if (AppState.SendItems.Count == 0)
+            {
+                <EmptyState Title="@T("NoContentSelected")" Description="@T("NoContentHint")"><Icon><FluentIcon Value="@(new Icons.Regular.Size32.AddCircle())" /></Icon></EmptyState>
+            }
+            else
+            {
+                <div class="list-stack">
+                    @foreach (var item in AppState.SendItems)
+                    {
+                        <div class="row-item">
+                            <FluentIcon Value="@ItemIcon(item)" />
+                            <span><strong>@item.Name</strong><small>@item.ContentType · @FormatBytes(item.Size)</small></span>
+                            <FluentButton Appearance="ButtonAppearance.Subtle" IconOnly="true" Title="@T("Remove")" IconStart="@(new Icons.Regular.Size20.Dismiss())" OnClick="() => AppState.RemoveSendItem(item.Id)" />
+                        </div>
+                    }
+                </div>
+            }
+            </ChildContent>
+        </AppCard>
 
-        <BbCard>
-            <BbCardHeader>
-                <BbCardTitle>@T("NearbyDevices")</BbCardTitle>
-                <BbCardDescription>@T("NearbyDevicesDescription")</BbCardDescription>
-                <BbCardAction>
-                    <BbBadge Variant="BadgeVariant.Secondary">@AppState.Devices.Count</BbBadge>
-                </BbCardAction>
-            </BbCardHeader>
-            <BbCardContent>
-                @if (AppState.Devices.Count == 0)
-                {
-                    <BbEmpty Title="@T("LookingForDevices")" Description="@T("SameNetworkHint")" Size="EmptySize.Small">
-                        <Icon><LucideIcon Name="radar" /></Icon>
-                    </BbEmpty>
-                }
-                else
-                {
-                    <div class="list-stack">
-                        @foreach (var device in AppState.Devices)
-                        {
-                            <BbButton Variant="ButtonVariant.Outline" Class="row-item h-auto py-3" OnClick="() => SendAsync(device)" Disabled="@(AppState.SendItems.Count == 0 || _busy)">
-                                <BbAvatar Size="AvatarSize.Small"><BbAvatarFallback>@DeviceInitial(device.Alias)</BbAvatarFallback></BbAvatar>
-                                <div>
-                                    <strong>@device.Alias</strong>
-                                    <small>@device.Model · @device.Address:@device.Port</small>
-                                </div>
-                                <LucideIcon Name="arrow-right" Class="h-4 w-4" />
-                            </BbButton>
-                        }
-                    </div>
-                }
-            </BbCardContent>
-        </BbCard>
+        <AppCard Title="@T("NearbyDevices")" Description="@T("NearbyDevicesDescription")">
+            <HeaderAction><FluentBadge Appearance="BadgeAppearance.Tint">@AppState.Devices.Count</FluentBadge></HeaderAction>
+            <ChildContent>
+            @if (AppState.Devices.Count == 0)
+            {
+                <EmptyState Title="@T("LookingForDevices")" Description="@T("SameNetworkHint")"><Icon><FluentIcon Value="@(new Icons.Regular.Size32.LocationArrow())" /></Icon></EmptyState>
+            }
+            else
+            {
+                <div class="list-stack">
+                    @foreach (var device in AppState.Devices)
+                    {
+                        <button type="button" class="row-item interactive" @onclick="() => SendAsync(device)" disabled="@(AppState.SendItems.Count == 0 || _busy)">
+                            <span class="initial-avatar">@DeviceInitial(device.Alias)</span>
+                            <span><strong>@device.Alias</strong><small>@device.Model · @device.Address:@device.Port</small></span>
+                            <FluentIcon Value="@(new Icons.Regular.Size20.ArrowRight())" />
+                        </button>
+                    }
+                </div>
+            }
+            </ChildContent>
+        </AppCard>
     </div>
 </div>
 
-<BbDialog Open="_showText" OpenChanged="value => _showText = value">
-    <BbDialogContent>
-        <BbDialogHeader>
-            <BbDialogTitle>@T("AddText")</BbDialogTitle>
-            <BbDialogDescription>@T("AddTextDescription")</BbDialogDescription>
-        </BbDialogHeader>
-        <BbTextarea @bind-Value="_text" Placeholder="@T("TextPlaceholder")" Class="min-h-32" />
-        <BbDialogFooter>
-            <BbDialogClose>
-                <BbButton Variant="ButtonVariant.Outline">@T("Cancel")</BbButton>
-            </BbDialogClose>
-            <BbButton OnClick="AddText" Disabled="@(string.IsNullOrWhiteSpace(_text))">@T("AddToQueue")</BbButton>
-        </BbDialogFooter>
-    </BbDialogContent>
-</BbDialog>
-
-<BbDialog Open="_pinRequested" OpenChanged="value => _pinRequested = value">
-    <BbDialogContent>
-        <BbDialogHeader>
-            <BbDialogTitle>@T("PinRequired")</BbDialogTitle>
-            <BbDialogDescription>@T("PinRequiredDescription")</BbDialogDescription>
-        </BbDialogHeader>
-        <BbInput Type="InputType.Password" @bind-Value="_pin" Placeholder="@T("PinPlaceholder")" />
-        <BbDialogFooter>
-            <BbDialogClose>
-                <BbButton Variant="ButtonVariant.Outline">@T("Close")</BbButton>
-            </BbDialogClose>
-        </BbDialogFooter>
-    </BbDialogContent>
-</BbDialog>
-
-<BbDialog Open="_showAddress" OpenChanged="value => _showAddress = value">
-    <BbDialogContent>
-        <BbDialogHeader>
-            <BbDialogTitle>@T("SendToKnownAddress")</BbDialogTitle>
-            <BbDialogDescription>@T("SendToKnownAddressDescription")</BbDialogDescription>
-        </BbDialogHeader>
-        <BbInput @bind-Value="_manualAddress" Placeholder="192.168.1.8:53317" />
-        <BbDialogFooter>
-            <BbDialogClose>
-                <BbButton Variant="ButtonVariant.Outline">@T("Cancel")</BbButton>
-            </BbDialogClose>
-            <BbButton OnClick="SendToManualAddressAsync" Disabled="@(AppState.SendItems.Count == 0 || _busy)">@T("Send")</BbButton>
-        </BbDialogFooter>
-    </BbDialogContent>
-</BbDialog>
+@if (_showText)
+{
+    <div class="modal-layer" role="presentation"><section class="modal-card" role="dialog" aria-modal="true" aria-labelledby="text-dialog-title">
+        <h2 id="text-dialog-title">@T("AddText")</h2><p>@T("AddTextDescription")</p>
+        <FluentTextArea @bind-Value="_text" Placeholder="@T("TextPlaceholder")" Rows="6" />
+        <footer><FluentButton Appearance="ButtonAppearance.Outline" OnClick="() => _showText = false">@T("Cancel")</FluentButton><FluentButton Appearance="ButtonAppearance.Primary" OnClick="AddText" Disabled="@(string.IsNullOrWhiteSpace(_text))">@T("AddToQueue")</FluentButton></footer>
+    </section></div>
+}
+@if (_pinRequested)
+{
+    <div class="modal-layer" role="presentation"><section class="modal-card" role="dialog" aria-modal="true" aria-labelledby="pin-dialog-title">
+        <h2 id="pin-dialog-title">@T("PinRequired")</h2><p>@T("PinRequiredDescription")</p>
+        <FluentTextInput TextInputType="TextInputType.Password" @bind-Value="_pin" Placeholder="@T("PinPlaceholder")" />
+        <footer><FluentButton Appearance="ButtonAppearance.Primary" OnClick="() => _pinRequested = false">@T("Close")</FluentButton></footer>
+    </section></div>
+}
+@if (_showAddress)
+{
+    <div class="modal-layer" role="presentation"><section class="modal-card" role="dialog" aria-modal="true" aria-labelledby="address-dialog-title">
+        <h2 id="address-dialog-title">@T("SendToKnownAddress")</h2><p>@T("SendToKnownAddressDescription")</p>
+        <FluentTextInput @bind-Value="_manualAddress" Placeholder="192.168.1.8:53317" />
+        <footer><FluentButton Appearance="ButtonAppearance.Outline" OnClick="() => _showAddress = false">@T("Cancel")</FluentButton><FluentButton Appearance="ButtonAppearance.Primary" OnClick="SendToManualAddressAsync" Disabled="@(AppState.SendItems.Count == 0 || _busy)">@T("Send")</FluentButton></footer>
+    </section></div>
+}
 
 @code {
-    private bool _busy;
-    private bool _showText;
-    private bool _showAddress;
-    private string _text = string.Empty;
-    private string _pin = string.Empty;
-    private string _manualAddress = string.Empty;
+    private static Icon ItemIcon(ShareItem item) => item.TextContent is null
+        ? new Icons.Regular.Size20.Document()
+        : new Icons.Regular.Size20.DocumentText();
+    private bool _busy, _showText, _showAddress, _pinRequested;
+    private string _text = string.Empty, _pin = string.Empty, _manualAddress = string.Empty;
     private string? _error;
-    private bool _pinRequested;
     private CancellationTokenSource? _sendCancellation;
-
     private async Task PickFilesAsync() => await RunAsync(async () => AppState.AddSendItems(await Platform.PickFilesAsync()));
     private async Task PickFoldersAsync() => await RunAsync(async () => AppState.AddSendItems(await Platform.PickFoldersAsync()));
-    private void BrowserFilesSelected(InputFileChangeEventArgs args)
-    {
-        var items = args.GetMultipleFiles(100).Select(static file => new ShareItem(
-            Guid.NewGuid(), file.Name, file.Size, file.ContentType,
-            OpenRead: _ => ValueTask.FromResult<Stream>(file.OpenReadStream(file.Size))));
-        AppState.AddSendItems(items);
-    }
-    private async Task PasteAsync() => await RunAsync(async () =>
-    {
-        _text = Platform.Capabilities.IsNative
-            ? await Platform.ReadClipboardTextAsync() ?? string.Empty
-            : await JS.InvokeAsync<string?>("tonarink.readClipboard") ?? string.Empty;
-        _showText = true;
-    });
-    private void AddText()
-    {
-        var value = _text.Trim();
-        if (value.Length == 0) return;
-        AppState.AddSendItems([new ShareItem(Guid.NewGuid(), "message.txt", System.Text.Encoding.UTF8.GetByteCount(value), "text/plain", TextContent: value)]);
-        _text = string.Empty;
-        _showText = false;
-    }
+    private void BrowserFilesSelected(InputFileChangeEventArgs args) { var items = args.GetMultipleFiles(100).Select(static file => new ShareItem(Guid.NewGuid(), file.Name, file.Size, file.ContentType, OpenRead: _ => ValueTask.FromResult<Stream>(file.OpenReadStream(file.Size)))); AppState.AddSendItems(items); }
+    private async Task PasteAsync() => await RunAsync(async () => { if (Platform.Capabilities.IsNative) _text = await Platform.ReadClipboardTextAsync() ?? string.Empty; else try { _text = await JS.InvokeAsync<string?>("tonarink.readClipboard") ?? string.Empty; } catch (JSException exception) { throw new InvalidOperationException(T("ClipboardReadFailed"), exception); } _showText = true; });
+    private void AddText() { var value = _text.Trim(); if (value.Length == 0) return; AppState.AddSendItems([new ShareItem(Guid.NewGuid(), "message.txt", System.Text.Encoding.UTF8.GetByteCount(value), "text/plain", TextContent: value)]); _text = string.Empty; _showText = false; }
     private async Task RefreshAsync() => await RunAsync(() => Runtime.RefreshAsync());
-    private async Task SendAsync(NearbyDevice device) =>
-        await SendCoreAsync((pin, token) => Runtime.SendAsync(device, AppState.SendItems, pin, cancellationToken: token));
-
-    private async Task SendToManualAddressAsync()
-    {
-        if (!DeviceAddress.TryParse(_manualAddress, out _, out _))
-        {
-            _error = T("InvalidAddress");
-            return;
-        }
-        _showAddress = false;
-        await SendCoreAsync((pin, token) => Runtime.SendToAddressAsync(_manualAddress, AppState.SendItems, pin, cancellationToken: token));
-    }
-
-    private async Task SendCoreAsync(Func<string?, CancellationToken, Task> send)
-    {
-        _sendCancellation = new CancellationTokenSource();
-        await RunAsync(async () =>
-        {
-            try
-            {
-                await send(string.IsNullOrWhiteSpace(_pin) ? null : _pin, _sendCancellation.Token);
-            }
-            catch (TransferPinRequiredException exception)
-            {
-                _pinRequested = true;
-                throw new InvalidOperationException(exception.InvalidPin
-                    ? T("IncorrectPin")
-                    : T("DeviceRequiresPin"), exception);
-            }
-            catch (TransferPinRateLimitedException exception)
-            {
-                throw new InvalidOperationException(T("TooManyPinAttempts"), exception);
-            }
-        });
-        _sendCancellation.Dispose();
-        _sendCancellation = null;
-    }
+    private async Task SendAsync(NearbyDevice device) => await SendCoreAsync((pin, token) => Runtime.SendAsync(device, AppState.SendItems, pin, cancellationToken: token));
+    private async Task SendToManualAddressAsync() { if (!DeviceAddress.TryParse(_manualAddress, out _, out _)) { _error = T("InvalidAddress"); return; } _showAddress = false; await SendCoreAsync((pin, token) => Runtime.SendToAddressAsync(_manualAddress, AppState.SendItems, pin, cancellationToken: token)); }
+    private async Task SendCoreAsync(Func<string?, CancellationToken, Task<RuntimeSendResult>> send) { _sendCancellation = new(); await RunAsync(async () => { var result = await send(string.IsNullOrWhiteSpace(_pin) ? null : _pin, _sendCancellation.Token); switch (result) { case RuntimeSendResult.Completed: case RuntimeSendResult.Cancelled: break; case RuntimeSendResult.PinRequired required: _pinRequested = true; throw new InvalidOperationException(required.InvalidPin ? T("IncorrectPin") : T("DeviceRequiresPin")); case RuntimeSendResult.PinRateLimited: throw new InvalidOperationException(T("TooManyPinAttempts")); case RuntimeSendResult.PeerBusy: throw new InvalidOperationException(T("DeviceBusy")); case RuntimeSendResult.Declined: throw new InvalidOperationException(T("TransferDeclined")); case RuntimeSendResult.Failed failed: throw new InvalidOperationException(failed.Message); } }); _sendCancellation.Dispose(); _sendCancellation = null; }
     private void CancelSend() => _sendCancellation?.Cancel();
-    private async Task RunAsync(Func<Task> action)
-    {
-        _busy = true; _error = null;
-        try { await action(); } catch (Exception exception) { _error = exception.Message; } finally { _busy = false; }
-    }
+    private async Task RunAsync(Func<Task> action) { _busy = true; _error = null; try { await action(); } catch (Exception exception) { _error = exception.Message; } finally { _busy = false; } }
     private static string DeviceInitial(string alias) => string.IsNullOrWhiteSpace(alias) ? "?" : alias[..1].ToUpperInvariant();
 }
