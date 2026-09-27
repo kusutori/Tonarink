@@ -1518,7 +1518,7 @@ sealed class SendPage : Component<SendPageProps>
             var content = Grid(
                 columns: [GridSize.Auto, GridSize.Star()],
                 rows: [GridSize.Auto],
-                Icon(ItemIcon(item)).AccessibilityHidden()
+                Icon(FileTypeGlyphs.ForSendItem(item.Kind, item.DisplayName)).AccessibilityHidden()
                     .VAlign(VerticalAlignment.Center)
                     .Grid(column: 0),
                 VStack(2,
@@ -1758,14 +1758,6 @@ sealed class SendPage : Component<SendPageProps>
         TransferState.Completed => t.Message(new("App", "SentToDevice"), ("device", deviceAlias)),
         TransferState.Cancelled => t.Message(new("App", "TransferCancelled")),
         _ => t.Message(new("App", "TransferFailed")),
-    };
-
-    private static string ItemIcon(SelectedSendItem item) => item.Kind switch
-    {
-        "text" => "Edit",
-        "clipboard" => "Paste",
-        "folder" => "Folder",
-        _ => FileTypeGlyphs.ForFileName(item.DisplayName),
     };
 
     private static string ItemKindLabel(IntlAccessor t, string kind) => kind switch

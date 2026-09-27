@@ -18,6 +18,8 @@ enum FileTypeGlyphKind
     Ebook,
     Contact,
     Subtitle,
+    TextMessage,
+    Clipboard,
 }
 
 static class FileTypeGlyphs
@@ -38,6 +40,8 @@ static class FileTypeGlyphs
     private const string EbookGlyph = "\uE8F1";
     private const string ContactGlyph = "\uE716";
     private const string SubtitleGlyph = "\uED1E";
+    private const string TextMessageGlyph = "\uE70F";
+    private const string ClipboardGlyph = "\uE77F";
 
     private static readonly HashSet<string> ArchiveExtensions = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -105,6 +109,9 @@ static class FileTypeGlyphs
     public static string ForPath(string path) =>
         ForKind(Directory.Exists(path) ? FileTypeGlyphKind.Folder : KindForFileName(path));
 
+    public static string ForSendItem(string? kind, string? fileName) =>
+        ForKind(KindForSendItem(kind, fileName));
+
     public static string ForKind(FileTypeGlyphKind kind) => kind switch
     {
         FileTypeGlyphKind.Folder => FolderGlyph,
@@ -122,7 +129,17 @@ static class FileTypeGlyphs
         FileTypeGlyphKind.Ebook => EbookGlyph,
         FileTypeGlyphKind.Contact => ContactGlyph,
         FileTypeGlyphKind.Subtitle => SubtitleGlyph,
+        FileTypeGlyphKind.TextMessage => TextMessageGlyph,
+        FileTypeGlyphKind.Clipboard => ClipboardGlyph,
         _ => DocumentGlyph,
+    };
+
+    public static FileTypeGlyphKind KindForSendItem(string? kind, string? fileName) => kind switch
+    {
+        "text" => FileTypeGlyphKind.TextMessage,
+        "clipboard" => FileTypeGlyphKind.Clipboard,
+        "folder" => FileTypeGlyphKind.Folder,
+        _ => KindForFileName(fileName),
     };
 
     public static FileTypeGlyphKind KindForFileName(string? fileName)
