@@ -192,6 +192,9 @@
   <data name="DeselectSendItem" xml:space="preserve"><value>取消选择 {item}</value></data>
   <data name="SendItemPreviewHint" xml:space="preserve"><value>按空格键使用 PowerToys Peek 预览。</value></data>
   <data name="SendItemRenamed" xml:space="preserve"><value>已重命名 · {kind} · {size}</value></data>
+  <data name="Share" xml:space="preserve"><value>分享</value></data>
+  <data name="Undo" xml:space="preserve"><value>撤回</value></data>
+  <data name="ShareFileFailed" xml:space="preserve"><value>无法通过 Windows 分享此文件。</value></data>
   <data name="SettingsExperimental" xml:space="preserve"><value>实验性扩展</value></data>
   <data name="SettingsPowerToysPeek" xml:space="preserve"><value>PowerToys Peek</value></data>
   <data name="SettingsPowerToysPeekDescription" xml:space="preserve"><value>与 PowerToys Peek 文件预览器的可选集成。</value></data>

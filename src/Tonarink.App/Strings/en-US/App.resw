@@ -192,6 +192,9 @@
   <data name="DeselectSendItem" xml:space="preserve"><value>Deselect {item}</value></data>
   <data name="SendItemPreviewHint" xml:space="preserve"><value>Press Space to preview with PowerToys Peek.</value></data>
   <data name="SendItemRenamed" xml:space="preserve"><value>Renamed · {kind} · {size}</value></data>
+  <data name="Share" xml:space="preserve"><value>Share</value></data>
+  <data name="Undo" xml:space="preserve"><value>Undo</value></data>
+  <data name="ShareFileFailed" xml:space="preserve"><value>Windows sharing is unavailable for this file.</value></data>
   <data name="SettingsExperimental" xml:space="preserve"><value>Experimental extensions</value></data>
   <data name="SettingsPowerToysPeek" xml:space="preserve"><value>PowerToys Peek</value></data>
   <data name="SettingsPowerToysPeekDescription" xml:space="preserve"><value>Optional integration with the PowerToys Peek file previewer.</value></data>

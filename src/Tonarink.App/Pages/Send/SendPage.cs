@@ -11,6 +11,7 @@ using Microsoft.UI.Xaml.Controls;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage;
 using Windows.System;
+using MenuFlyoutItemBase = Microsoft.UI.Reactor.Core.MenuFlyoutItemBase;
 using static Microsoft.UI.Reactor.Factories;
 using static Tonarink.Utilities.ByteSize;
 using static Tonarink.Components.Devices.DeviceVisuals;
@@ -115,7 +116,14 @@ sealed class SendPage : Component<SendPageProps>
             new TransferUiState.Idle(t.Message(new("App", "SendHint"))));
         var sendCancellationRef = UseRef<CancellationTokenSource?>();
         var searchingPlayerRef = UseRef<AnimatedVisualPlayer?>();
+        var shareSource = UseRef<WindowsShareSource?>();
         var shareTargetPayloadId = Props.ShareTargetPayload?.Id ?? Guid.Empty;
+
+        UseEffect(() => () =>
+        {
+            shareSource.Current?.Dispose();
+            shareSource.Current = null;
+        });
 
         // A cached page keeps its previous hook state while it is outside the active tree.
         // Reconcile it before the transition and read the live window bounds so a resize
@@ -288,13 +296,23 @@ sealed class SendPage : Component<SendPageProps>
                                 item.LocalPath,
                                 Props.PowerToysPeekExecutablePath),
                             Props.PowerToysPeekExecutablePath,
+                            window?.NativeWindow is not null
+                            && item.LocalPath is { } path
+                            && File.Exists(path),
                             () => setSelectedPreviewItemId(
                                 selectedPreviewItemId == item.Id ? null : item.Id),
+                            () => ShareItemAsync(item),
                             () =>
                             {
                                 setRenameFileName(ProtocolLeafName(item.Item.FileName));
                                 setRenameItemId(item.Id);
                             },
+                            () => updateSelectedItems(current => (SelectedSendItem[])
+                            [
+                                .. current.Select(candidate => candidate.Id == item.Id
+                                    ? UndoRenameSelectedItem(candidate)
+                                    : candidate)
+                            ]),
                             () =>
                             {
                                 if (selectedPreviewItemId == item.Id)
@@ -1326,6 +1344,18 @@ sealed class SendPage : Component<SendPageProps>
             }
         }
 
+        async Task ShareItemAsync(SelectedSendItem item)
+        {
+            if (window?.NativeWindow is not { } nativeWindow || item.LocalPath is not { } path)
+                return;
+
+            var source = shareSource.Current ??= new WindowsShareSource(
+                nativeWindow,
+                t.Message(new("App", "ShareFileFailed")));
+            if (!await source.ShareFileAsync(path, item.DisplayName).ConfigureAwait(true))
+                setPickerMessage(t.Message(new("App", "ShareFileFailed")));
+        }
+
         void PublishTransferOverlay(
             LocalSendDevice device,
             IReadOnlyList<SendItem> items,
@@ -1420,8 +1450,11 @@ sealed class SendPage : Component<SendPageProps>
         bool IsSelectable,
         bool CanPreview,
         string PeekExecutablePath,
+        bool CanShare,
         Action Select,
+        Func<Task> Share,
         Action Rename,
+        Action UndoRename,
         Action Remove);
 
     private sealed class SelectedItemRow : Component<SelectedItemRowProps>
@@ -1447,6 +1480,22 @@ sealed class SendPage : Component<SendPageProps>
                 Accelerator = Accelerator(VirtualKey.F2),
                 Execute = Props.Rename,
             });
+            var shareCommand = UseCommand(new Command
+            {
+                Label = t.Message(new("App", "Share")),
+                Icon = new FontIconData("\uE72D"),
+                Accelerator = Accelerator(VirtualKey.F8),
+                CanExecute = Props.CanShare,
+                ExecuteAsync = Props.Share,
+            });
+            var undoRenameCommand = UseCommand(new Command
+            {
+                Label = t.Message(new("App", "Undo")),
+                Icon = new FontIconData("\uE7A7"),
+                Accelerator = Accelerator(VirtualKey.Z, VirtualKeyModifiers.Control),
+                CanExecute = item.IsRenamed,
+                Execute = Props.UndoRename,
+            });
             var removeCommand = UseCommand(new Command
             {
                 Label = t.Message(new("App", "Remove")),
@@ -1455,9 +1504,17 @@ sealed class SendPage : Component<SendPageProps>
                 Execute = Props.Remove,
             });
 
-            Element ContextMenu() => Props.IsSelectable
-                ? MenuItems(MenuItem(previewCommand), MenuItem(renameCommand), MenuItem(removeCommand))
-                : MenuItems(MenuItem(renameCommand), MenuItem(removeCommand));
+            Element ContextMenu()
+            {
+                var items = new List<MenuFlyoutItemBase>();
+                if (Props.IsSelectable)
+                    items.Add(MenuItem(previewCommand));
+                items.Add(MenuItem(shareCommand));
+                items.Add(MenuItem(renameCommand));
+                items.Add(MenuItem(undoRenameCommand));
+                items.Add(MenuItem(removeCommand));
+                return MenuItems(items.ToArray());
+            }
             var content = Grid(
                 columns: [GridSize.Auto, GridSize.Star()],
                 rows: [GridSize.Auto],
@@ -1519,7 +1576,9 @@ sealed class SendPage : Component<SendPageProps>
                     Props.IsSelectable && Props.IsSelected ? Theme.Accent : Theme.CardStroke,
                     1)
                 .WithContextFlyout(ContextMenu());
-            return CommandHost([previewCommand, renameCommand, removeCommand], row);
+            return CommandHost(
+                [previewCommand, shareCommand, renameCommand, undoRenameCommand, removeCommand],
+                row);
         }
     }
 
@@ -1540,6 +1599,17 @@ sealed class SendPage : Component<SendPageProps>
             OriginalDisplayName = originalDisplayName,
         };
     }
+
+    private static SelectedSendItem UndoRenameSelectedItem(SelectedSendItem item) =>
+        item.OriginalFileName is not { } originalFileName
+            ? item
+            : item with
+            {
+                Item = item.Item with { FileName = originalFileName },
+                DisplayName = item.OriginalDisplayName ?? originalFileName,
+                OriginalFileName = null,
+                OriginalDisplayName = null,
+            };
 
     private static string ProtocolLeafName(string protocolName)
     {
