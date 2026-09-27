@@ -166,7 +166,7 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
         var renameFileCommand = UseCommand(UseMemo(() => new Command<IncomingFileCommandTarget>
             {
                 Label = t.Message(new("App", "Rename")),
-                Icon = new FontIconData("\uE70F"),
+                Icon = new FontIconData("\uE8AC"),
                 Accelerator = Accelerator(VirtualKey.F2),
                 CanExecute = canEdit,
                 Execute = target => OpenRenameDialog(target.ItemId, target.DisplayName),

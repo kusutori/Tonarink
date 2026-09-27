@@ -278,32 +278,32 @@ sealed class SendPage : Component<SendPageProps>
                 t),
             _ => VStack(8,
             [
-                .. selectedItems.Select((item, index) => SelectedItemRow(
-                        item,
-                        selectedPreviewItemId == item.Id,
-                        Props.PowerToysPeekPreviewEnabled,
-                        Props.PowerToysPeekPreviewEnabled
-                        && PowerToysPeekLauncher.CanPreview(
-                            item.LocalPath,
-                            Props.PowerToysPeekExecutablePath),
-                        Props.PowerToysPeekExecutablePath,
-                        () => setSelectedPreviewItemId(
-                            selectedPreviewItemId == item.Id ? null : item.Id),
-                        () =>
-                        {
-                            setRenameFileName(ProtocolLeafName(item.Item.FileName));
-                            setRenameItemId(item.Id);
-                        },
-                        () =>
-                        {
-                            if (selectedPreviewItemId == item.Id)
-                                setSelectedPreviewItemId(null);
-                            updateSelectedItems(current => (SelectedSendItem[])
-                            [
-                                .. current.Where(candidate => candidate.Id != item.Id)
-                            ]);
-                        },
-                        t)
+                .. selectedItems.Select((item, index) =>
+                    Component<SelectedItemRow, SelectedItemRowProps>(new(
+                            item,
+                            selectedPreviewItemId == item.Id,
+                            Props.PowerToysPeekPreviewEnabled,
+                            Props.PowerToysPeekPreviewEnabled
+                            && PowerToysPeekLauncher.CanPreview(
+                                item.LocalPath,
+                                Props.PowerToysPeekExecutablePath),
+                            Props.PowerToysPeekExecutablePath,
+                            () => setSelectedPreviewItemId(
+                                selectedPreviewItemId == item.Id ? null : item.Id),
+                            () =>
+                            {
+                                setRenameFileName(ProtocolLeafName(item.Item.FileName));
+                                setRenameItemId(item.Id);
+                            },
+                            () =>
+                            {
+                                if (selectedPreviewItemId == item.Id)
+                                    setSelectedPreviewItemId(null);
+                                updateSelectedItems(current => (SelectedSendItem[])
+                                [
+                                    .. current.Where(candidate => candidate.Id != item.Id)
+                                ]);
+                            }))
                     .PositionInSet(index + 1, selectedItems.Count)
                     .WithKey(item.Id.ToString("N")))
             ]),
@@ -1414,108 +1414,113 @@ sealed class SendPage : Component<SendPageProps>
             .VAlign(VerticalAlignment.Stretch);
     }
 
-    private static Element SelectedItemRow(
-        SelectedSendItem item,
-        bool isSelected,
-        bool isSelectable,
-        bool canPreview,
-        string peekExecutablePath,
-        Action select,
-        Action rename,
-        Action remove,
-        IntlAccessor t)
+    private sealed record SelectedItemRowProps(
+        SelectedSendItem Item,
+        bool IsSelected,
+        bool IsSelectable,
+        bool CanPreview,
+        string PeekExecutablePath,
+        Action Select,
+        Action Rename,
+        Action Remove);
+
+    private sealed class SelectedItemRow : Component<SelectedItemRowProps>
     {
-        void Preview() => PowerToysPeekLauncher.TryPreview(item.LocalPath, peekExecutablePath);
-
-        var previewCommand = new Command
+        public override Element Render()
         {
-            Label = t.Message(new("App", "Preview")),
-            Icon = new FontIconData("\uE890"),
-            CanExecute = canPreview,
-            Execute = Preview,
-        };
-        var removeCommand = new Command
-        {
-            Label = t.Message(new("App", "Remove")),
-            Icon = new SymbolIconData("Delete"),
-            Execute = remove,
-        };
-        var renameCommand = new Command
-        {
-            Label = t.Message(new("App", "Rename")),
-            Icon = new FontIconData("\uE70F"),
-            Execute = rename,
-        };
-        Element ContextMenu() => isSelectable
-            ? MenuItems(MenuItem(previewCommand), MenuItem(renameCommand), MenuItem(removeCommand))
-            : MenuItems(MenuItem(renameCommand), MenuItem(removeCommand));
-        var content = Grid(
-            columns: [GridSize.Auto, GridSize.Star()],
-            rows: [GridSize.Auto],
-            Icon(ItemIcon(item)).AccessibilityHidden()
-                .VAlign(VerticalAlignment.Center)
-                .Grid(column: 0),
-            VStack(2,
-                    TextBlock(item.DisplayName)
-                        .TextTrimming(TextTrimming.CharacterEllipsis)
-                        .ToolTip(item.DisplayName)
-                        .Foreground(Theme.PrimaryText),
-                    Caption(item.IsRenamed
-                            ? t.Message(
-                                new("App", "SendItemRenamed"),
-                                ("kind", ItemKindLabel(t, item.Kind)),
-                                ("size", FormatBytes(item.Length)))
-                            : t.Message(
-                                new("App", "ItemKindAndSize"),
-                                ("kind", ItemKindLabel(t, item.Kind)),
-                                ("size", FormatBytes(item.Length))))
-                        .Foreground(item.IsRenamed ? Theme.SystemCaution : Theme.SecondaryText))
-                .Margin(horizontal: 12, vertical: 0)
-                .Grid(column: 1));
-        Element itemContent = isSelectable
-            ? Button(content.Margin(right: 52), select)
-                .GhostButton()
-                .Padding(12)
-                .HAlign(HorizontalAlignment.Stretch)
-                .HorizontalContentAlignment(HorizontalAlignment.Stretch)
-                .AutomationName(t.Message(
-                    new("App", isSelected ? "DeselectSendItem" : "SelectSendItem"),
-                    ("item", item.DisplayName)))
-                .HelpText(canPreview
-                    ? t.Message(new("App", "SendItemPreviewHint"))
-                    : string.Empty)
-                .WithKey($"{item.Id:N}:{peekExecutablePath}:{canPreview}")
-                .OnMount(element => element.PreviewKeyDown += (_, args) =>
-                {
-                    if (args.Key != VirtualKey.Space || !canPreview)
-                        return;
+            var t = UseIntl();
+            var item = Props.Item;
+            var previewCommand = UseCommand(new Command
+            {
+                Label = t.Message(new("App", "Preview")),
+                Icon = new FontIconData("\uE890"),
+                Accelerator = Accelerator(VirtualKey.Space),
+                CanExecute = Props.CanPreview,
+                Execute = () => PowerToysPeekLauncher.TryPreview(
+                    item.LocalPath,
+                    Props.PeekExecutablePath),
+            });
+            var renameCommand = UseCommand(new Command
+            {
+                Label = t.Message(new("App", "Rename")),
+                Icon = new FontIconData("\uE8AC"),
+                Accelerator = Accelerator(VirtualKey.F2),
+                Execute = Props.Rename,
+            });
+            var removeCommand = UseCommand(new Command
+            {
+                Label = t.Message(new("App", "Remove")),
+                Icon = new SymbolIconData("Delete"),
+                Accelerator = Accelerator(VirtualKey.Delete),
+                Execute = Props.Remove,
+            });
 
-                    args.Handled = true;
-                    Preview();
-                })
-            : content.Margin(left: 12, top: 12, right: 64, bottom: 12);
+            Element ContextMenu() => Props.IsSelectable
+                ? MenuItems(MenuItem(previewCommand), MenuItem(renameCommand), MenuItem(removeCommand))
+                : MenuItems(MenuItem(renameCommand), MenuItem(removeCommand));
+            var content = Grid(
+                columns: [GridSize.Auto, GridSize.Star()],
+                rows: [GridSize.Auto],
+                Icon(ItemIcon(item)).AccessibilityHidden()
+                    .VAlign(VerticalAlignment.Center)
+                    .Grid(column: 0),
+                VStack(2,
+                        TextBlock(item.DisplayName)
+                            .TextTrimming(TextTrimming.CharacterEllipsis)
+                            .ToolTip(item.DisplayName)
+                            .Foreground(Theme.PrimaryText),
+                        Caption(item.IsRenamed
+                                ? t.Message(
+                                    new("App", "SendItemRenamed"),
+                                    ("kind", ItemKindLabel(t, item.Kind)),
+                                    ("size", FormatBytes(item.Length)))
+                                : t.Message(
+                                    new("App", "ItemKindAndSize"),
+                                    ("kind", ItemKindLabel(t, item.Kind)),
+                                    ("size", FormatBytes(item.Length))))
+                            .Foreground(item.IsRenamed ? Theme.SystemCaution : Theme.SecondaryText))
+                    .Margin(horizontal: 12, vertical: 0)
+                    .Grid(column: 1));
+            Element itemContent = Props.IsSelectable
+                ? Button(content.Margin(right: 52), Props.Select)
+                    .GhostButton()
+                    .Padding(12)
+                    .HAlign(HorizontalAlignment.Stretch)
+                    .HorizontalContentAlignment(HorizontalAlignment.Stretch)
+                    .AutomationName(t.Message(
+                        new("App", Props.IsSelected ? "DeselectSendItem" : "SelectSendItem"),
+                        ("item", item.DisplayName)))
+                    .HelpText(Props.CanPreview
+                        ? t.Message(new("App", "SendItemPreviewHint"))
+                        : string.Empty)
+                : content.Margin(left: 12, top: 12, right: 64, bottom: 12);
 
-        return Border(
-                Grid(
-                    columns: [GridSize.Star()],
-                    rows: [GridSize.Auto],
-                    itemContent
-                        .WithContextFlyout(ContextMenu())
-                        .Grid(row: 0),
-                    Button(Icon("Delete").AccessibilityHidden(), remove)
-                        .AutomationName(t.Message(new("App", "RemoveItem"), ("item", item.DisplayName)))
-                        .ToolTip(t.Message(new("App", "Remove")))
-                        .WithContextFlyout(ContextMenu())
-                        .HAlign(HorizontalAlignment.Right)
-                        .VAlign(VerticalAlignment.Center)
-                        .Margin(right: 12)
-                        .Grid(row: 0)))
-            .CornerRadius(8)
-            .Background(Theme.SubtleFill)
-            .WithBorder(
-                isSelectable && isSelected ? Theme.Accent : Theme.CardStroke,
-                1)
-            .WithContextFlyout(ContextMenu());
+            var row = Border(
+                    Grid(
+                        columns: [GridSize.Star()],
+                        rows: [GridSize.Auto],
+                        itemContent
+                            .WithContextFlyout(ContextMenu())
+                            .Grid(row: 0),
+                        Button(
+                                Icon(removeCommand.Icon!).AccessibilityHidden(),
+                                () => removeCommand.Execute?.Invoke())
+                            .AutomationName(t.Message(new("App", "RemoveItem"), ("item", item.DisplayName)))
+                            .ToolTip(removeCommand.Label)
+                            .IsEnabled(removeCommand.IsEnabled)
+                            .WithContextFlyout(ContextMenu())
+                            .HAlign(HorizontalAlignment.Right)
+                            .VAlign(VerticalAlignment.Center)
+                            .Margin(right: 12)
+                            .Grid(row: 0)))
+                .CornerRadius(8)
+                .Background(Theme.SubtleFill)
+                .WithBorder(
+                    Props.IsSelectable && Props.IsSelected ? Theme.Accent : Theme.CardStroke,
+                    1)
+                .WithContextFlyout(ContextMenu());
+            return CommandHost([previewCommand, renameCommand, removeCommand], row);
+        }
     }
 
     private static SelectedSendItem RenameSelectedItem(SelectedSendItem item, string leafName)
