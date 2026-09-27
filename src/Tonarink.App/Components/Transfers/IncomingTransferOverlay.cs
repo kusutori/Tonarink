@@ -302,15 +302,28 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                     () => setShowQuickActions(false),
                     names => updateTargetFileNames(current =>
                         IncomingFileCard.ApplyQuickActionNames(current, request.Items, names)))),
-                IncomingFileCard.RenameDialog(
-                    t,
-                    request,
+                Component<RenameItemDialog, RenameItemDialogProps>(new(
                     Props.Theme,
-                    renameItemId,
+                    renameItemId is not null,
                     renameFileName,
                     setRenameFileName,
-                    setRenameItemId,
-                    updateTargetFileNames),
+                    fileName =>
+                    {
+                        if (renameItemId is not { } itemId)
+                            return;
+
+                        var originalName = request.Items.First(item => item.Id == itemId).FileName;
+                        updateTargetFileNames(current => IncomingFileCard.CommitRename(
+                            current,
+                            itemId,
+                            fileName,
+                            originalName));
+                    },
+                    () =>
+                    {
+                        setRenameItemId(null);
+                        setRenameFileName(string.Empty);
+                    })),
                 announce.Region)
             .Transition(Transition.Enter(new FadeTransition()))
             .FocusTrap(focusTrap)

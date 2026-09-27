@@ -100,57 +100,6 @@ static class IncomingFileCard
             .OnUnmountAdd(element => model.ClearFileCardElement(element));
     }
 
-    public static Element RenameDialog(
-        IntlAccessor t,
-        IncomingTransferRequest request,
-        ElementTheme theme,
-        string? renameItemId,
-        string renameFileName,
-        Action<string> setRenameFileName,
-        Action<string?> setRenameItemId,
-        Action<Func<IReadOnlyDictionary<string, string>, IReadOnlyDictionary<string, string>>> updateTargetFileNames)
-    {
-        var validName = IsValidTargetFileName(renameFileName);
-        return (ContentDialog(
-                t.Message(new("App", "Rename")),
-                VStack(6,
-                    TextBox(renameFileName, setRenameFileName)
-                        .Header(t.Message(new("App", "Name")))
-                        .AutomationName(t.Message(new("App", "Name")))
-                        .HelpText(validName || string.IsNullOrWhiteSpace(renameFileName)
-                            ? string.Empty
-                            : t.Message(new("App", "InvalidFileName")))
-                        .Required(),
-                    validName || string.IsNullOrWhiteSpace(renameFileName)
-                        ? null
-                        : Caption(t.Message(new("App", "InvalidFileName")))
-                            .Foreground(Theme.SystemCritical)
-                            .LiveRegion(AutomationLiveSetting.Assertive)),
-                primaryButtonText: t.Message(new("App", "Save"))) with
-        {
-            IsOpen = renameItemId is not null,
-            SecondaryButtonText = t.Message(new("App", "Cancel")),
-            DefaultButton = ContentDialogButton.Primary,
-            IsPrimaryButtonEnabled = validName,
-            OnClosed = result =>
-            {
-                var itemId = renameItemId;
-                if (result == ContentDialogResult.Primary && itemId is not null && validName)
-                {
-                    var originalName = request.Items.First(item => item.Id == itemId).FileName;
-                    updateTargetFileNames(current => CommitRename(
-                        current,
-                        itemId,
-                        renameFileName.Trim(),
-                        originalName));
-                }
-
-                setRenameItemId(null);
-                setRenameFileName(string.Empty);
-            },
-        }).Themed(theme);
-    }
-
     public static IReadOnlySet<string> ToggleItem(IReadOnlySet<string> current, string itemId)
     {
         var next = new HashSet<string>(current, StringComparer.Ordinal);
@@ -215,16 +164,6 @@ static class IncomingFileCard
         else
             next[itemId] = fileName;
         return next;
-    }
-
-    public static bool IsValidTargetFileName(string value)
-    {
-        var name = value.Trim();
-        return name.Length > 0
-               && !name.EndsWith('.')
-               && !name.EndsWith(' ')
-               && name.IndexOfAny(Path.GetInvalidFileNameChars()) < 0
-               && !name.Contains(':', StringComparison.Ordinal);
     }
 
     private static Element?[] CollapsedRows(IncomingFileCardModel model)

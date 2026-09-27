@@ -724,47 +724,28 @@ sealed class SendPage : Component<SendPageProps>
         }
 
         Element RenameDialog()
-        {
-            var validName = IncomingFileCard.IsValidTargetFileName(renameFileName);
-            return (ContentDialog(
-                    t.Message(new("App", "Rename")),
-                    VStack(6,
-                        TextBox(renameFileName, setRenameFileName)
-                            .Header(t.Message(new("App", "Name")))
-                            .AutomationName(t.Message(new("App", "Name")))
-                            .HelpText(validName || string.IsNullOrWhiteSpace(renameFileName)
-                                ? string.Empty
-                                : t.Message(new("App", "InvalidFileName")))
-                            .Required(),
-                        validName || string.IsNullOrWhiteSpace(renameFileName)
-                            ? null
-                            : Caption(t.Message(new("App", "InvalidFileName")))
-                                .Foreground(Theme.SystemCritical)
-                                .LiveRegion(AutomationLiveSetting.Assertive)),
-                    primaryButtonText: t.Message(new("App", "Save"))) with
-            {
-                IsOpen = renameItemId is not null,
-                SecondaryButtonText = t.Message(new("App", "Cancel")),
-                DefaultButton = ContentDialogButton.Primary,
-                IsPrimaryButtonEnabled = validName,
-                OnClosed = result =>
+            => Component<RenameItemDialog, RenameItemDialogProps>(new(
+                Props.Theme,
+                renameItemId is not null,
+                renameFileName,
+                setRenameFileName,
+                fileName =>
                 {
-                    var itemId = renameItemId;
-                    if (result == ContentDialogResult.Primary && itemId is not null && validName)
-                    {
-                        updateSelectedItems(current => (SelectedSendItem[])
-                        [
-                            .. current.Select(item => item.Id == itemId
-                                ? RenameSelectedItem(item, renameFileName.Trim())
-                                : item)
-                        ]);
-                    }
+                    if (renameItemId is not { } itemId)
+                        return;
 
+                    updateSelectedItems(current => (SelectedSendItem[])
+                    [
+                        .. current.Select(item => item.Id == itemId
+                            ? RenameSelectedItem(item, fileName)
+                            : item)
+                    ]);
+                },
+                () =>
+                {
                     setRenameItemId(null);
                     setRenameFileName(string.Empty);
-                },
-            }).Themed(Props.Theme);
-        }
+                }));
 
         async Task PickFileAsync()
         {
@@ -1478,7 +1459,7 @@ sealed class SendPage : Component<SendPageProps>
                     TextBlock(item.DisplayName)
                         .TextTrimming(TextTrimming.CharacterEllipsis)
                         .ToolTip(item.DisplayName)
-                        .Foreground(item.IsRenamed ? Theme.SystemCaution : Theme.PrimaryText),
+                        .Foreground(Theme.PrimaryText),
                     Caption(item.IsRenamed
                             ? t.Message(
                                 new("App", "SendItemRenamed"),
