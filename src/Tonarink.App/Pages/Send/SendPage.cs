@@ -1387,7 +1387,7 @@ sealed class SendPage : Component<SendPageProps>
 
         var previewCommand = new Command
         {
-            Label = t.Message(new("App", "PreviewWithPowerToysPeek")),
+            Label = t.Message(new("App", "Preview")),
             Icon = new FontIconData("\uE890"),
             Execute = Preview,
         };
@@ -1418,8 +1418,9 @@ sealed class SendPage : Component<SendPageProps>
                 .Margin(horizontal: 12, vertical: 0)
                 .Grid(column: 1));
         Element itemContent = previewEnabled
-            ? Button(content, select)
+            ? Button(content.Margin(right: 52), select)
                 .GhostButton()
+                .Padding(12)
                 .HAlign(HorizontalAlignment.Stretch)
                 .HorizontalContentAlignment(HorizontalAlignment.Stretch)
                 .AutomationName(t.Message(
@@ -1436,26 +1437,28 @@ sealed class SendPage : Component<SendPageProps>
                     select();
                     Preview();
                 })
-            : content;
+            : content.Margin(left: 12, top: 12, right: 64, bottom: 12);
 
         return Border(
                 Grid(
-                    columns: [GridSize.Star(), GridSize.Auto],
+                    columns: [GridSize.Star()],
                     rows: [GridSize.Auto],
                     itemContent
                         .WithContextFlyout(ContextMenu())
-                        .Grid(column: 0),
+                        .Grid(row: 0),
                     Button(Icon("Delete").AccessibilityHidden(), remove)
                         .AutomationName(t.Message(new("App", "RemoveItem"), ("item", item.DisplayName)))
                         .ToolTip(t.Message(new("App", "Remove")))
                         .WithContextFlyout(ContextMenu())
-                        .Grid(column: 1)))
-            .Padding(12)
+                        .HAlign(HorizontalAlignment.Right)
+                        .VAlign(VerticalAlignment.Center)
+                        .Margin(right: 12)
+                        .Grid(row: 0)))
             .CornerRadius(8)
             .Background(Theme.SubtleFill)
             .WithBorder(
                 previewEnabled && isSelected ? Theme.Accent : Theme.CardStroke,
-                previewEnabled ? 2 : 1)
+                1)
             .WithContextFlyout(ContextMenu());
     }
 

@@ -187,7 +187,7 @@
   <data name="Port" xml:space="preserve"><value>Port</value></data>
   <data name="PortInUseHint" xml:space="preserve"><value>Check whether port 53317 is in use by Tonarink or another LocalSend-compatible app.</value></data>
   <data name="PreparingForDevice" xml:space="preserve"><value>Preparing to send to {device}…</value></data>
-  <data name="PreviewWithPowerToysPeek" xml:space="preserve"><value>Preview with PowerToys Peek</value></data>
+  <data name="Preview" xml:space="preserve"><value>Preview</value></data>
   <data name="SelectSendItemForPreview" xml:space="preserve"><value>Select {item} for preview</value></data>
   <data name="SendItemPreviewHint" xml:space="preserve"><value>Press Space to preview with PowerToys Peek.</value></data>
   <data name="SettingsExperimental" xml:space="preserve"><value>Experimental extensions</value></data>

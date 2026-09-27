@@ -187,7 +187,7 @@
   <data name="Port" xml:space="preserve"><value>端口</value></data>
   <data name="PortInUseHint" xml:space="preserve"><value>请检查 53317 端口是否被 Tonarink 或其他兼容 LocalSend 的应用占用。</value></data>
   <data name="PreparingForDevice" xml:space="preserve"><value>正在准备发送给 {device}…</value></data>
-  <data name="PreviewWithPowerToysPeek" xml:space="preserve"><value>使用 PowerToys Peek 预览</value></data>
+  <data name="Preview" xml:space="preserve"><value>预览</value></data>
   <data name="SelectSendItemForPreview" xml:space="preserve"><value>选择 {item} 以进行预览</value></data>
   <data name="SendItemPreviewHint" xml:space="preserve"><value>按空格键使用 PowerToys Peek 预览。</value></data>
   <data name="SettingsExperimental" xml:space="preserve"><value>实验性扩展</value></data>
