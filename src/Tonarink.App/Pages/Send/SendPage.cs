@@ -1506,14 +1506,17 @@ sealed class SendPage : Component<SendPageProps>
 
             Element ContextMenu()
             {
-                var items = new List<MenuFlyoutItemBase>();
-                if (Props.IsSelectable)
-                    items.Add(MenuItem(previewCommand));
-                items.Add(MenuItem(shareCommand));
-                items.Add(MenuItem(renameCommand));
-                items.Add(MenuItem(undoRenameCommand));
-                items.Add(MenuItem(removeCommand));
-                return MenuItems(items.ToArray());
+                MenuFlyoutItemBase[] items =
+                [
+                    .. (Props.IsSelectable
+                        ? [MenuItem(previewCommand)]
+                        : Array.Empty<MenuFlyoutItemBase>()),
+                    MenuItem(shareCommand),
+                    MenuItem(renameCommand),
+                    MenuItem(undoRenameCommand),
+                    MenuItem(removeCommand),
+                ];
+                return MenuItems(items);
             }
             var content = Grid(
                 columns: [GridSize.Auto, GridSize.Star()],
