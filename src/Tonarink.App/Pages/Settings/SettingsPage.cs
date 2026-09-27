@@ -235,7 +235,8 @@ sealed class SettingsPage : Component<SettingsPageProps>
                 ToggleSwitch(Props.Settings.ShowExplorerContextMenu, value =>
                         Props.UpdateSettings(settings => settings with { ShowExplorerContextMenu = value }))
                     .AutomationName(t.Message(new("App", "SettingsExplorerContextMenu")))
-                    .HelpText(t.Message(new("App", "SettingsExplorerContextMenuDescription")))));
+                    .HelpText(t.Message(new("App", "SettingsExplorerContextMenuDescription")))
+                    .IsEnabled(AppPlatform.HasPackageIdentity())));
 
         var receiveCards = SettingsGroup(
             t.Message(new("App", "SettingsReceive")),
