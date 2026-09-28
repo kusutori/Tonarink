@@ -90,7 +90,7 @@ sealed class SendPage : Component<SendPageProps>
         var updateSelectedItems = Props.UpdateSelectedItems;
         var (pickerMessage, setPickerMessage) = UseState(t.Message(new("App", "NothingSelected")));
         var (isFileDropActive, setFileDropActive) = UseState(false);
-        var (selectedPreviewItemId, setSelectedPreviewItemId) = UseState<Guid?>(null);
+        var (selectedItemId, setSelectedItemId) = UseState<Guid?>(null);
         var (text, setText) = UseState(string.Empty);
         var (showTextDialog, setShowTextDialog) = UseState(false);
         var (showAddressDialog, setShowAddressDialog) = UseState(false);
@@ -138,12 +138,6 @@ sealed class SendPage : Component<SendPageProps>
             if (Props.JumpListFavoriteFingerprint is not null)
                 setShowFavoritesDialog(true);
         }, Props.JumpListFavoriteFingerprint);
-
-        UseEffect(() =>
-        {
-            if (!Props.PowerToysPeekPreviewEnabled)
-                setSelectedPreviewItemId(null);
-        }, Props.PowerToysPeekPreviewEnabled);
 
         UseEffect(() =>
         {
@@ -289,7 +283,7 @@ sealed class SendPage : Component<SendPageProps>
                 .. selectedItems.Select((item, index) =>
                     Component<SelectedItemRow, SelectedItemRowProps>(new(
                             item,
-                            selectedPreviewItemId == item.Id,
+                            selectedItemId == item.Id,
                             Props.PowerToysPeekPreviewEnabled,
                             Props.PowerToysPeekPreviewEnabled
                             && PowerToysPeekLauncher.CanPreview(
@@ -299,8 +293,8 @@ sealed class SendPage : Component<SendPageProps>
                             window?.NativeWindow is not null
                             && item.LocalPath is { } path
                             && File.Exists(path),
-                            () => setSelectedPreviewItemId(
-                                selectedPreviewItemId == item.Id ? null : item.Id),
+                            () => setSelectedItemId(
+                                selectedItemId == item.Id ? null : item.Id),
                             () => ShareItemAsync(item),
                             () =>
                             {
@@ -315,8 +309,8 @@ sealed class SendPage : Component<SendPageProps>
                             ]),
                             () =>
                             {
-                                if (selectedPreviewItemId == item.Id)
-                                    setSelectedPreviewItemId(null);
+                                if (selectedItemId == item.Id)
+                                    setSelectedItemId(null);
                                 updateSelectedItems(current => (SelectedSendItem[])
                                 [
                                     .. current.Where(candidate => candidate.Id != item.Id)
@@ -343,7 +337,7 @@ sealed class SendPage : Component<SendPageProps>
                                     : Button(t.Message(new("App", "Clear")), () =>
                                     {
                                         updateSelectedItems(_ => []);
-                                        setSelectedPreviewItemId(null);
+                                        setSelectedItemId(null);
                                         setPickerMessage(t.Message(new("App", "NothingSelected")));
                                     }).AutomationName(t.Message(new("App", "Clear")))) with
                         {
@@ -1447,7 +1441,7 @@ sealed class SendPage : Component<SendPageProps>
     private sealed record SelectedItemRowProps(
         SelectedSendItem Item,
         bool IsSelected,
-        bool IsSelectable,
+        bool ShowPreview,
         bool CanPreview,
         string PeekExecutablePath,
         bool CanShare,
@@ -1507,7 +1501,7 @@ sealed class SendPage : Component<SendPageProps>
             Element ContextMenu() =>
                 MenuItems(
                 [
-                    .. Props.IsSelectable
+                    .. Props.ShowPreview
                         ? [MenuItem(previewCommand)]
                         : Array.Empty<MenuFlyoutItemBase>(),
                     MenuItem(shareCommand),
@@ -1538,19 +1532,17 @@ sealed class SendPage : Component<SendPageProps>
                             .Foreground(item.IsRenamed ? Theme.SystemCaution : Theme.SecondaryText))
                     .Margin(horizontal: 12, vertical: 0)
                     .Grid(column: 1));
-            Element itemContent = Props.IsSelectable
-                ? Button(content.Margin(right: 52), Props.Select)
-                    .GhostButton()
-                    .Padding(12)
-                    .HAlign(HorizontalAlignment.Stretch)
-                    .HorizontalContentAlignment(HorizontalAlignment.Stretch)
-                    .AutomationName(t.Message(
-                        new("App", Props.IsSelected ? "DeselectSendItem" : "SelectSendItem"),
-                        ("item", item.DisplayName)))
-                    .HelpText(Props.CanPreview
-                        ? t.Message(new("App", "SendItemPreviewHint"))
-                        : string.Empty)
-                : content.Margin(left: 12, top: 12, right: 64, bottom: 12);
+            Element itemContent = Button(content.Margin(right: 52), Props.Select)
+                .GhostButton()
+                .Padding(12)
+                .HAlign(HorizontalAlignment.Stretch)
+                .HorizontalContentAlignment(HorizontalAlignment.Stretch)
+                .AutomationName(t.Message(
+                    new("App", Props.IsSelected ? "DeselectSendItem" : "SelectSendItem"),
+                    ("item", item.DisplayName)))
+                .HelpText(Props.CanPreview
+                    ? t.Message(new("App", "SendItemPreviewHint"))
+                    : string.Empty);
 
             var row = Border(
                     Grid(
@@ -1573,7 +1565,7 @@ sealed class SendPage : Component<SendPageProps>
                 .CornerRadius(8)
                 .Background(Theme.SubtleFill)
                 .WithBorder(
-                    Props.IsSelectable && Props.IsSelected ? Theme.Accent : Theme.CardStroke,
+                    Props.IsSelected ? Theme.Accent : Theme.CardStroke,
                     1)
                 .WithContextFlyout(ContextMenu());
             return CommandHost(
