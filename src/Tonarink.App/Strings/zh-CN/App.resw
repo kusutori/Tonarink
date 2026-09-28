@@ -190,18 +190,23 @@
   <data name="Preview" xml:space="preserve"><value>预览</value></data>
   <data name="SelectSendItem" xml:space="preserve"><value>选择 {item}</value></data>
   <data name="DeselectSendItem" xml:space="preserve"><value>取消选择 {item}</value></data>
-  <data name="SendItemPreviewHint" xml:space="preserve"><value>按空格键使用 PowerToys Peek 预览。</value></data>
+  <data name="SendItemPreviewHint" xml:space="preserve"><value>按空格键使用所选工具预览。</value></data>
   <data name="SendItemRenamed" xml:space="preserve"><value>已重命名 · {kind} · {size}</value></data>
   <data name="Share" xml:space="preserve"><value>分享</value></data>
   <data name="Undo" xml:space="preserve"><value>撤回</value></data>
   <data name="ShareFileFailed" xml:space="preserve"><value>无法通过 Windows 分享此文件。</value></data>
   <data name="SettingsExperimental" xml:space="preserve"><value>实验性扩展</value></data>
-  <data name="SettingsPowerToysPeek" xml:space="preserve"><value>PowerToys Peek</value></data>
-  <data name="SettingsPowerToysPeekDescription" xml:space="preserve"><value>与 PowerToys Peek 文件预览器的可选集成。</value></data>
-  <data name="SettingsPowerToysPeekEnabled" xml:space="preserve"><value>启用文件预览</value></data>
-  <data name="SettingsPowerToysPeekEnabledDescription" xml:space="preserve"><value>在待发送列表中选中文件后，按空格键使用 PowerToys Peek 预览。</value></data>
-  <data name="SettingsPowerToysPeekPath" xml:space="preserve"><value>Peek 可执行文件路径</value></data>
-  <data name="SettingsPowerToysPeekPathDescription" xml:space="preserve"><value>PowerToys.Peek.UI.exe 的路径。需要单独安装 PowerToys。</value></data>
+  <data name="SettingsFilePreview" xml:space="preserve"><value>文件预览</value></data>
+  <data name="SettingsFilePreviewDescription" xml:space="preserve"><value>与第三方文件预览工具的实验性集成。</value></data>
+  <data name="SettingsFilePreviewEnabled" xml:space="preserve"><value>启用文件预览</value></data>
+  <data name="SettingsFilePreviewEnabledDescription" xml:space="preserve"><value>在待发送列表中选中文件后，按空格键使用所选工具预览。</value></data>
+  <data name="SettingsFilePreviewProvider" xml:space="preserve"><value>预览工具</value></data>
+  <data name="SettingsFilePreviewProviderDescription" xml:space="preserve"><value>选择用于打开文件预览的第三方工具。</value></data>
+  <data name="SettingsFilePreviewProviderPowerToysPeek" xml:space="preserve"><value>PowerToys Peek</value></data>
+  <data name="SettingsFilePreviewProviderQuickLook" xml:space="preserve"><value>QuickLook</value></data>
+  <data name="SettingsFilePreviewPath" xml:space="preserve"><value>可执行文件路径</value></data>
+  <data name="SettingsFilePreviewPowerToysPeekPathDescription" xml:space="preserve"><value>PowerToys.Peek.UI.exe 的路径。需要单独安装 PowerToys。</value></data>
+  <data name="SettingsFilePreviewQuickLookPathDescription" xml:space="preserve"><value>桌面版 QuickLook.exe 的路径；使用 Microsoft Store 版时请先启动 QuickLook，应用将通过官方命令桥接协议连接。</value></data>
   <data name="ReceiveCancelled" xml:space="preserve"><value>接收已取消</value></data>
   <data name="ReceivedMessage" xml:space="preserve"><value>发送给你了一条消息：</value></data>
   <data name="ReceivedTextContent" xml:space="preserve"><value>收到的文本内容</value></data>

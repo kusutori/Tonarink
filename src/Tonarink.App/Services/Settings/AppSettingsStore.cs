@@ -63,8 +63,12 @@ sealed class AppSettingsFile
     public bool? KeepItemsForMultipleReceivers { get; set; }
     public bool? VerifyChecksumsOnSend { get; set; }
     public bool? ExpandDragDropToEntireApp { get; set; }
+    public bool? FilePreviewEnabled { get; set; }
+    public string? FilePreviewProvider { get; set; }
+    // Kept only to migrate settings written before preview providers were introduced.
     public bool? PowerToysPeekPreviewEnabled { get; set; }
     public string? PowerToysPeekExecutablePath { get; set; }
+    public string? QuickLookExecutablePath { get; set; }
     public bool? SaveReceiveHistory { get; set; }
     public bool? VerifyChecksumsOnReceive { get; set; }
     public bool? ReceivePinEnabled { get; set; }
@@ -97,8 +101,10 @@ sealed class AppSettingsFile
         KeepItemsForMultipleReceivers = settings.KeepItemsForMultipleReceivers,
         VerifyChecksumsOnSend = settings.VerifyChecksumsOnSend,
         ExpandDragDropToEntireApp = settings.ExpandDragDropToEntireApp,
-        PowerToysPeekPreviewEnabled = settings.PowerToysPeekPreviewEnabled,
+        FilePreviewEnabled = settings.FilePreviewEnabled,
+        FilePreviewProvider = settings.PreviewProvider.ToString(),
         PowerToysPeekExecutablePath = settings.PowerToysPeekExecutablePath,
+        QuickLookExecutablePath = settings.QuickLookExecutablePath,
         SaveReceiveHistory = settings.SaveReceiveHistory,
         VerifyChecksumsOnReceive = settings.VerifyChecksumsOnReceive,
         ReceivePinEnabled = settings.ReceivePinEnabled,
@@ -148,10 +154,21 @@ sealed class AppSettingsFile
             KeepItemsForMultipleReceivers = KeepItemsForMultipleReceivers ?? defaults.KeepItemsForMultipleReceivers,
             VerifyChecksumsOnSend = VerifyChecksumsOnSend ?? defaults.VerifyChecksumsOnSend,
             ExpandDragDropToEntireApp = ExpandDragDropToEntireApp ?? defaults.ExpandDragDropToEntireApp,
-            PowerToysPeekPreviewEnabled = PowerToysPeekPreviewEnabled ?? defaults.PowerToysPeekPreviewEnabled,
+            FilePreviewEnabled = FilePreviewEnabled
+                                 ?? PowerToysPeekPreviewEnabled
+                                 ?? defaults.FilePreviewEnabled,
+            PreviewProvider = Enum.TryParse<FilePreviewProvider>(
+                FilePreviewProvider,
+                ignoreCase: true,
+                out var previewProvider)
+                    ? previewProvider
+                    : defaults.PreviewProvider,
             PowerToysPeekExecutablePath = string.IsNullOrWhiteSpace(PowerToysPeekExecutablePath)
                 ? defaults.PowerToysPeekExecutablePath
                 : PowerToysPeekExecutablePath.Trim().Trim('"'),
+            QuickLookExecutablePath = string.IsNullOrWhiteSpace(QuickLookExecutablePath)
+                ? defaults.QuickLookExecutablePath
+                : QuickLookExecutablePath.Trim().Trim('"'),
             SaveReceiveHistory = SaveReceiveHistory ?? defaults.SaveReceiveHistory,
             VerifyChecksumsOnReceive = VerifyChecksumsOnReceive ?? defaults.VerifyChecksumsOnReceive,
             ReceivePinEnabled = ReceivePinEnabled ?? defaults.ReceivePinEnabled,

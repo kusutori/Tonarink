@@ -33,8 +33,9 @@ sealed record SendPageProps(
     Action<bool> SetKeepItemsForMultipleReceivers,
     bool VerifyChecksums,
     bool ExpandDragDropToEntireApp,
-    bool PowerToysPeekPreviewEnabled,
-    string PowerToysPeekExecutablePath,
+    bool FilePreviewEnabled,
+    FilePreviewProvider PreviewProvider,
+    string PreviewExecutablePath,
     Action<LocalSendDevice> OpenDeviceDetails,
     string? JumpListFavoriteFingerprint,
     Action<string> ConsumeJumpListFavorite);
@@ -270,6 +271,10 @@ sealed class SendPage : Component<SendPageProps>
                 new("App", "SelectedItems"),
                 ("count", selectedItems.Count),
                 ("size", FormatBytes(selectedItems.Sum(static item => item.Length))));
+        var isPreviewProviderAvailable = Props.FilePreviewEnabled
+                                         && FilePreviewLauncher.IsAvailable(
+                                             Props.PreviewProvider,
+                                             Props.PreviewExecutablePath);
 
         Element selectedItemsBody = selectedItems switch
         {
@@ -284,12 +289,11 @@ sealed class SendPage : Component<SendPageProps>
                     Component<SelectedItemRow, SelectedItemRowProps>(new(
                             item,
                             selectedItemId == item.Id,
-                            Props.PowerToysPeekPreviewEnabled,
-                            Props.PowerToysPeekPreviewEnabled
-                            && PowerToysPeekLauncher.CanPreview(
-                                item.LocalPath,
-                                Props.PowerToysPeekExecutablePath),
-                            Props.PowerToysPeekExecutablePath,
+                            Props.FilePreviewEnabled,
+                            isPreviewProviderAvailable
+                            && FilePreviewLauncher.CanPreview(item.LocalPath),
+                            Props.PreviewProvider,
+                            Props.PreviewExecutablePath,
                             window?.NativeWindow is not null
                             && item.LocalPath is { } path
                             && File.Exists(path),
@@ -1443,7 +1447,8 @@ sealed class SendPage : Component<SendPageProps>
         bool IsSelected,
         bool ShowPreview,
         bool CanPreview,
-        string PeekExecutablePath,
+        FilePreviewProvider PreviewProvider,
+        string PreviewExecutablePath,
         bool CanShare,
         Action Select,
         Func<Task> Share,
@@ -1463,9 +1468,10 @@ sealed class SendPage : Component<SendPageProps>
                 Icon = new FontIconData(AppIcons.Preview),
                 Accelerator = Accelerator(VirtualKey.Space),
                 CanExecute = Props.CanPreview,
-                Execute = () => PowerToysPeekLauncher.TryPreview(
+                Execute = () => FilePreviewLauncher.TryPreview(
+                    Props.PreviewProvider,
                     item.LocalPath,
-                    Props.PeekExecutablePath),
+                    Props.PreviewExecutablePath),
             });
             var renameCommand = UseCommand(new Command
             {

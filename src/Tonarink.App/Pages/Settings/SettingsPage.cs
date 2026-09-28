@@ -26,6 +26,13 @@ sealed class SettingsPage : Component<SettingsPageProps>
     {
         var t = UseIntl();
         var window = UseWindow();
+        var (_, refreshCachedPage) = UseReducer(0);
+        // NavigationHost updates the cached component's props without reconciling its
+        // element tree. Match SendPage and DeviceDetailsPage: request one render before
+        // the page transition so the restored page uses the latest settings props.
+        UseNavigationLifecycle(onNavigatingTo: _ =>
+            refreshCachedPage(value => value + 1));
+
         var storagePicker = new StoragePicker(
             window?.NativeWindow,
             t.Message(new("App", "WindowUnavailable")));
@@ -80,6 +87,26 @@ sealed class SettingsPage : Component<SettingsPageProps>
             t.Message(new("App", "SettingsNotificationsDefaultOpenFile")),
             t.Message(new("App", "SettingsNotificationsDefaultShowInFolder")),
         ];
+        string[] filePreviewProviderOptions =
+        [
+            t.Message(new("App", "SettingsFilePreviewProviderPowerToysPeek")),
+            t.Message(new("App", "SettingsFilePreviewProviderQuickLook")),
+        ];
+        var previewExecutablePath = Props.Settings.PreviewProvider switch
+        {
+            FilePreviewProvider.QuickLook => Props.Settings.QuickLookExecutablePath,
+            _ => Props.Settings.PowerToysPeekExecutablePath,
+        };
+        var defaultPreviewExecutablePath = Props.Settings.PreviewProvider switch
+        {
+            FilePreviewProvider.QuickLook => FilePreviewLauncher.DefaultQuickLookExecutablePath,
+            _ => FilePreviewLauncher.DefaultPowerToysPeekExecutablePath,
+        };
+        var previewPathDescription = t.Message(new(
+            "App",
+            Props.Settings.PreviewProvider == FilePreviewProvider.QuickLook
+                ? "SettingsFilePreviewQuickLookPathDescription"
+                : "SettingsFilePreviewPowerToysPeekPathDescription"));
 
         var generalCards = SettingsGroup(
             t.Message(new("App", "SettingsGeneral")),
@@ -510,39 +537,66 @@ sealed class SettingsPage : Component<SettingsPageProps>
                     items:
                     [
                         SettingsCard(
-                            header: t.Message(new("App", "SettingsPowerToysPeekEnabled")),
-                            description: t.Message(new("App", "SettingsPowerToysPeekEnabledDescription")),
+                            header: t.Message(new("App", "SettingsFilePreviewEnabled")),
+                            description: t.Message(new("App", "SettingsFilePreviewEnabledDescription")),
                             isClickEnabled: false,
                             isActionIconVisible: false,
                             content:
-                            ToggleSwitch(Props.Settings.PowerToysPeekPreviewEnabled, value =>
+                            ToggleSwitch(Props.Settings.FilePreviewEnabled, value =>
                                     Props.UpdateSettings(settings => settings with
                                     {
-                                        PowerToysPeekPreviewEnabled = value,
+                                        FilePreviewEnabled = value,
                                     }))
-                                .AutomationName(t.Message(new("App", "SettingsPowerToysPeekEnabled")))
-                                .HelpText(t.Message(new("App", "SettingsPowerToysPeekEnabledDescription")))),
+                                .AutomationName(t.Message(new("App", "SettingsFilePreviewEnabled")))
+                                .HelpText(t.Message(new("App", "SettingsFilePreviewEnabledDescription")))),
                         SettingsCard(
-                            header: t.Message(new("App", "SettingsPowerToysPeekPath")),
-                            description: t.Message(new("App", "SettingsPowerToysPeekPathDescription")),
+                            header: t.Message(new("App", "SettingsFilePreviewProvider")),
+                            description: t.Message(new("App", "SettingsFilePreviewProviderDescription")),
+                            isClickEnabled: false,
+                            isActionIconVisible: false,
+                            content:
+                            ComboBox(filePreviewProviderOptions, (int)Props.Settings.PreviewProvider, index =>
+                                {
+                                    if (Enum.IsDefined(typeof(FilePreviewProvider), index))
+                                    {
+                                        Props.UpdateSettings(settings => settings with
+                                        {
+                                            PreviewProvider = (FilePreviewProvider)index,
+                                        });
+                                    }
+                                })
+                                .AutomationName(t.Message(new("App", "SettingsFilePreviewProvider")))
+                                .HelpText(t.Message(new("App", "SettingsFilePreviewProviderDescription")))
+                                .MinWidth(180)
+                                .IsEnabled(Props.Settings.FilePreviewEnabled)),
+                        SettingsCard(
+                            header: t.Message(new("App", "SettingsFilePreviewPath")),
+                            description: previewPathDescription,
                             isClickEnabled: false,
                             isActionIconVisible: false,
                             content:
                             Component<DeferredTextSetting, DeferredTextSettingProps>(new(
-                                    Props.Settings.PowerToysPeekExecutablePath,
-                                    value => Props.UpdateSettings(settings => settings with
+                                    previewExecutablePath,
+                                    value => Props.UpdateSettings(settings => settings.PreviewProvider switch
                                     {
-                                        PowerToysPeekExecutablePath = value,
+                                        FilePreviewProvider.QuickLook => settings with
+                                        {
+                                            QuickLookExecutablePath = value,
+                                        },
+                                        _ => settings with
+                                        {
+                                            PowerToysPeekExecutablePath = value,
+                                        },
                                     }),
-                                    t.Message(new("App", "SettingsPowerToysPeekPath")),
-                                    PlaceholderText: PowerToysPeekLauncher.DefaultExecutablePath,
+                                    t.Message(new("App", "SettingsFilePreviewPath")),
+                                    PlaceholderText: defaultPreviewExecutablePath,
                                     MinWidth: 280))
-                                .IsEnabled(Props.Settings.PowerToysPeekPreviewEnabled)),
+                                .IsEnabled(Props.Settings.FilePreviewEnabled)),
                     ])
                 .Set(expander =>
                 {
-                    expander.Header = t.Message(new("App", "SettingsPowerToysPeek"));
-                    expander.Description = t.Message(new("App", "SettingsPowerToysPeekDescription"));
+                    expander.Header = t.Message(new("App", "SettingsFilePreview"));
+                    expander.Description = t.Message(new("App", "SettingsFilePreviewDescription"));
                 }));
 
         var version = typeof(SettingsPage).Assembly.GetName().Version is { } assemblyVersion
