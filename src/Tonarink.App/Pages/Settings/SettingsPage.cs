@@ -3,7 +3,6 @@ using LocalSendDotNet;
 using Tonarink.Application;
 using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Core;
-using Microsoft.UI.Reactor.Hooks;
 using Microsoft.UI.Reactor.Localization;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
@@ -41,10 +40,6 @@ sealed class SettingsPage : Component<SettingsPageProps>
         var (statusMessage, setStatusMessage) = UseState<string?>(null);
         var (encryptionNoticeOpen, setEncryptionNoticeOpen) = UseState(false);
         var (previewOverridePath, setPreviewOverridePath) = UseState("");
-        var (previewTipOpen, setPreviewTipOpen) = UseState(false);
-        var (previewTipMessage, setPreviewTipMessage) = UseState(
-            t.Message(new("App", "SettingsFilePreviewPathTeachingTipDescription")));
-        var previewTipTarget = this.UseElementRef<Button>();
         var nodeState = Props.Runtime.NodeState;
         var serverBusy = nodeState is LocalSendNodeState.Starting or LocalSendNodeState.Stopping;
         var serverRunning = nodeState == LocalSendNodeState.Running;
@@ -565,39 +560,13 @@ sealed class SettingsPage : Component<SettingsPageProps>
                             isClickEnabled: false,
                             isActionIconVisible: false,
                             content:
-                            Grid(
-                                    columns: [GridSize.Star(), GridSize.Auto],
-                                    rows: [GridSize.Auto],
-                                    TextBox(
-                                            previewOverridePath,
-                                            setPreviewOverridePath,
-                                            t.Message(new("App", "SettingsFilePreviewPathPlaceholder")))
-                                        .OnLostFocus((_, _) => ApplyPreviewOverride())
-                                        .AutomationName(t.Message(new("App", "SettingsFilePreviewPath")))
-                                        .MinWidth(280)
-                                        .Grid(column: 0),
-                                    Button(Icon(AppIcons.Details).AccessibilityHidden(), () =>
-                                        {
-                                            setPreviewTipMessage(t.Message(new(
-                                                "App",
-                                                "SettingsFilePreviewPathTeachingTipDescription")));
-                                            setPreviewTipOpen(true);
-                                        })
-                                        .Ref(previewTipTarget)
-                                        .ToolTip(t.Message(new("App", "SettingsFilePreviewPathHelp")))
-                                        .AutomationName(t.Message(new("App", "SettingsFilePreviewPathHelp")))
-                                        .Margin(left: 8)
-                                        .Grid(column: 1)
-                                        .SubtleButton(),
-                                    TeachingTip(
-                                            t.Message(new("App", "SettingsFilePreviewPathTeachingTipTitle")),
-                                            previewTipMessage,
-                                            previewTipTarget) with
-                                    {
-                                        IsOpen = previewTipOpen,
-                                        CloseButtonContent = t.Message(new("App", "Close")),
-                                        OnClosed = () => setPreviewTipOpen(false),
-                                    })
+                            TextBox(
+                                    previewOverridePath,
+                                    setPreviewOverridePath,
+                                    t.Message(new("App", "SettingsFilePreviewPathPlaceholder")))
+                                .OnLostFocus((_, _) => ApplyPreviewOverride())
+                                .AutomationName(t.Message(new("App", "SettingsFilePreviewPath")))
+                                .MinWidth(280)
                                 .IsEnabled(Props.Settings.FilePreviewEnabled)),
                     ])
                 .Set(expander =>
@@ -763,8 +732,7 @@ sealed class SettingsPage : Component<SettingsPageProps>
                     out var provider,
                     out var executablePath))
             {
-                setPreviewTipMessage(t.Message(new("App", "SettingsFilePreviewPathInvalid")));
-                setPreviewTipOpen(true);
+                setStatusMessage(t.Message(new("App", "SettingsFilePreviewPathInvalid")));
                 return;
             }
 
@@ -783,10 +751,7 @@ sealed class SettingsPage : Component<SettingsPageProps>
                 _ => settings,
             });
             setPreviewOverridePath("");
-            setPreviewTipMessage(t.Message(
-                new("App", "SettingsFilePreviewPathSaved"),
-                ("tool", provider == FilePreviewProvider.QuickLook ? "QuickLook" : "PowerToys Peek")));
-            setPreviewTipOpen(true);
+            setStatusMessage(null);
         }
     }
 

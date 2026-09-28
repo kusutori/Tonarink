@@ -205,13 +205,9 @@
   <data name="SettingsFilePreviewProviderPowerToysPeek" xml:space="preserve"><value>PowerToys Peek</value></data>
   <data name="SettingsFilePreviewProviderQuickLook" xml:space="preserve"><value>QuickLook</value></data>
   <data name="SettingsFilePreviewPath" xml:space="preserve"><value>覆盖工具路径</value></data>
-  <data name="SettingsFilePreviewPathDescription" xml:space="preserve"><value>可选。指定预览工具的自定义可执行文件路径。</value></data>
+  <data name="SettingsFilePreviewPathDescription" xml:space="preserve"><value>Tonarink 会自动检测并记住已安装的预览工具，通常无需填写。需要覆盖时，可依次输入 PowerToys.Peek.UI.exe 或 QuickLook.exe 的完整路径；Tonarink 会根据文件名将路径保存到对应工具。</value></data>
   <data name="SettingsFilePreviewPathPlaceholder" xml:space="preserve"><value>PowerToys.Peek.UI.exe 或 QuickLook.exe 的路径</value></data>
-  <data name="SettingsFilePreviewPathHelp" xml:space="preserve"><value>查看路径说明</value></data>
-  <data name="SettingsFilePreviewPathTeachingTipTitle" xml:space="preserve"><value>工具路径</value></data>
-  <data name="SettingsFilePreviewPathTeachingTipDescription" xml:space="preserve"><value>Tonarink 会自动检测并记住已安装的预览工具，通常无需填写。需要覆盖时，可依次输入 PowerToys.Peek.UI.exe 或 QuickLook.exe 的完整路径；Tonarink 会根据文件名将路径保存到对应工具。</value></data>
   <data name="SettingsFilePreviewPathInvalid" xml:space="preserve"><value>请选择存在的 PowerToys.Peek.UI.exe 或 QuickLook.exe 文件。</value></data>
-  <data name="SettingsFilePreviewPathSaved" xml:space="preserve"><value>已保存 {tool} 的自定义路径，并将它设为当前预览工具。</value></data>
   <data name="ReceiveCancelled" xml:space="preserve"><value>接收已取消</value></data>
   <data name="ReceivedMessage" xml:space="preserve"><value>发送给你了一条消息：</value></data>
   <data name="ReceivedTextContent" xml:space="preserve"><value>收到的文本内容</value></data>
