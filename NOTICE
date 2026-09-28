@@ -19,3 +19,17 @@ Copyright Google LLC
 
 Tonarink includes the Material Icons font from the Google Material Design Icons
 project. Material Icons is licensed under the Apache License, Version 2.0.
+
+Microsoft PowerToys
+Copyright Microsoft Corporation and PowerToys contributors.
+
+Tonarink can optionally invoke the Peek utility provided by Microsoft PowerToys
+for file previews. PowerToys is a separate application, is not bundled with
+Tonarink, and is licensed under the MIT License.
+
+QuickLook
+Copyright 2017-2026 QL-Win contributors.
+
+Tonarink can optionally communicate with QuickLook for file previews. QuickLook
+is a separate application, is not bundled with Tonarink, and is licensed under
+the GNU General Public License, Version 3.
