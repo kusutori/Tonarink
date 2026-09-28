@@ -3,6 +3,7 @@ using LocalSendDotNet;
 using Tonarink.Application;
 using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Core;
+using Microsoft.UI.Reactor.Hooks;
 using Microsoft.UI.Reactor.Localization;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
@@ -39,6 +40,11 @@ sealed class SettingsPage : Component<SettingsPageProps>
         var navigation = UseNavigation<AppRoute>();
         var (statusMessage, setStatusMessage) = UseState<string?>(null);
         var (encryptionNoticeOpen, setEncryptionNoticeOpen) = UseState(false);
+        var (previewOverridePath, setPreviewOverridePath) = UseState("");
+        var (previewTipOpen, setPreviewTipOpen) = UseState(false);
+        var (previewTipMessage, setPreviewTipMessage) = UseState(
+            t.Message(new("App", "SettingsFilePreviewPathTeachingTipDescription")));
+        var previewTipTarget = this.UseElementRef<Button>();
         var nodeState = Props.Runtime.NodeState;
         var serverBusy = nodeState is LocalSendNodeState.Starting or LocalSendNodeState.Stopping;
         var serverRunning = nodeState == LocalSendNodeState.Running;
@@ -92,22 +98,6 @@ sealed class SettingsPage : Component<SettingsPageProps>
             t.Message(new("App", "SettingsFilePreviewProviderPowerToysPeek")),
             t.Message(new("App", "SettingsFilePreviewProviderQuickLook")),
         ];
-        var previewExecutablePath = Props.Settings.PreviewProvider switch
-        {
-            FilePreviewProvider.QuickLook => Props.Settings.QuickLookExecutablePath,
-            _ => Props.Settings.PowerToysPeekExecutablePath,
-        };
-        var defaultPreviewExecutablePath = Props.Settings.PreviewProvider switch
-        {
-            FilePreviewProvider.QuickLook => FilePreviewLauncher.DefaultQuickLookExecutablePath,
-            _ => FilePreviewLauncher.DefaultPowerToysPeekExecutablePath,
-        };
-        var previewPathDescription = t.Message(new(
-            "App",
-            Props.Settings.PreviewProvider == FilePreviewProvider.QuickLook
-                ? "SettingsFilePreviewQuickLookPathDescription"
-                : "SettingsFilePreviewPowerToysPeekPathDescription"));
-
         var generalCards = SettingsGroup(
             t.Message(new("App", "SettingsGeneral")),
             SettingsCard(
@@ -571,26 +561,43 @@ sealed class SettingsPage : Component<SettingsPageProps>
                                 .IsEnabled(Props.Settings.FilePreviewEnabled)),
                         SettingsCard(
                             header: t.Message(new("App", "SettingsFilePreviewPath")),
-                            description: previewPathDescription,
+                            description: t.Message(new("App", "SettingsFilePreviewPathDescription")),
                             isClickEnabled: false,
                             isActionIconVisible: false,
                             content:
-                            Component<DeferredTextSetting, DeferredTextSettingProps>(new(
-                                    previewExecutablePath,
-                                    value => Props.UpdateSettings(settings => settings.PreviewProvider switch
+                            Grid(
+                                    columns: [GridSize.Star(), GridSize.Auto],
+                                    rows: [GridSize.Auto],
+                                    TextBox(
+                                            previewOverridePath,
+                                            setPreviewOverridePath,
+                                            t.Message(new("App", "SettingsFilePreviewPathPlaceholder")))
+                                        .OnLostFocus((_, _) => ApplyPreviewOverride())
+                                        .AutomationName(t.Message(new("App", "SettingsFilePreviewPath")))
+                                        .MinWidth(280)
+                                        .Grid(column: 0),
+                                    Button(Icon(AppIcons.Details).AccessibilityHidden(), () =>
+                                        {
+                                            setPreviewTipMessage(t.Message(new(
+                                                "App",
+                                                "SettingsFilePreviewPathTeachingTipDescription")));
+                                            setPreviewTipOpen(true);
+                                        })
+                                        .Ref(previewTipTarget)
+                                        .ToolTip(t.Message(new("App", "SettingsFilePreviewPathHelp")))
+                                        .AutomationName(t.Message(new("App", "SettingsFilePreviewPathHelp")))
+                                        .Margin(left: 8)
+                                        .Grid(column: 1)
+                                        .SubtleButton(),
+                                    TeachingTip(
+                                            t.Message(new("App", "SettingsFilePreviewPathTeachingTipTitle")),
+                                            previewTipMessage,
+                                            previewTipTarget) with
                                     {
-                                        FilePreviewProvider.QuickLook => settings with
-                                        {
-                                            QuickLookExecutablePath = value,
-                                        },
-                                        _ => settings with
-                                        {
-                                            PowerToysPeekExecutablePath = value,
-                                        },
-                                    }),
-                                    t.Message(new("App", "SettingsFilePreviewPath")),
-                                    PlaceholderText: defaultPreviewExecutablePath,
-                                    MinWidth: 280))
+                                        IsOpen = previewTipOpen,
+                                        CloseButtonContent = t.Message(new("App", "Close")),
+                                        OnClosed = () => setPreviewTipOpen(false),
+                                    })
                                 .IsEnabled(Props.Settings.FilePreviewEnabled)),
                     ])
                 .Set(expander =>
@@ -744,6 +751,42 @@ sealed class SettingsPage : Component<SettingsPageProps>
                     new("App", "PickFolderFailed"),
                     ("error", exception.Message)));
             }
+        }
+
+        void ApplyPreviewOverride()
+        {
+            if (string.IsNullOrWhiteSpace(previewOverridePath))
+                return;
+
+            if (!FilePreviewLauncher.TryResolveOverride(
+                    previewOverridePath,
+                    out var provider,
+                    out var executablePath))
+            {
+                setPreviewTipMessage(t.Message(new("App", "SettingsFilePreviewPathInvalid")));
+                setPreviewTipOpen(true);
+                return;
+            }
+
+            Props.UpdateSettings(settings => provider switch
+            {
+                FilePreviewProvider.PowerToysPeek => settings with
+                {
+                    PreviewProvider = provider,
+                    PowerToysPeekExecutablePath = executablePath,
+                },
+                FilePreviewProvider.QuickLook => settings with
+                {
+                    PreviewProvider = provider,
+                    QuickLookExecutablePath = executablePath,
+                },
+                _ => settings,
+            });
+            setPreviewOverridePath("");
+            setPreviewTipMessage(t.Message(
+                new("App", "SettingsFilePreviewPathSaved"),
+                ("tool", provider == FilePreviewProvider.QuickLook ? "QuickLook" : "PowerToys Peek")));
+            setPreviewTipOpen(true);
         }
     }
 

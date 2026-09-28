@@ -42,11 +42,44 @@ static class FilePreviewLauncher
             "QuickLook.exe"),
     ];
 
-    public static string DefaultPowerToysPeekExecutablePath { get; } =
-        FindDefaultExecutable(PowerToysPeekExecutableCandidates);
+    public static (string PowerToysPeek, string QuickLook) DetectInstalledExecutables(
+        string? powerToysPeekPath,
+        string? quickLookPath) =>
+        (
+            ResolveExecutable(powerToysPeekPath)
+            ?? FindInstalledExecutable(PowerToysPeekExecutableCandidates)
+            ?? "",
+            ResolveExecutable(quickLookPath)
+            ?? FindInstalledExecutable(QuickLookExecutableCandidates)
+            ?? ""
+        );
 
-    public static string DefaultQuickLookExecutablePath { get; } =
-        FindDefaultExecutable(QuickLookExecutableCandidates);
+    public static bool TryResolveOverride(
+        string? path,
+        out FilePreviewProvider provider,
+        out string executablePath)
+    {
+        provider = default;
+        executablePath = "";
+
+        var resolved = ResolveExecutable(path);
+        if (resolved is null)
+            return false;
+
+        provider = Path.GetFileName(resolved) switch
+        {
+            var fileName when fileName.Equals("PowerToys.Peek.UI.exe", StringComparison.OrdinalIgnoreCase) =>
+                FilePreviewProvider.PowerToysPeek,
+            var fileName when fileName.Equals("QuickLook.exe", StringComparison.OrdinalIgnoreCase) =>
+                FilePreviewProvider.QuickLook,
+            _ => (FilePreviewProvider)(-1),
+        };
+        if (!Enum.IsDefined(provider))
+            return false;
+
+        executablePath = resolved;
+        return true;
+    }
 
     public static bool IsAvailable(
         FilePreviewProvider provider,
@@ -168,8 +201,8 @@ static class FilePreviewLauncher
         && Path.IsPathFullyQualified(path)
         && File.Exists(path);
 
-    private static string FindDefaultExecutable(IReadOnlyList<string> candidates) =>
-        candidates.FirstOrDefault(File.Exists) ?? candidates[0];
+    private static string? FindInstalledExecutable(IReadOnlyList<string> candidates) =>
+        candidates.FirstOrDefault(File.Exists);
 
     private static string? ResolveExecutable(string? path)
     {

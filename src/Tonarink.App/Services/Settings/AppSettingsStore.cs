@@ -21,12 +21,34 @@ static class AppSettingsStore
 
         try
         {
-            if (!File.Exists(FilePath))
-                return _cached = AppSettings.Default;
+            var loaded = File.Exists(FilePath)
+                ? JsonSerializer.Deserialize(
+                    File.ReadAllText(FilePath),
+                    AppSettingsJsonContext.Default.AppSettingsFile)?.ToSettings() ?? AppSettings.Default
+                : AppSettings.Default;
+            var detectedPaths = FilePreviewLauncher.DetectInstalledExecutables(
+                loaded.PowerToysPeekExecutablePath,
+                loaded.QuickLookExecutablePath);
+            var detected = loaded with
+            {
+                PowerToysPeekExecutablePath = detectedPaths.PowerToysPeek,
+                QuickLookExecutablePath = detectedPaths.QuickLook,
+            };
+            _cached = detected;
 
-            var json = File.ReadAllText(FilePath);
-            var file = JsonSerializer.Deserialize(json, AppSettingsJsonContext.Default.AppSettingsFile);
-            return _cached = file?.ToSettings() ?? AppSettings.Default;
+            if (detected != loaded)
+            {
+                try
+                {
+                    Write(detected);
+                }
+                catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+                {
+                    AppDiagnostics.Report("Could not persist detected file preview tools", exception);
+                }
+            }
+
+            return detected;
         }
         catch (Exception exception) when (exception is JsonException or IOException or UnauthorizedAccessException)
         {
@@ -39,11 +61,16 @@ static class AppSettingsStore
     {
         var previous = _cached;
         _cached = settings;
+        Write(settings);
+        if (previous != settings)
+            Changed?.Invoke();
+    }
+
+    private static void Write(AppSettings settings)
+    {
         Directory.CreateDirectory(AppPlatform.DataDirectory);
         var json = JsonSerializer.Serialize(AppSettingsFile.FromSettings(settings), AppSettingsJsonContext.Default.AppSettingsFile);
         File.WriteAllText(FilePath, json);
-        if (previous != settings)
-            Changed?.Invoke();
     }
 }
 
