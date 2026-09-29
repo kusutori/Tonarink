@@ -7,6 +7,7 @@ using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Windows.System;
+using MenuFlyoutItemBase = Microsoft.UI.Reactor.Core.MenuFlyoutItemBase;
 using static Microsoft.UI.Reactor.Factories;
 using static Tonarink.Utilities.ByteSize;
 
@@ -193,6 +194,14 @@ sealed class HistoryPage : Component<HistoryPageProps>
             ("size", FormatBytes(entry.Size)),
             ("sender", entry.SenderAlias));
 
+        MenuFlyoutItemBase[] EntryMenuItems() =>
+        [
+            MenuItem(commands.Open, entry) with { IsEnabled = exists },
+            MenuItem(commands.Reveal, entry) with { IsEnabled = exists },
+            MenuItem(commands.ShowInfo, entry),
+            MenuItem(commands.Delete, entry),
+        ];
+
         return Border(
                 Grid(
                     columns: [GridSize.Auto, GridSize.Star(), GridSize.Auto],
@@ -223,17 +232,13 @@ sealed class HistoryPage : Component<HistoryPageProps>
                         .VAlign(VerticalAlignment.Center)
                         .WithFlyout(MenuItems(
                             FlyoutPlacementMode.BottomEdgeAlignedRight,
-                            [
-                                MenuItem(commands.Open, entry) with { IsEnabled = exists },
-                                MenuItem(commands.Reveal, entry) with { IsEnabled = exists },
-                                MenuItem(commands.ShowInfo, entry),
-                                MenuItem(commands.Delete, entry),
-                            ]))
+                            EntryMenuItems()))
                         .Grid(column: 2)))
             .Padding(12)
             .CornerRadius(8)
             .Background(Theme.CardBackground)
-            .WithBorder(Theme.CardStroke);
+            .WithBorder(Theme.CardStroke)
+            .WithContextFlyout(MenuItems(EntryMenuItems()));
     }
 
     private static Element HistoryInfoBody(
