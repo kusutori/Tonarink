@@ -13,10 +13,6 @@ using static Microsoft.UI.Reactor.Factories;
 
 namespace Tonarink.Pages.Settings;
 
-sealed record NetworkInterfacesPageProps(
-    AppSettings Settings,
-    Action<Func<AppSettings, AppSettings>> UpdateSettings);
-
 sealed class NetworkInterfacesPage : Component<NetworkInterfacesPageProps>
 {
     public override Element Render()

@@ -10,13 +10,6 @@ using static Microsoft.UI.Reactor.Factories;
 
 namespace Tonarink.Pages.Web;
 
-sealed record WebSharePageProps(
-    LocalSendNode? Node,
-    AppRuntimeState Runtime,
-    AppSettings Settings,
-    Action<bool?> SetHttpsOverride,
-    WebShareMode Mode);
-
 sealed class WebSharePage : Component<WebSharePageProps>
 {
     public override Element Render()

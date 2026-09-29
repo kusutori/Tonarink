@@ -152,6 +152,25 @@ Hooks/
 
 `Workflow` 适用于包含 state、action 和纯 reducer 的小型表现状态机。若文件只有数据类型而没有状态转换，可以使用更具体的 `State` 或 `Models` 名称，但不要为了形式把一个紧密状态机拆成多个小文件。
 
+### Page Props
+
+所有可导航 Page 的 Props 都使用独立的 `<PageName>Props.cs` 文件，并与 Page 放在同一个功能目录中：
+
+```text
+Pages/
+  Send/
+    SendPage.cs
+    SendPageProps.cs
+
+  Settings/
+    SettingsPage.cs
+    SettingsPageProps.cs
+```
+
+Page Props 是页面的 UI 输入契约，不属于跨模块领域模型，因此不移动到全局 `Models`。普通 Component 的 Props 默认继续与组件共置；如果组件过长，应优先按职责拆分组件，各个 Props 随对应组件自然分离，而不是只为 Props 新建文件。
+
+页面专属的列表项投影、请求和临时状态同样留在对应的 `Pages/<Area>`。只有被多个页面、组件或 Service 共同使用的稳定数据结构才进入全局 `Models`。
+
 ## 命名空间
 
 命名空间必须与目录位置一致，以保持 ReSharper、IDE 导航和代码审查结果稳定：

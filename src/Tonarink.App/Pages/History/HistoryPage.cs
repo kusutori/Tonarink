@@ -13,12 +13,6 @@ using static Tonarink.Utilities.ByteSize;
 
 namespace Tonarink.Pages.History;
 
-sealed record HistoryPageProps(
-    string DownloadDirectory,
-    ElementTheme Theme,
-    Guid? JumpListHistoryId,
-    Action<Guid> ConsumeJumpListHistory);
-
 sealed record HistoryEntryCommands(
     Command<ReceiveHistoryEntry> Open,
     Command<ReceiveHistoryEntry> Reveal,

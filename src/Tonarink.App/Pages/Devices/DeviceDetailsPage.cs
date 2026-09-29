@@ -9,11 +9,6 @@ using static Tonarink.Components.Devices.DeviceVisuals;
 
 namespace Tonarink.Pages.Devices;
 
-sealed record DeviceDetailsPageProps(
-    AppRuntimeState Runtime,
-    LocalSendDevice Device,
-    ElementTheme Theme);
-
 sealed class DeviceDetailsPage : Component<DeviceDetailsPageProps>
 {
     public override Element Render()

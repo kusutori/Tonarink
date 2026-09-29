@@ -13,13 +13,6 @@ using static Tonarink.Controls.SettingsExpanderElement;
 
 namespace Tonarink.Pages.Settings;
 
-sealed record SettingsPageProps(
-    AppSettings Settings,
-    AppRuntimeState Runtime,
-    Action<Func<AppSettings, AppSettings>> UpdateSettings,
-    Action StartOrRestartServer,
-    Action StopServer);
-
 sealed class SettingsPage : Component<SettingsPageProps>
 {
     public override Element Render()

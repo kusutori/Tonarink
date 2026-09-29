@@ -14,11 +14,6 @@ using static Tonarink.Controls.SegmentedElement;
 
 namespace Tonarink.Pages.Receive;
 
-sealed record ReceivePageProps(
-    AppRuntimeState Runtime,
-    AppSettings Settings,
-    Action<Func<AppSettings, AppSettings>> UpdateSettings);
-
 sealed class ReceivePage : Component<ReceivePageProps>
 {
     public override Element Render()

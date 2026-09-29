@@ -2,6 +2,16 @@ using LocalSendDotNet;
 
 namespace Tonarink.Pages.Send;
 
+sealed record SendRequest(
+    Guid TransferId,
+    LocalSendDevice Device,
+    IReadOnlyList<SendItem> Items,
+    long TotalBytes,
+    string? Pin,
+    CancellationToken CancellationToken);
+
+sealed record SuggestedContactSend(Guid Id, string Fingerprint);
+
 union TransferUiState(TransferUiState.Idle, TransferUiState.Active)
 {
     public sealed record Idle(string Message);
