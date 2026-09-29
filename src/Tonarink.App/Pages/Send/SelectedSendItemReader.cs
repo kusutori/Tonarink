@@ -1,11 +1,40 @@
 using LocalSendDotNet;
 using Microsoft.UI.Reactor.Input;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage;
 
 namespace Tonarink.Pages.Send;
 
 static class SelectedSendItemReader
 {
+    public static async Task<SelectedSendItem> FromClipboardBitmapAsync(
+        DataPackageView data,
+        CancellationToken cancellationToken)
+    {
+        var reference = await data.GetBitmapAsync().AsTask(cancellationToken).ConfigureAwait(false);
+        using var probe = await reference.OpenReadAsync().AsTask(cancellationToken).ConfigureAwait(false);
+        var length = checked((long)probe.Size);
+        var contentType = string.IsNullOrWhiteSpace(probe.ContentType) ? "image/png" : probe.ContentType;
+        var extension = contentType switch
+        {
+            "image/jpeg" => ".jpg",
+            "image/bmp" => ".bmp",
+            "image/gif" => ".gif",
+            _ => ".png",
+        };
+        var fileName = $"clipboard-image{extension}";
+        var item = new SendStreamItem(
+            fileName,
+            length,
+            async token =>
+            {
+                var stream = await reference.OpenReadAsync().AsTask(token).ConfigureAwait(false);
+                return stream.AsStreamForRead();
+            },
+            contentType);
+        return new(Guid.NewGuid(), item, fileName, length, "clipboard");
+    }
+
     public static async Task<IReadOnlyList<SelectedSendItem>> ReadDroppedAsync(
         DragData data,
         CancellationToken cancellationToken = default)

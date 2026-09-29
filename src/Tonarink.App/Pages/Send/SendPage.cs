@@ -10,72 +10,16 @@ using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage;
-using Windows.System;
-using MenuFlyoutItemBase = Microsoft.UI.Reactor.Core.MenuFlyoutItemBase;
 using static Microsoft.UI.Reactor.Factories;
 using static Tonarink.Utilities.ByteSize;
 using static Tonarink.Components.Devices.DeviceVisuals;
 using static Tonarink.Components.Transfers.TransferOverlayVisuals;
+using static Tonarink.Pages.Send.SelectedSendItemOperations;
+using static Tonarink.Pages.Send.SendDeviceResolver;
+using static Tonarink.Pages.Send.SendPageVisuals;
+using static Tonarink.Pages.Send.SendTransferPresentation;
 
 namespace Tonarink.Pages.Send;
-
-sealed record SendPageProps(
-    AppRuntimeState Runtime,
-    LocalSendNode? Node,
-    ElementTheme Theme,
-    Func<Task> RefreshAsync,
-    Action<OutgoingTransferViewState?> SetTransferOverlay,
-    ShareTargetPayload? ShareTargetPayload,
-    Action<Guid> ConsumeShareTargetPayload,
-    IReadOnlyList<SelectedSendItem> SelectedItems,
-    Action<Func<IReadOnlyList<SelectedSendItem>, IReadOnlyList<SelectedSendItem>>> UpdateSelectedItems,
-    bool KeepItemsForMultipleReceivers,
-    Action<bool> SetKeepItemsForMultipleReceivers,
-    bool VerifyChecksums,
-    bool ExpandDragDropToEntireApp,
-    bool FilePreviewEnabled,
-    FilePreviewProvider PreviewProvider,
-    string PreviewExecutablePath,
-    Action<LocalSendDevice> OpenDeviceDetails,
-    string? JumpListFavoriteFingerprint,
-    Action<string> ConsumeJumpListFavorite);
-
-sealed record SelectedSendItem(
-    Guid Id,
-    SendItem Item,
-    string DisplayName,
-    long Length,
-    string Kind,
-    string? LocalPath = null,
-    string? OriginalFileName = null,
-    string? OriginalDisplayName = null,
-    string? RedoFileName = null,
-    string? RedoDisplayName = null)
-{
-    public bool IsRenamed => OriginalFileName is not null
-                             && !string.Equals(Item.FileName, OriginalFileName, StringComparison.Ordinal);
-
-    public bool CanRedoRename => RedoFileName is not null
-                                 && !string.Equals(Item.FileName, RedoFileName, StringComparison.Ordinal);
-}
-
-sealed record SendRequest(
-    Guid TransferId,
-    LocalSendDevice Device,
-    IReadOnlyList<SendItem> Items,
-    long TotalBytes,
-    string? Pin,
-    CancellationToken CancellationToken);
-
-sealed record SuggestedContactSend(
-    Guid Id,
-    string Fingerprint);
-
-sealed record ResolvedDevice(LocalSendDevice Device);
-
-sealed record DeviceResolutionFailure(Exception Cause);
-
-union DeviceResolution(ResolvedDevice, DeviceResolutionFailure);
 
 sealed class SendPage : Component<SendPageProps>
 {
@@ -297,7 +241,7 @@ sealed class SendPage : Component<SendPageProps>
                     selectedItems,
                     static item => item.Id.ToString("N"),
                     (item, index) =>
-                    Component<SelectedItemRow, SelectedItemRowProps>(new(
+                    Component<SelectedSendItemRow, SelectedSendItemRowProps>(new(
                             item,
                             selectedItemId == item.Id,
                             Props.FilePreviewEnabled,
@@ -319,13 +263,13 @@ sealed class SendPage : Component<SendPageProps>
                             () => updateSelectedItems(current => (SelectedSendItem[])
                             [
                                 .. current.Select(candidate => candidate.Id == item.Id
-                                    ? UndoRenameSelectedItem(candidate)
+                                    ? UndoRename(candidate)
                                     : candidate)
                             ]),
                             () => updateSelectedItems(current => (SelectedSendItem[])
                             [
                                 .. current.Select(candidate => candidate.Id == item.Id
-                                    ? RedoRenameSelectedItem(candidate)
+                                    ? RedoRename(candidate)
                                     : candidate)
                             ]),
                             () =>
@@ -581,8 +525,39 @@ sealed class SendPage : Component<SendPageProps>
             columns: [GridSize.Star()],
             rows: [GridSize.Star()],
             pageContainer.Grid(row: 0, column: 0),
-            TextDialog().Grid(row: 0, column: 0),
-            AddressDialog().Grid(row: 0, column: 0),
+            Component<SendTextDialog, SendTextDialogProps>(new(
+                    Props.Theme,
+                    showTextDialog,
+                    text,
+                    setText,
+                    value =>
+                    {
+                        var item = new SendTextItem(value);
+                        AddSelectedItems((SelectedSendItem[])
+                        [
+                            new(
+                                Guid.NewGuid(),
+                                item,
+                                t.Message(new("App", "TextMessage")),
+                                TextLength(value),
+                                "text")
+                        ]);
+                    },
+                    () => setShowTextDialog(false)))
+                .Grid(row: 0, column: 0),
+            Component<SendAddressDialog, SendAddressDialogProps>(new(
+                    Props.Theme,
+                    showAddressDialog,
+                    manualAddress,
+                    setManualAddress,
+                    manualAddressError,
+                    () => setManualAddressError(null),
+                    isResolvingAddress,
+                    recentManualAddress,
+                    UseRecentAddress,
+                    value => _ = SendToAddressAsync(value),
+                    () => setShowAddressDialog(false)))
+                .Grid(row: 0, column: 0),
             RenameDialog().Grid(row: 0, column: 0),
             Component<FavoriteDevicesDialog, FavoriteDevicesDialogProps>(new(
                     favorites,
@@ -697,104 +672,6 @@ sealed class SendPage : Component<SendPageProps>
                 }
             });
 
-        Element TextDialog() => (ContentDialog(
-                t.Message(new("App", "SendTextTitle")),
-                TextBox(text, setText, placeholderText: t.Message(new("App", "SendTextPlaceholder")))
-                    .Header(t.Message(new("App", "TextContent")))
-                    .AutomationName(t.Message(new("App", "TextContent")))
-                    .Required()
-                    .AcceptsReturn()
-                    .TextWrapping()
-                    .MinHeight(160),
-                primaryButtonText: t.Message(new("App", "Add"))) with
-        {
-            IsOpen = showTextDialog,
-            SecondaryButtonText = t.Message(new("App", "Cancel")),
-            OnClosed = result =>
-            {
-                if (result == ContentDialogResult.Primary && !string.IsNullOrWhiteSpace(text))
-                {
-                    var item = new SendTextItem(text);
-                    AddSelectedItems((SelectedSendItem[])[
-                        new(
-                                Guid.NewGuid(),
-                                item,
-                                t.Message(new("App", "TextMessage")),
-                                TextLength(text),
-                                "text")
-                    ]);
-                    setText(string.Empty);
-                }
-
-                setShowTextDialog(false);
-            },
-        }).Themed(Props.Theme);
-
-        Element AddressDialog()
-        {
-            var hasAddress = !string.IsNullOrWhiteSpace(manualAddress);
-            var hasValidFormat = hasAddress && TryParseAddress(manualAddress, out _, out _);
-            var validationMessage = manualAddressError
-                                    ?? (hasAddress && !hasValidFormat
-                                        ? t.Message(new("App", "InvalidDeviceAddress"))
-                                        : null);
-
-            return (ContentDialog(
-                    t.Message(new("App", "EnterAddressTitle")),
-                    VStack(6,
-                            TextBox(manualAddress, value =>
-                                    {
-                                        setManualAddress(value);
-                                        if (manualAddressError is not null)
-                                            setManualAddressError(null);
-                                    },
-                                    placeholderText: t.Message(new("App", "AddressPlaceholder")))
-                                .AutomationName(t.Message(new("App", "DeviceAddress")))
-                                .HelpText(validationMessage ?? t.Message(
-                                    new("App", "AddressExample"),
-                                    ("address", "192.168.1.100")))
-                                .Required()
-                                .IsEnabled(!isResolvingAddress),
-                            validationMessage is not null
-                                ? TextBlock(validationMessage)
-                                    .FontSize(14)
-                                    .Foreground(Theme.SystemAttention)
-                                    .LiveRegion(AutomationLiveSetting.Assertive)
-                                    .TextWrapping(TextWrapping.WrapWholeWords)
-                                : recentManualAddress is not null
-                                    ? HStack(2,
-                                        TextBlock(t.Message(new("App", "RecentlyUsedAddress")))
-                                            .FontSize(14)
-                                            .Foreground(Theme.SecondaryText)
-                                            .VAlign(VerticalAlignment.Center),
-                                        HyperlinkButton(recentManualAddress, onClick: UseRecentAddress)
-                                            .Padding(0, 0)
-                                            .FontSize(14)
-                                            .VAlign(VerticalAlignment.Center)
-                                            .AutomationName(t.Message(
-                                                new("App", "UseRecentAddress"),
-                                                ("address", recentManualAddress))))
-                                    : TextBlock(t.Message(
-                                            new("App", "AddressExample"),
-                                            ("address", "192.168.1.100")))
-                                        .FontSize(14)
-                                        .Foreground(Theme.SecondaryText))
-                        .MinWidth(340),
-                    primaryButtonText: t.Message(new("App", "Confirm"))) with
-            {
-                IsOpen = showAddressDialog,
-                IsPrimaryButtonEnabled = !isResolvingAddress && hasValidFormat,
-                SecondaryButtonText = t.Message(new("App", "Cancel")),
-                DefaultButton = ContentDialogButton.Primary,
-                OnClosed = result =>
-                {
-                    setShowAddressDialog(false);
-                    if (result == ContentDialogResult.Primary)
-                        _ = SendToAddressAsync(manualAddress);
-                },
-            }).Themed(Props.Theme);
-        }
-
         Element RenameDialog()
             => Component<RenameItemDialog, RenameItemDialogProps>(new(
                 Props.Theme,
@@ -809,7 +686,7 @@ sealed class SendPage : Component<SendPageProps>
                     updateSelectedItems(current => (SelectedSendItem[])
                     [
                         .. current.Select(item => item.Id == itemId
-                            ? RenameSelectedItem(item, fileName)
+                            ? Rename(item, fileName)
                             : item)
                     ]);
                 },
@@ -922,7 +799,9 @@ sealed class SendPage : Component<SendPageProps>
 
                 if (data.Contains(StandardDataFormats.Bitmap))
                 {
-                    var bitmap = await FromClipboardBitmapAsync(data, CancellationToken.None);
+                    var bitmap = await SelectedSendItemReader.FromClipboardBitmapAsync(
+                        data,
+                        CancellationToken.None);
                     AddSelectedItems((SelectedSendItem[])[
                         bitmap with
                         {
@@ -1226,9 +1105,12 @@ sealed class SendPage : Component<SendPageProps>
 
         void UseRecentAddress()
         {
-            setManualAddress(recentManualAddress);
+            if (recentManualAddress is not { } address)
+                return;
+
+            setManualAddress(address);
             setShowAddressDialog(false);
-            _ = SendToAddressAsync(recentManualAddress);
+            _ = SendToAddressAsync(address);
         }
 
         async Task SendToAddressAsync(
@@ -1260,7 +1142,7 @@ sealed class SendPage : Component<SendPageProps>
             try
             {
                 DeviceResolution resolution = Props.Node is { } node
-                    ? await ResolveDeviceAsync(
+                    ? await ResolveAsync(
                             node,
                             address,
                             port,
@@ -1297,83 +1179,6 @@ sealed class SendPage : Component<SendPageProps>
             {
                 setResolvingAddress(false);
             }
-        }
-
-        static async Task<DeviceResolution> ResolveDeviceAsync(
-            LocalSendNode node,
-            IPAddress address,
-            int port,
-            LocalSendProtocol preferredProtocol,
-            string? expectedFingerprint)
-        {
-            Exception? lastError = null;
-            LocalSendProtocol[] protocols =
-            [
-                preferredProtocol,
-                preferredProtocol == LocalSendProtocol.Https
-                    ? LocalSendProtocol.Http
-                    : LocalSendProtocol.Https,
-            ];
-            foreach (var protocol in protocols)
-            {
-                try
-                {
-                    var endpoint = new DeviceEndpoint(address, port, protocol);
-                    var probe = await node.ProbeDeviceAsync(endpoint).ConfigureAwait(true);
-                    if (expectedFingerprint is not null
-                        && !string.Equals(
-                            probe.Device.Fingerprint,
-                            expectedFingerprint,
-                            StringComparison.Ordinal))
-                    {
-                        throw new LocalSendException(
-                            "The saved address now belongs to a different device.");
-                    }
-
-                    var device = await node.AddKnownDeviceAsync(
-                        endpoint,
-                        probe.Device.Fingerprint).ConfigureAwait(true);
-                    return new ResolvedDevice(device);
-                }
-                catch (OperationCanceledException)
-                {
-                    throw;
-                }
-                catch (Exception exception)
-                {
-                    lastError = exception;
-                }
-            }
-
-            return new DeviceResolutionFailure(lastError
-                ?? new LocalSendException("No compatible device responded."));
-        }
-
-        static bool TryParseAddress(string value, out IPAddress address, out int port)
-        {
-            var input = value.Trim();
-            port = LocalSendOptions.DefaultPort;
-            if (IPAddress.TryParse(input, out address!))
-                return true;
-
-            if (Uri.TryCreate($"tcp://{input}", UriKind.Absolute, out var uri)
-                && IPAddress.TryParse(uri.Host, out address!)
-                && uri.Port is >= 1 and <= ushort.MaxValue)
-            {
-                port = uri.Port;
-                return true;
-            }
-
-            address = IPAddress.None;
-            return false;
-        }
-
-        static string FormatAddress(IPAddress address, int port)
-        {
-            var host = address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetworkV6
-                ? $"[{address}]"
-                : address.ToString();
-            return port == LocalSendOptions.DefaultPort ? host : $"{host}:{port}";
         }
 
         async Task AddDroppedItemsAsync(DragData dragData)
@@ -1441,441 +1246,4 @@ sealed class SendPage : Component<SendPageProps>
         }
     }
 
-    private static string ContentSummary(IntlAccessor t, IReadOnlyList<SendItem> items)
-    {
-        return items.Count switch
-        {
-            1 when items[0] is SendTextItem => t.Message(new("App", "ContentOneTextMessage")),
-            1 => t.Message(new("App", "ContentOneFile"), ("file", items[0].FileName)),
-            _ => t.Message(new("App", "ContentManyItems"), ("count", items.Count))
-        };
-    }
-
-    private static string TransferProgressText(long bytesTransferred, long totalBytes) => totalBytes > 0
-        ? $"{FormatBytes(bytesTransferred)} / {FormatBytes(totalBytes)}"
-        : FormatBytes(bytesTransferred);
-
-    private static Element SelectionTile(string label, string icon, Action onClick, IntlAccessor t) =>
-        Button(
-                VStack(8,
-                    Icon(icon).AccessibilityHidden(),
-                    BodyStrong(label)),
-                onClick)
-            .MinHeight(104)
-            .HAlign(HorizontalAlignment.Stretch)
-            .AutomationName(t.Message(new("App", "ChooseItem"), ("item", label)));
-
-    private static Element EmptySelection(
-        bool isDropActive,
-        string pickerMessage,
-        bool expandDragDropToEntireApp,
-        IntlAccessor t)
-    {
-        var nothingSelected = t.Message(new("App", "NothingSelected"));
-        var dropText = isDropActive
-            ? t.Message(new("App", "ReleaseFilesToAdd"))
-            : t.Message(new("App", expandDragDropToEntireApp
-                ? "DropFilesOrFoldersAnywhere"
-                : "DropFilesOrFolders"));
-
-        return (FlexColumn(
-                    Image("ms-appx:///Assets/FileDrop.svg")
-                        .Size(192, 112)
-                        .AccessibilityHidden(),
-                    Subtitle(dropText),
-                    pickerMessage == nothingSelected
-                        ? null
-                        : Caption(pickerMessage)
-                            .Foreground(Theme.SecondaryText)
-                            .TextWrapping(TextWrapping.WrapWholeWords)) with
-        {
-            RowGap = 12,
-            AlignItems = FlexAlign.Center,
-            JustifyContent = FlexJustify.Center,
-        })
-            .MinHeight(280)
-            .HAlign(HorizontalAlignment.Stretch)
-            .VAlign(VerticalAlignment.Stretch);
-    }
-
-    private sealed record SelectedItemRowProps(
-        SelectedSendItem Item,
-        bool IsSelected,
-        bool ShowPreview,
-        bool CanPreview,
-        FilePreviewProvider PreviewProvider,
-        string PreviewExecutablePath,
-        bool CanShare,
-        Action Select,
-        Func<Task> Share,
-        Action Rename,
-        Action UndoRename,
-        Action RedoRename,
-        Action Remove);
-
-    private sealed class SelectedItemRow : Component<SelectedItemRowProps>
-    {
-        public override Element Render()
-        {
-            var t = UseIntl();
-            var item = Props.Item;
-            var previewCommand = UseCommand(new Command
-            {
-                Label = t.Message(new("App", "Preview")),
-                Icon = new FontIconData(AppIcons.Preview),
-                Accelerator = Accelerator(VirtualKey.Space),
-                CanExecute = Props.CanPreview,
-                Execute = () => FilePreviewLauncher.TryPreview(
-                    Props.PreviewProvider,
-                    item.LocalPath,
-                    Props.PreviewExecutablePath),
-            });
-            var renameCommand = UseCommand(new Command
-            {
-                Label = t.Message(new("App", "Rename")),
-                Icon = new FontIconData(AppIcons.Rename),
-                Accelerator = Accelerator(VirtualKey.F2),
-                Execute = Props.Rename,
-            });
-            var shareCommand = UseCommand(new Command
-            {
-                Label = t.Message(new("App", "Share")),
-                Icon = new FontIconData(AppIcons.Share),
-                Accelerator = Accelerator(VirtualKey.F8),
-                CanExecute = Props.CanShare,
-                ExecuteAsync = Props.Share,
-            });
-            var undoRenameCommand = UseCommand(new Command
-            {
-                Label = t.Message(new("App", "Undo")),
-                Icon = new FontIconData(AppIcons.Undo),
-                Accelerator = Accelerator(VirtualKey.Z, VirtualKeyModifiers.Control),
-                CanExecute = item.IsRenamed,
-                Execute = Props.UndoRename,
-            });
-            var redoRenameCommand = UseCommand(new Command
-            {
-                Label = t.Message(new("App", "Redo")),
-                Icon = new FontIconData(AppIcons.Redo),
-                Accelerator = Accelerator(VirtualKey.Y, VirtualKeyModifiers.Control),
-                CanExecute = item.CanRedoRename,
-                Execute = Props.RedoRename,
-            });
-            var removeCommand = UseCommand(new Command
-            {
-                Label = t.Message(new("App", "Remove")),
-                Icon = new FontIconData(AppIcons.Delete),
-                Accelerator = Accelerator(VirtualKey.Delete),
-                Execute = Props.Remove,
-            });
-
-            Element ContextMenu() =>
-                MenuItems(
-                [
-                    .. Props.ShowPreview
-                        ? [MenuItem(previewCommand)]
-                        : Array.Empty<MenuFlyoutItemBase>(),
-                    MenuItem(shareCommand),
-                    MenuSeparator(),
-                    MenuItem(renameCommand),
-                    MenuItem(undoRenameCommand),
-                    MenuItem(redoRenameCommand),
-                    MenuSeparator(),
-                    MenuItem(removeCommand),
-                ]);
-            var content = Grid(
-                columns: [GridSize.Auto, GridSize.Star()],
-                rows: [GridSize.Auto],
-                Icon(FileTypeGlyphs.ForSendItem(item.Kind, item.DisplayName)).AccessibilityHidden()
-                    .VAlign(VerticalAlignment.Center)
-                    .Grid(column: 0),
-                VStack(2,
-                        TextBlock(item.DisplayName)
-                            .TextTrimming(TextTrimming.CharacterEllipsis)
-                            .ToolTip(item.DisplayName)
-                            .Foreground(Theme.PrimaryText),
-                        Caption(item.IsRenamed
-                                ? t.Message(
-                                    new("App", "SendItemRenamed"),
-                                    ("kind", ItemKindLabel(t, item.Kind)),
-                                    ("size", FormatBytes(item.Length)))
-                                : t.Message(
-                                    new("App", "ItemKindAndSize"),
-                                    ("kind", ItemKindLabel(t, item.Kind)),
-                                    ("size", FormatBytes(item.Length))))
-                            .Foreground(item.IsRenamed ? Theme.SystemCaution : Theme.SecondaryText))
-                    .Margin(horizontal: 12, vertical: 0)
-                    .Grid(column: 1));
-            Element itemContent = Button(content.Margin(right: 52), Props.Select)
-                .GhostButton()
-                .Padding(12)
-                .HAlign(HorizontalAlignment.Stretch)
-                .HorizontalContentAlignment(HorizontalAlignment.Stretch)
-                .AutomationName(t.Message(
-                    new("App", Props.IsSelected ? "DeselectSendItem" : "SelectSendItem"),
-                    ("item", item.DisplayName)))
-                .HelpText(Props.CanPreview
-                    ? t.Message(new("App", "SendItemPreviewHint"))
-                    : string.Empty);
-
-            var row = Border(
-                    Grid(
-                        columns: [GridSize.Star()],
-                        rows: [GridSize.Auto],
-                        itemContent
-                            .WithContextFlyout(ContextMenu())
-                            .Grid(row: 0),
-                        Button(
-                                Icon(removeCommand.Icon!).AccessibilityHidden(),
-                                () => removeCommand.Execute?.Invoke())
-                            .AutomationName(t.Message(new("App", "RemoveItem"), ("item", item.DisplayName)))
-                            .ToolTip(removeCommand.Label)
-                            .IsEnabled(removeCommand.IsEnabled)
-                            .WithContextFlyout(ContextMenu())
-                            .HAlign(HorizontalAlignment.Right)
-                            .VAlign(VerticalAlignment.Center)
-                            .Margin(right: 12)
-                            .Grid(row: 0)))
-                .CornerRadius(8)
-                .Background(Theme.SubtleFill)
-                .WithBorder(
-                    Props.IsSelected ? Theme.Accent : Theme.CardStroke,
-                    1)
-                .WithContextFlyout(ContextMenu());
-            return CommandHost(
-                [previewCommand, shareCommand, renameCommand, undoRenameCommand, redoRenameCommand, removeCommand],
-                row);
-        }
-    }
-
-    private static SelectedSendItem RenameSelectedItem(SelectedSendItem item, string leafName)
-    {
-        var originalFileName = item.OriginalFileName ?? item.Item.FileName;
-        var originalDisplayName = item.OriginalDisplayName ?? item.DisplayName;
-        var separator = item.Item.FileName.LastIndexOf('/');
-        var protocolName = separator < 0
-            ? leafName
-            : $"{item.Item.FileName[..(separator + 1)]}{leafName}";
-        var isRenamed = !string.Equals(protocolName, originalFileName, StringComparison.Ordinal);
-        return item with
-        {
-            Item = item.Item with { FileName = protocolName },
-            DisplayName = isRenamed ? protocolName : originalDisplayName,
-            OriginalFileName = originalFileName,
-            OriginalDisplayName = originalDisplayName,
-            RedoFileName = null,
-            RedoDisplayName = null,
-        };
-    }
-
-    private static SelectedSendItem UndoRenameSelectedItem(SelectedSendItem item) =>
-        !item.IsRenamed || item.OriginalFileName is not { } originalFileName
-            ? item
-            : item with
-            {
-                Item = item.Item with { FileName = originalFileName },
-                DisplayName = item.OriginalDisplayName ?? originalFileName,
-                RedoFileName = item.Item.FileName,
-                RedoDisplayName = item.DisplayName,
-            };
-
-    private static SelectedSendItem RedoRenameSelectedItem(SelectedSendItem item) =>
-        !item.CanRedoRename || item.RedoFileName is not { } redoFileName
-            ? item
-            : item with
-            {
-                Item = item.Item with { FileName = redoFileName },
-                DisplayName = item.RedoDisplayName ?? redoFileName,
-            };
-
-    private static string ProtocolLeafName(string protocolName)
-    {
-        var separator = protocolName.LastIndexOf('/');
-        return separator < 0 ? protocolName : protocolName[(separator + 1)..];
-    }
-
-    private static Element DeviceCard(
-        LocalSendDevice device,
-        FavoriteDevice? favorite,
-        bool isEnabled,
-        Action<FrameworkElement?> onClick,
-        Action onDetails,
-        Action onFavorite,
-        Action onVerify,
-        IntlAccessor t)
-    {
-        var displayName = favorite?.Name ?? device.Alias;
-        var favoriteCommand = new Command
-        {
-            Label = t.Message(new("App", favorite is null
-                ? "FavoriteAction"
-                : "RemoveFavoriteAction")),
-            Icon = new FontIconData(favorite is null
-                ? AppIcons.FavoriteOutline
-                : AppIcons.Favorite),
-            Execute = onFavorite,
-        };
-        var verifyCommand = new Command
-        {
-            Label = t.Message(new("App", "VerifyAction")),
-            Icon = new FontIconData(AppIcons.Verify),
-            Execute = onVerify,
-        };
-
-        return Component<DeviceIdentityCard, DeviceIdentityCardProps>(new(
-                displayName,
-                device.DeviceModel,
-                device.DeviceType,
-                RemoteDeviceNumber(device),
-                DeviceConnectedKey(device.Fingerprint),
-                onClick,
-                t.Message(new("App", "SendToDevice"), ("device", displayName)),
-                isEnabled,
-                TrailingReserve: 64,
-                AnimationRole: DeviceIdentityCardAnimationRole.Source,
-                SecondaryGlyph: AppIcons.Details,
-                SecondaryAutomationName: t.Message(
-                    new("App", "OpenDeviceDetails"),
-                    ("device", displayName)),
-                OnSecondaryClick: _ => onDetails(),
-                IsFavorite: favorite is not null))
-            .WithContextFlyout(MenuItems(
-                MenuItem(favoriteCommand),
-                MenuItem(verifyCommand)));
-    }
-
-    private static FavoriteDevice CreateFavorite(LocalSendDevice device)
-    {
-        var endpoint = device.PreferredEndpoint;
-        return new FavoriteDevice(
-            device.Fingerprint,
-            device.Alias,
-            endpoint?.Address.ToString() ?? string.Empty,
-            endpoint?.Port ?? LocalSendOptions.DefaultPort,
-            device.DeviceType);
-    }
-
-    private static Element EmptyDevices(
-        IntlAccessor t,
-        LocalSendNodeState state,
-        string? discoveryWarning,
-        Element searchingAnimation) =>
-        FlexColumn(
-                state switch
-                {
-                    LocalSendNodeState.Faulted => Icon(AppIcons.Error).AccessibilityHidden(),
-                    _ => searchingAnimation,
-                },
-                Subtitle(state switch
-                {
-                    LocalSendNodeState.Faulted => t.Message(new("App", "NetworkStartFailed")),
-                    _ => t.Message(new("App", "SearchingDevices")),
-                }),
-                TextBlock(state switch
-                {
-                    LocalSendNodeState.Faulted => t.Message(new("App", "PortInUseHint")),
-                    _ when discoveryWarning is not null => t.Message(new("App", "DiscoveryScanHint")),
-                    _ => t.Message(new("App", "SameNetworkHint")),
-                })
-                    .Foreground(Theme.SecondaryText)
-                    .TextWrapping(TextWrapping.WrapWholeWords)) with
-        {
-            RowGap = 12,
-            AlignItems = FlexAlign.Center,
-            JustifyContent = FlexJustify.Center,
-        };
-
-    private static void PlaySearchingAnimation(AnimatedVisualPlayer? player, bool play)
-    {
-        if (player is null)
-            return;
-
-        player.Source = new SearchingDevices();
-        if (play)
-            _ = player.PlayAsync(fromProgress: 0, toProgress: 1, looped: true);
-    }
-
-    private static async Task<SelectedSendItem> FromClipboardBitmapAsync(
-        DataPackageView data,
-        CancellationToken cancellationToken)
-    {
-        var reference = await data.GetBitmapAsync().AsTask(cancellationToken).ConfigureAwait(false);
-        using var probe = await reference.OpenReadAsync().AsTask(cancellationToken).ConfigureAwait(false);
-        var length = checked((long)probe.Size);
-        var contentType = string.IsNullOrWhiteSpace(probe.ContentType) ? "image/png" : probe.ContentType;
-        var extension = contentType switch
-        {
-            "image/jpeg" => ".jpg",
-            "image/bmp" => ".bmp",
-            "image/gif" => ".gif",
-            _ => ".png",
-        };
-        var fileName = $"clipboard-image{extension}";
-        var item = new SendStreamItem(
-            fileName,
-            length,
-            async token =>
-            {
-                var stream = await reference.OpenReadAsync().AsTask(token).ConfigureAwait(false);
-                return stream.AsStreamForRead();
-            },
-            contentType);
-        return new(Guid.NewGuid(), item, fileName, length, "clipboard");
-    }
-
-    private static TransferUiState.Active ResultState(
-        IntlAccessor t,
-        OutgoingTransferResult result,
-        string deviceAlias,
-        long requestedBytes) => result switch
-        {
-            OutgoingTransferResult.Completed completed => new TransferUiState.Active(
-                TransferState.Completed,
-                deviceAlias,
-                completed.Items.Sum(static item => item.BytesTransferred),
-                completed.Items.Sum(static item => item.BytesTransferred),
-                t.Message(new("App", "SentToDevice"), ("device", deviceAlias)),
-                IsError: false),
-            OutgoingTransferResult.Cancelled cancelled => new TransferUiState.Active(
-                TransferState.Cancelled,
-                deviceAlias,
-                cancelled.Items.Sum(static item => item.BytesTransferred),
-                requestedBytes,
-                t.Message(new("App", "TransferCancelled")),
-                IsError: false),
-            OutgoingTransferResult.Failed failed => new TransferUiState.Active(
-                TransferState.Failed,
-                deviceAlias,
-                failed.Items.Sum(static item => item.BytesTransferred),
-                requestedBytes,
-                failed.Failure.Message,
-                IsError: true),
-            _ => new TransferUiState.Active(
-                TransferState.Failed,
-                deviceAlias,
-                0,
-                requestedBytes,
-                t.Message(new("App", "TransferFailed")),
-                IsError: true),
-        };
-
-    private static string ProgressMessage(IntlAccessor t, TransferState state, string deviceAlias) => state switch
-    {
-        TransferState.Preparing => t.Message(new("App", "PreparingForDevice"), ("device", deviceAlias)),
-        TransferState.WaitingForAcceptance => t.Message(new("App", "WaitingForDevice"), ("device", deviceAlias)),
-        TransferState.Transferring => t.Message(new("App", "SendingToDevice"), ("device", deviceAlias)),
-        TransferState.Completed => t.Message(new("App", "SentToDevice"), ("device", deviceAlias)),
-        TransferState.Cancelled => t.Message(new("App", "TransferCancelled")),
-        _ => t.Message(new("App", "TransferFailed")),
-    };
-
-    private static string ItemKindLabel(IntlAccessor t, string kind) => kind switch
-    {
-        "text" => t.Message(new("App", "Text")),
-        "clipboard" => t.Message(new("App", "Clipboard")),
-        "folder" => t.Message(new("App", "Folder")),
-        _ => t.Message(new("App", "File")),
-    };
-
-    private static long TextLength(string value) => System.Text.Encoding.UTF8.GetByteCount(value);
 }
