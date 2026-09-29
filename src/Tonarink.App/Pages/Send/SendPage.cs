@@ -284,16 +284,19 @@ sealed class SendPage : Component<SendPageProps>
                                              Props.PreviewProvider,
                                              Props.PreviewExecutablePath);
 
-        Element selectedItemsBody = selectedItems switch
+        Element selectedItemsContent = selectedItems switch
         {
-            [] => EmptySelection(
-                isFileDropActive,
-                pickerMessage,
-                Props.ExpandDragDropToEntireApp,
-                t),
-            _ => VStack(8,
-            [
-                .. selectedItems.Select((item, index) =>
+            [] => ScrollView(EmptySelection(
+                    isFileDropActive,
+                    pickerMessage,
+                    Props.ExpandDragDropToEntireApp,
+                    t))
+                .HorizontalContentAlignment(HorizontalAlignment.Stretch)
+                .VerticalContentAlignment(VerticalAlignment.Stretch),
+            _ => (LazyVStack(
+                    selectedItems,
+                    static item => item.Id.ToString("N"),
+                    (item, index) =>
                     Component<SelectedItemRow, SelectedItemRowProps>(new(
                             item,
                             selectedItemId == item.Id,
@@ -334,14 +337,14 @@ sealed class SendPage : Component<SendPageProps>
                                     .. current.Where(candidate => candidate.Id != item.Id)
                                 ]);
                             }))
-                    .PositionInSet(index + 1, selectedItems.Count)
-                    .WithKey(item.Id.ToString("N")))
-            ]),
+                        .PositionInSet(index + 1, selectedItems.Count)) with
+                {
+                    Spacing = 8,
+                })
+                .HAlign(HorizontalAlignment.Stretch)
+                .VAlign(VerticalAlignment.Stretch),
         };
 
-        Element selectedItemsContent = ScrollView(selectedItemsBody)
-            .HorizontalContentAlignment(HorizontalAlignment.Stretch)
-            .VerticalContentAlignment(VerticalAlignment.Stretch);
         selectedItemsContent = isWideLayout
             ? selectedItemsContent.Flex(grow: 1, basis: 0)
             : selectedItemsContent.Height(AppLayout.NarrowSendItemsViewportHeight);
