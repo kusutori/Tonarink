@@ -5,7 +5,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using static Microsoft.UI.Reactor.Factories;
 
-namespace Tonarink.Pages.Send;
+namespace Tonarink.Components.Dialogs;
 
 sealed record SendTextDialogProps(
     ElementTheme Theme,

@@ -550,6 +550,7 @@ sealed class SendPage : Component<SendPageProps>
                     showAddressDialog,
                     manualAddress,
                     setManualAddress,
+                    value => TryParseAddress(value, out _, out _),
                     manualAddressError,
                     () => setManualAddressError(null),
                     isResolvingAddress,

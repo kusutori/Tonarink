@@ -6,15 +6,15 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using static Microsoft.UI.Reactor.Factories;
-using static Tonarink.Pages.Send.SendDeviceResolver;
 
-namespace Tonarink.Pages.Send;
+namespace Tonarink.Components.Dialogs;
 
 sealed record SendAddressDialogProps(
     ElementTheme Theme,
     bool IsOpen,
     string Address,
     Action<string> SetAddress,
+    Func<string, bool> IsValidAddress,
     string? Error,
     Action ClearError,
     bool IsResolving,
@@ -29,7 +29,7 @@ sealed class SendAddressDialog : Component<SendAddressDialogProps>
     {
         var t = UseIntl();
         var hasAddress = !string.IsNullOrWhiteSpace(Props.Address);
-        var hasValidFormat = hasAddress && TryParseAddress(Props.Address, out _, out _);
+        var hasValidFormat = hasAddress && Props.IsValidAddress(Props.Address);
         var validationMessage = Props.Error
                                 ?? (hasAddress && !hasValidFormat
                                     ? t.Message(new("App", "InvalidDeviceAddress"))
