@@ -194,6 +194,7 @@
   <data name="SendItemRenamed" xml:space="preserve"><value>Renamed · {kind} · {size}</value></data>
   <data name="Share" xml:space="preserve"><value>Share</value></data>
   <data name="Undo" xml:space="preserve"><value>Undo</value></data>
+  <data name="Redo" xml:space="preserve"><value>Redo</value></data>
   <data name="ShareFileFailed" xml:space="preserve"><value>Windows sharing is unavailable for this file.</value></data>
   <data name="SettingsExperimental" xml:space="preserve"><value>Experimental extensions</value></data>
   <data name="SettingsFilePreview" xml:space="preserve"><value>File preview</value></data>

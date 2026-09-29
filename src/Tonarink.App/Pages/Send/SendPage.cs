@@ -48,10 +48,15 @@ sealed record SelectedSendItem(
     string Kind,
     string? LocalPath = null,
     string? OriginalFileName = null,
-    string? OriginalDisplayName = null)
+    string? OriginalDisplayName = null,
+    string? RedoFileName = null,
+    string? RedoDisplayName = null)
 {
     public bool IsRenamed => OriginalFileName is not null
                              && !string.Equals(Item.FileName, OriginalFileName, StringComparison.Ordinal);
+
+    public bool CanRedoRename => RedoFileName is not null
+                                 && !string.Equals(Item.FileName, RedoFileName, StringComparison.Ordinal);
 }
 
 sealed record SendRequest(
@@ -309,6 +314,12 @@ sealed class SendPage : Component<SendPageProps>
                             [
                                 .. current.Select(candidate => candidate.Id == item.Id
                                     ? UndoRenameSelectedItem(candidate)
+                                    : candidate)
+                            ]),
+                            () => updateSelectedItems(current => (SelectedSendItem[])
+                            [
+                                .. current.Select(candidate => candidate.Id == item.Id
+                                    ? RedoRenameSelectedItem(candidate)
                                     : candidate)
                             ]),
                             () =>
@@ -1454,6 +1465,7 @@ sealed class SendPage : Component<SendPageProps>
         Func<Task> Share,
         Action Rename,
         Action UndoRename,
+        Action RedoRename,
         Action Remove);
 
     private sealed class SelectedItemRow : Component<SelectedItemRowProps>
@@ -1496,6 +1508,14 @@ sealed class SendPage : Component<SendPageProps>
                 CanExecute = item.IsRenamed,
                 Execute = Props.UndoRename,
             });
+            var redoRenameCommand = UseCommand(new Command
+            {
+                Label = t.Message(new("App", "Redo")),
+                Icon = new FontIconData(AppIcons.Redo),
+                Accelerator = Accelerator(VirtualKey.Y, VirtualKeyModifiers.Control),
+                CanExecute = item.CanRedoRename,
+                Execute = Props.RedoRename,
+            });
             var removeCommand = UseCommand(new Command
             {
                 Label = t.Message(new("App", "Remove")),
@@ -1511,8 +1531,11 @@ sealed class SendPage : Component<SendPageProps>
                         ? [MenuItem(previewCommand)]
                         : Array.Empty<MenuFlyoutItemBase>(),
                     MenuItem(shareCommand),
+                    MenuSeparator(),
                     MenuItem(renameCommand),
                     MenuItem(undoRenameCommand),
+                    MenuItem(redoRenameCommand),
+                    MenuSeparator(),
                     MenuItem(removeCommand),
                 ]);
             var content = Grid(
@@ -1575,7 +1598,7 @@ sealed class SendPage : Component<SendPageProps>
                     1)
                 .WithContextFlyout(ContextMenu());
             return CommandHost(
-                [previewCommand, shareCommand, renameCommand, undoRenameCommand, removeCommand],
+                [previewCommand, shareCommand, renameCommand, undoRenameCommand, redoRenameCommand, removeCommand],
                 row);
         }
     }
@@ -1595,6 +1618,8 @@ sealed class SendPage : Component<SendPageProps>
             DisplayName = isRenamed ? protocolName : originalDisplayName,
             OriginalFileName = originalFileName,
             OriginalDisplayName = originalDisplayName,
+            RedoFileName = null,
+            RedoDisplayName = null,
         };
     }
 
@@ -1605,8 +1630,17 @@ sealed class SendPage : Component<SendPageProps>
             {
                 Item = item.Item with { FileName = originalFileName },
                 DisplayName = item.OriginalDisplayName ?? originalFileName,
-                OriginalFileName = null,
-                OriginalDisplayName = null,
+                RedoFileName = item.Item.FileName,
+                RedoDisplayName = item.DisplayName,
+            };
+
+    private static SelectedSendItem RedoRenameSelectedItem(SelectedSendItem item) =>
+        item.RedoFileName is not { } redoFileName
+            ? item
+            : item with
+            {
+                Item = item.Item with { FileName = redoFileName },
+                DisplayName = item.RedoDisplayName ?? redoFileName,
             };
 
     private static string ProtocolLeafName(string protocolName)

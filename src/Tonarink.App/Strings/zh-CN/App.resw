@@ -194,6 +194,7 @@
   <data name="SendItemRenamed" xml:space="preserve"><value>已重命名 · {kind} · {size}</value></data>
   <data name="Share" xml:space="preserve"><value>分享</value></data>
   <data name="Undo" xml:space="preserve"><value>撤回</value></data>
+  <data name="Redo" xml:space="preserve"><value>重做</value></data>
   <data name="ShareFileFailed" xml:space="preserve"><value>无法通过 Windows 分享此文件。</value></data>
   <data name="SettingsExperimental" xml:space="preserve"><value>实验性扩展</value></data>
   <data name="SettingsFilePreview" xml:space="preserve"><value>文件预览</value></data>
