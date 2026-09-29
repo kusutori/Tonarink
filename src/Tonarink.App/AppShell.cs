@@ -142,6 +142,13 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
             Invalidate = () => bumpHeader(epoch => epoch + 1),
         };
         _ = headerEpoch;
+        var (floatingInfoEpoch, bumpFloatingInfo) = context.UseReducer(0);
+        var floatingInfo = context.UseRef<FloatingInfoBarSlot?>();
+        floatingInfo.Current ??= new FloatingInfoBarSlot
+        {
+            Invalidate = () => bumpFloatingInfo(epoch => epoch + 1),
+        };
+        _ = floatingInfoEpoch;
         var navigationViewRef = context.UseRef<NavigationView?>();
         var (isNavigationPaneOpen, setNavigationPaneOpen) = context.UseState(false);
         var (detailsDevice, setDetailsDevice) = context.UseState<LocalSendDevice?>(null);
@@ -346,7 +353,8 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
                     headerRight.Current.Owner == navigation.CurrentRoute
                         ? headerRight.Current.Build?.Invoke()
                         : null)),
-        }).Provide(PageHeader.RightSlot, headerRight.Current!);
+        }).Provide(PageHeader.RightSlot, headerRight.Current!)
+            .Provide(FloatingInfoBarHost.Slot, floatingInfo.Current!);
 
         var pendingIncoming = runtime.IncomingTransfers.FirstOrDefault();
         var overlayVisible = pendingIncoming is not null && nodeSession.Node is not null
@@ -405,12 +413,21 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
                     element.RemoveHandler(UIElement.PointerPressedEvent, handler);
             });
 
+        var floatingInfoContent = floatingInfo.Current.Owner == navigation.CurrentRoute
+            ? floatingInfo.Current.Build?.Invoke()
+            : null;
+
         Element root = Grid(
             columns: [GridSize.Star()],
             rows: [GridSize.Star()],
             shellContent
                 .WithKey("shell-content")
                 .Grid(row: 0, column: 0),
+            floatingInfoContent is null
+                ? null
+                : Component<FloatingInfoBarHost, FloatingInfoBarHostProps>(new(floatingInfoContent))
+                    .WithKey("floating-page-infobars")
+                    .Grid(row: 0, column: 0),
             isAppDropActive
                 ? Grid(
                         columns: [GridSize.Star()],

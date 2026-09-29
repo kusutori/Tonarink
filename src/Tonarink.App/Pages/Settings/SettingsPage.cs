@@ -38,6 +38,48 @@ sealed class SettingsPage : Component<SettingsPageProps>
             t.Message(new("App", "WindowUnavailable")));
         var navigation = UseNavigation<AppRoute>();
         var (statusMessage, setStatusMessage) = UseState<string?>(null);
+        var floatingInfo = UseContext(FloatingInfoBarHost.Slot);
+        floatingInfo.Owner = AppRoute.Settings;
+        floatingInfo.Build = statusMessage is null
+                             && Props.Runtime.Error is null
+                             && Props.Runtime.DiscoveryWarning is null
+            ? null
+            : () => VStack(4,
+                    statusMessage is null
+                        ? null
+                        : Component<FloatingInfoBarItem, FloatingInfoBarItemProps>(new(
+                                (InfoBar(t.Message(new("App", "SettingsTitle")), statusMessage) with
+                                {
+                                    IsOpen = true,
+                                    IsClosable = true,
+                                    OnClosed = () => setStatusMessage(null),
+                                }).Severity(InfoBarSeverity.Error)))
+                            .WithKey("settings-status"),
+                    Props.Runtime.Error is null
+                        ? null
+                        : Component<FloatingInfoBarItem, FloatingInfoBarItemProps>(new(
+                                (InfoBar(t.Message(new("App", "NetworkStartFailed")), Props.Runtime.Error) with
+                                {
+                                    IsOpen = true,
+                                    IsClosable = false,
+                                }).Severity(InfoBarSeverity.Error)))
+                            .WithKey("settings-runtime-error"),
+                    Props.Runtime.DiscoveryWarning is null
+                        ? null
+                        : Component<FloatingInfoBarItem, FloatingInfoBarItemProps>(new(
+                                (InfoBar(
+                                    t.Message(new("App", "NodeDiscoveryLimited")),
+                                    Props.Runtime.DiscoveryWarning) with
+                                {
+                                    IsOpen = true,
+                                    IsClosable = false,
+                                }).Severity(InfoBarSeverity.Warning)))
+                            .WithKey("settings-discovery-warning"));
+        UseEffect(
+            () => floatingInfo.Invalidate(),
+            statusMessage,
+            Props.Runtime.Error,
+            Props.Runtime.DiscoveryWarning);
         var (encryptionNoticeOpen, setEncryptionNoticeOpen) = UseState(false);
         var (previewOverridePath, setPreviewOverridePath) = UseState("");
         var nodeState = Props.Runtime.NodeState;
@@ -639,29 +681,6 @@ sealed class SettingsPage : Component<SettingsPageProps>
 
         return ScrollView(
                 VStack(24,
-                        statusMessage is null
-                            ? null
-                            : (InfoBar(t.Message(new("App", "SettingsTitle")), statusMessage) with
-                            {
-                                IsOpen = true,
-                                IsClosable = true,
-                                OnClosed = () => setStatusMessage(null),
-                            }).Severity(InfoBarSeverity.Error),
-                        Props.Runtime.Error is null
-                            ? null
-                            : (InfoBar(t.Message(new("App", "NetworkStartFailed")), Props.Runtime.Error) with
-                            {
-                                IsOpen = true,
-                                IsClosable = false,
-                            }).Severity(InfoBarSeverity.Error),
-                        Props.Runtime.DiscoveryWarning is null
-                            ? null
-                            : (InfoBar(t.Message(new("App", "NodeDiscoveryLimited")),
-                                    Props.Runtime.DiscoveryWarning) with
-                            {
-                                IsOpen = true,
-                                IsClosable = false,
-                            }).Severity(InfoBarSeverity.Warning),
                         generalCards,
                         receiveCards,
                         sendCards,
