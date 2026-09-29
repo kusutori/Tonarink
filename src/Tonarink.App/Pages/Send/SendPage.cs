@@ -1624,7 +1624,7 @@ sealed class SendPage : Component<SendPageProps>
     }
 
     private static SelectedSendItem UndoRenameSelectedItem(SelectedSendItem item) =>
-        item.OriginalFileName is not { } originalFileName
+        !item.IsRenamed || item.OriginalFileName is not { } originalFileName
             ? item
             : item with
             {
@@ -1635,7 +1635,7 @@ sealed class SendPage : Component<SendPageProps>
             };
 
     private static SelectedSendItem RedoRenameSelectedItem(SelectedSendItem item) =>
-        item.RedoFileName is not { } redoFileName
+        !item.CanRedoRename || item.RedoFileName is not { } redoFileName
             ? item
             : item with
             {
