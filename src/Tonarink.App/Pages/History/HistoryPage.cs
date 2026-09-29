@@ -111,22 +111,27 @@ sealed class HistoryPage : Component<HistoryPageProps>
 
         Element list = entries switch
         {
-            [] => Caption(t.Message(new("App", "HistoryEmpty")))
-                .Foreground(Theme.SecondaryText),
-            _ => VStack(8, [
-                .. entries.Select((entry, index) =>
+            [] => ScrollView(
+                    Caption(t.Message(new("App", "HistoryEmpty")))
+                        .Foreground(Theme.SecondaryText))
+                .HorizontalContentAlignment(HorizontalAlignment.Stretch),
+            _ => (LazyVStack(
+                    entries,
+                    static entry => entry.Id.ToString("N"),
+                    (entry, index) =>
                     HistoryRow(entry, t, entryCommands)
-                        .PositionInSet(index + 1, entries.Count)
-                        .WithKey(entry.Id.ToString("N")))
-            ]),
+                        .PositionInSet(index + 1, entries.Count)) with
+                {
+                    Spacing = 8,
+                })
+                .HAlign(HorizontalAlignment.Stretch)
+                .VAlign(VerticalAlignment.Stretch),
         };
 
         return Border(
                 FlexColumn(
                         actions,
-                        ScrollView(list)
-                            .HorizontalContentAlignment(HorizontalAlignment.Stretch)
-                            .Flex(grow: 1, basis: 0),
+                        list.Flex(grow: 1, basis: 0),
                         (ContentDialog(
                                 t.Message(new("App", "HistoryDeleteAllConfirm")),
                                 TextBlock(t.Message(new("App", "HistoryDeleteAllConfirmMessage")))

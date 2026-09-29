@@ -196,9 +196,6 @@ static class IncomingFileCard
     {
         var request = model.Request;
         var t = model.T;
-        var rows = request.Items.Select((item, index) => ReceiveItemRow(model, item)
-            .PositionInSet(index + 1, request.Items.Count)
-            .WithKey(item.Id)).ToArray<Element?>();
         return Grid(
                 columns: [GridSize.Star()],
                 rows: [GridSize.Auto, GridSize.Auto, GridSize.Star()],
@@ -276,10 +273,17 @@ static class IncomingFileCard
                             .VAlign(VerticalAlignment.Center)
                             .Grid(column: 1))
                     .Grid(row: 1),
-                ScrollView(
-                        VStack(8, rows)
-                            .Padding(left: 4, top: 4, right: 16, bottom: 4))
-                    .HorizontalContentAlignment(HorizontalAlignment.Stretch)
+                (LazyVStack(
+                        request.Items,
+                        static item => item.Id,
+                        (item, index) => ReceiveItemRow(model, item)
+                            .PositionInSet(index + 1, request.Items.Count)) with
+                    {
+                        Spacing = 8,
+                    })
+                    .Padding(left: 4, top: 4, right: 16, bottom: 4)
+                    .HAlign(HorizontalAlignment.Stretch)
+                    .VAlign(VerticalAlignment.Stretch)
                     .Grid(row: 2)) with
         {
             RowSpacing = 12,
