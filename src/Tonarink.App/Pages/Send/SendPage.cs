@@ -105,6 +105,9 @@ sealed class SendPage : Component<SendPageProps>
         var (showFavoritesDialog, setShowFavoritesDialog) = UseState(false);
         var (favoriteEdit, setFavoriteEdit) = UseState<FavoriteDeviceEdit?>(null);
         var (favoriteToDelete, setFavoriteToDelete) = UseState<FavoriteDevice?>(null);
+        var (deviceFavoriteDraft, setDeviceFavoriteDraft) = UseState<FavoriteDevice?>(null);
+        var (deviceFavoriteToDelete, setDeviceFavoriteToDelete) = UseState<FavoriteDevice?>(null);
+        var (verificationDevice, setVerificationDevice) = UseState<LocalSendDevice?>(null);
         var (manualAddress, setManualAddress) = UseState(string.Empty);
         var (manualAddressError, setManualAddressError) = UseState<string?>(null);
         var (isResolvingAddress, setResolvingAddress) = UseState(false);
@@ -443,6 +446,14 @@ sealed class SendPage : Component<SendPageProps>
                                     () => _ = StartSendAsync(device, pin: null));
                             },
                             onDetails: () => Props.OpenDeviceDetails(device),
+                            onFavorite: () =>
+                            {
+                                if (favorite is null)
+                                    setDeviceFavoriteDraft(CreateFavorite(device));
+                                else
+                                    setDeviceFavoriteToDelete(favorite);
+                            },
+                            onVerify: () => setVerificationDevice(device),
                             t)
                         .PositionInSet(index + 1, devices.Count)
                         .WithKey(device.Fingerprint);
@@ -623,7 +634,38 @@ sealed class SendPage : Component<SendPageProps>
                         setFavoriteToDelete(null);
                         setShowFavoritesDialog(true);
                     }))
-                .Grid(row: 0, column: 0));
+                .Grid(row: 0, column: 0),
+            deviceFavoriteDraft is null
+                ? null
+                : Component<FavoriteDeviceDialog, FavoriteDeviceDialogProps>(new(
+                        deviceFavoriteDraft,
+                        IsNew: true,
+                        Props.Theme,
+                        FavoriteDeviceStore.Upsert,
+                        () => setDeviceFavoriteDraft(null)))
+                    .WithKey(deviceFavoriteDraft.Fingerprint)
+                    .Grid(row: 0, column: 0),
+            Component<DeleteFavoriteDialog, DeleteFavoriteDialogProps>(new(
+                    deviceFavoriteToDelete?.Name ?? string.Empty,
+                    Props.Theme,
+                    deviceFavoriteToDelete is not null,
+                    () =>
+                    {
+                        if (deviceFavoriteToDelete is { } target)
+                            FavoriteDeviceStore.Remove(target.Fingerprint);
+                    },
+                    () => setDeviceFavoriteToDelete(null)))
+                .Grid(row: 0, column: 0),
+            verificationDevice is null
+                ? null
+                : Component<DeviceVerificationDialog, DeviceVerificationDialogProps>(new(
+                        verificationDevice,
+                        Props.Runtime.Identity?.Fingerprint,
+                        Props.Theme,
+                        IsOpen: true,
+                        () => setVerificationDevice(null)))
+                    .WithKey(verificationDevice.Fingerprint)
+                    .Grid(row: 0, column: 0));
 
         return isWideLayout
             ? page
@@ -1655,27 +1697,59 @@ sealed class SendPage : Component<SendPageProps>
         bool isEnabled,
         Action<FrameworkElement?> onClick,
         Action onDetails,
+        Action onFavorite,
+        Action onVerify,
         IntlAccessor t)
     {
         var displayName = favorite?.Name ?? device.Alias;
+        var favoriteCommand = new Command
+        {
+            Label = t.Message(new("App", favorite is null
+                ? "FavoriteAction"
+                : "RemoveFavoriteAction")),
+            Icon = new FontIconData(favorite is null
+                ? AppIcons.FavoriteOutline
+                : AppIcons.Favorite),
+            Execute = onFavorite,
+        };
+        var verifyCommand = new Command
+        {
+            Label = t.Message(new("App", "VerifyAction")),
+            Icon = new FontIconData(AppIcons.Verify),
+            Execute = onVerify,
+        };
 
         return Component<DeviceIdentityCard, DeviceIdentityCardProps>(new(
-            displayName,
-            device.DeviceModel,
-            device.DeviceType,
-            RemoteDeviceNumber(device),
-            DeviceConnectedKey(device.Fingerprint),
-            onClick,
-            t.Message(new("App", "SendToDevice"), ("device", displayName)),
-            isEnabled,
-            TrailingReserve: 64,
-            AnimationRole: DeviceIdentityCardAnimationRole.Source,
-            SecondaryGlyph: AppIcons.Details,
-            SecondaryAutomationName: t.Message(
-                new("App", "OpenDeviceDetails"),
-                ("device", displayName)),
-            OnSecondaryClick: _ => onDetails(),
-            IsFavorite: favorite is not null));
+                displayName,
+                device.DeviceModel,
+                device.DeviceType,
+                RemoteDeviceNumber(device),
+                DeviceConnectedKey(device.Fingerprint),
+                onClick,
+                t.Message(new("App", "SendToDevice"), ("device", displayName)),
+                isEnabled,
+                TrailingReserve: 64,
+                AnimationRole: DeviceIdentityCardAnimationRole.Source,
+                SecondaryGlyph: AppIcons.Details,
+                SecondaryAutomationName: t.Message(
+                    new("App", "OpenDeviceDetails"),
+                    ("device", displayName)),
+                OnSecondaryClick: _ => onDetails(),
+                IsFavorite: favorite is not null))
+            .WithContextFlyout(MenuItems(
+                MenuItem(favoriteCommand),
+                MenuItem(verifyCommand)));
+    }
+
+    private static FavoriteDevice CreateFavorite(LocalSendDevice device)
+    {
+        var endpoint = device.PreferredEndpoint;
+        return new FavoriteDevice(
+            device.Fingerprint,
+            device.Alias,
+            endpoint?.Address.ToString() ?? string.Empty,
+            endpoint?.Port ?? LocalSendOptions.DefaultPort,
+            device.DeviceType);
     }
 
     private static Element EmptyDevices(
