@@ -12,7 +12,10 @@ sealed record NetworkStatusPaneProps(
     bool IsPaneOpen,
     LocalSendNodeState NodeState,
     string? Error,
-    string? DiscoveryWarning);
+    string? DiscoveryWarning,
+    bool IsServerDesired,
+    Action StartServer,
+    Action StopServer);
 
 sealed class NetworkStatusPane : Component<NetworkStatusPaneProps>
 {
@@ -29,6 +32,10 @@ sealed class NetworkStatusPane : Component<NetworkStatusPaneProps>
                     : Props.NodeState is LocalSendNodeState.Starting or LocalSendNodeState.Stopping
                         ? Theme.SystemAttention
                         : Theme.SecondaryText;
+        var toggleName = t.Message(new(
+            "App",
+            Props.IsServerDesired ? "SettingsStopServer" : "SettingsStartServer"));
+        var isBusy = Props.NodeState is LocalSendNodeState.Starting or LocalSendNodeState.Stopping;
 
         return Props.IsPaneOpen
             ? VStack(0,
@@ -48,17 +55,28 @@ sealed class NetworkStatusPane : Component<NetworkStatusPaneProps>
                                     .TextWrapping(TextWrapping.WrapWholeWords))
                             .Margin(horizontal: 12, vertical: 0)
                             .Grid(column: 1),
-                        StatusDot(statusColor).Grid(column: 2))
+                        StatusButton(compact: true).Grid(column: 2))
                     .Padding(horizontal: 16, vertical: 14)
                     .AutomationName(statusText)
                     .ToolTip(statusText))
             : VStack(0,
                 Divider(),
-                Border(StatusDot(statusColor))
+                Border(StatusButton(compact: false))
                     .Size(56, 44)
-                    .HAlign(HorizontalAlignment.Center)
-                    .AutomationName(statusText)
-                    .ToolTip(statusText));
+                    .HAlign(HorizontalAlignment.Center));
+
+        Element StatusButton(bool compact) =>
+            Button(
+                    StatusDot(statusColor),
+                    Props.IsServerDesired ? Props.StopServer : Props.StartServer)
+                .SubtleButton()
+                .Size(compact ? 32 : 40, compact ? 32 : 40)
+                .HAlign(HorizontalAlignment.Center)
+                .VAlign(VerticalAlignment.Center)
+                .AutomationName(toggleName)
+                .HelpText(statusText)
+                .ToolTip(toggleName)
+                .IsEnabled(!isBusy);
     }
 
     private static Element Divider() => Border(null)

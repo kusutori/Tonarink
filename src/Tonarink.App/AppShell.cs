@@ -213,7 +213,10 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
             isNavigationPaneOpen,
             runtime.NodeState,
             runtime.Error,
-            runtime.DiscoveryWarning));
+            runtime.DiscoveryWarning,
+            nodeSession.IsServerDesired,
+            nodeSession.StartOrRestart,
+            nodeSession.Stop));
 
         var titleBar = Component<ShellTitleBar, ShellTitleBarProps>(new(
             navigation,
