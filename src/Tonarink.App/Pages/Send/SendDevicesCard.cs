@@ -1,0 +1,124 @@
+using LocalSendDotNet;
+using Microsoft.UI.Reactor;
+using Microsoft.UI.Reactor.Core;
+using Microsoft.UI.Reactor.Layout;
+using Microsoft.UI.Reactor.Localization;
+using Microsoft.UI.Xaml;
+using static Microsoft.UI.Reactor.Factories;
+using static Tonarink.Pages.Send.SendPageVisuals;
+
+namespace Tonarink.Pages.Send;
+
+sealed record SendDevicesCardProps(
+    AppRuntimeState Runtime,
+    IReadOnlyDictionary<string, FavoriteDevice> Favorites,
+    bool IsWideLayout,
+    bool IsSending,
+    bool IsResolvingAddress,
+    bool KeepItemsForMultipleReceivers,
+    Action<bool> SetKeepItemsForMultipleReceivers,
+    Element SearchingAnimation,
+    Func<Task> RefreshAsync,
+    Action OpenAddress,
+    Action OpenFavorites,
+    Action OpenWebShare,
+    Action<LocalSendDevice, FrameworkElement?> SelectDevice,
+    Action<LocalSendDevice> OpenDetails,
+    Action<LocalSendDevice, FavoriteDevice?> ChangeFavorite,
+    Action<LocalSendDevice> VerifyDevice);
+
+sealed class SendDevicesCard : Component<SendDevicesCardProps>
+{
+    public override Element Render()
+    {
+        var t = UseIntl();
+        var devices = Props.Runtime.Devices;
+        Element deviceBody = devices switch
+        {
+            [] => EmptyDevices(
+                    t,
+                    Props.Runtime.NodeState,
+                    Props.Runtime.DiscoveryWarning,
+                    Props.SearchingAnimation)
+                .VAlign(VerticalAlignment.Stretch),
+            _ => VStack(8,
+            [
+                .. devices.Select((device, index) =>
+                {
+                    var favorite = Props.Favorites.GetValueOrDefault(device.Fingerprint);
+                    return DeviceCard(
+                            device,
+                            favorite,
+                            isEnabled: Props.Runtime.NodeState == LocalSendNodeState.Running
+                                       && !Props.IsSending,
+                            onClick: source => Props.SelectDevice(device, source),
+                            onDetails: () => Props.OpenDetails(device),
+                            onFavorite: () => Props.ChangeFavorite(device, favorite),
+                            onVerify: () => Props.VerifyDevice(device),
+                            t)
+                        .PositionInSet(index + 1, devices.Count)
+                        .WithKey(device.Fingerprint);
+                })
+            ]),
+        };
+
+        Element deviceContent = Props.IsWideLayout
+            ? ScrollView(deviceBody)
+                .HorizontalContentAlignment(HorizontalAlignment.Stretch)
+                .VerticalContentAlignment(VerticalAlignment.Stretch)
+                .Flex(grow: 1, basis: 0)
+            : deviceBody;
+        var canUseDeviceActions = !Props.IsSending
+                                  && !Props.IsResolvingAddress
+                                  && Props.Runtime.NodeState == LocalSendNodeState.Running;
+        var card = Card(
+                FlexColumn(
+                        FlexRow(
+                                BodyStrong(t.Message(new("App", "NearbyDevices")))
+                                    .Flex(grow: 1, basis: 0),
+                                AnimatedButtons.Refresh(
+                                    t.Message(new("App", "RefreshDevices")),
+                                    () => _ = Props.RefreshAsync(),
+                                    isEnabled: !Props.IsSending),
+                                Button(Icon(AppIcons.IpAddress).AccessibilityHidden(), Props.OpenAddress)
+                                    .AutomationName(t.Message(new("App", "SendToAddress")))
+                                    .ToolTip(t.Message(new("App", "SendToAddress")))
+                                    .MinWidth(40)
+                                    .MinHeight(40)
+                                    .IsEnabled(canUseDeviceActions),
+                                Button(Icon(AppIcons.Favorite).AccessibilityHidden(), Props.OpenFavorites)
+                                    .AutomationName(t.Message(new("App", "FavoritesTitle")))
+                                    .ToolTip(t.Message(new("App", "FavoritesTitle")))
+                                    .MinWidth(40)
+                                    .MinHeight(40)
+                                    .IsEnabled(canUseDeviceActions),
+                                Button(Icon(AppIcons.Link).AccessibilityHidden(), Props.OpenWebShare)
+                                    .AutomationName(t.Message(new("App", "WebShareTitle")))
+                                    .ToolTip(t.Message(new("App", "WebShareTitle")))
+                                    .MinWidth(40)
+                                    .MinHeight(40)
+                                    .IsEnabled(!Props.IsSending
+                                               && Props.Runtime.NodeState == LocalSendNodeState.Running),
+                                ToggleButton(
+                                        AppIcons.MultipleReceivers,
+                                        Props.KeepItemsForMultipleReceivers,
+                                        Props.SetKeepItemsForMultipleReceivers)
+                                    .FontFamily("Segoe Fluent Icons")
+                                    .FontSize(20)
+                                    .MinWidth(40)
+                                    .MinHeight(40)
+                                    .AutomationName(t.Message(new("App", "MultipleReceivers")))
+                                    .ToolTip(t.Message(new("App", "MultipleReceiversDescription")))
+                                    .IsEnabled(!Props.IsSending)) with
+                        {
+                            AlignItems = FlexAlign.Center,
+                            ColumnGap = 8,
+                        },
+                        deviceContent) with
+                {
+                    RowGap = 12,
+                })
+            .VAlign(VerticalAlignment.Stretch);
+        return card.HAlign(HorizontalAlignment.Stretch);
+    }
+}

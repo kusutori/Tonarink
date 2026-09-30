@@ -8,71 +8,81 @@ using Microsoft.UI.Reactor.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
-using Windows.ApplicationModel.DataTransfer;
-using Windows.Storage;
 using static Microsoft.UI.Reactor.Factories;
-using static Tonarink.Utilities.ByteSize;
 using static Tonarink.Components.Devices.DeviceVisuals;
 using static Tonarink.Components.Transfers.TransferOverlayVisuals;
 using static Tonarink.Pages.Send.SelectedSendItemOperations;
 using static Tonarink.Pages.Send.SendDeviceResolver;
 using static Tonarink.Pages.Send.SendPageVisuals;
-using static Tonarink.Pages.Send.SendTransferPresentation;
 
 namespace Tonarink.Pages.Send;
 
 sealed class SendPage : Component<SendPageProps>
 {
-    public override Element Render()
+    public override Element Render() => RenderEachTime(context =>
     {
-        var t = UseIntl();
-        var window = UseWindow();
+        var t = context.UseIntl();
+        var window = context.UseWindow();
         var storagePicker = new StoragePicker(
             window?.NativeWindow,
             t.Message(new("App", "WindowUnavailable")));
-        var reduceMotion = UseReducedMotion();
-        var (observedWindowWidth, _) = UseWindowSize();
+        var reduceMotion = context.UseReducedMotion();
+        var (observedWindowWidth, _) = context.UseWindowSize();
         var currentWindowWidth = window?.NativeWindow.Bounds.Width ?? observedWindowWidth;
         var isWideLayout = currentWindowWidth >= AppLayout.WideBreakpoint;
-        var (_, refreshCachedPage) = UseReducer(0);
-        var navigation = UseNavigation<AppRoute>();
+        var (_, refreshCachedPage) = context.UseReducer(0);
+        var navigation = context.UseNavigation<AppRoute>();
         var selectedItems = Props.SelectedItems;
         var updateSelectedItems = Props.UpdateSelectedItems;
-        var (pickerMessage, setPickerMessage) = UseState(t.Message(new("App", "NothingSelected")));
-        var (isFileDropActive, setFileDropActive) = UseState(false);
-        var (selectedItemId, setSelectedItemId) = UseState<Guid?>(null);
-        var (text, setText) = UseState(string.Empty);
-        var (showTextDialog, setShowTextDialog) = UseState(false);
-        var (showAddressDialog, setShowAddressDialog) = UseState(false);
-        var (renameItemId, setRenameItemId) = UseState<Guid?>(null);
-        var (renameFileName, setRenameFileName) = UseState(string.Empty);
-        var (showFavoritesDialog, setShowFavoritesDialog) = UseState(false);
-        var (favoriteEdit, setFavoriteEdit) = UseState<FavoriteDeviceEdit?>(null);
-        var (favoriteToDelete, setFavoriteToDelete) = UseState<FavoriteDevice?>(null);
-        var (deviceFavoriteDraft, setDeviceFavoriteDraft) = UseState<FavoriteDevice?>(null);
-        var (deviceFavoriteToDelete, setDeviceFavoriteToDelete) = UseState<FavoriteDevice?>(null);
-        var (verificationDevice, setVerificationDevice) = UseState<LocalSendDevice?>(null);
-        var (manualAddress, setManualAddress) = UseState(string.Empty);
-        var (manualAddressError, setManualAddressError) = UseState<string?>(null);
-        var (isResolvingAddress, setResolvingAddress) = UseState(false);
-        var (recentManualAddress, setRecentManualAddress) = UseState(RecentManualAddressStore.Load());
-        var (suggestedContactSend, setSuggestedContactSend) = UseState<SuggestedContactSend?>(null);
-        var favorites = UseExternalStore(
+        var (pickerMessage, setPickerMessage) = context.UseState(t.Message(new("App", "NothingSelected")));
+        var (text, setText) = context.UseState(string.Empty);
+        var (showTextDialog, setShowTextDialog) = context.UseState(false);
+        var (showAddressDialog, setShowAddressDialog) = context.UseState(false);
+        var (renameItemId, setRenameItemId) = context.UseState<Guid?>(null);
+        var (renameFileName, setRenameFileName) = context.UseState(string.Empty);
+        var (showFavoritesDialog, setShowFavoritesDialog) = context.UseState(false);
+        var (favoriteEdit, setFavoriteEdit) = context.UseState<FavoriteDeviceEdit?>(null);
+        var (favoriteToDelete, setFavoriteToDelete) = context.UseState<FavoriteDevice?>(null);
+        var (deviceFavoriteDraft, setDeviceFavoriteDraft) = context.UseState<FavoriteDevice?>(null);
+        var (deviceFavoriteToDelete, setDeviceFavoriteToDelete) = context.UseState<FavoriteDevice?>(null);
+        var (verificationDevice, setVerificationDevice) = context.UseState<LocalSendDevice?>(null);
+        var (manualAddress, setManualAddress) = context.UseState(string.Empty);
+        var (manualAddressError, setManualAddressError) = context.UseState<string?>(null);
+        var (isResolvingAddress, setResolvingAddress) = context.UseState(false);
+        var (recentManualAddress, setRecentManualAddress) = context.UseState(RecentManualAddressStore.Load());
+        var (suggestedContactSend, setSuggestedContactSend) = context.UseState<SuggestedContactSend?>(null);
+        var favorites = context.UseExternalStore(
             listener =>
             {
                 FavoriteDeviceStore.Changed += listener;
                 return () => FavoriteDeviceStore.Changed -= listener;
             },
             static () => FavoriteDeviceStore.Entries);
-        var (transfer, dispatchTransfer) = UseReducer<TransferUiState, SendTransferAction>(
-            SendTransferReducer.Reduce,
-            new TransferUiState.Idle(t.Message(new("App", "SendHint"))));
-        var sendCancellationRef = UseRef<CancellationTokenSource?>();
-        var searchingPlayerRef = UseRef<AnimatedVisualPlayer?>();
-        var shareSource = UseRef<WindowsShareSource?>();
-        var shareTargetPayloadId = Props.ShareTargetPayload?.Id ?? Guid.Empty;
+        var searchingPlayerRef = context.UseRef<AnimatedVisualPlayer?>();
+        var shareSource = context.UseRef<WindowsShareSource?>();
+        var transfer = context.UseSendTransfer(
+            Props.Node,
+            Props.Runtime,
+            selectedItems,
+            updateSelectedItems,
+            Props.KeepItemsForMultipleReceivers,
+            Props.VerifyChecksums,
+            Props.SetTransferOverlay,
+            setPickerMessage,
+            setRecentManualAddress,
+            t);
+        var itemSelection = context.UseSendItemSelection(
+            storagePicker,
+            pickerMessage,
+            setPickerMessage,
+            Props.ShareTargetPayload,
+            Props.ConsumeShareTargetPayload,
+            updateSelectedItems,
+            transfer.Reset,
+            setSuggestedContactSend,
+            t);
 
-        UseEffect(() => () =>
+        context.UseEffect(() => () =>
         {
             shareSource.Current?.Dispose();
             shareSource.Current = null;
@@ -81,91 +91,18 @@ sealed class SendPage : Component<SendPageProps>
         // A cached page keeps its previous hook state while it is outside the active tree.
         // Reconcile it before the transition and read the live window bounds so a resize
         // performed on another page is reflected immediately when Send becomes visible.
-        UseNavigationLifecycle(
+        context.UseNavigationLifecycle(
             onNavigatingTo: _ => refreshCachedPage(value => value + 1),
             onNavigatedTo: _ =>
                 PlaySearchingAnimation(searchingPlayerRef.Current, play: !reduceMotion));
 
-        UseEffect(() =>
+        context.UseEffect(() =>
         {
             if (Props.JumpListFavoriteFingerprint is not null)
                 setShowFavoritesDialog(true);
         }, Props.JumpListFavoriteFingerprint);
 
-        UseEffect(() =>
-        {
-            if (Props.ShareTargetPayload is not { } payload)
-                return static () => { };
-
-            var cancellation = new CancellationTokenSource();
-            _ = ImportShareTargetPayloadAsync(payload, cancellation.Token);
-            return () =>
-            {
-                cancellation.Cancel();
-                cancellation.Dispose();
-            };
-        }, shareTargetPayloadId);
-
-        var sendMutation = UseMutation<SendRequest, OutgoingTransferResult>(async (request, mutationToken) =>
-        {
-            using var linkedCancellation = CancellationTokenSource.CreateLinkedTokenSource(
-                request.CancellationToken,
-                mutationToken);
-            var progressNotification = AppNotificationService.StartTransferProgress(
-                request.TransferId,
-                t.Message(new("App", "NotificationSendProgressTitle"), ("device", request.Device.Alias)),
-                ContentSummary(t, request.Items),
-                t.Message(new("App", "SendingTransferring")),
-                0,
-                request.TotalBytes,
-                TransferProgressText(0, request.TotalBytes),
-                "send-progress");
-            var progress = new Progress<TransferProgress>(value =>
-            {
-                var next = new TransferUiState.Active(
-                    value.State,
-                    request.Device.Alias,
-                    value.BytesTransferred,
-                    value.TotalBytes,
-                    ProgressMessage(t, value.State, request.Device.Alias),
-                    IsError: false);
-                dispatchTransfer(new SendTransferAction.Progressed(next));
-                PublishTransferOverlay(
-                    request.Device,
-                    request.Items,
-                    next,
-                    new OutgoingOverlayUpdate.Pending());
-                progressNotification?.Report(
-                    ContentSummary(t, request.Items),
-                    next.Message,
-                    value.BytesTransferred,
-                    value.TotalBytes,
-                    TransferProgressText(value.BytesTransferred, value.TotalBytes));
-            });
-
-            try
-            {
-                var outcome = await Props.Node!.SendAsync(
-                        request.Device,
-                        request.Items,
-                        new SendOptions
-                        {
-                            Pin = request.Pin,
-                            ComputeSha256 = Props.VerifyChecksums,
-                        },
-                        progress,
-                        linkedCancellation.Token)
-                    .ConfigureAwait(false);
-                return CoreTransferOutcomeMapper.Map(outcome);
-            }
-            finally
-            {
-                if (progressNotification is not null)
-                    await progressNotification.RemoveAsync().ConfigureAwait(false);
-            }
-        });
-
-        UseEffect(() =>
+        context.UseEffect(() =>
         {
             if (suggestedContactSend is not { } pending
                 || Props.Runtime.NodeState != LocalSendNodeState.Running
@@ -179,9 +116,9 @@ sealed class SendPage : Component<SendPageProps>
         // Clipboard APIs require the UI/STA thread. Use a synchronous command dispatcher
         // to start the existing async flow there; an ExecuteAsync command is intentionally
         // avoided because UseCommand runs async command bodies on the thread pool.
-        var pasteCommand = UseCommand(StandardCommand.Paste(() =>
+        var pasteCommand = context.UseCommand(StandardCommand.Paste(() =>
         {
-            _ = AddClipboardAsync();
+            _ = itemSelection.AddClipboardAsync();
         }) with
         {
             Label = t.Message(new("App", "Clipboard")),
@@ -200,9 +137,9 @@ sealed class SendPage : Component<SendPageProps>
                     GridSize.Star().MinSize(88),
                 ],
                 rows: [GridSize.Auto],
-                SelectionTile(t.Message(new("App", "File")), "Document", () => _ = PickFileAsync(), t)
+                SelectionTile(t.Message(new("App", "File")), "Document", () => _ = itemSelection.PickFileAsync(), t)
                     .Grid(column: 0),
-                SelectionTile(t.Message(new("App", "Folder")), "Folder", () => _ = PickFolderAsync(), t)
+                SelectionTile(t.Message(new("App", "Folder")), "Folder", () => _ = itemSelection.PickFolderAsync(), t)
                     .Grid(column: 1),
                 SelectionTile(t.Message(new("App", "Text")), "Edit", () => setShowTextDialog(true), t)
                     .Grid(column: 2),
@@ -217,273 +154,91 @@ sealed class SendPage : Component<SendPageProps>
             ColumnSpacing = 12,
         };
 
-        var selectedHeader = selectedItems.Count == 0
-            ? t.Message(new("App", "NothingSelected"))
-            : t.Message(
-                new("App", "SelectedItems"),
-                ("count", selectedItems.Count),
-                ("size", FormatBytes(selectedItems.Sum(static item => item.Length))));
-        var isPreviewProviderAvailable = Props.FilePreviewEnabled
-                                         && FilePreviewLauncher.IsAvailable(
-                                             Props.PreviewProvider,
-                                             Props.PreviewExecutablePath);
-
-        Element selectedItemsContent = selectedItems switch
-        {
-            [] => ScrollView(EmptySelection(
-                    isFileDropActive,
-                    pickerMessage,
-                    Props.ExpandDragDropToEntireApp,
-                    t))
-                .HorizontalContentAlignment(HorizontalAlignment.Stretch)
-                .VerticalContentAlignment(VerticalAlignment.Stretch),
-            _ => (LazyVStack(
-                    selectedItems,
-                    static item => item.Id.ToString("N"),
-                    (item, index) =>
-                    Component<SelectedSendItemRow, SelectedSendItemRowProps>(new(
-                            item,
-                            selectedItemId == item.Id,
-                            Props.FilePreviewEnabled,
-                            isPreviewProviderAvailable
-                            && FilePreviewLauncher.CanPreview(item.LocalPath),
-                            Props.PreviewProvider,
-                            Props.PreviewExecutablePath,
-                            window?.NativeWindow is not null
-                            && item.LocalPath is { } path
-                            && File.Exists(path),
-                            () => setSelectedItemId(
-                                selectedItemId == item.Id ? null : item.Id),
-                            () => ShareItemAsync(item),
-                            () =>
-                            {
-                                setRenameFileName(ProtocolLeafName(item.Item.FileName));
-                                setRenameItemId(item.Id);
-                            },
-                            () => updateSelectedItems(current => (SelectedSendItem[])
-                            [
-                                .. current.Select(candidate => candidate.Id == item.Id
-                                    ? UndoRename(candidate)
-                                    : candidate)
-                            ]),
-                            () => updateSelectedItems(current => (SelectedSendItem[])
-                            [
-                                .. current.Select(candidate => candidate.Id == item.Id
-                                    ? RedoRename(candidate)
-                                    : candidate)
-                            ]),
-                            () =>
-                            {
-                                if (selectedItemId == item.Id)
-                                    setSelectedItemId(null);
-                                updateSelectedItems(current => (SelectedSendItem[])
-                                [
-                                    .. current.Where(candidate => candidate.Id != item.Id)
-                                ]);
-                            }))
-                        .PositionInSet(index + 1, selectedItems.Count)) with
+        Element selectedItemsCard = Component<SendItemsCard, SendItemsCardProps>(new(
+                selectedItems,
+                updateSelectedItems,
+                pickerMessage,
+                setPickerMessage,
+                isWideLayout,
+                Props.ExpandDragDropToEntireApp,
+                Props.FilePreviewEnabled,
+                Props.PreviewProvider,
+                Props.PreviewExecutablePath,
+                window?.NativeWindow is not null,
+                ShareItemAsync,
+                item =>
                 {
-                    Spacing = 8,
-                })
-                .HAlign(HorizontalAlignment.Stretch)
-                .VAlign(VerticalAlignment.Stretch),
-        };
-
-        selectedItemsContent = isWideLayout
-            ? selectedItemsContent.Flex(grow: 1, basis: 0)
-            : selectedItemsContent.Height(AppLayout.NarrowSendItemsViewportHeight);
-
-        var selectedItemsCard = Card(
-                FlexColumn(
-                        FlexRow(
-                                BodyStrong(selectedHeader).Flex(grow: 1, basis: 0),
-                                selectedItems.Count == 0
-                                    ? null
-                                    : Button(t.Message(new("App", "Clear")), () =>
-                                    {
-                                        updateSelectedItems(_ => []);
-                                        setSelectedItemId(null);
-                                        setPickerMessage(t.Message(new("App", "NothingSelected")));
-                                    }).AutomationName(t.Message(new("App", "Clear")))) with
-                        {
-                            AlignItems = FlexAlign.Center,
-                            ColumnGap = 8,
-                        },
-                        selectedItemsContent) with
-                {
-                    RowGap = 12,
-                })
+                    setRenameFileName(ProtocolLeafName(item.Item.FileName));
+                    setRenameItemId(item.Id);
+                },
+                itemSelection.AddDroppedItemsAsync))
+            .HAlign(HorizontalAlignment.Stretch)
             .VAlign(VerticalAlignment.Stretch);
+
+        Element nearbyDevicesCard = Component<SendDevicesCard, SendDevicesCardProps>(new(
+                Props.Runtime,
+                favorites,
+                isWideLayout,
+                transfer.IsSending,
+                isResolvingAddress,
+                Props.KeepItemsForMultipleReceivers,
+                Props.SetKeepItemsForMultipleReceivers,
+                SearchingDevicesAnimation(),
+                Props.RefreshAsync,
+                OpenAddressDialog,
+                OpenFavoritesDialog,
+                () =>
+                {
+                    if (selectedItems.Count == 0)
+                    {
+                        setPickerMessage(t.Message(new("App", "SelectContentFirst")));
+                        return;
+                    }
+
+                    if (Props.Node?.State != LocalSendNodeState.Running)
+                        return;
+                    WebShareLaunch.Items = (SendItem[])
+                    [
+                        .. selectedItems.Select(static item => item.Item)
+                    ];
+                    navigation.Navigate(AppRoute.WebShare, AppNavigation.DrillIn);
+                },
+                (device, source) =>
+                {
+                    if (selectedItems.Count == 0)
+                    {
+                        setPickerMessage(t.Message(new("App", "SelectContentFirst")));
+                        return;
+                    }
+
+                    if (source is null || reduceMotion)
+                    {
+                        _ = transfer.StartAsync(device, null, null);
+                        return;
+                    }
+
+                    DeviceConnectedAnimation.NavigateToDestination(
+                        DeviceConnectedKey(device.Fingerprint),
+                        source,
+                        () => _ = transfer.StartAsync(device, null, null));
+                },
+                Props.OpenDeviceDetails,
+                (device, favorite) =>
+                {
+                    if (favorite is null)
+                        setDeviceFavoriteDraft(CreateFavorite(device));
+                    else
+                        setDeviceFavoriteToDelete(favorite);
+                },
+                device => setVerificationDevice(device)))
+            .HAlign(HorizontalAlignment.Stretch)
+            .VAlign(VerticalAlignment.Stretch);
+
         if (isWideLayout)
+        {
             selectedItemsCard = selectedItemsCard.Flex(grow: 1, shrink: 1, basis: 320);
-
-        if (!Props.ExpandDragDropToEntireApp)
-        {
-            selectedItemsCard = selectedItemsCard
-                .OnDragEnter(args =>
-                {
-                    if (!args.Data.HasFormat(StandardDataFormats.StorageItems))
-                        return;
-
-                    args.AcceptedOperation = DragOperations.Copy;
-                    setFileDropActive(true);
-                })
-                .OnDragOver(args =>
-                {
-                    if (!args.Data.HasFormat(StandardDataFormats.StorageItems))
-                        return;
-
-                    args.AcceptedOperation = DragOperations.Copy;
-                    args.UIOverride.Caption = t.Message(new("App", "DropFilesCaption"));
-                    args.UIOverride.IsCaptionVisible = true;
-                    args.UIOverride.IsGlyphVisible = true;
-                })
-                .OnDragLeave(_ => setFileDropActive(false))
-                .OnDrop(args =>
-                {
-                    setFileDropActive(false);
-                    args.AcceptedOperation = DragOperations.Copy;
-                    _ = AddDroppedItemsAsync(args.Data);
-                }, acceptedOps: DragOperations.Copy);
-        }
-
-        if (isFileDropActive)
-        {
-            selectedItemsCard = selectedItemsCard
-                .Background(Theme.SystemAttentionBackground)
-                .WithBorder(Theme.SystemAttention);
-        }
-
-        var devices = Props.Runtime.Devices;
-        Element deviceBody = devices switch
-        {
-            [] => EmptyDevices(
-                    t,
-                    Props.Runtime.NodeState,
-                    Props.Runtime.DiscoveryWarning,
-                    SearchingDevicesAnimation())
-                .VAlign(VerticalAlignment.Stretch),
-            _ => VStack(8,
-            [
-                .. devices.Select((device, index) =>
-                {
-                    var favorite = favorites.GetValueOrDefault(device.Fingerprint);
-                    return DeviceCard(
-                            device,
-                            favorite,
-                            isEnabled: Props.Node?.State == LocalSendNodeState.Running
-                                       && !sendMutation.IsPending,
-                            onClick: source =>
-                            {
-                                if (selectedItems.Count == 0)
-                                {
-                                    setPickerMessage(t.Message(new("App", "SelectContentFirst")));
-                                    return;
-                                }
-
-                                if (source is null || reduceMotion)
-                                {
-                                    _ = StartSendAsync(device, pin: null);
-                                    return;
-                                }
-
-                                DeviceConnectedAnimation.NavigateToDestination(
-                                    DeviceConnectedKey(device.Fingerprint),
-                                    source,
-                                    () => _ = StartSendAsync(device, pin: null));
-                            },
-                            onDetails: () => Props.OpenDeviceDetails(device),
-                            onFavorite: () =>
-                            {
-                                if (favorite is null)
-                                    setDeviceFavoriteDraft(CreateFavorite(device));
-                                else
-                                    setDeviceFavoriteToDelete(favorite);
-                            },
-                            onVerify: () => setVerificationDevice(device),
-                            t)
-                        .PositionInSet(index + 1, devices.Count)
-                        .WithKey(device.Fingerprint);
-                })
-            ]),
-        };
-
-        Element deviceContent = isWideLayout
-            ? ScrollView(deviceBody)
-                .HorizontalContentAlignment(HorizontalAlignment.Stretch)
-                .VerticalContentAlignment(VerticalAlignment.Stretch)
-                .Flex(grow: 1, basis: 0)
-            : deviceBody;
-
-        var nearbyDevicesCard = Card(
-                FlexColumn(
-                        FlexRow(
-                                BodyStrong(t.Message(new("App", "NearbyDevices")))
-                                    .Flex(grow: 1, basis: 0),
-                                AnimatedButtons.Refresh(
-                                    t.Message(new("App", "RefreshDevices")),
-                                    () => _ = Props.RefreshAsync(),
-                                    isEnabled: !sendMutation.IsPending),
-                                Button(Icon(AppIcons.IpAddress).AccessibilityHidden(), OpenAddressDialog)
-                                    .AutomationName(t.Message(new("App", "SendToAddress")))
-                                    .ToolTip(t.Message(new("App", "SendToAddress")))
-                                    .MinWidth(40)
-                                    .MinHeight(40)
-                                    .IsEnabled(!sendMutation.IsPending
-                                               && !isResolvingAddress
-                                               && Props.Runtime.NodeState == LocalSendNodeState.Running),
-                                Button(Icon(AppIcons.Favorite).AccessibilityHidden(), OpenFavoritesDialog)
-                                    .AutomationName(t.Message(new("App", "FavoritesTitle")))
-                                    .ToolTip(t.Message(new("App", "FavoritesTitle")))
-                                    .MinWidth(40)
-                                    .MinHeight(40)
-                                    .IsEnabled(!sendMutation.IsPending
-                                               && !isResolvingAddress
-                                               && Props.Runtime.NodeState == LocalSendNodeState.Running),
-                                Button(Icon(AppIcons.Link).AccessibilityHidden(), () =>
-                                    {
-                                        if (selectedItems.Count == 0)
-                                        {
-                                            setPickerMessage(t.Message(new("App", "SelectContentFirst")));
-                                            return;
-                                        }
-
-                                        if (Props.Node?.State != LocalSendNodeState.Running)
-                                            return;
-                                        WebShareLaunch.Items = (SendItem[])
-                                        [
-                                            .. selectedItems.Select(static item => item.Item)
-                                        ];
-                                        navigation.Navigate(AppRoute.WebShare, AppNavigation.DrillIn);
-                                    })
-                                    .AutomationName(t.Message(new("App", "WebShareTitle")))
-                                    .ToolTip(t.Message(new("App", "WebShareTitle")))
-                                    .MinWidth(40)
-                                    .MinHeight(40)
-                                    .IsEnabled(!sendMutation.IsPending
-                                               && Props.Runtime.NodeState == LocalSendNodeState.Running),
-                                ToggleButton(
-                                        AppIcons.MultipleReceivers,
-                                        Props.KeepItemsForMultipleReceivers,
-                                        Props.SetKeepItemsForMultipleReceivers)
-                                    .FontFamily("Segoe Fluent Icons")
-                                    .FontSize(20)
-                                    .MinWidth(40)
-                                    .MinHeight(40)
-                                    .AutomationName(t.Message(new("App", "MultipleReceivers")))
-                                    .ToolTip(t.Message(new("App", "MultipleReceiversDescription")))
-                                    .IsEnabled(!sendMutation.IsPending)) with
-                        {
-                            AlignItems = FlexAlign.Center,
-                            ColumnGap = 8,
-                        },
-                        deviceContent) with
-                {
-                    RowGap = 12,
-                })
-            .VAlign(VerticalAlignment.Stretch);
-        if (isWideLayout)
             nearbyDevicesCard = nearbyDevicesCard.Flex(grow: 1, shrink: 1, basis: 320);
+        }
 
         Element contentCards = isWideLayout
             ? (FlexRow(selectedItemsCard, nearbyDevicesCard) with
@@ -533,7 +288,7 @@ sealed class SendPage : Component<SendPageProps>
                     value =>
                     {
                         var item = new SendTextItem(value);
-                        AddSelectedItems((SelectedSendItem[])
+                        itemSelection.Add((SelectedSendItem[])
                         [
                             new(
                                 Guid.NewGuid(),
@@ -697,344 +452,6 @@ sealed class SendPage : Component<SendPageProps>
                     setRenameFileName(string.Empty);
                 }));
 
-        async Task PickFileAsync()
-        {
-            try
-            {
-                var files = await storagePicker.PickFilesAsync(t.Message(new("App", "Add")));
-                if (files.Count == 0)
-                    return;
-
-                var selected = new List<SelectedSendItem>(files.Count);
-                foreach (var file in files)
-                    selected.Add(await SelectedSendItemReader.FromStorageFileAsync(
-                        file,
-                        file.Name,
-                        CancellationToken.None));
-                AddSelectedItems(selected);
-            }
-            catch (Exception exception)
-            {
-                setPickerMessage(t.Message(
-                    new("App", "PickFileFailed"),
-                    ("error", exception.Message)));
-            }
-        }
-
-        async Task PickFolderAsync()
-        {
-            try
-            {
-                var folder = await storagePicker.PickFolderAsync(t.Message(new("App", "AddFolder")));
-                if (folder is null)
-                    return;
-
-                var selected = await SelectedSendItemReader.FromFolderAsync(folder, CancellationToken.None);
-                if (selected.Count == 0)
-                {
-                    setPickerMessage(t.Message(new("App", "FolderEmpty")));
-                    return;
-                }
-
-                AddSelectedItems(selected);
-            }
-            catch (Exception exception)
-            {
-                setPickerMessage(t.Message(
-                    new("App", "PickFolderFailed"),
-                    ("error", exception.Message)));
-            }
-        }
-
-        async Task AddClipboardAsync()
-        {
-            try
-            {
-                var data = Clipboard.GetContent();
-                if (data.Contains(StandardDataFormats.StorageItems))
-                {
-                    var storageItems = await data.GetStorageItemsAsync();
-                    var selected = new List<SelectedSendItem>();
-                    foreach (var storageItem in storageItems)
-                    {
-                        switch (storageItem)
-                        {
-                            case StorageFile file:
-                                selected.Add(await SelectedSendItemReader.FromStorageFileAsync(
-                                    file,
-                                    file.Name,
-                                    CancellationToken.None));
-                                break;
-                            case StorageFolder folder:
-                                selected.AddRange(await SelectedSendItemReader.FromFolderAsync(
-                                    folder,
-                                    CancellationToken.None));
-                                break;
-                        }
-                    }
-
-                    if (selected.Count > 0)
-                    {
-                        AddSelectedItems(selected);
-                        return;
-                    }
-                }
-
-                if (data.Contains(StandardDataFormats.Text))
-                {
-                    var clipboardText = await data.GetTextAsync();
-                    if (!string.IsNullOrWhiteSpace(clipboardText))
-                    {
-                        var item = new SendTextItem(clipboardText, "clipboard.txt");
-                        AddSelectedItems((SelectedSendItem[])[
-                            new(
-                                Guid.NewGuid(),
-                                item,
-                                t.Message(new("App", "ClipboardText")),
-                                TextLength(clipboardText),
-                                "clipboard")
-                        ]);
-                        return;
-                    }
-                }
-
-                if (data.Contains(StandardDataFormats.Bitmap))
-                {
-                    var bitmap = await SelectedSendItemReader.FromClipboardBitmapAsync(
-                        data,
-                        CancellationToken.None);
-                    AddSelectedItems((SelectedSendItem[])[
-                        bitmap with
-                        {
-                            DisplayName = t.Message(new("App", "ClipboardImage")),
-                        }
-                    ]);
-                    return;
-                }
-
-                setPickerMessage(t.Message(new("App", "ClipboardEmpty")));
-            }
-            catch (Exception exception)
-            {
-                setPickerMessage(t.Message(
-                    new("App", "ClipboardReadFailed"),
-                    ("error", exception.Message)));
-            }
-        }
-
-        void AddSelectedItems(IReadOnlyCollection<SelectedSendItem> newItems)
-        {
-            updateSelectedItems(current => (SelectedSendItem[])[.. current, .. newItems]);
-            setPickerMessage(t.Message(new("App", "ItemsAdded"), ("count", newItems.Count)));
-            dispatchTransfer(new SendTransferAction.Reset(t.Message(new("App", "SendHint"))));
-        }
-
-        async Task ImportShareTargetPayloadAsync(
-            ShareTargetPayload payload,
-            CancellationToken cancellationToken)
-        {
-            try
-            {
-                var imported = new List<SelectedSendItem>();
-                foreach (var sharedItem in payload.Items)
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-                    switch (sharedItem)
-                    {
-                        case ShareTargetItem.FileSystem { IsDirectory: true } directory:
-                            imported.AddRange(await SelectedSendItemReader.FromFolderPathAsync(
-                                directory.Path,
-                                cancellationToken));
-                            break;
-
-                        case ShareTargetItem.FileSystem file:
-                            var fileInfo = new FileInfo(file.Path);
-                            if (!fileInfo.Exists)
-                                throw new FileNotFoundException("The shared file is no longer available.", file.Path);
-                            imported.Add(new SelectedSendItem(
-                                Guid.NewGuid(),
-                                new SendFileItem(fileInfo.FullName, fileInfo.Name),
-                                fileInfo.Name,
-                                fileInfo.Length,
-                                "file",
-                                fileInfo.FullName));
-                            break;
-
-                        case ShareTargetItem.Text sharedText:
-                            imported.Add(new SelectedSendItem(
-                                Guid.NewGuid(),
-                                new SendTextItem(sharedText.Value, sharedText.FileName),
-                                sharedText.FileName,
-                                TextLength(sharedText.Value),
-                                "text"));
-                            break;
-                    }
-                }
-
-                if (imported.Count == 0)
-                    throw new InvalidDataException(t.Message(new("App", "ShareTargetEmpty")));
-
-                AddSelectedItems(imported);
-                if (!string.IsNullOrWhiteSpace(payload.SuggestedContactFingerprint))
-                {
-                    setSuggestedContactSend(new(
-                        Guid.NewGuid(),
-                        payload.SuggestedContactFingerprint));
-                }
-                Props.ConsumeShareTargetPayload(payload.Id);
-            }
-            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-            {
-                // The page or share activation was replaced while files were being imported.
-            }
-            catch (Exception exception)
-            {
-                setPickerMessage(t.Message(
-                    new("App", "ShareTargetFailed"),
-                    ("error", exception.Message)));
-                Props.ConsumeShareTargetPayload(payload.Id);
-            }
-        }
-
-        async Task StartSendAsync(LocalSendDevice device, string? pin, string? resolvedManualAddress = null)
-        {
-            if (Props.Node?.State != LocalSendNodeState.Running || selectedItems.Count == 0)
-                return;
-
-            var cancellation = new CancellationTokenSource();
-            sendCancellationRef.Current?.Dispose();
-            sendCancellationRef.Current = cancellation;
-            var startingState = new TransferUiState.Active(
-                TransferState.Preparing,
-                device.Alias,
-                0,
-                selectedItems.Sum(static item => item.Length),
-                t.Message(new("App", "PreparingForDevice"), ("device", device.Alias)),
-                IsError: false);
-            dispatchTransfer(new SendTransferAction.Started(startingState));
-            PublishTransferOverlay(
-                device,
-                (SendItem[])[.. selectedItems.Select(static item => item.Item)],
-                startingState,
-                new OutgoingOverlayUpdate.Pending());
-
-            try
-            {
-                var result = await sendMutation.RunAsync(new(
-                    Guid.NewGuid(),
-                    device,
-                    (SendItem[])[.. selectedItems.Select(static item => item.Item)],
-                    selectedItems.Sum(static item => item.Length),
-                    pin,
-                    cancellation.Token));
-                if (result is OutgoingTransferResult.PinRequired pinRequired)
-                {
-                    var waitingState = new TransferUiState.Active(
-                        TransferState.WaitingForAcceptance,
-                        device.Alias,
-                        0,
-                        selectedItems.Sum(static item => item.Length),
-                        t.Message(new("App", "TargetRequiresPin")),
-                        pinRequired.InvalidPin);
-                    dispatchTransfer(new SendTransferAction.PinRequested(waitingState));
-                    PublishTransferOverlay(
-                        device,
-                        (SendItem[])[.. selectedItems.Select(static item => item.Item)],
-                        waitingState,
-                        new OutgoingOverlayUpdate.AwaitingPin(new OutgoingPinPrompt(
-                            pinRequired.InvalidPin ? t.Message(new("App", "PinIncorrect")) : null,
-                            enteredPin => _ = StartSendAsync(device, enteredPin, resolvedManualAddress),
-                            () => dispatchTransfer(new SendTransferAction.Reset(
-                                t.Message(new("App", "SendHint")))))));
-                    return;
-                }
-
-                if (result is OutgoingTransferResult.PinRateLimited)
-                {
-                    var errorState = new TransferUiState.Active(
-                        TransferState.Failed,
-                        device.Alias,
-                        0,
-                        selectedItems.Sum(static item => item.Length),
-                        t.Message(new("App", "PinRateLimited")),
-                        IsError: true);
-                    dispatchTransfer(new SendTransferAction.Failed(errorState));
-                    PublishTransferOverlay(
-                        device,
-                        (SendItem[])[.. selectedItems.Select(static item => item.Item)],
-                        errorState,
-                        new OutgoingOverlayUpdate.Finished());
-                    return;
-                }
-
-                var resultState = ResultState(
-                    t,
-                    result,
-                    device.Alias,
-                    selectedItems.Sum(static item => item.Length));
-                dispatchTransfer(new SendTransferAction.Finished(resultState));
-                PublishTransferOverlay(
-                    device,
-                    (SendItem[])[.. selectedItems.Select(static item => item.Item)],
-                    resultState,
-                    new OutgoingOverlayUpdate.Finished());
-                if (result is OutgoingTransferResult.Completed)
-                {
-                    if (resolvedManualAddress is not null)
-                    {
-                        RecentManualAddressStore.Save(resolvedManualAddress);
-                        setRecentManualAddress(resolvedManualAddress);
-                    }
-
-                    AppNotificationService.ShowTransferComplete(
-                        t.Message(new("App", "NotificationSendCompleteTitle")),
-                        selectedItems.Count == 1
-                            ? t.Message(
-                                new("App", "NotificationSendCompleteOne"),
-                                ("device", device.Alias))
-                            : t.Message(
-                                new("App", "NotificationSendCompleteMany"),
-                                ("count", selectedItems.Count),
-                                ("device", device.Alias)),
-                        "send-complete",
-                        selectedItems
-                            .Select(static selected => selected.Item)
-                            .OfType<SendFileItem>()
-                            .Select(static item => item.Path),
-                        AppSettingsStore.Load().NotificationDefaultAction,
-                        t.Message(new("App", "NotificationOpenFile")),
-                        t.Message(new("App", "NotificationShowInFolder")));
-                    if (!Props.KeepItemsForMultipleReceivers)
-                    {
-                        updateSelectedItems(_ => []);
-                        setPickerMessage(t.Message(new("App", "NothingSelected")));
-                    }
-                }
-            }
-            catch (Exception exception)
-            {
-                var errorState = new TransferUiState.Active(
-                    TransferState.Failed,
-                    device.Alias,
-                    0,
-                    selectedItems.Sum(static item => item.Length),
-                    exception.Message,
-                    IsError: true);
-                dispatchTransfer(new SendTransferAction.Failed(errorState));
-                PublishTransferOverlay(
-                    device,
-                    (SendItem[])[.. selectedItems.Select(static item => item.Item)],
-                    errorState,
-                    new OutgoingOverlayUpdate.Finished());
-            }
-            finally
-            {
-                if (ReferenceEquals(sendCancellationRef.Current, cancellation))
-                    sendCancellationRef.Current = null;
-                cancellation.Dispose();
-            }
-        }
-
         void OpenAddressDialog()
         {
             if (selectedItems.Count == 0)
@@ -1084,7 +501,7 @@ sealed class SendPage : Component<SendPageProps>
                 string.Equals(device.Fingerprint, pending.Fingerprint, StringComparison.Ordinal));
             if (discovered is not null)
             {
-                await StartSendAsync(discovered, pin: null).ConfigureAwait(true);
+                await transfer.StartAsync(discovered, null, null).ConfigureAwait(true);
                 return;
             }
 
@@ -1155,7 +572,7 @@ sealed class SendPage : Component<SendPageProps>
                 switch (resolution)
                 {
                     case ResolvedDevice(var device):
-                        await StartSendAsync(device, pin: null, normalizedAddress)
+                        await transfer.StartAsync(device, null, normalizedAddress)
                             .ConfigureAwait(true);
                         return;
 
@@ -1182,28 +599,6 @@ sealed class SendPage : Component<SendPageProps>
             }
         }
 
-        async Task AddDroppedItemsAsync(DragData dragData)
-        {
-            try
-            {
-                var selected = await SelectedSendItemReader.ReadDroppedAsync(dragData);
-
-                if (selected.Count == 0)
-                {
-                    setPickerMessage(t.Message(new("App", "DroppedItemsEmpty")));
-                    return;
-                }
-
-                AddSelectedItems(selected);
-            }
-            catch (Exception exception)
-            {
-                setPickerMessage(t.Message(
-                    new("App", "DropItemsFailed"),
-                    ("error", exception.Message)));
-            }
-        }
-
         async Task ShareItemAsync(SelectedSendItem item)
         {
             if (window?.NativeWindow is not { } nativeWindow || item.LocalPath is not { } path)
@@ -1216,35 +611,5 @@ sealed class SendPage : Component<SendPageProps>
                 setPickerMessage(t.Message(new("App", "ShareFileFailed")));
         }
 
-        void PublishTransferOverlay(
-            LocalSendDevice device,
-            IReadOnlyList<SendItem> items,
-            TransferUiState state,
-            OutgoingOverlayUpdate update)
-        {
-            var snapshot = new OutgoingTransferSnapshot(
-                Props.Runtime.Identity,
-                device,
-                ContentSummary(t, items),
-                state.State ?? TransferState.Preparing,
-                state.BytesTransferred,
-                state.TotalBytes,
-                state.Message,
-                () =>
-                {
-                    sendCancellationRef.Current?.Cancel();
-                    dispatchTransfer(new SendTransferAction.MessageChanged(
-                        t.Message(new("App", "CancellingTransfer"))));
-                });
-            Props.SetTransferOverlay(update switch
-            {
-                OutgoingOverlayUpdate.Pending => new OutgoingTransferViewState.Pending(snapshot),
-                OutgoingOverlayUpdate.AwaitingPin(var prompt) =>
-                    new OutgoingTransferViewState.AwaitingPin(snapshot, prompt),
-                OutgoingOverlayUpdate.Finished =>
-                    new OutgoingTransferViewState.Finished(snapshot, state.IsError),
-            });
-        }
-    }
-
+    });
 }

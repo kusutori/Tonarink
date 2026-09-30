@@ -108,7 +108,7 @@ static class SelectedSendItemReader
                         new SendFileItem(path, protocolName),
                         protocolName,
                         new FileInfo(path).Length,
-                        "folder",
+                        "file",
                         path);
                 })
         ];
