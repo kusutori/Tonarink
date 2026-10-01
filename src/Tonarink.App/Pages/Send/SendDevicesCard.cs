@@ -86,12 +86,10 @@ sealed class SendDevicesCard : Component<SendDevicesCardProps>
                                     .MinWidth(40)
                                     .MinHeight(40)
                                     .IsEnabled(canUseDeviceActions),
-                                Button(Icon(AppIcons.Favorite).AccessibilityHidden(), Props.OpenFavorites)
-                                    .AutomationName(t.Message(new("App", "FavoritesTitle")))
-                                    .ToolTip(t.Message(new("App", "FavoritesTitle")))
-                                    .MinWidth(40)
-                                    .MinHeight(40)
-                                    .IsEnabled(canUseDeviceActions),
+                                AnimatedButtons.Favorites(
+                                    t.Message(new("App", "FavoritesTitle")),
+                                    Props.OpenFavorites,
+                                    isEnabled: canUseDeviceActions),
                                 Button(Icon(AppIcons.Link).AccessibilityHidden(), Props.OpenWebShare)
                                     .AutomationName(t.Message(new("App", "WebShareTitle")))
                                     .ToolTip(t.Message(new("App", "WebShareTitle")))
