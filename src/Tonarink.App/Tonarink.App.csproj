@@ -301,6 +301,7 @@
         <LottieAnimation Include="Assets\NavigationSendIcon.json" />
         <LottieAnimation Include="Assets\NetworkStatusIcon.json" />
         <LottieAnimation Include="Assets\QrRippleIcon.json" />
+        <LottieAnimation Include="Assets\RenameEraseIcon.json" />
         <LottieAnimation Include="Assets\SplashLogo.json" />
         <LottieAnimation Include="Search\SearchingDevices.json" />
     </ItemGroup>

@@ -5,6 +5,14 @@ namespace Tonarink.Components.Animations;
 
 public static class AnimatedButtons
 {
+    public static Element Rename(
+        string automationName,
+        Action onClick,
+        string? toolTip = null,
+        bool isEnabled = true) =>
+        Component<AnimatedRenameButton, AnimatedRenameButtonProps>(
+            new(automationName, onClick, toolTip, isEnabled));
+
     public static Element DisplayZoom(
         string automationName,
         Action onClick,

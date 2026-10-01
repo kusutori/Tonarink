@@ -360,16 +360,13 @@ static class IncomingFileCard
                                 .MinWidth(40)
                                 .MinHeight(40)
                                 .WithContextFlyout(FileRowMenu()),
-                            Button(
-                                    Icon(model.RenameCommand.Icon!).AccessibilityHidden(),
-                                    () => model.RenameCommand.Execute?.Invoke(commandTarget))
-                                .AutomationName(t.Message(
-                                    new("App", "RenameIncomingFile"),
-                                    ("file", displayName)))
-                                .ToolTip(model.RenameCommand.Label)
-                                .IsEnabled(model.RenameCommand.IsEnabled)
-                                .MinWidth(40)
-                                .MinHeight(40)
+                            AnimatedButtons.Rename(
+                                    t.Message(
+                                        new("App", "RenameIncomingFile"),
+                                        ("file", displayName)),
+                                    () => model.RenameCommand.Execute?.Invoke(commandTarget),
+                                    model.RenameCommand.Label,
+                                    model.RenameCommand.IsEnabled)
                                 .WithContextFlyout(FileRowMenu()))
                         .Margin(8)
                         .VAlign(VerticalAlignment.Center)
