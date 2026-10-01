@@ -295,7 +295,9 @@ sealed class WebSharePage : Component<WebSharePageProps>
                             .MinWidth(40)
                             .MinHeight(40)
                             .Grid(column: 1),
-                        IconButton(AppIcons.QrCode, t.Message(new("App", "WebShareQr")), () => showQr(url))
+                        AnimatedButtons.QrCode(
+                                t.Message(new("App", "WebShareQr")),
+                                () => showQr(url))
                             .Grid(column: 2),
                         IconButton(AppIcons.Zoom, t.Message(new("App", "WebShareZoom")), () => setZoom(url))
                             .Grid(column: 3),
