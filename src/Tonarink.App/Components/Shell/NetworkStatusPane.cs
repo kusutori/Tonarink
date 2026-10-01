@@ -4,6 +4,7 @@ using Microsoft.UI.Reactor.Core;
 using Microsoft.UI.Reactor.Localization;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
+using Microsoft.UI.Xaml.Controls;
 using static Microsoft.UI.Reactor.Factories;
 
 namespace Tonarink.Components.Shell;
@@ -22,6 +23,8 @@ sealed class NetworkStatusPane : Component<NetworkStatusPaneProps>
     public override Element Render()
     {
         var t = UseIntl();
+        var reduceMotion = UseReducedMotion();
+        var networkIconPlayerRef = UseRef<AnimatedVisualPlayer?>();
         var statusText = StatusText(t, Props.NodeState, Props.DiscoveryWarning);
         var statusColor = Props.Error is not null || Props.NodeState == LocalSendNodeState.Faulted
             ? Theme.SystemCritical
@@ -36,6 +39,10 @@ sealed class NetworkStatusPane : Component<NetworkStatusPaneProps>
             "App",
             Props.IsServerDesired ? "SettingsStopServer" : "SettingsStartServer"));
         var isBusy = Props.NodeState is LocalSendNodeState.Starting or LocalSendNodeState.Stopping;
+        UseEffect(
+            () => SetNetworkIconState(networkIconPlayerRef.Current, Props.NodeState, reduceMotion),
+            Props.NodeState,
+            reduceMotion);
 
         return Props.IsPaneOpen
             ? VStack(0,
@@ -43,7 +50,7 @@ sealed class NetworkStatusPane : Component<NetworkStatusPaneProps>
                 Grid(
                         columns: [GridSize.Auto, GridSize.Star(), GridSize.Auto],
                         rows: [GridSize.Auto],
-                        Icon(AppIcons.Network)
+                        NetworkStatusIcon(networkIconPlayerRef, Props.NodeState, reduceMotion)
                             .VAlign(VerticalAlignment.Center)
                             .AccessibilityHidden()
                             .Grid(column: 0),
@@ -91,6 +98,75 @@ sealed class NetworkStatusPane : Component<NetworkStatusPaneProps>
         .Background(color)
         .VAlign(VerticalAlignment.Center)
         .AccessibilityHidden();
+
+    private static Element NetworkStatusIcon(
+        Ref<AnimatedVisualPlayer?> playerRef,
+        LocalSendNodeState state,
+        bool reduceMotion) =>
+        (AnimatedVisualPlayer() with { AutoPlay = false })
+        .Size(24, 24)
+        .OnMountAdd(element =>
+        {
+            if (element is not AnimatedVisualPlayer player)
+                return;
+
+            var source = new Tonarink.NetworkStatusIcon();
+            UpdateNetworkIconForeground(player, source);
+            player.Loaded += (_, _) => UpdateNetworkIconForeground(player, source);
+            player.ActualThemeChanged += (_, _) => UpdateNetworkIconForeground(player, source);
+            player.Source = source;
+            playerRef.Current = player;
+            SetNetworkIconState(player, state, reduceMotion);
+        })
+        .OnUnmountAdd(element =>
+        {
+            if (element is not AnimatedVisualPlayer player)
+                return;
+
+            player.Stop();
+            if (ReferenceEquals(playerRef.Current, player))
+                playerRef.Current = null;
+        });
+
+    private static void SetNetworkIconState(
+        AnimatedVisualPlayer? player,
+        LocalSendNodeState state,
+        bool reduceMotion)
+    {
+        if (player is null)
+            return;
+
+        player.Stop();
+        switch (state)
+        {
+            case LocalSendNodeState.Starting when !reduceMotion:
+                player.SetProgress(0);
+                _ = player.PlayAsync(fromProgress: 0, toProgress: 1, looped: false);
+                break;
+            case LocalSendNodeState.Running:
+                player.SetProgress(1);
+                break;
+            default:
+                player.SetProgress(0);
+                break;
+        }
+    }
+
+    private static void UpdateNetworkIconForeground(
+        AnimatedVisualPlayer player,
+        Tonarink.NetworkStatusIcon source)
+    {
+        var theme = player.ActualTheme;
+        if (theme == ElementTheme.Default
+            && player.XamlRoot?.Content is FrameworkElement root)
+        {
+            theme = root.ActualTheme;
+        }
+
+        source.Foreground = theme == ElementTheme.Dark
+            ? Microsoft.UI.Colors.White
+            : Microsoft.UI.Colors.Black;
+    }
 
     private static string StatusText(
         IntlAccessor t,
