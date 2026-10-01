@@ -5,6 +5,14 @@ namespace Tonarink.Components.Animations;
 
 public static class AnimatedButtons
 {
+    public static Element Link(
+        string automationName,
+        Action onClick,
+        string? toolTip = null,
+        bool isEnabled = true) =>
+        Component<AnimatedLinkButton, AnimatedLinkButtonProps>(
+            new(automationName, onClick, toolTip, isEnabled));
+
     public static Element FileSelection(
         string label,
         string automationName,

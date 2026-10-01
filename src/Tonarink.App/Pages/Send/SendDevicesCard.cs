@@ -88,12 +88,10 @@ sealed class SendDevicesCard : Component<SendDevicesCardProps>
                                     t.Message(new("App", "FavoritesTitle")),
                                     Props.OpenFavorites,
                                     isEnabled: canUseDeviceActions),
-                                Button(Icon(AppIcons.Link).AccessibilityHidden(), Props.OpenWebShare)
-                                    .AutomationName(t.Message(new("App", "WebShareTitle")))
-                                    .ToolTip(t.Message(new("App", "WebShareTitle")))
-                                    .Size(44, 40)
-                                    .Padding(0, 0)
-                                    .IsEnabled(!Props.IsSending
+                                AnimatedButtons.Link(
+                                    t.Message(new("App", "WebShareTitle")),
+                                    Props.OpenWebShare,
+                                    isEnabled: !Props.IsSending
                                                && Props.Runtime.NodeState == LocalSendNodeState.Running),
                                 AnimatedButtons.MultipleReceivers(
                                     Props.KeepItemsForMultipleReceivers,

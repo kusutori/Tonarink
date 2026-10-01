@@ -292,6 +292,7 @@
         <LottieAnimation Include="Assets\EditWritingIcon.json" />
         <LottieAnimation Include="Assets\FolderOpenIcon.json" />
         <LottieAnimation Include="Assets\IdleLogo.json" />
+        <LottieAnimation Include="Assets\LinkDisconnectIcon.json" />
         <LottieAnimation Include="Assets\MultipleReceiversIcon.json" />
         <LottieAnimation Include="Assets\DeleteIcon.json" />
         <LottieAnimation Include="Assets\FavoriteListIcon.json" />
