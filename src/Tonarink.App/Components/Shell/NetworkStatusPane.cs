@@ -20,6 +20,8 @@ sealed record NetworkStatusPaneProps(
 
 sealed class NetworkStatusPane : Component<NetworkStatusPaneProps>
 {
+    private const double NetworkIconSettledProgress = 34d / 72d;
+
     public override Element Render()
     {
         var t = UseIntl();
@@ -126,7 +128,7 @@ sealed class NetworkStatusPane : Component<NetworkStatusPaneProps>
             if (playbackRef.Current is { } playback)
             {
                 playback.Generation++;
-                playback.IsPlaying = false;
+                playback.Animation = NetworkIconAnimation.None;
                 playback.Player = null;
             }
 
@@ -146,12 +148,28 @@ sealed class NetworkStatusPane : Component<NetworkStatusPaneProps>
         playback.ReduceMotion = reduceMotion;
         if (state == LocalSendNodeState.Starting && !reduceMotion)
         {
-            if (!playback.IsPlaying)
-            {
-                var generation = ++playback.Generation;
-                player.SetProgress(0);
-                _ = PlayStartingRoundsAsync(playback, player, generation);
-            }
+            if (playback.Animation == NetworkIconAnimation.Starting)
+                return;
+
+            CancelNetworkIconAnimation(playback, player);
+            var generation = ++playback.Generation;
+            playback.Animation = NetworkIconAnimation.Starting;
+            player.SetProgress(0);
+            _ = PlayStartingRoundsAsync(playback, player, generation);
+
+            return;
+        }
+
+        if (state == LocalSendNodeState.Stopping && !reduceMotion)
+        {
+            if (playback.Animation == NetworkIconAnimation.Stopping)
+                return;
+
+            CancelNetworkIconAnimation(playback, player);
+            var generation = ++playback.Generation;
+            playback.Animation = NetworkIconAnimation.Stopping;
+            player.SetProgress(NetworkIconSettledProgress);
+            _ = PlayStoppingAnimationAsync(playback, player, generation);
 
             return;
         }
@@ -160,15 +178,20 @@ sealed class NetworkStatusPane : Component<NetworkStatusPaneProps>
         {
             // If startup completes in the middle of a round, let that round settle
             // naturally at the complete icon instead of cutting it short.
-            if (!playback.IsPlaying)
-                player.SetProgress(1);
+            if (playback.Animation == NetworkIconAnimation.Starting)
+                return;
 
+            CancelNetworkIconAnimation(playback, player);
+            player.SetProgress(NetworkIconSettledProgress);
             return;
         }
 
-        playback.Generation++;
-        playback.IsPlaying = false;
-        player.Stop();
+        // The service can finish stopping before the visual reaches its final frame.
+        // Keep the in-flight reverse animation alive so it still settles on the pole.
+        if (playback.Animation == NetworkIconAnimation.Stopping && !reduceMotion)
+            return;
+
+        CancelNetworkIconAnimation(playback, player);
         player.SetProgress(0);
     }
 
@@ -177,18 +200,55 @@ sealed class NetworkStatusPane : Component<NetworkStatusPaneProps>
         AnimatedVisualPlayer player,
         int generation)
     {
-        playback.IsPlaying = true;
-        do
-        {
-            await player.PlayAsync(fromProgress: 0, toProgress: 1, looped: false);
-        }
         while (playback.Generation == generation
                && ReferenceEquals(playback.Player, player)
                && playback.State == LocalSendNodeState.Starting
-               && !playback.ReduceMotion);
+               && !playback.ReduceMotion)
+        {
+            await player.PlayAsync(
+                fromProgress: 0,
+                toProgress: NetworkIconSettledProgress,
+                looped: false);
+
+            if (playback.Generation == generation
+                && playback.State == LocalSendNodeState.Starting)
+            {
+                await Task.Delay(300);
+            }
+        }
 
         if (playback.Generation == generation)
-            playback.IsPlaying = false;
+        {
+            playback.Animation = NetworkIconAnimation.None;
+            if (playback.State == LocalSendNodeState.Running)
+                player.SetProgress(NetworkIconSettledProgress);
+        }
+    }
+
+    private static async Task PlayStoppingAnimationAsync(
+        NetworkIconPlayback playback,
+        AnimatedVisualPlayer player,
+        int generation)
+    {
+        await player.PlayAsync(
+            fromProgress: NetworkIconSettledProgress,
+            toProgress: 0,
+            looped: false);
+        if (playback.Generation != generation)
+            return;
+
+        playback.Animation = NetworkIconAnimation.None;
+        player.SetProgress(
+            playback.State == LocalSendNodeState.Running ? NetworkIconSettledProgress : 0);
+    }
+
+    private static void CancelNetworkIconAnimation(
+        NetworkIconPlayback playback,
+        AnimatedVisualPlayer player)
+    {
+        playback.Generation++;
+        playback.Animation = NetworkIconAnimation.None;
+        player.Stop();
     }
 
     private static void UpdateNetworkIconForeground(
@@ -215,9 +275,16 @@ sealed class NetworkStatusPane : Component<NetworkStatusPaneProps>
 
         public bool ReduceMotion { get; set; }
 
-        public bool IsPlaying { get; set; }
+        public NetworkIconAnimation Animation { get; set; }
 
         public int Generation { get; set; }
+    }
+
+    private enum NetworkIconAnimation
+    {
+        None,
+        Starting,
+        Stopping,
     }
 
     private static string StatusText(
