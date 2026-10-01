@@ -299,7 +299,9 @@ sealed class WebSharePage : Component<WebSharePageProps>
                                 t.Message(new("App", "WebShareQr")),
                                 () => showQr(url))
                             .Grid(column: 2),
-                        IconButton(AppIcons.Zoom, t.Message(new("App", "WebShareZoom")), () => setZoom(url))
+                        AnimatedButtons.DisplayZoom(
+                                t.Message(new("App", "WebShareZoom")),
+                                () => setZoom(url))
                             .Grid(column: 3),
                         IconButton(AppIcons.Share, t.Message(new("App", "WebShareSystemShare")), share)
                             .Grid(column: 4)) with

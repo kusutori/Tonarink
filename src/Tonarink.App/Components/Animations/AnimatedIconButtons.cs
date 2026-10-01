@@ -5,6 +5,14 @@ namespace Tonarink.Components.Animations;
 
 public static class AnimatedButtons
 {
+    public static Element DisplayZoom(
+        string automationName,
+        Action onClick,
+        string? toolTip = null,
+        bool isEnabled = true) =>
+        Component<AnimatedDisplayZoomButton, AnimatedDisplayZoomButtonProps>(
+            new(automationName, onClick, toolTip, isEnabled));
+
     public static Element QrCode(
         string automationName,
         Action onClick,

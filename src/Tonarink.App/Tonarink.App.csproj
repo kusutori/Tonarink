@@ -288,6 +288,7 @@
     <ItemGroup>
         <LottieAnimation Include="Assets\AddressTargetIcon.json" />
         <LottieAnimation Include="Assets\ClipboardPasteIcon.json" />
+        <LottieAnimation Include="Assets\DisplayZoomIcon.json" />
         <LottieAnimation Include="Assets\DocumentUnfoldIcon.json" />
         <LottieAnimation Include="Assets\EditWritingIcon.json" />
         <LottieAnimation Include="Assets\FolderOpenIcon.json" />
