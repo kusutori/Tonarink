@@ -95,17 +95,12 @@ sealed class SendDevicesCard : Component<SendDevicesCardProps>
                                     .MinHeight(40)
                                     .IsEnabled(!Props.IsSending
                                                && Props.Runtime.NodeState == LocalSendNodeState.Running),
-                                ToggleButton(
-                                        AppIcons.MultipleReceivers,
-                                        Props.KeepItemsForMultipleReceivers,
-                                        Props.SetKeepItemsForMultipleReceivers)
-                                    .FontFamily("Segoe Fluent Icons")
-                                    .FontSize(20)
-                                    .MinWidth(40)
-                                    .MinHeight(40)
-                                    .AutomationName(t.Message(new("App", "MultipleReceivers")))
-                                    .ToolTip(t.Message(new("App", "MultipleReceiversDescription")))
-                                    .IsEnabled(!Props.IsSending)) with
+                                AnimatedButtons.MultipleReceivers(
+                                    Props.KeepItemsForMultipleReceivers,
+                                    Props.SetKeepItemsForMultipleReceivers,
+                                    t.Message(new("App", "MultipleReceivers")),
+                                    t.Message(new("App", "MultipleReceiversDescription")),
+                                    isEnabled: !Props.IsSending)) with
                         {
                             AlignItems = FlexAlign.Center,
                             ColumnGap = 8,

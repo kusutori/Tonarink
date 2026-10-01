@@ -288,6 +288,7 @@
     <ItemGroup>
         <LottieAnimation Include="Assets\AddressTargetIcon.json" />
         <LottieAnimation Include="Assets\IdleLogo.json" />
+        <LottieAnimation Include="Assets\MultipleReceiversIcon.json" />
         <LottieAnimation Include="Assets\DeleteIcon.json" />
         <LottieAnimation Include="Assets\FavoriteListIcon.json" />
         <LottieAnimation Include="Assets\NavigationReceiveIcon.json" />

@@ -40,6 +40,15 @@ public static class AnimatedButtons
         Component<AnimatedAddressTargetButton, AnimatedAddressTargetButtonProps>(
             new(automationName, onClick, toolTip, isEnabled));
 
+    public static Element MultipleReceivers(
+        bool isChecked,
+        Action<bool> onChanged,
+        string automationName,
+        string? toolTip = null,
+        bool isEnabled = true) =>
+        Component<AnimatedMultipleReceiversToggle, AnimatedMultipleReceiversToggleProps>(
+            new(isChecked, onChanged, automationName, toolTip, isEnabled));
+
     public static Element Delete(
         string automationName,
         Action onClick,
