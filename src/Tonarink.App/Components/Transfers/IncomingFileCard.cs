@@ -23,6 +23,7 @@ sealed record IncomingFileCardModel(
     string DestinationDirectory,
     IReadOnlySet<string> SelectedItemIds,
     IReadOnlyDictionary<string, string> TargetFileNames,
+    IReadOnlyDictionary<string, string> RedoFileNames,
     string? FolderError,
     ElementTheme Theme,
     Action ToggleExpanded,
@@ -35,9 +36,14 @@ sealed record IncomingFileCardModel(
     Action OpenQuickActions,
     Command<IncomingFileCommandTarget> RenameCommand,
     Command<IncomingFileCommandTarget> UndoRenameCommand,
+    Command<IncomingFileCommandTarget> RedoRenameCommand,
     Func<Task> PickDirectory);
 
 sealed record IncomingFileCommandTarget(string ItemId, string DisplayName);
+
+sealed record IncomingRenameState(
+    IReadOnlyDictionary<string, string> TargetFileNames,
+    IReadOnlyDictionary<string, string> RedoFileNames);
 
 static class IncomingFileCard
 {
@@ -125,45 +131,88 @@ static class IncomingFileCard
     public static IReadOnlySet<string> AllItemIds(IReadOnlyList<IncomingItem> items) =>
         items.Select(static item => item.Id).ToHashSet(StringComparer.Ordinal);
 
-    public static IReadOnlyDictionary<string, string> UndoRename(
-        IReadOnlyDictionary<string, string> current,
+    public static IncomingRenameState EmptyRenameState() => new(
+        new Dictionary<string, string>(StringComparer.Ordinal),
+        new Dictionary<string, string>(StringComparer.Ordinal));
+
+    public static IncomingRenameState UndoRename(
+        IncomingRenameState current,
         string itemId)
     {
-        var next = new Dictionary<string, string>(current, StringComparer.Ordinal);
-        next.Remove(itemId);
-        return next;
+        if (!current.TargetFileNames.TryGetValue(itemId, out var renamedFileName))
+            return current;
+
+        var targetFileNames = new Dictionary<string, string>(
+            current.TargetFileNames,
+            StringComparer.Ordinal);
+        var redoFileNames = new Dictionary<string, string>(
+            current.RedoFileNames,
+            StringComparer.Ordinal)
+        {
+            [itemId] = renamedFileName,
+        };
+        targetFileNames.Remove(itemId);
+        return new(targetFileNames, redoFileNames);
     }
 
-    public static IReadOnlyDictionary<string, string> ApplyQuickActionNames(
-        IReadOnlyDictionary<string, string> current,
+    public static IncomingRenameState RedoRename(
+        IncomingRenameState current,
+        string itemId)
+    {
+        if (!current.RedoFileNames.TryGetValue(itemId, out var redoFileName))
+            return current;
+
+        var targetFileNames = new Dictionary<string, string>(
+            current.TargetFileNames,
+            StringComparer.Ordinal)
+        {
+            [itemId] = redoFileName,
+        };
+        return current with { TargetFileNames = targetFileNames };
+    }
+
+    public static IncomingRenameState ApplyQuickActionNames(
+        IncomingRenameState current,
         IReadOnlyList<IncomingItem> items,
         IReadOnlyDictionary<string, string> names)
     {
-        var next = new Dictionary<string, string>(current, StringComparer.Ordinal);
+        var targetFileNames = new Dictionary<string, string>(
+            current.TargetFileNames,
+            StringComparer.Ordinal);
+        var redoFileNames = new Dictionary<string, string>(
+            current.RedoFileNames,
+            StringComparer.Ordinal);
         foreach (var (itemId, fileName) in names)
         {
             var originalName = items.First(item => item.Id == itemId).FileName;
             if (string.Equals(fileName, originalName, StringComparison.Ordinal))
-                next.Remove(itemId);
+                targetFileNames.Remove(itemId);
             else
-                next[itemId] = fileName;
+                targetFileNames[itemId] = fileName;
+            redoFileNames.Remove(itemId);
         }
 
-        return next;
+        return new(targetFileNames, redoFileNames);
     }
 
-    public static IReadOnlyDictionary<string, string> CommitRename(
-        IReadOnlyDictionary<string, string> current,
+    public static IncomingRenameState CommitRename(
+        IncomingRenameState current,
         string itemId,
         string fileName,
         string originalName)
     {
-        var next = new Dictionary<string, string>(current, StringComparer.Ordinal);
+        var targetFileNames = new Dictionary<string, string>(
+            current.TargetFileNames,
+            StringComparer.Ordinal);
+        var redoFileNames = new Dictionary<string, string>(
+            current.RedoFileNames,
+            StringComparer.Ordinal);
         if (string.Equals(fileName, originalName, StringComparison.Ordinal))
-            next.Remove(itemId);
+            targetFileNames.Remove(itemId);
         else
-            next[itemId] = fileName;
-        return next;
+            targetFileNames[itemId] = fileName;
+        redoFileNames.Remove(itemId);
+        return new(targetFileNames, redoFileNames);
     }
 
     private static Element?[] CollapsedRows(IncomingFileCardModel model)
@@ -302,14 +351,22 @@ static class IncomingFileCard
             new("App", "RenameSuccess"),
             ("size", FormatBytes(item.Size)));
         var canUndoRename = isRenamed && model.CanEdit;
+        var canRedoRename = model.CanEdit
+                            && model.RedoFileNames.TryGetValue(item.Id, out var redoFileName)
+                            && (!model.TargetFileNames.TryGetValue(item.Id, out var targetFileName)
+                                || !string.Equals(targetFileName, redoFileName, StringComparison.Ordinal));
         var commandTarget = new IncomingFileCommandTarget(item.Id, displayName);
 
         Element FileRowMenu() => MenuItems(
+            MenuItem(model.RenameCommand, commandTarget),
             MenuItem(model.UndoRenameCommand, commandTarget) with
             {
                 IsEnabled = canUndoRename,
             },
-            MenuItem(model.RenameCommand, commandTarget));
+            MenuItem(model.RedoRenameCommand, commandTarget) with
+            {
+                IsEnabled = canRedoRename,
+            });
 
         return Border(
                 Grid(
@@ -357,6 +414,15 @@ static class IncomingFileCard
                                 .AutomationName(model.UndoRenameCommand.Label)
                                 .ToolTip(model.UndoRenameCommand.Label)
                                 .IsEnabled(canUndoRename)
+                                .MinWidth(40)
+                                .MinHeight(40)
+                                .WithContextFlyout(FileRowMenu()),
+                            Button(
+                                    Icon(model.RedoRenameCommand.Icon!).AccessibilityHidden(),
+                                    () => model.RedoRenameCommand.Execute?.Invoke(commandTarget))
+                                .AutomationName(model.RedoRenameCommand.Label)
+                                .ToolTip(model.RedoRenameCommand.Label)
+                                .IsEnabled(canRedoRename)
                                 .MinWidth(40)
                                 .MinHeight(40)
                                 .WithContextFlyout(FileRowMenu()),

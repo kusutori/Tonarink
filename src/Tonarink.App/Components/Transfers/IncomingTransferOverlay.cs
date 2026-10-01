@@ -50,8 +50,9 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
         var (destinationDirectory, setDestinationDirectory) = UseState(Props.DownloadDirectory);
         var (selectedItemIds, updateSelectedItemIds) = UseReducer<IReadOnlySet<string>>(
             IncomingFileCard.AllItemIds(request.Items));
-        var (targetFileNames, updateTargetFileNames) = UseReducer<IReadOnlyDictionary<string, string>>(
-            new Dictionary<string, string>(StringComparer.Ordinal));
+        var (renameState, updateRenameState) = UseReducer<IncomingRenameState>(
+            IncomingFileCard.EmptyRenameState());
+        var targetFileNames = renameState.TargetFileNames;
         var (renameItemId, setRenameItemId) = UseState<string?>(null);
         var (renameFileName, setRenameFileName) = UseState(string.Empty);
         var (showQuickActions, setShowQuickActions) = UseState(false);
@@ -175,12 +176,23 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
             canEdit));
         var undoRenameCommand = UseCommand(UseMemo(() => new Command<IncomingFileCommandTarget>
             {
-                Label = t.Message(new("App", "UndoIncomingFileRename")),
+                Label = t.Message(new("App", "Undo")),
                 Icon = new FontIconData(AppIcons.Undo),
                 Accelerator = Accelerator(VirtualKey.Z, VirtualKeyModifiers.Control),
                 CanExecute = canEdit,
-                Execute = target => updateTargetFileNames(current =>
+                Execute = target => updateRenameState(current =>
                     IncomingFileCard.UndoRename(current, target.ItemId)),
+            },
+            t.Locale,
+            canEdit));
+        var redoRenameCommand = UseCommand(UseMemo(() => new Command<IncomingFileCommandTarget>
+            {
+                Label = t.Message(new("App", "Redo")),
+                Icon = new FontIconData(AppIcons.Redo),
+                Accelerator = Accelerator(VirtualKey.Y, VirtualKeyModifiers.Control),
+                CanExecute = canEdit,
+                Execute = target => updateRenameState(current =>
+                    IncomingFileCard.RedoRename(current, target.ItemId)),
             },
             t.Locale,
             canEdit));
@@ -219,6 +231,7 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
             destinationDirectory,
             selectedItemIds,
             targetFileNames,
+            renameState.RedoFileNames,
             folderError,
             Props.Theme,
             ToggleFileOptions,
@@ -235,6 +248,7 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
             () => setShowQuickActions(true),
             renameFileCommand,
             undoRenameCommand,
+            redoRenameCommand,
             PickDestinationDirectoryAsync));
 
         var sender = VStack(16,
@@ -300,7 +314,7 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                     Props.Theme,
                     showQuickActions,
                     () => setShowQuickActions(false),
-                    names => updateTargetFileNames(current =>
+                    names => updateRenameState(current =>
                         IncomingFileCard.ApplyQuickActionNames(current, request.Items, names)))),
                 Component<RenameItemDialog, RenameItemDialogProps>(new(
                     Props.Theme,
@@ -313,7 +327,7 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                             return;
 
                         var originalName = request.Items.First(item => item.Id == itemId).FileName;
-                        updateTargetFileNames(current => IncomingFileCard.CommitRename(
+                        updateRenameState(current => IncomingFileCard.CommitRename(
                             current,
                             itemId,
                             fileName,
@@ -603,7 +617,7 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
         void ResetFileOptions()
         {
             updateSelectedItemIds(_ => IncomingFileCard.AllItemIds(request.Items));
-            updateTargetFileNames(_ => new Dictionary<string, string>(StringComparer.Ordinal));
+            updateRenameState(_ => IncomingFileCard.EmptyRenameState());
         }
 
         async Task PickDestinationDirectoryAsync()
