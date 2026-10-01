@@ -91,8 +91,8 @@ sealed class SendDevicesCard : Component<SendDevicesCardProps>
                                 Button(Icon(AppIcons.Link).AccessibilityHidden(), Props.OpenWebShare)
                                     .AutomationName(t.Message(new("App", "WebShareTitle")))
                                     .ToolTip(t.Message(new("App", "WebShareTitle")))
-                                    .MinWidth(40)
-                                    .MinHeight(40)
+                                    .Size(44, 40)
+                                    .Padding(0, 0)
                                     .IsEnabled(!Props.IsSending
                                                && Props.Runtime.NodeState == LocalSendNodeState.Running),
                                 AnimatedButtons.MultipleReceivers(

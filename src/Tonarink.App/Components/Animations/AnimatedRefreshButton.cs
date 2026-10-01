@@ -34,8 +34,8 @@ sealed class AnimatedRefreshButton : Component<AnimatedRefreshButtonProps>
                 })
             .AutomationName(Props.AutomationName)
             .ToolTip(Props.ToolTip ?? Props.AutomationName)
-            .MinWidth(40)
-            .MinHeight(40)
+            .Size(44, 40)
+            .Padding(0, 0)
             .IsEnabled(Props.IsEnabled);
     }
 
