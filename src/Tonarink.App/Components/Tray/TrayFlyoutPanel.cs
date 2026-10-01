@@ -121,8 +121,7 @@ sealed class TrayFlyoutPanel : Component<TrayFlyoutPanelProps>
                                     .TextTrimming(TextTrimming.CharacterEllipsis)
                                     .ToolTip(statusText)))
                     .Flex(grow: 1, basis: 0),
-                ToggleButton(
-                        snapshot.ServerDesired ? AppIcons.Start : AppIcons.Stop,
+                AnimatedButtons.TrayService(
                         snapshot.ServerDesired,
                         on =>
                         {
@@ -130,25 +129,16 @@ sealed class TrayFlyoutPanel : Component<TrayFlyoutPanelProps>
                                 TrayFlyoutStore.StartServer();
                             else
                                 TrayFlyoutStore.StopServer();
-                        })
-                    .FontFamily("Segoe Fluent Icons")
-                    .FontSize(16)
-                    .MinWidth(40)
-                    .MinHeight(40)
-                    .AutomationName(t.Message(new("App", "TrayReceiveService")))
-                    .ToolTip(snapshot.ServerDesired
+                        },
+                        t.Message(new("App", "TrayReceiveService")),
+                        snapshot.ServerDesired
                         ? t.Message(new("App", "TrayReceiveOn"))
                         : t.Message(new("App", "TrayReceiveOff"))),
-                ToggleButton(
-                        isPinned ? AppIcons.Unpin : AppIcons.Pin,
+                AnimatedButtons.TrayPin(
                         isPinned,
-                        setPinned)
-                    .FontFamily("Segoe Fluent Icons")
-                    .FontSize(16)
-                    .MinWidth(40)
-                    .MinHeight(40)
-                    .AutomationName(t.Message(new("App", isPinned ? "TrayUnpinPanel" : "TrayPinPanel")))
-                    .ToolTip(t.Message(new("App", isPinned ? "TrayUnpinPanel" : "TrayPinPanel")))) with
+                        setPinned,
+                        t.Message(new("App", isPinned ? "TrayUnpinPanel" : "TrayPinPanel")),
+                        t.Message(new("App", isPinned ? "TrayUnpinPanel" : "TrayPinPanel")))) with
         {
             AlignItems = FlexAlign.Center,
             ColumnGap = 12,

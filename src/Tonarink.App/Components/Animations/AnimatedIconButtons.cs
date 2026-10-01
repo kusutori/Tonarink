@@ -5,6 +5,14 @@ namespace Tonarink.Components.Animations;
 
 public static class AnimatedButtons
 {
+    public static Element More(
+        string automationName,
+        Element flyout,
+        string? toolTip = null,
+        bool isEnabled = true) =>
+        Component<AnimatedMoreButton, AnimatedMoreButtonProps>(
+            new(automationName, flyout, toolTip, isEnabled));
+
     public static Element Rename(
         string automationName,
         Action onClick,
@@ -112,6 +120,24 @@ public static class AnimatedButtons
         bool isEnabled = true) =>
         Component<AnimatedMultipleReceiversToggle, AnimatedMultipleReceiversToggleProps>(
             new(isChecked, onChanged, automationName, toolTip, isEnabled));
+
+    public static Element TrayService(
+        bool isChecked,
+        Action<bool> onChanged,
+        string automationName,
+        string? toolTip = null,
+        bool isEnabled = true) =>
+        Component<AnimatedTrayToggleButton, AnimatedTrayToggleButtonProps>(
+            new(TrayToggleIconKind.Service, isChecked, onChanged, automationName, toolTip, isEnabled));
+
+    public static Element TrayPin(
+        bool isChecked,
+        Action<bool> onChanged,
+        string automationName,
+        string? toolTip = null,
+        bool isEnabled = true) =>
+        Component<AnimatedTrayToggleButton, AnimatedTrayToggleButtonProps>(
+            new(TrayToggleIconKind.Pin, isChecked, onChanged, automationName, toolTip, isEnabled));
 
     public static Element Delete(
         string automationName,

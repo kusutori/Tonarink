@@ -295,6 +295,7 @@
         <LottieAnimation Include="Assets\IdleLogo.json" />
         <LottieAnimation Include="Assets\LinkDisconnectIcon.json" />
         <LottieAnimation Include="Assets\MultipleReceiversIcon.json" />
+        <LottieAnimation Include="Assets\MoreTriangleIcon.json" />
         <LottieAnimation Include="Assets\DeleteIcon.json" />
         <LottieAnimation Include="Assets\FavoriteListIcon.json" />
         <LottieAnimation Include="Assets\NavigationReceiveIcon.json" />
@@ -303,6 +304,8 @@
         <LottieAnimation Include="Assets\QrRippleIcon.json" />
         <LottieAnimation Include="Assets\RenameEraseIcon.json" />
         <LottieAnimation Include="Assets\SplashLogo.json" />
+        <LottieAnimation Include="Assets\TrayPinToggleIcon.json" />
+        <LottieAnimation Include="Assets\TrayServiceToggleIcon.json" />
         <LottieAnimation Include="Search\SearchingDevices.json" />
     </ItemGroup>
 

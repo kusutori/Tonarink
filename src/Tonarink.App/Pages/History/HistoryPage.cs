@@ -218,15 +218,12 @@ sealed class HistoryPage : Component<HistoryPageProps>
                         .Margin(horizontal: 12, vertical: 0)
                         .VAlign(VerticalAlignment.Center)
                         .Grid(column: 1),
-                    Button(Icon(AppIcons.More).AccessibilityHidden())
-                        .SubtleButton()
-                        .AutomationName(t.Message(new("App", "HistoryEntryActions"), ("file", entry.FileName)))
-                        .MinWidth(40)
-                        .MinHeight(40)
+                    AnimatedButtons.More(
+                            t.Message(new("App", "HistoryEntryActions"), ("file", entry.FileName)),
+                            MenuItems(
+                                FlyoutPlacementMode.BottomEdgeAlignedRight,
+                                EntryMenuItems()))
                         .VAlign(VerticalAlignment.Center)
-                        .WithFlyout(MenuItems(
-                            FlyoutPlacementMode.BottomEdgeAlignedRight,
-                            EntryMenuItems()))
                         .Grid(column: 2)))
             .Padding(12)
             .CornerRadius(8)
