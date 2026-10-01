@@ -24,7 +24,7 @@ sealed class NetworkStatusPane : Component<NetworkStatusPaneProps>
     {
         var t = UseIntl();
         var reduceMotion = UseReducedMotion();
-        var networkIconPlayerRef = UseRef<AnimatedVisualPlayer?>();
+        var networkIconPlaybackRef = UseRef<NetworkIconPlayback?>();
         var statusText = StatusText(t, Props.NodeState, Props.DiscoveryWarning);
         var statusColor = Props.Error is not null || Props.NodeState == LocalSendNodeState.Faulted
             ? Theme.SystemCritical
@@ -40,7 +40,7 @@ sealed class NetworkStatusPane : Component<NetworkStatusPaneProps>
             Props.IsServerDesired ? "SettingsStopServer" : "SettingsStartServer"));
         var isBusy = Props.NodeState is LocalSendNodeState.Starting or LocalSendNodeState.Stopping;
         UseEffect(
-            () => SetNetworkIconState(networkIconPlayerRef.Current, Props.NodeState, reduceMotion),
+            () => SetNetworkIconState(networkIconPlaybackRef.Current, Props.NodeState, reduceMotion),
             Props.NodeState,
             reduceMotion);
 
@@ -50,7 +50,7 @@ sealed class NetworkStatusPane : Component<NetworkStatusPaneProps>
                 Grid(
                         columns: [GridSize.Auto, GridSize.Star(), GridSize.Auto],
                         rows: [GridSize.Auto],
-                        NetworkStatusIcon(networkIconPlayerRef, Props.NodeState, reduceMotion)
+                        NetworkStatusIcon(networkIconPlaybackRef, Props.NodeState, reduceMotion)
                             .VAlign(VerticalAlignment.Center)
                             .AccessibilityHidden()
                             .Grid(column: 0),
@@ -100,7 +100,7 @@ sealed class NetworkStatusPane : Component<NetworkStatusPaneProps>
         .AccessibilityHidden();
 
     private static Element NetworkStatusIcon(
-        Ref<AnimatedVisualPlayer?> playerRef,
+        Ref<NetworkIconPlayback?> playbackRef,
         LocalSendNodeState state,
         bool reduceMotion) =>
         (AnimatedVisualPlayer() with { AutoPlay = false })
@@ -115,41 +115,80 @@ sealed class NetworkStatusPane : Component<NetworkStatusPaneProps>
             player.Loaded += (_, _) => UpdateNetworkIconForeground(player, source);
             player.ActualThemeChanged += (_, _) => UpdateNetworkIconForeground(player, source);
             player.Source = source;
-            playerRef.Current = player;
-            SetNetworkIconState(player, state, reduceMotion);
+            var playback = playbackRef.Current = new NetworkIconPlayback { Player = player };
+            SetNetworkIconState(playback, state, reduceMotion);
         })
         .OnUnmountAdd(element =>
         {
             if (element is not AnimatedVisualPlayer player)
                 return;
 
+            if (playbackRef.Current is { } playback)
+            {
+                playback.Generation++;
+                playback.IsPlaying = false;
+                playback.Player = null;
+            }
+
             player.Stop();
-            if (ReferenceEquals(playerRef.Current, player))
-                playerRef.Current = null;
+            playbackRef.Current = null;
         });
 
     private static void SetNetworkIconState(
-        AnimatedVisualPlayer? player,
+        NetworkIconPlayback? playback,
         LocalSendNodeState state,
         bool reduceMotion)
     {
-        if (player is null)
+        if (playback?.Player is not { } player)
             return;
 
-        player.Stop();
-        switch (state)
+        playback.State = state;
+        playback.ReduceMotion = reduceMotion;
+        if (state == LocalSendNodeState.Starting && !reduceMotion)
         {
-            case LocalSendNodeState.Starting when !reduceMotion:
+            if (!playback.IsPlaying)
+            {
+                var generation = ++playback.Generation;
                 player.SetProgress(0);
-                _ = player.PlayAsync(fromProgress: 0, toProgress: 1, looped: false);
-                break;
-            case LocalSendNodeState.Running:
-                player.SetProgress(1);
-                break;
-            default:
-                player.SetProgress(0);
-                break;
+                _ = PlayStartingRoundsAsync(playback, player, generation);
+            }
+
+            return;
         }
+
+        if (state == LocalSendNodeState.Running)
+        {
+            // If startup completes in the middle of a round, let that round settle
+            // naturally at the complete icon instead of cutting it short.
+            if (!playback.IsPlaying)
+                player.SetProgress(1);
+
+            return;
+        }
+
+        playback.Generation++;
+        playback.IsPlaying = false;
+        player.Stop();
+        player.SetProgress(0);
+    }
+
+    private static async Task PlayStartingRoundsAsync(
+        NetworkIconPlayback playback,
+        AnimatedVisualPlayer player,
+        int generation)
+    {
+        playback.IsPlaying = true;
+        do
+        {
+            await player.PlayAsync(fromProgress: 0, toProgress: 1, looped: false);
+        }
+        while (playback.Generation == generation
+               && ReferenceEquals(playback.Player, player)
+               && playback.State == LocalSendNodeState.Starting
+               && !playback.ReduceMotion);
+
+        if (playback.Generation == generation)
+            playback.IsPlaying = false;
     }
 
     private static void UpdateNetworkIconForeground(
@@ -166,6 +205,19 @@ sealed class NetworkStatusPane : Component<NetworkStatusPaneProps>
         source.Foreground = theme == ElementTheme.Dark
             ? Microsoft.UI.Colors.White
             : Microsoft.UI.Colors.Black;
+    }
+
+    private sealed class NetworkIconPlayback
+    {
+        public AnimatedVisualPlayer? Player { get; set; }
+
+        public LocalSendNodeState State { get; set; }
+
+        public bool ReduceMotion { get; set; }
+
+        public bool IsPlaying { get; set; }
+
+        public int Generation { get; set; }
     }
 
     private static string StatusText(
