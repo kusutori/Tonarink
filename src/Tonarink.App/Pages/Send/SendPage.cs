@@ -139,7 +139,12 @@ sealed class SendPage : Component<SendPageProps>
                 rows: [GridSize.Auto],
                 SelectionTile(t.Message(new("App", "File")), "Document", () => _ = itemSelection.PickFileAsync(), t)
                     .Grid(column: 0),
-                SelectionTile(t.Message(new("App", "Folder")), "Folder", () => _ = itemSelection.PickFolderAsync(), t)
+                AnimatedButtons.FolderSelection(
+                        t.Message(new("App", "Folder")),
+                        t.Message(
+                            new("App", "ChooseItem"),
+                            ("item", t.Message(new("App", "Folder")))),
+                        () => _ = itemSelection.PickFolderAsync())
                     .Grid(column: 1),
                 SelectionTile(t.Message(new("App", "Text")), "Edit", () => setShowTextDialog(true), t)
                     .Grid(column: 2),
