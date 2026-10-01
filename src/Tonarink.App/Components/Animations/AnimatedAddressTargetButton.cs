@@ -14,10 +14,54 @@ sealed record AnimatedAddressTargetButtonProps(
 
 sealed class AnimatedAddressTargetButton : Component<AnimatedAddressTargetButtonProps>
 {
+    private const double SeparatedProgress = 45d / 48d;
+    private const double HitProgress = 21d / 48d;
+    private const double RetractStartProgress = 32d / 48d;
+
     public override Element Render()
     {
         var playerRef = UseRef<AnimatedVisualPlayer?>();
+        var enabledRef = UseRef(Props.IsEnabled);
+        var previousEnabledRef = UseRef(Props.IsEnabled);
+        var transitionVersionRef = UseRef(0);
         var reduceMotion = UseReducedMotion();
+        enabledRef.Current = Props.IsEnabled;
+
+        UseEffect(() =>
+        {
+            var wasEnabled = previousEnabledRef.Current;
+            previousEnabledRef.Current = Props.IsEnabled;
+            if (wasEnabled == Props.IsEnabled
+                || playerRef.Current is not { } player)
+            {
+                return;
+            }
+
+            player.Stop();
+            var transitionVersion = ++transitionVersionRef.Current;
+            if (reduceMotion)
+            {
+                player.SetProgress(Props.IsEnabled ? HitProgress : SeparatedProgress);
+                return;
+            }
+
+            var targetEnabled = Props.IsEnabled;
+            _ = PlayAndSettleAsync();
+
+            async Task PlayAndSettleAsync()
+            {
+                await player.PlayAsync(
+                    fromProgress: targetEnabled ? 0 : RetractStartProgress,
+                    toProgress: targetEnabled ? HitProgress : SeparatedProgress,
+                    looped: false);
+
+                if (transitionVersion == transitionVersionRef.Current)
+                {
+                    player.SetProgress(
+                        enabledRef.Current ? HitProgress : SeparatedProgress);
+                }
+            }
+        }, Props.IsEnabled, reduceMotion);
 
         return Button(
                 (AnimatedVisualPlayer() with { AutoPlay = false })
@@ -35,11 +79,13 @@ sealed class AnimatedAddressTargetButton : Component<AnimatedAddressTargetButton
                     player.Loaded += (_, _) =>
                     {
                         UpdateForeground(player, source);
-                        player.SetProgress(1);
+                        player.SetProgress(
+                            enabledRef.Current ? HitProgress : SeparatedProgress);
                     };
                     player.ActualThemeChanged += (_, _) => UpdateForeground(player, source);
                     player.Source = source;
-                    player.SetProgress(1);
+                    player.SetProgress(
+                        enabledRef.Current ? HitProgress : SeparatedProgress);
                     playerRef.Current = player;
                 })
                 .OnUnmountAdd(element =>
@@ -55,7 +101,10 @@ sealed class AnimatedAddressTargetButton : Component<AnimatedAddressTargetButton
                     {
                         player.Stop();
                         player.SetProgress(0);
-                        _ = player.PlayAsync(fromProgress: 0, toProgress: 1, looped: false);
+                        _ = player.PlayAsync(
+                            fromProgress: 0,
+                            toProgress: HitProgress,
+                            looped: false);
                     }
 
                     Props.OnClick();
