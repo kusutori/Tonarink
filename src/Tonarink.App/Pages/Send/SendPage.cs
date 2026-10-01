@@ -143,12 +143,13 @@ sealed class SendPage : Component<SendPageProps>
                     .Grid(column: 1),
                 SelectionTile(t.Message(new("App", "Text")), "Edit", () => setShowTextDialog(true), t)
                     .Grid(column: 2),
-                SelectionTile(
+                AnimatedButtons.ClipboardSelection(
                         t.Message(new("App", "Clipboard")),
-                        "Paste",
+                        t.Message(
+                            new("App", "ChooseItem"),
+                            ("item", t.Message(new("App", "Clipboard")))),
                         () => pasteCommand.Execute?.Invoke(),
-                        t)
-                    .IsEnabled(pasteCommand.IsEnabled)
+                        pasteCommand.IsEnabled)
                     .Grid(column: 3)) with
         {
             ColumnSpacing = 12,

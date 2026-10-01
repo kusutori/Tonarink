@@ -5,6 +5,14 @@ namespace Tonarink.Components.Animations;
 
 public static class AnimatedButtons
 {
+    public static Element ClipboardSelection(
+        string label,
+        string automationName,
+        Action onClick,
+        bool isEnabled = true) =>
+        Component<AnimatedClipboardSelectionButton, AnimatedClipboardSelectionButtonProps>(
+            new(label, automationName, onClick, isEnabled));
+
     public static Element CopyFeedback(
         int successVersion,
         string automationName,
