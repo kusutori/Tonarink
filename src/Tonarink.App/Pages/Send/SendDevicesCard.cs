@@ -80,12 +80,10 @@ sealed class SendDevicesCard : Component<SendDevicesCardProps>
                                     t.Message(new("App", "RefreshDevices")),
                                     () => _ = Props.RefreshAsync(),
                                     isEnabled: !Props.IsSending),
-                                Button(Icon(AppIcons.IpAddress).AccessibilityHidden(), Props.OpenAddress)
-                                    .AutomationName(t.Message(new("App", "SendToAddress")))
-                                    .ToolTip(t.Message(new("App", "SendToAddress")))
-                                    .MinWidth(40)
-                                    .MinHeight(40)
-                                    .IsEnabled(canUseDeviceActions),
+                                AnimatedButtons.AddressTarget(
+                                    t.Message(new("App", "SendToAddress")),
+                                    Props.OpenAddress,
+                                    isEnabled: canUseDeviceActions),
                                 AnimatedButtons.Favorites(
                                     t.Message(new("App", "FavoritesTitle")),
                                     Props.OpenFavorites,

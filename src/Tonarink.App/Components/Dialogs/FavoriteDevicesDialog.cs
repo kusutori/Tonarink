@@ -115,13 +115,14 @@ sealed class FavoriteDevicesDialog : Component<FavoriteDevicesDialogProps>
                             .MinHeight(40)
                             .SubtleButton()
                             .Grid(column: 1),
-                        AnimatedButtons.Delete(
-                                t.Message(
+                        Button(Icon(AppIcons.Delete).AccessibilityHidden(), () => Queue(new PendingAction.Delete(favorite)))
+                            .AutomationName(t.Message(
                                 new("App", "RemoveFavoriteDevice"),
-                                ("device", favorite.Name)),
-                                () => Queue(new PendingAction.Delete(favorite)),
-                                toolTip: t.Message(new("App", "Delete")),
-                                subtle: true)
+                                ("device", favorite.Name)))
+                            .ToolTip(t.Message(new("App", "Delete")))
+                            .MinWidth(40)
+                            .MinHeight(40)
+                            .SubtleButton()
                             .Grid(column: 2))
                     .HAlign(HorizontalAlignment.Stretch));
 
