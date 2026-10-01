@@ -22,6 +22,7 @@ sealed class AnimatedAddressTargetButton : Component<AnimatedAddressTargetButton
         return Button(
                 (AnimatedVisualPlayer() with { AutoPlay = false })
                 .Size(24, 24)
+                .Opacity(Props.IsEnabled ? 1 : 0.36)
                 .IsHitTestVisible(false)
                 .AccessibilityHidden()
                 .OnMountAdd(element =>
