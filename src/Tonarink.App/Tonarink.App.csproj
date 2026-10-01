@@ -287,6 +287,8 @@
 
     <ItemGroup>
         <LottieAnimation Include="Assets\IdleLogo.json" />
+        <LottieAnimation Include="Assets\NavigationReceiveIcon.json" />
+        <LottieAnimation Include="Assets\NavigationSendIcon.json" />
         <LottieAnimation Include="Assets\SplashLogo.json" />
         <LottieAnimation Include="Search\SearchingDevices.json" />
     </ItemGroup>

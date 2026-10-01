@@ -340,6 +340,7 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
                         return;
 
                     navigationViewRef.Current = navigationView;
+                    NavigationAnimatedIcons.Attach(navigationView);
                     setNavigationPaneOpen(navigationView.IsPaneOpen);
                 })
                 .OnUnmountAdd(element =>
