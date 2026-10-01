@@ -146,7 +146,12 @@ sealed class SendPage : Component<SendPageProps>
                             ("item", t.Message(new("App", "Folder")))),
                         () => _ = itemSelection.PickFolderAsync())
                     .Grid(column: 1),
-                SelectionTile(t.Message(new("App", "Text")), "Edit", () => setShowTextDialog(true), t)
+                AnimatedButtons.TextSelection(
+                        t.Message(new("App", "Text")),
+                        t.Message(
+                            new("App", "ChooseItem"),
+                            ("item", t.Message(new("App", "Text")))),
+                        () => setShowTextDialog(true))
                     .Grid(column: 2),
                 AnimatedButtons.ClipboardSelection(
                         t.Message(new("App", "Clipboard")),
