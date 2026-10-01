@@ -40,6 +40,7 @@ static class NavigationAnimatedIcons
         // AnimatedIcon.State inherits from the NavigationViewItem. Setting it on the
         // icon itself would create a local value and block the item's visual states,
         // leaving the Lottie source permanently parked on its Normal marker.
+        item.Resources["NavigationViewItemOnLeftIconBoxHeight"] = 20d;
         AnimatedIcon.SetState(item, "Normal");
         item.Icon = icon;
     }

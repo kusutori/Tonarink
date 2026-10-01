@@ -138,12 +138,11 @@ sealed class SelectedSendItemRow : Component<SelectedSendItemRowProps>
                     itemContent
                         .WithContextFlyout(ContextMenu())
                         .Grid(row: 0),
-                    Button(
-                            Icon(removeCommand.Icon!).AccessibilityHidden(),
-                            () => removeCommand.Execute?.Invoke())
-                        .AutomationName(t.Message(new("App", "RemoveItem"), ("item", item.DisplayName)))
-                        .ToolTip(removeCommand.Label)
-                        .IsEnabled(removeCommand.IsEnabled)
+                    AnimatedButtons.Delete(
+                            t.Message(new("App", "RemoveItem"), ("item", item.DisplayName)),
+                            () => removeCommand.Execute?.Invoke(),
+                            toolTip: removeCommand.Label,
+                            isEnabled: removeCommand.IsEnabled)
                         .WithContextFlyout(ContextMenu())
                         .HAlign(HorizontalAlignment.Right)
                         .VAlign(VerticalAlignment.Center)
