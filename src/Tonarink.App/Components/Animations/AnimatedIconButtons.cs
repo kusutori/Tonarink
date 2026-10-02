@@ -141,6 +141,7 @@ public static class AnimatedButtons
 
     public static Element SettingsServiceActions(
         bool isOnline,
+        bool isStarting,
         bool isBusy,
         bool canStop,
         Action startOrRestart,
@@ -150,6 +151,7 @@ public static class AnimatedButtons
         Component<AnimatedSettingsServiceButtons, AnimatedSettingsServiceButtonsProps>(
             new(
                 isOnline,
+                isStarting,
                 isBusy,
                 canStop,
                 startOrRestart,

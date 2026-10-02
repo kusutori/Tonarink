@@ -408,6 +408,7 @@ sealed class SettingsPage : Component<SettingsPageProps>
                 content:
                 AnimatedButtons.SettingsServiceActions(
                     serverOnline,
+                    nodeState == LocalSendNodeState.Starting,
                     serverBusy,
                     serverRunning,
                     Props.StartOrRestartServer,

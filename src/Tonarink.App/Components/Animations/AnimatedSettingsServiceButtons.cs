@@ -10,6 +10,7 @@ namespace Tonarink.Components.Animations;
 
 sealed record AnimatedSettingsServiceButtonsProps(
     bool IsOnline,
+    bool IsStarting,
     bool IsBusy,
     bool CanStop,
     Action StartOrRestart,
@@ -35,6 +36,7 @@ sealed class AnimatedSettingsServiceButtons : Component<AnimatedSettingsServiceB
         var stopPlayback = stopPlaybackRef.Current ??= new StopPlayback();
         var previousOnlineRef = UseRef(Props.IsOnline);
         actionPlayback.IsOnline = Props.IsOnline;
+        actionPlayback.IsStarting = Props.IsStarting;
         actionPlayback.ReduceMotion = reduceMotion;
         stopPlayback.ReduceMotion = reduceMotion;
 
@@ -42,11 +44,12 @@ sealed class AnimatedSettingsServiceButtons : Component<AnimatedSettingsServiceB
         {
             var wasOnline = previousOnlineRef.Current;
             previousOnlineRef.Current = Props.IsOnline;
-            if (wasOnline == Props.IsOnline)
+            if (reduceMotion)
             {
-                if (reduceMotion && actionPlayback.Player is { } player)
+                if (actionPlayback.Player is { } player)
                 {
                     actionPlayback.AnimationVersion++;
+                    actionPlayback.Animation = ServiceActionAnimation.None;
                     player.Stop();
                     player.SetProgress(Props.IsOnline ? RefreshRestProgress : PlayRestProgress);
                 }
@@ -54,8 +57,17 @@ sealed class AnimatedSettingsServiceButtons : Component<AnimatedSettingsServiceB
                 return;
             }
 
-            PlayOnlineTransition(actionPlayback, Props.IsOnline);
-        }, Props.IsOnline, reduceMotion);
+            if (wasOnline != Props.IsOnline)
+            {
+                PlayOnlineTransition(actionPlayback, Props.IsOnline);
+                return;
+            }
+
+            if (Props.IsStarting)
+                EnsureStartingSpin(actionPlayback);
+            // When startup finishes, the running loop observes IsStarting=false
+            // and lets its current revolution settle naturally before stopping.
+        }, Props.IsOnline, Props.IsStarting, reduceMotion);
 
         return HStack(
             4,
@@ -68,7 +80,7 @@ sealed class AnimatedSettingsServiceButtons : Component<AnimatedSettingsServiceB
         var button = Button(string.Empty, () =>
             {
                 if (Props.IsOnline)
-                    PlayRefreshSpin(playback);
+                    BeginRefreshSpin(playback);
 
                 Props.StartOrRestart();
             })
@@ -110,6 +122,8 @@ sealed class AnimatedSettingsServiceButtons : Component<AnimatedSettingsServiceB
                 {
                     UpdateForeground(playback.Button, player, source);
                     player.SetProgress(playback.IsOnline ? RefreshRestProgress : PlayRestProgress);
+                    if (playback.IsStarting && !playback.ReduceMotion)
+                        EnsureStartingSpin(playback);
                 };
                 player.ActualThemeChanged += (_, _) =>
                     UpdateForeground(playback.Button, player, source);
@@ -208,6 +222,7 @@ sealed class AnimatedSettingsServiceButtons : Component<AnimatedSettingsServiceB
             return;
 
         var version = ++playback.AnimationVersion;
+        playback.Animation = ServiceActionAnimation.OneShot;
         player.Stop();
         if (playback.ReduceMotion)
         {
@@ -216,12 +231,11 @@ sealed class AnimatedSettingsServiceButtons : Component<AnimatedSettingsServiceB
         }
 
         _ = isOnline
-            ? PlayAndSettleAsync(
+            ? PlayStartingSequenceAsync(
                 playback,
+                player,
                 version,
-                PlayToRefreshStartProgress,
-                RefreshSpinEndProgress,
-                RefreshRestProgress)
+                PlayToRefreshStartProgress)
             : PlayAndSettleAsync(
                 playback,
                 version,
@@ -230,19 +244,65 @@ sealed class AnimatedSettingsServiceButtons : Component<AnimatedSettingsServiceB
                 PlayRestProgress);
     }
 
-    private static void PlayRefreshSpin(ServiceActionPlayback playback)
+    private static void BeginRefreshSpin(ServiceActionPlayback playback)
     {
         if (playback.Player is not { } player || playback.ReduceMotion)
             return;
 
         var version = ++playback.AnimationVersion;
+        playback.Animation = ServiceActionAnimation.Starting;
         player.Stop();
-        _ = PlayAndSettleAsync(
+        _ = PlayStartingSequenceAsync(
             playback,
+            player,
             version,
-            RefreshSpinStartProgress,
-            RefreshSpinEndProgress,
-            RefreshRestProgress);
+            RefreshSpinStartProgress);
+    }
+
+    private static void EnsureStartingSpin(ServiceActionPlayback playback)
+    {
+        if (playback.Player is not { } player
+            || playback.ReduceMotion
+            || playback.Animation == ServiceActionAnimation.Starting)
+        {
+            return;
+        }
+
+        var version = ++playback.AnimationVersion;
+        playback.Animation = ServiceActionAnimation.Starting;
+        player.Stop();
+        _ = PlayStartingSequenceAsync(
+            playback,
+            player,
+            version,
+            RefreshSpinStartProgress);
+    }
+
+    private static async Task PlayStartingSequenceAsync(
+        ServiceActionPlayback playback,
+        AnimatedVisualPlayer player,
+        int version,
+        double initialProgress)
+    {
+        playback.Animation = ServiceActionAnimation.Starting;
+        await player.PlayAsync(initialProgress, RefreshSpinEndProgress, looped: false);
+
+        while (version == playback.AnimationVersion
+               && playback.Player == player
+               && playback.IsStarting
+               && !playback.ReduceMotion)
+        {
+            await player.PlayAsync(
+                RefreshSpinStartProgress,
+                RefreshSpinEndProgress,
+                looped: false);
+        }
+
+        if (version != playback.AnimationVersion || playback.Player != player)
+            return;
+
+        playback.Animation = ServiceActionAnimation.None;
+        player.SetProgress(playback.IsOnline ? RefreshRestProgress : PlayRestProgress);
     }
 
     private static async Task PlayAndSettleAsync(
@@ -257,7 +317,10 @@ sealed class AnimatedSettingsServiceButtons : Component<AnimatedSettingsServiceB
 
         await player.PlayAsync(fromProgress, toProgress, looped: false);
         if (version == playback.AnimationVersion && playback.Player == player)
+        {
+            playback.Animation = ServiceActionAnimation.None;
             player.SetProgress(settledProgress);
+        }
     }
 
     private static void PlayStopFeedback(StopPlayback playback)
@@ -336,9 +399,20 @@ sealed class AnimatedSettingsServiceButtons : Component<AnimatedSettingsServiceB
 
         public bool IsOnline { get; set; }
 
+        public bool IsStarting { get; set; }
+
         public bool ReduceMotion { get; set; }
 
         public int AnimationVersion { get; set; }
+
+        public ServiceActionAnimation Animation { get; set; }
+    }
+
+    private enum ServiceActionAnimation
+    {
+        None,
+        OneShot,
+        Starting,
     }
 
     private sealed class StopPlayback
