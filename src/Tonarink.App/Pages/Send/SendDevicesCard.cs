@@ -15,6 +15,8 @@ sealed record SendDevicesCardProps(
     bool IsWideLayout,
     bool IsSending,
     bool IsResolvingAddress,
+    bool IsAddressDialogOpen,
+    bool IsFavoritesDialogOpen,
     bool KeepItemsForMultipleReceivers,
     Action<bool> SetKeepItemsForMultipleReceivers,
     Element SearchingAnimation,
@@ -83,11 +85,13 @@ sealed class SendDevicesCard : Component<SendDevicesCardProps>
                                 AnimatedButtons.AddressTarget(
                                     t.Message(new("App", "SendToAddress")),
                                     Props.OpenAddress,
-                                    isEnabled: canUseDeviceActions),
+                                    isEnabled: canUseDeviceActions,
+                                    isDialogOpen: Props.IsAddressDialogOpen),
                                 AnimatedButtons.Favorites(
                                     t.Message(new("App", "FavoritesTitle")),
                                     Props.OpenFavorites,
-                                    isEnabled: canUseDeviceActions),
+                                    isEnabled: canUseDeviceActions,
+                                    isDialogOpen: Props.IsFavoritesDialogOpen),
                                 AnimatedButtons.Link(
                                     t.Message(new("App", "WebShareTitle")),
                                     Props.OpenWebShare,

@@ -108,17 +108,19 @@ public static class AnimatedButtons
         string automationName,
         Action onClick,
         string? toolTip = null,
-        bool isEnabled = true) =>
+        bool isEnabled = true,
+        bool isDialogOpen = false) =>
         Component<AnimatedFavoritesButton, AnimatedFavoritesButtonProps>(
-            new(automationName, onClick, toolTip, isEnabled));
+            new(automationName, onClick, toolTip, isEnabled, isDialogOpen));
 
     public static Element AddressTarget(
         string automationName,
         Action onClick,
         string? toolTip = null,
-        bool isEnabled = true) =>
+        bool isEnabled = true,
+        bool isDialogOpen = false) =>
         Component<AnimatedAddressTargetButton, AnimatedAddressTargetButtonProps>(
-            new(automationName, onClick, toolTip, isEnabled));
+            new(automationName, onClick, toolTip, isEnabled, isDialogOpen));
 
     public static Element MultipleReceivers(
         bool isChecked,

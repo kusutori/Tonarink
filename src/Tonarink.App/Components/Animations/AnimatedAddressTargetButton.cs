@@ -10,7 +10,8 @@ sealed record AnimatedAddressTargetButtonProps(
     string AutomationName,
     Action OnClick,
     string? ToolTip = null,
-    bool IsEnabled = true);
+    bool IsEnabled = true,
+    bool IsDialogOpen = false);
 
 sealed class AnimatedAddressTargetButton : Component<AnimatedAddressTargetButtonProps>
 {
@@ -21,17 +22,18 @@ sealed class AnimatedAddressTargetButton : Component<AnimatedAddressTargetButton
     public override Element Render()
     {
         var playerRef = UseRef<AnimatedVisualPlayer?>();
-        var enabledRef = UseRef(Props.IsEnabled);
-        var previousEnabledRef = UseRef(Props.IsEnabled);
+        var isSeparated = !Props.IsEnabled || Props.IsDialogOpen;
+        var separatedRef = UseRef(isSeparated);
+        var previousSeparatedRef = UseRef(isSeparated);
         var transitionVersionRef = UseRef(0);
         var reduceMotion = UseReducedMotion();
-        enabledRef.Current = Props.IsEnabled;
+        separatedRef.Current = isSeparated;
 
         UseEffect(() =>
         {
-            var wasEnabled = previousEnabledRef.Current;
-            previousEnabledRef.Current = Props.IsEnabled;
-            if (wasEnabled == Props.IsEnabled
+            var wasSeparated = previousSeparatedRef.Current;
+            previousSeparatedRef.Current = isSeparated;
+            if (wasSeparated == isSeparated
                 || playerRef.Current is not { } player)
             {
                 return;
@@ -41,27 +43,27 @@ sealed class AnimatedAddressTargetButton : Component<AnimatedAddressTargetButton
             var transitionVersion = ++transitionVersionRef.Current;
             if (reduceMotion)
             {
-                player.SetProgress(Props.IsEnabled ? HitProgress : SeparatedProgress);
+                player.SetProgress(isSeparated ? SeparatedProgress : HitProgress);
                 return;
             }
 
-            var targetEnabled = Props.IsEnabled;
+            var targetSeparated = isSeparated;
             _ = PlayAndSettleAsync();
 
             async Task PlayAndSettleAsync()
             {
                 await player.PlayAsync(
-                    fromProgress: targetEnabled ? 0 : RetractStartProgress,
-                    toProgress: targetEnabled ? HitProgress : SeparatedProgress,
+                    fromProgress: targetSeparated ? RetractStartProgress : 0,
+                    toProgress: targetSeparated ? SeparatedProgress : HitProgress,
                     looped: false);
 
                 if (transitionVersion == transitionVersionRef.Current)
                 {
                     player.SetProgress(
-                        enabledRef.Current ? HitProgress : SeparatedProgress);
+                        separatedRef.Current ? SeparatedProgress : HitProgress);
                 }
             }
-        }, Props.IsEnabled, reduceMotion);
+        }, isSeparated, reduceMotion);
 
         return Button(
                 (AnimatedVisualPlayer() with { AutoPlay = false })
@@ -80,12 +82,12 @@ sealed class AnimatedAddressTargetButton : Component<AnimatedAddressTargetButton
                     {
                         UpdateForeground(player, source);
                         player.SetProgress(
-                            enabledRef.Current ? HitProgress : SeparatedProgress);
+                            separatedRef.Current ? SeparatedProgress : HitProgress);
                     };
                     player.ActualThemeChanged += (_, _) => UpdateForeground(player, source);
                     player.Source = source;
                     player.SetProgress(
-                        enabledRef.Current ? HitProgress : SeparatedProgress);
+                        separatedRef.Current ? SeparatedProgress : HitProgress);
                     playerRef.Current = player;
                 })
                 .OnUnmountAdd(element =>
@@ -95,20 +97,7 @@ sealed class AnimatedAddressTargetButton : Component<AnimatedAddressTargetButton
 
                     playerRef.Current = null;
                 }),
-                () =>
-                {
-                    if (!reduceMotion && playerRef.Current is { } player)
-                    {
-                        player.Stop();
-                        player.SetProgress(0);
-                        _ = player.PlayAsync(
-                            fromProgress: 0,
-                            toProgress: HitProgress,
-                            looped: false);
-                    }
-
-                    Props.OnClick();
-                })
+                Props.OnClick)
             .AutomationName(Props.AutomationName)
             .ToolTip(Props.ToolTip ?? Props.AutomationName)
             .Size(44, 40)

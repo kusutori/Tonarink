@@ -197,6 +197,8 @@ sealed class SendPage : Component<SendPageProps>
                 isWideLayout,
                 transfer.IsSending,
                 isResolvingAddress,
+                showAddressDialog,
+                showFavoritesDialog,
                 Props.KeepItemsForMultipleReceivers,
                 Props.SetKeepItemsForMultipleReceivers,
                 SearchingDevicesAnimation(),
