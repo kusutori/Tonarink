@@ -287,7 +287,6 @@
 
     <ItemGroup>
         <LottieAnimation Include="Assets\Lottie\*.json" />
-        <LottieAnimation Include="Search\SearchingDevices.json" />
     </ItemGroup>
 
     <Target Name="_GenerateLottieSources"
