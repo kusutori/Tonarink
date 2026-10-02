@@ -305,6 +305,7 @@
         <LottieAnimation Include="Assets\RenameEraseIcon.json" />
         <LottieAnimation Include="Assets\SettingsServiceActionIcon.json" />
         <LottieAnimation Include="Assets\SettingsStopIcon.json" />
+        <LottieAnimation Include="Assets\ShareFlyIcon.json" />
         <LottieAnimation Include="Assets\SplashLogo.json" />
         <LottieAnimation Include="Assets\TrayPinToggleIcon.json" />
         <LottieAnimation Include="Assets\TrayServiceToggleIcon.json" />

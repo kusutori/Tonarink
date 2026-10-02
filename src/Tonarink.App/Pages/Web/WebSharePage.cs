@@ -303,7 +303,9 @@ sealed class WebSharePage : Component<WebSharePageProps>
                                 t.Message(new("App", "WebShareZoom")),
                                 () => setZoom(url))
                             .Grid(column: 3),
-                        IconButton(AppIcons.Share, t.Message(new("App", "WebShareSystemShare")), share)
+                        AnimatedButtons.Share(
+                                t.Message(new("App", "WebShareSystemShare")),
+                                share)
                             .Grid(column: 4)) with
                 {
                     ColumnSpacing = 4,

@@ -37,6 +37,14 @@ public static class AnimatedButtons
         Component<AnimatedQrCodeButton, AnimatedQrCodeButtonProps>(
             new(automationName, onClick, toolTip, isEnabled));
 
+    public static Element Share(
+        string automationName,
+        Action onClick,
+        string? toolTip = null,
+        bool isEnabled = true) =>
+        Component<AnimatedShareButton, AnimatedShareButtonProps>(
+            new(automationName, onClick, toolTip, isEnabled));
+
     public static Element Link(
         string automationName,
         Action onClick,
