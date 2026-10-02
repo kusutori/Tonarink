@@ -7,6 +7,7 @@ using Microsoft.UI.Reactor.Localization;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
+using Tonarink.Components.Animations;
 using static Microsoft.UI.Reactor.Factories;
 using static Tonarink.Controls.SettingsCardElement;
 using static Tonarink.Controls.SettingsExpanderElement;
@@ -405,21 +406,14 @@ sealed class SettingsPage : Component<SettingsPageProps>
                 isClickEnabled: false,
                 isActionIconVisible: false,
                 content:
-                HStack(4,
-                    Button(Icon(serverOnline ? "Refresh" : "Play").AccessibilityHidden(), Props.StartOrRestartServer)
-                        .SubtleButton()
-                        .AutomationName(startOrRestartName)
-                        .ToolTip(startOrRestartName)
-                        .IsEnabled(!serverBusy)
-                        .MinWidth(40)
-                        .MinHeight(40),
-                    Button(Icon("Stop").AccessibilityHidden(), Props.StopServer)
-                        .SubtleButton()
-                        .AutomationName(stopName)
-                        .ToolTip(stopName)
-                        .IsEnabled(serverRunning && !serverBusy)
-                        .MinWidth(40)
-                        .MinHeight(40))),
+                AnimatedButtons.SettingsServiceActions(
+                    serverOnline,
+                    serverBusy,
+                    serverRunning,
+                    Props.StartOrRestartServer,
+                    Props.StopServer,
+                    startOrRestartName,
+                    stopName)),
             SettingsCard(
                 header: t.Message(new("App", "SettingsDeviceName")),
                 description: t.Message(new("App", "SettingsDeviceNameDescription")),

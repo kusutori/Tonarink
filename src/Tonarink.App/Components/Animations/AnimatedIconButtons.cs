@@ -139,6 +139,24 @@ public static class AnimatedButtons
         Component<AnimatedTrayToggleButton, AnimatedTrayToggleButtonProps>(
             new(TrayToggleIconKind.Pin, isChecked, onChanged, automationName, toolTip, isEnabled));
 
+    public static Element SettingsServiceActions(
+        bool isOnline,
+        bool isBusy,
+        bool canStop,
+        Action startOrRestart,
+        Action stop,
+        string startOrRestartName,
+        string stopName) =>
+        Component<AnimatedSettingsServiceButtons, AnimatedSettingsServiceButtonsProps>(
+            new(
+                isOnline,
+                isBusy,
+                canStop,
+                startOrRestart,
+                stop,
+                startOrRestartName,
+                stopName));
+
     public static Element Delete(
         string automationName,
         Action onClick,
