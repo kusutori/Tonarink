@@ -137,14 +137,14 @@ static class JumpListService
     }
 
     private static Uri DeviceLogo(LocalSendDeviceType type) =>
-        new($"ms-appx:///Assets/JumpList.Device.{type}.png");
+        new($"ms-appx:///Assets/JumpList/JumpList.Device.{type}.png");
 
     private static Uri FileLogo(string path)
     {
         var kind = Directory.Exists(path)
             ? FileTypeGlyphKind.Folder
             : FileTypeGlyphs.KindForFileName(path);
-        return new($"ms-appx:///Assets/JumpList.File.{kind}.png");
+        return new($"ms-appx:///Assets/JumpList/JumpList.File.{kind}.png");
     }
 
     private static void RememberRemovedItems(IEnumerable<JumpListItem> items)
