@@ -1,4 +1,3 @@
-using CommunityToolkit.WinUI.Controls;
 using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Core;
 using Microsoft.UI.Xaml;
@@ -32,8 +31,8 @@ sealed class IncomingQuickActionsDialog : Component<IncomingQuickActionsDialogPr
         var (randomExample, setRandomExample) = UseState(Guid.NewGuid().ToString());
         var modes = UseMemo(() => new object[]
         {
-            new SegmentedItem { Content = t.Message(new("App", "QuickActionsCounter")) },
-            new SegmentedItem { Content = t.Message(new("App", "QuickActionsRandom")) },
+            t.Message(new("App", "QuickActionsCounter")),
+            t.Message(new("App", "QuickActionsRandom")),
         }, t.Locale);
 
         UseEffect(() =>

@@ -302,20 +302,23 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                     Props.Theme,
                     showVerification,
                     () => setShowVerification(false))),
-                Component<IncomingQuickActionsDialog, IncomingQuickActionsDialogProps>(new(
-                    request.Items
-                        .Where(item => selectedItemIds.Contains(item.Id))
-                        .Select(item => new IncomingQuickActionFile(
-                            item.Id,
-                            targetFileNames.TryGetValue(item.Id, out var renamed)
-                                ? renamed
-                                : item.FileName))
-                        .ToArray(),
-                    Props.Theme,
-                    showQuickActions,
-                    () => setShowQuickActions(false),
-                    names => updateRenameState(current =>
-                        IncomingFileCard.ApplyQuickActionNames(current, request.Items, names)))),
+                showQuickActions
+                    ? Component<IncomingQuickActionsDialog, IncomingQuickActionsDialogProps>(new(
+                            request.Items
+                                .Where(item => selectedItemIds.Contains(item.Id))
+                                .Select(item => new IncomingQuickActionFile(
+                                    item.Id,
+                                    targetFileNames.TryGetValue(item.Id, out var renamed)
+                                        ? renamed
+                                        : item.FileName))
+                                .ToArray(),
+                            Props.Theme,
+                            IsOpen: true,
+                            () => setShowQuickActions(false),
+                            names => updateRenameState(current =>
+                                IncomingFileCard.ApplyQuickActionNames(current, request.Items, names))))
+                        .WithKey($"incoming-quick-actions:{request.RequestId:N}")
+                    : null,
                 Component<RenameItemDialog, RenameItemDialogProps>(new(
                     Props.Theme,
                     renameItemId is not null,
