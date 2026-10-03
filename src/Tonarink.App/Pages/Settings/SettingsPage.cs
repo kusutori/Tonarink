@@ -187,7 +187,8 @@ sealed class SettingsPage : Component<SettingsPageProps>
             SettingsCard(
                 header: t.Message(new("App", "SettingsStartWithWindows")),
                 description: t.Message(new("App", "SettingsStartWithWindowsDescription")),
-                headerIcon: HeaderGlyph(AppIcons.StartWithWindows),
+                headerIcon: AnimatedButtons.SettingsStartupIcon(Props.Settings.StartWithWindows)
+                    .WithKey("settings-startup-icon"),
                 isClickEnabled: false,
                 isActionIconVisible: false,
                 content:
@@ -302,7 +303,8 @@ sealed class SettingsPage : Component<SettingsPageProps>
             SettingsCard(
                 header: t.Message(new("App", "SettingsSaveReceiveHistory")),
                 description: t.Message(new("App", "SettingsSaveReceiveHistoryDescription")),
-                headerIcon: HeaderGlyph(AppIcons.HistorySettings),
+                headerIcon: AnimatedButtons.SettingsHistoryIcon(Props.Settings.SaveReceiveHistory)
+                    .WithKey("settings-history-icon"),
                 isClickEnabled: false,
                 isActionIconVisible: false,
                 content:
