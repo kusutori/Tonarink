@@ -5,6 +5,7 @@ using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Core;
 using Microsoft.UI.Reactor.Localization;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Tonarink.Components.Animations;
@@ -212,22 +213,19 @@ sealed class SettingsPage : Component<SettingsPageProps>
                     .HelpText(t.Message(new("App", "SettingsWindowsShareSuggestionsDescription")))
                     .IsEnabled(AppPlatform.HasPackageIdentity())),
             SettingsExpander(
+                    content:
+                    ExpanderToggle(
+                        Props.Settings.NotificationsEnabled,
+                        value =>
+                        {
+                            Props.UpdateSettings(settings => settings with { NotificationsEnabled = value });
+                            AppNotificationService.SetEnabled(value);
+                        },
+                        t.Message(new("App", "SettingsNotificationsEnabled")),
+                        t.Message(new("App", "SettingsNotificationsEnabledDescription"))),
                     headerIcon: HeaderGlyph(AppIcons.Notification),
                     items:
                     [
-                        SettingsCard(
-                            header: t.Message(new("App", "SettingsNotificationsEnabled")),
-                            description: t.Message(new("App", "SettingsNotificationsEnabledDescription")),
-                            isClickEnabled: false,
-                            isActionIconVisible: false,
-                            content:
-                            ToggleSwitch(Props.Settings.NotificationsEnabled, value =>
-                            {
-                                Props.UpdateSettings(settings => settings with { NotificationsEnabled = value });
-                                AppNotificationService.SetEnabled(value);
-                            })
-                                .AutomationName(t.Message(new("App", "SettingsNotificationsEnabled")))
-                                .HelpText(t.Message(new("App", "SettingsNotificationsEnabledDescription")))),
                         SettingsCard(
                             header: t.Message(new("App", "SettingsNotificationsDefaultAction")),
                             description: t.Message(new("App", "SettingsNotificationsDefaultActionDescription")),
@@ -324,19 +322,15 @@ sealed class SettingsPage : Component<SettingsPageProps>
                     .AutomationName(t.Message(new("App", "SettingsVerifyChecksumsOnReceive")))
                     .HelpText(t.Message(new("App", "SettingsVerifyChecksumsOnReceiveDescription")))),
             SettingsExpander(
+                    content:
+                    ExpanderToggle(
+                        Props.Settings.ReceivePinEnabled,
+                        value => Props.UpdateSettings(settings => settings with { ReceivePinEnabled = value }),
+                        t.Message(new("App", "SettingsReceivePinEnabled")),
+                        t.Message(new("App", "SettingsReceivePinEnabledDescription"))),
                     headerIcon: HeaderGlyph(AppIcons.PinCode),
                     items:
                     [
-                        SettingsCard(
-                            header: t.Message(new("App", "SettingsReceivePinEnabled")),
-                            description: t.Message(new("App", "SettingsReceivePinEnabledDescription")),
-                            isClickEnabled: false,
-                            isActionIconVisible: false,
-                            content:
-                            ToggleSwitch(Props.Settings.ReceivePinEnabled, value =>
-                                    Props.UpdateSettings(settings => settings with { ReceivePinEnabled = value }))
-                                .AutomationName(t.Message(new("App", "SettingsReceivePinEnabled")))
-                                .HelpText(t.Message(new("App", "SettingsReceivePinEnabledDescription")))),
                         SettingsCard(
                             header: t.Message(new("App", "SettingsReceivePin")),
                             description: t.Message(new("App", "SettingsReceivePinDescription")),
@@ -764,6 +758,22 @@ sealed class SettingsPage : Component<SettingsPageProps>
 
     private static Element HeaderGlyph(string glyph) =>
         Icon(glyph).AccessibilityHidden();
+
+    private static Microsoft.UI.Xaml.Controls.ToggleSwitch ExpanderToggle(
+        bool isOn,
+        Action<bool> onChanged,
+        string automationName,
+        string helpText)
+    {
+        var toggle = new Microsoft.UI.Xaml.Controls.ToggleSwitch
+        {
+            IsOn = isOn,
+        };
+        AutomationProperties.SetName(toggle, automationName);
+        AutomationProperties.SetHelpText(toggle, helpText);
+        toggle.Toggled += (_, _) => onChanged(toggle.IsOn);
+        return toggle;
+    }
 
     private static Element DeviceTypeOption(LocalSendDeviceType type, string label) =>
         HStack(10,
