@@ -11,7 +11,8 @@ sealed record AnimatedOpenFolderButtonProps(
     Action OnClick,
     string? Label = null,
     string? ToolTip = null,
-    bool IsEnabled = true);
+    bool IsEnabled = true,
+    double IconSize = 20);
 
 sealed class AnimatedOpenFolderButton : Component<AnimatedOpenFolderButtonProps>
 {
@@ -22,7 +23,7 @@ sealed class AnimatedOpenFolderButton : Component<AnimatedOpenFolderButtonProps>
         var reduceMotion = UseReducedMotion();
 
         var icon = (AnimatedVisualPlayer() with { AutoPlay = false })
-            .Size(20, 20)
+            .Size(Props.IconSize, Props.IconSize)
             .Opacity(Props.IsEnabled ? 1 : 0.36)
             .IsHitTestVisible(false)
             .AccessibilityHidden()

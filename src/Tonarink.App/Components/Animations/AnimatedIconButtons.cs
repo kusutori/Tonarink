@@ -10,9 +10,10 @@ public static class AnimatedButtons
         Action onClick,
         string? label = null,
         string? toolTip = null,
-        bool isEnabled = true) =>
+        bool isEnabled = true,
+        double iconSize = 20) =>
         Component<AnimatedOpenFolderButton, AnimatedOpenFolderButtonProps>(
-            new(automationName, onClick, label, toolTip, isEnabled));
+            new(automationName, onClick, label, toolTip, isEnabled, iconSize));
 
     public static Element More(
         string automationName,
@@ -185,7 +186,18 @@ public static class AnimatedButtons
         string? toolTip = null,
         bool isEnabled = true,
         bool subtle = false,
-        bool critical = false) =>
+        bool critical = false,
+        int shakeVersion = 0,
+        double iconSize = 24) =>
         Component<AnimatedDeleteButton, AnimatedDeleteButtonProps>(
-            new(automationName, onClick, label, toolTip, isEnabled, subtle, critical));
+            new(
+                automationName,
+                onClick,
+                label,
+                toolTip,
+                isEnabled,
+                subtle,
+                critical,
+                shakeVersion,
+                iconSize));
 }

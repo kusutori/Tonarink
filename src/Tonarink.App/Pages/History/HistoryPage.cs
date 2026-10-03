@@ -34,6 +34,7 @@ sealed class HistoryPage : Component<HistoryPageProps>
             static () => ReceiveHistoryStore.Entries);
         var (infoEntry, setInfoEntry) = UseState<ReceiveHistoryEntry?>(null);
         var (confirmClear, setConfirmClear) = UseState(false);
+        var (deleteShakeVersion, setDeleteShakeVersion) = UseState(0);
         var entryCommands = new HistoryEntryCommands(
             UseCommand(UseMemo(() => new Command<ReceiveHistoryEntry>
                 {
@@ -90,16 +91,16 @@ sealed class HistoryPage : Component<HistoryPageProps>
                 AnimatedButtons.OpenFolder(
                     t.Message(new("App", "HistoryOpenDirectory")),
                     OpenDownloadDirectory,
-                    label: t.Message(new("App", "HistoryOpenDirectory"))),
-                Button(HStack(Icon(AppIcons.Delete).AccessibilityHidden(), t.Message(new("App", "HistoryDeleteAll"))),
-                        () => setConfirmClear(true))
-                    .AutomationName(t.Message(new("App", "HistoryDeleteAll")))
-                    .IsEnabled(entries.Count > 0)
-                    .Resources(static resources => resources
-                        .Set("ButtonForeground", Theme.SystemCritical)
-                        .Set("ButtonForegroundPointerOver", Theme.SystemCritical)
-                        .Set("ButtonForegroundPressed", Theme.SystemCritical)
-                        .Set("ButtonForegroundDisabled", Theme.DisabledText)))
+                    label: t.Message(new("App", "HistoryOpenDirectory")),
+                    iconSize: 20),
+                AnimatedButtons.Delete(
+                    t.Message(new("App", "HistoryDeleteAll")),
+                    () => setConfirmClear(true),
+                    label: t.Message(new("App", "HistoryDeleteAll")),
+                    isEnabled: entries.Count > 0,
+                    critical: true,
+                    shakeVersion: deleteShakeVersion,
+                    iconSize: 20))
             with
         {
             ColumnGap = 8,
@@ -141,7 +142,10 @@ sealed class HistoryPage : Component<HistoryPageProps>
                             OnClosed = result =>
                             {
                                 if (result == ContentDialogResult.Primary)
+                                {
                                     ReceiveHistoryStore.Clear();
+                                    setDeleteShakeVersion(deleteShakeVersion + 1);
+                                }
                                 setConfirmClear(false);
                             },
                         }).Themed(Props.Theme),

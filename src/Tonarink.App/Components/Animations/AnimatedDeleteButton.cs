@@ -1,7 +1,9 @@
+using System.Numerics;
 using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Core;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Hosting;
 using Microsoft.UI.Xaml.Input;
 using static Microsoft.UI.Reactor.Factories;
 using XamlButton = Microsoft.UI.Xaml.Controls.Button;
@@ -15,7 +17,9 @@ sealed record AnimatedDeleteButtonProps(
     string? ToolTip = null,
     bool IsEnabled = true,
     bool Subtle = false,
-    bool Critical = false);
+    bool Critical = false,
+    int ShakeVersion = 0,
+    double IconSize = 24);
 
 sealed class AnimatedDeleteButton : Component<AnimatedDeleteButtonProps>
 {
@@ -24,19 +28,44 @@ sealed class AnimatedDeleteButton : Component<AnimatedDeleteButtonProps>
         var reduceMotion = UseReducedMotion();
         var playbackRef = UseRef<DeleteButtonPlayback?>();
         var playback = playbackRef.Current ??= new DeleteButtonPlayback();
-        var player = DeleteIcon(playback, Props.Critical);
+        var previousShakeVersionRef = UseRef(Props.ShakeVersion);
+        playback.UseCriticalForeground = Props.Critical && Props.IsEnabled;
+
+        UseEffect(() =>
+        {
+            UpdateForeground(playback);
+        }, Props.Critical, Props.IsEnabled);
+
+        UseEffect(() =>
+        {
+            var shouldShake = Props.ShakeVersion > previousShakeVersionRef.Current;
+            previousShakeVersionRef.Current = Props.ShakeVersion;
+            if (!shouldShake)
+                return;
+
+            CloseImmediately(playback);
+            if (!reduceMotion)
+                PlayShake(playback);
+        }, Props.ShakeVersion, reduceMotion);
+
+        var player = DeleteIcon(playback, Props.IsEnabled, Props.IconSize);
         Element content = Props.Label is null
             ? player
-            : HStack(player, Props.Label);
+            : HStack(8, player, TextBlock(Props.Label));
 
         var button = Button(content, Props.OnClick)
             .AutomationName(Props.AutomationName)
             .ToolTip(Props.ToolTip ?? Props.AutomationName)
-            .MinWidth(40)
-            .MinHeight(40)
             .IsEnabled(Props.IsEnabled)
             .OnMountAdd(element => AttachPointerHandlers(element, playback, reduceMotion))
             .OnUnmountAdd(element => DetachPointerHandlers(element, playback));
+
+        if (Props.Label is null)
+        {
+            button = button
+                .MinWidth(40)
+                .MinHeight(40);
+        }
 
         if (Props.Subtle)
             button = button.SubtleButton();
@@ -53,9 +82,13 @@ sealed class AnimatedDeleteButton : Component<AnimatedDeleteButtonProps>
         return button;
     }
 
-    private static Element DeleteIcon(DeleteButtonPlayback playback, bool critical) =>
+    private static Element DeleteIcon(
+        DeleteButtonPlayback playback,
+        bool isEnabled,
+        double iconSize) =>
         (AnimatedVisualPlayer() with { AutoPlay = false })
-        .Size(24, 24)
+        .Size(iconSize, iconSize)
+        .Opacity(isEnabled ? 1 : 0.36)
         .IsHitTestVisible(false)
         .AccessibilityHidden()
         .OnMountAdd(element =>
@@ -64,12 +97,14 @@ sealed class AnimatedDeleteButton : Component<AnimatedDeleteButtonProps>
                 return;
 
             var source = new Tonarink.DeleteIcon();
-            UpdateForeground(player, source, critical);
-            player.Loaded += (_, _) => UpdateForeground(player, source, critical);
-            player.ActualThemeChanged += (_, _) => UpdateForeground(player, source, critical);
+            playback.Player = player;
+            playback.Source = source;
+            UpdateForeground(playback);
+            player.Loaded += (_, _) => UpdateForeground(playback);
+            player.ActualThemeChanged += (_, _) => UpdateForeground(playback);
             player.Source = source;
             player.SetProgress(0);
-            playback.Player = player;
+            BindCompositionCenterPoint(player);
         })
         .OnUnmountAdd(element =>
         {
@@ -77,6 +112,7 @@ sealed class AnimatedDeleteButton : Component<AnimatedDeleteButtonProps>
                 player.Stop();
 
             playback.Player = null;
+            playback.Source = null;
         });
 
     private static void AttachPointerHandlers(
@@ -112,7 +148,12 @@ sealed class AnimatedDeleteButton : Component<AnimatedDeleteButtonProps>
     {
         playback.DetachPointerHandlers?.Invoke();
         playback.DetachPointerHandlers = null;
-        playback.Player?.Stop();
+        if (playback.Player is { } player)
+        {
+            player.Stop();
+            ResetShake(player);
+        }
+
         playback.Player = null;
     }
 
@@ -135,6 +176,45 @@ sealed class AnimatedDeleteButton : Component<AnimatedDeleteButtonProps>
 
         player.Stop();
         player.SetProgress(0);
+    }
+
+    private static void PlayShake(DeleteButtonPlayback playback)
+    {
+        if (playback.Player is not { } player)
+            return;
+
+        var visual = ElementCompositionPreview.GetElementVisual(player);
+        visual.StopAnimation(nameof(visual.RotationAngleInDegrees));
+        visual.RotationAngleInDegrees = 0;
+
+        var animation = visual.Compositor.CreateScalarKeyFrameAnimation();
+        animation.InsertKeyFrame(0, 0);
+        animation.InsertKeyFrame(0.16f, -7);
+        animation.InsertKeyFrame(0.34f, 6);
+        animation.InsertKeyFrame(0.52f, -4);
+        animation.InsertKeyFrame(0.70f, 3);
+        animation.InsertKeyFrame(0.86f, -1.5f);
+        animation.InsertKeyFrame(1, 0);
+        animation.Duration = TimeSpan.FromMilliseconds(340);
+        visual.StartAnimation(nameof(visual.RotationAngleInDegrees), animation);
+    }
+
+    private static void BindCompositionCenterPoint(FrameworkElement element)
+    {
+        var visual = ElementCompositionPreview.GetElementVisual(element);
+        var centerPoint = visual.Compositor.CreateExpressionAnimation(
+            "Vector3(target.Size.X / 2, target.Size.Y * 0.88, 0)");
+        centerPoint.SetReferenceParameter("target", visual);
+        visual.StartAnimation(nameof(visual.CenterPoint), centerPoint);
+    }
+
+    private static void ResetShake(FrameworkElement element)
+    {
+        var visual = ElementCompositionPreview.GetElementVisual(element);
+        visual.StopAnimation(nameof(visual.RotationAngleInDegrees));
+        visual.RotationAngleInDegrees = 0;
+        visual.StopAnimation(nameof(visual.CenterPoint));
+        visual.CenterPoint = Vector3.Zero;
     }
 
     private static void UpdateForeground(
@@ -164,9 +244,19 @@ sealed class AnimatedDeleteButton : Component<AnimatedDeleteButtonProps>
             : Microsoft.UI.Colors.Black;
     }
 
+    private static void UpdateForeground(DeleteButtonPlayback playback)
+    {
+        if (playback.Player is { } player && playback.Source is { } source)
+            UpdateForeground(player, source, playback.UseCriticalForeground);
+    }
+
     private sealed class DeleteButtonPlayback
     {
         public AnimatedVisualPlayer? Player { get; set; }
+
+        public Tonarink.DeleteIcon? Source { get; set; }
+
+        public bool UseCriticalForeground { get; set; }
 
         public Action? DetachPointerHandlers { get; set; }
     }
