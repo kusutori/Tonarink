@@ -6,6 +6,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
+using Tonarink.Components.Animations;
 using Windows.System;
 using MenuFlyoutItemBase = Microsoft.UI.Reactor.Core.MenuFlyoutItemBase;
 using static Microsoft.UI.Reactor.Factories;
@@ -86,9 +87,10 @@ sealed class HistoryPage : Component<HistoryPageProps>
         }, Props.JumpListHistoryId, entries);
 
         var actions = FlexRow(
-                Button(HStack(Icon(AppIcons.OpenFolder).AccessibilityHidden(), t.Message(new("App", "HistoryOpenDirectory"))),
-                        OpenDownloadDirectory)
-                    .AutomationName(t.Message(new("App", "HistoryOpenDirectory"))),
+                AnimatedButtons.OpenFolder(
+                    t.Message(new("App", "HistoryOpenDirectory")),
+                    OpenDownloadDirectory,
+                    label: t.Message(new("App", "HistoryOpenDirectory"))),
                 Button(HStack(Icon(AppIcons.Delete).AccessibilityHidden(), t.Message(new("App", "HistoryDeleteAll"))),
                         () => setConfirmClear(true))
                     .AutomationName(t.Message(new("App", "HistoryDeleteAll")))

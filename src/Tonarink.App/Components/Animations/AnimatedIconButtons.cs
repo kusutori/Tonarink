@@ -5,6 +5,15 @@ namespace Tonarink.Components.Animations;
 
 public static class AnimatedButtons
 {
+    public static Element OpenFolder(
+        string automationName,
+        Action onClick,
+        string? label = null,
+        string? toolTip = null,
+        bool isEnabled = true) =>
+        Component<AnimatedOpenFolderButton, AnimatedOpenFolderButtonProps>(
+            new(automationName, onClick, label, toolTip, isEnabled));
+
     public static Element More(
         string automationName,
         Element flyout,

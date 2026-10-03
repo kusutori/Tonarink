@@ -5,6 +5,7 @@ using Microsoft.UI.Reactor.Localization;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
+using Tonarink.Components.Animations;
 using static Microsoft.UI.Reactor.Factories;
 using static Tonarink.Utilities.ByteSize;
 
@@ -259,12 +260,11 @@ static class IncomingFileCard
                                         .TextTrimming(TextTrimming.CharacterEllipsis)
                                         .ToolTip(model.DestinationDirectory))
                                 .Grid(column: 0),
-                            Button(
-                                    Icon(AppIcons.OpenFolder).AccessibilityHidden(),
-                                    () => _ = model.PickDirectory())
-                                .AutomationName(t.Message(new("App", "ChangeSaveLocation")))
-                                .ToolTip(t.Message(new("App", "ChangeSaveLocation")))
-                                .IsEnabled(model.CanEdit)
+                            AnimatedButtons.OpenFolder(
+                                    t.Message(new("App", "ChangeSaveLocation")),
+                                    () => _ = model.PickDirectory(),
+                                    toolTip: t.Message(new("App", "ChangeSaveLocation")),
+                                    isEnabled: model.CanEdit)
                                 .MinWidth(40)
                                 .MinHeight(40)
                                 .Grid(column: 1)),

@@ -295,12 +295,10 @@ sealed class SettingsPage : Component<SettingsPageProps>
                 isClickEnabled: false,
                 isActionIconVisible: false,
                 content:
-                Button(
-                        HStack(8,
-                            Icon(AppIcons.OpenFolder).AccessibilityHidden(),
-                            TextBlock(t.Message(new("App", "Change")))),
-                        () => _ = PickDownloadDirectoryAsync())
-                    .AutomationName(t.Message(new("App", "ChangeSaveLocation")))),
+                AnimatedButtons.OpenFolder(
+                    t.Message(new("App", "ChangeSaveLocation")),
+                    () => _ = PickDownloadDirectoryAsync(),
+                    label: t.Message(new("App", "Change")))),
             SettingsCard(
                 header: t.Message(new("App", "SettingsSaveReceiveHistory")),
                 description: t.Message(new("App", "SettingsSaveReceiveHistoryDescription")),
