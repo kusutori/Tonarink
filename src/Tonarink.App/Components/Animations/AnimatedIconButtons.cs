@@ -72,6 +72,24 @@ public static class AnimatedButtons
         Component<AnimatedQuickActionsButton, AnimatedQuickActionsButtonProps>(
             new(automationName, onClick, toolTip, isEnabled, iconSize));
 
+    public static Element Undo(
+        string automationName,
+        Action onClick,
+        string? toolTip = null,
+        bool isEnabled = true,
+        double iconSize = 24) =>
+        Component<AnimatedUndoRedoButton, AnimatedUndoRedoButtonProps>(
+            new(UndoRedoIconKind.Undo, automationName, onClick, toolTip, isEnabled, iconSize));
+
+    public static Element Redo(
+        string automationName,
+        Action onClick,
+        string? toolTip = null,
+        bool isEnabled = true,
+        double iconSize = 24) =>
+        Component<AnimatedUndoRedoButton, AnimatedUndoRedoButtonProps>(
+            new(UndoRedoIconKind.Redo, automationName, onClick, toolTip, isEnabled, iconSize));
+
     public static Element FileSelection(
         string label,
         string automationName,

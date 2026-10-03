@@ -404,23 +404,15 @@ static class IncomingFileCard
                         .WithContextFlyout(FileRowMenu())
                         .Grid(column: 0),
                     HStack(
-                            Button(
-                                    Icon(model.UndoRenameCommand.Icon!).AccessibilityHidden(),
-                                    () => model.UndoRenameCommand.Execute?.Invoke(commandTarget))
-                                .AutomationName(model.UndoRenameCommand.Label)
-                                .ToolTip(model.UndoRenameCommand.Label)
-                                .IsEnabled(canUndoRename)
-                                .MinWidth(40)
-                                .MinHeight(40)
+                            AnimatedButtons.Undo(
+                                    model.UndoRenameCommand.Label,
+                                    () => model.UndoRenameCommand.Execute?.Invoke(commandTarget),
+                                    isEnabled: canUndoRename)
                                 .WithContextFlyout(FileRowMenu()),
-                            Button(
-                                    Icon(model.RedoRenameCommand.Icon!).AccessibilityHidden(),
-                                    () => model.RedoRenameCommand.Execute?.Invoke(commandTarget))
-                                .AutomationName(model.RedoRenameCommand.Label)
-                                .ToolTip(model.RedoRenameCommand.Label)
-                                .IsEnabled(canRedoRename)
-                                .MinWidth(40)
-                                .MinHeight(40)
+                            AnimatedButtons.Redo(
+                                    model.RedoRenameCommand.Label,
+                                    () => model.RedoRenameCommand.Execute?.Invoke(commandTarget),
+                                    isEnabled: canRedoRename)
                                 .WithContextFlyout(FileRowMenu()),
                             AnimatedButtons.Rename(
                                     t.Message(
