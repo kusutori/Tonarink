@@ -18,7 +18,9 @@ OUTPUT_DIRECTORY = ROOT / "src" / "Tonarink.App" / "Assets" / "Lottie"
 CANVAS_SIZE = 48
 GLYPH_SIZE = 46
 FRAME_RATE = 60
-OUT_FRAME = 24
+MOTION_PEAK_FRAME = 16
+MOTION_END_FRAME = 32
+OUT_FRAME = 40
 
 
 def vector(start: list[float], end: list[float]) -> list[float]:
@@ -173,8 +175,8 @@ def animated_contour(
 ) -> dict[str, object]:
     return animated([
         keyframe(0, [start], [moved], travel),
-        keyframe(8, [moved], [start], settle),
-        keyframe(18, [start]),
+        keyframe(MOTION_PEAK_FRAME, [moved], [start], settle),
+        keyframe(MOTION_END_FRAME, [start]),
     ])
 
 
@@ -185,8 +187,10 @@ def layer(
     anchor: list[float],
     rotation: dict[str, object] | float = 0,
     masks: list[dict[str, object]] | None = None,
+    opacity: dict[str, object] | float = 100,
 ) -> dict[str, object]:
     rotation_property = rotation if isinstance(rotation, dict) else {"a": 0, "k": rotation}
+    opacity_property = opacity if isinstance(opacity, dict) else {"a": 0, "k": opacity}
     paths = []
     for contour_index, contour in enumerate(contours):
         contour_property = contour if "a" in contour else {"a": 0, "k": contour}
@@ -202,7 +206,7 @@ def layer(
         "nm": name,
         "sr": 1,
         "ks": {
-            "o": {"a": 0, "k": 100},
+            "o": opacity_property,
             "r": rotation_property,
             "p": {"a": 0, "k": [*anchor, 0]},
             "a": {"a": 0, "k": [*anchor, 0]},
@@ -238,11 +242,11 @@ def document(name: str, codepoint: int, glyph_name: str, layers: list[dict[str, 
         "layers": layers,
         "markers": [
             {"tm": 0, "cm": "Off", "dr": 0},
-            {"tm": 20, "cm": "On", "dr": 0},
+            {"tm": MOTION_END_FRAME, "cm": "On", "dr": 0},
             {"tm": 0, "cm": "OffToOn_Start", "dr": 0},
-            {"tm": 20, "cm": "OffToOn_End", "dr": 0},
+            {"tm": MOTION_END_FRAME, "cm": "OffToOn_End", "dr": 0},
             {"tm": 0, "cm": "OnToOff_Start", "dr": 0},
-            {"tm": 20, "cm": "OnToOff_End", "dr": 0},
+            {"tm": MOTION_END_FRAME, "cm": "OnToOff_End", "dr": 0},
         ],
     }
 
@@ -256,11 +260,11 @@ if len(history_contours) != 2:
 history_center = normalized_point((1024, 1024), history_bounds)
 history_rotation_outer = animated([
     keyframe(0, [0], [-360], travel),
-    keyframe(20, [-360]),
+    keyframe(MOTION_END_FRAME, [-360]),
 ])
 history_rotation_inner = animated([
     keyframe(0, [0], [360], travel),
-    keyframe(20, [360]),
+    keyframe(MOTION_END_FRAME, [360]),
 ])
 history = document(
     "Tonarink settings history toggle icon (Segoe Fluent Icons)",
@@ -278,16 +282,44 @@ if len(startup_contours) != 4:
 startup_pivot = normalized_point((992, 608), startup_bounds)
 startup_rotation = animated([
     keyframe(0, [0], [-38], travel),
-    keyframe(8, [-38], [0], settle),
-    keyframe(18, [0]),
+    keyframe(MOTION_PEAK_FRAME, [-38], [0], settle),
+    keyframe(MOTION_END_FRAME, [0]),
 ])
-def polar(value: list[float]) -> tuple[float, float]:
-    dx = value[0] - startup_pivot[0]
-    dy = value[1] - startup_pivot[1]
+def circle_through(
+    first: list[float],
+    second: list[float],
+    third: list[float],
+) -> list[float]:
+    x1, y1 = first
+    x2, y2 = second
+    x3, y3 = third
+    denominator = 2 * (x1 * (y2 - y3) + x2 * (y3 - y1) + x3 * (y1 - y2))
+    if abs(denominator) < 1e-6:
+        raise ValueError("Gauge trajectory points are collinear")
+    first_squared = x1 * x1 + y1 * y1
+    second_squared = x2 * x2 + y2 * y2
+    third_squared = x3 * x3 + y3 * y3
+    return [
+        (first_squared * (y2 - y3) + second_squared * (y3 - y1) + third_squared * (y1 - y2)) / denominator,
+        (first_squared * (x3 - x2) + second_squared * (x1 - x3) + third_squared * (x2 - x1)) / denominator,
+    ]
+
+
+startup_gauge_center = circle_through(
+    startup_contours[0]["v"][8],
+    startup_contours[0]["v"][10],
+    startup_contours[2]["v"][12],
+)
+
+
+def polar(value: list[float], center: list[float]) -> tuple[float, float]:
+    dx = value[0] - center[0]
+    dy = value[1] - center[1]
     return math.hypot(dx, dy), math.degrees(math.atan2(dy, dx))
 
 
 def annular_sector(
+    center: list[float],
     inner_radius: float,
     outer_radius: float,
     start_angle: float,
@@ -296,8 +328,8 @@ def annular_sector(
     def point(radius: float, degrees: float) -> list[float]:
         radians = math.radians(degrees)
         return [
-            round(startup_pivot[0] + math.cos(radians) * radius, 4),
-            round(startup_pivot[1] + math.sin(radians) * radius, 4),
+            round(center[0] + math.cos(radians) * radius, 4),
+            round(center[1] + math.sin(radians) * radius, 4),
         ]
 
     def arc_handles(radius: float, start: float, end: float) -> tuple[list[float], list[float]]:
@@ -325,28 +357,52 @@ def annular_sector(
     }
 
 
-left_outer_radius, left_outer_angle = polar(startup_contours[0]["v"][11])
-left_inner_radius, left_inner_angle = polar(startup_contours[0]["v"][12])
-right_inner_radius, right_inner_angle = polar(startup_contours[2]["v"][9])
-right_outer_radius, right_outer_angle = polar(startup_contours[2]["v"][10])
+left_outer_radius, left_outer_angle = polar(startup_contours[0]["v"][11], startup_gauge_center)
+left_inner_radius, left_inner_angle = polar(startup_contours[0]["v"][12], startup_gauge_center)
+right_inner_radius, right_inner_angle = polar(startup_contours[2]["v"][9], startup_gauge_center)
+right_outer_radius, right_outer_angle = polar(startup_contours[2]["v"][10], startup_gauge_center)
+gap_inner_radius = (left_inner_radius + right_inner_radius) / 2
+gap_outer_radius = (left_outer_radius + right_outer_radius) / 2
+gap_start_angle = (left_outer_angle + left_inner_angle) / 2
+gap_end_angle = (right_outer_angle + right_inner_angle) / 2
 startup_gap_filler = annular_sector(
-    (left_inner_radius + right_inner_radius) / 2,
-    (left_outer_radius + right_outer_radius) / 2,
-    (left_outer_angle + left_inner_angle) / 2 - 2,
-    (right_outer_angle + right_inner_angle) / 2 + 2,
+    startup_gauge_center,
+    min(left_inner_radius, right_inner_radius) - 0.08,
+    max(left_outer_radius, right_outer_radius) + 0.08,
+    gap_start_angle - 1.5,
+    gap_end_angle + 1.5,
 )
-startup_gap_mask_shape = deepcopy(startup_gap_filler)
+startup_gap_mask_shape = annular_sector(
+    startup_gauge_center,
+    min(left_inner_radius, right_inner_radius) - 2,
+    max(left_outer_radius, right_outer_radius) + 2,
+    gap_start_angle,
+    gap_end_angle,
+)
 startup_gap_mask = {
     "inv": False,
     "mode": "s",
     "pt": animated_contour(
         startup_gap_mask_shape,
-        rotate_contour(startup_gap_mask_shape, startup_pivot, -38),
+        rotate_contour(startup_gap_mask_shape, startup_gauge_center, -38),
     ),
     "o": {"a": 0, "k": 100},
-    "x": {"a": 0, "k": 0.35},
+    "x": {"a": 0, "k": 0},
     "nm": "Moving gauge gap",
 }
+# Switch between the untouched font contour and the animated masked contour in
+# one frame. Cross-fading identical black geometry makes it look grey and also
+# exposes both antialiased mask edges at once.
+startup_gap_fill_opacity = animated([
+    {"t": 0, "s": [0], "h": 1},
+    {"t": 1, "s": [100], "h": 1},
+    {"t": MOTION_END_FRAME, "s": [0]},
+])
+startup_rest_gauge_opacity = animated([
+    {"t": 0, "s": [100], "h": 1},
+    {"t": 1, "s": [0], "h": 1},
+    {"t": MOTION_END_FRAME, "s": [100]},
+])
 startup = document(
     "Tonarink settings startup toggle icon (Segoe Fluent Icons)",
     0xEC4A,
@@ -354,11 +410,27 @@ startup = document(
     [
         layer(2, "Startup needle", [startup_contours[1], startup_contours[3]], startup_pivot, startup_rotation),
         layer(
-            1,
-            "Startup gauge with moving gap",
-            [startup_contours[0], startup_contours[2], startup_gap_filler],
+            3,
+            "Startup gauge gap fill",
+            [startup_gap_filler],
             startup_pivot,
-            masks=[startup_gap_mask],
+            masks=[deepcopy(startup_gap_mask)],
+            opacity=startup_gap_fill_opacity,
+        ),
+        layer(
+            1,
+            "Startup gauge",
+            [startup_contours[0], startup_contours[2]],
+            startup_pivot,
+            masks=[deepcopy(startup_gap_mask)],
+            opacity=startup_gap_fill_opacity,
+        ),
+        layer(
+            4,
+            "Startup resting gauge",
+            [startup_contours[0], startup_contours[2]],
+            startup_pivot,
+            opacity=startup_rest_gauge_opacity,
         ),
     ],
 )
