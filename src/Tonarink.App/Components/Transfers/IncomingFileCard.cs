@@ -281,14 +281,10 @@ static class IncomingFileCard
                                 TextBlock(t.Message(new("App", "IncomingFiles")))
                                     .SemiBold()
                                     .VAlign(VerticalAlignment.Center),
-                                Button(
-                                        Icon(AppIcons.QuickActions).AccessibilityHidden(),
-                                        model.OpenQuickActions)
-                                    .AutomationName(t.Message(new("App", "QuickActionsTitle")))
-                                    .ToolTip(t.Message(new("App", "QuickActionsTitle")))
-                                    .IsEnabled(model.CanEdit)
-                                    .MinWidth(40)
-                                    .MinHeight(40)
+                                AnimatedButtons.QuickActions(
+                                        t.Message(new("App", "QuickActionsTitle")),
+                                        model.OpenQuickActions,
+                                        isEnabled: model.CanEdit)
                                     .VAlign(VerticalAlignment.Center),
                                 Button(
                                         Icon(AppIcons.Undo).AccessibilityHidden(),

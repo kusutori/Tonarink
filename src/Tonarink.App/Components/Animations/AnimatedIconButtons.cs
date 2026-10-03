@@ -63,6 +63,15 @@ public static class AnimatedButtons
         Component<AnimatedLinkButton, AnimatedLinkButtonProps>(
             new(automationName, onClick, toolTip, isEnabled));
 
+    public static Element QuickActions(
+        string automationName,
+        Action onClick,
+        string? toolTip = null,
+        bool isEnabled = true,
+        double iconSize = 24) =>
+        Component<AnimatedQuickActionsButton, AnimatedQuickActionsButtonProps>(
+            new(automationName, onClick, toolTip, isEnabled, iconSize));
+
     public static Element FileSelection(
         string label,
         string automationName,
