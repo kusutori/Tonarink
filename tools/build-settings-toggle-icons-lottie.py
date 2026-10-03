@@ -27,7 +27,10 @@ def vector(start: list[float], end: list[float]) -> list[float]:
     return [round(end[0] - start[0], 4), round(end[1] - start[1], 4)]
 
 
-def extract_glyph(codepoint: int) -> tuple[str, list[dict[str, object]], tuple[float, float, float, float]]:
+def extract_glyph(
+    codepoint: int,
+    glyph_size: float = GLYPH_SIZE,
+) -> tuple[str, list[dict[str, object]], tuple[float, float, float, float]]:
     font = TTFont(FONT_PATH)
     glyph_set = font.getGlyphSet()
     glyph_name = font.getBestCmap()[codepoint]
@@ -38,7 +41,7 @@ def extract_glyph(codepoint: int) -> tuple[str, list[dict[str, object]], tuple[f
         raise ValueError(f"U+{codepoint:04X} has no bounds")
     bounds = bounds_pen.bounds
     x_min, y_min, x_max, y_max = bounds
-    scale = GLYPH_SIZE / max(x_max - x_min, y_max - y_min)
+    scale = glyph_size / max(x_max - x_min, y_max - y_min)
     left = (CANVAS_SIZE - (x_max - x_min) * scale) / 2
     top = (CANVAS_SIZE - (y_max - y_min) * scale) / 2
 
@@ -89,9 +92,10 @@ def extract_glyph(codepoint: int) -> tuple[str, list[dict[str, object]], tuple[f
 def normalized_point(
     value: tuple[float, float],
     bounds: tuple[float, float, float, float],
+    glyph_size: float = GLYPH_SIZE,
 ) -> list[float]:
     x_min, y_min, x_max, y_max = bounds
-    scale = GLYPH_SIZE / max(x_max - x_min, y_max - y_min)
+    scale = glyph_size / max(x_max - x_min, y_max - y_min)
     left = (CANVAS_SIZE - (x_max - x_min) * scale) / 2
     top = (CANVAS_SIZE - (y_max - y_min) * scale) / 2
     x, y = value
@@ -188,9 +192,14 @@ def layer(
     rotation: dict[str, object] | float = 0,
     masks: list[dict[str, object]] | None = None,
     opacity: dict[str, object] | float = 100,
+    position: dict[str, object] | list[float] | None = None,
 ) -> dict[str, object]:
     rotation_property = rotation if isinstance(rotation, dict) else {"a": 0, "k": rotation}
     opacity_property = opacity if isinstance(opacity, dict) else {"a": 0, "k": opacity}
+    position_property = position if isinstance(position, dict) else {
+        "a": 0,
+        "k": [*(position or anchor), 0],
+    }
     paths = []
     for contour_index, contour in enumerate(contours):
         contour_property = contour if "a" in contour else {"a": 0, "k": contour}
@@ -208,7 +217,7 @@ def layer(
         "ks": {
             "o": opacity_property,
             "r": rotation_property,
-            "p": {"a": 0, "k": [*anchor, 0]},
+            "p": position_property,
             "a": {"a": 0, "k": [*anchor, 0]},
             "s": {"a": 0, "k": [100, 100, 100]},
         },
@@ -223,7 +232,13 @@ def layer(
     }
 
 
-def document(name: str, codepoint: int, glyph_name: str, layers: list[dict[str, object]]) -> dict[str, object]:
+def document(
+    name: str,
+    codepoint: int,
+    glyph_name: str,
+    layers: list[dict[str, object]],
+    markers: list[dict[str, object]] | None = None,
+) -> dict[str, object]:
     return {
         "v": "5.12.2",
         "fr": FRAME_RATE,
@@ -240,7 +255,7 @@ def document(name: str, codepoint: int, glyph_name: str, layers: list[dict[str, 
             "glyph": glyph_name,
         },
         "layers": layers,
-        "markers": [
+        "markers": markers or [
             {"tm": 0, "cm": "Off", "dr": 0},
             {"tm": MOTION_END_FRAME, "cm": "On", "dr": 0},
             {"tm": 0, "cm": "OffToOn_Start", "dr": 0},
@@ -435,9 +450,101 @@ startup = document(
     ],
 )
 
+
+def subset_contour(
+    contour: dict[str, object],
+    indices: list[int],
+    reset_incoming: set[int] | None = None,
+    reset_outgoing: set[int] | None = None,
+) -> dict[str, object]:
+    reset_incoming = reset_incoming or set()
+    reset_outgoing = reset_outgoing or set()
+    return {
+        "i": [
+            [0, 0] if source_index in reset_incoming else deepcopy(contour["i"][source_index])
+            for source_index in indices
+        ],
+        "o": [
+            [0, 0] if source_index in reset_outgoing else deepcopy(contour["o"][source_index])
+            for source_index in indices
+        ],
+        "v": [deepcopy(contour["v"][source_index]) for source_index in indices],
+        "c": True,
+    }
+
+
+state_markers = [
+    {"tm": 0, "cm": "Off", "dr": 0},
+    {"tm": 16, "cm": "On", "dr": 0},
+    {"tm": 0, "cm": "OffToOn_Start", "dr": 0},
+    {"tm": 16, "cm": "OffToOn_End", "dr": 0},
+    {"tm": 20, "cm": "OnToOff_Start", "dr": 0},
+    {"tm": 36, "cm": "OnToOff_End", "dr": 0},
+]
+
+pin_glyph_size = 44
+pin_name, pin_contours, pin_bounds = extract_glyph(0xE72E, pin_glyph_size)
+if len(pin_contours) != 4:
+    raise ValueError(f"Expected four contours for U+E72E, got {len(pin_contours)}")
+pin_center = normalized_point((1024, 1024), pin_bounds, pin_glyph_size)
+pin_body_outer = subset_contour(
+    pin_contours[0],
+    [0, 1, 2, 3, 4, 5, 6, 10, 11],
+    reset_incoming={10},
+    reset_outgoing={6},
+)
+pin_shackle_outer = subset_contour(
+    pin_contours[0],
+    [6, 7, 8, 9, 10],
+    reset_incoming={6},
+    reset_outgoing={10},
+)
+pin_shackle_position = animated([
+    keyframe(0, [pin_center[0], pin_center[1] - 2, 0], [pin_center[0], pin_center[1], 0], travel),
+    keyframe(16, [pin_center[0], pin_center[1], 0]),
+    keyframe(20, [pin_center[0], pin_center[1], 0], [pin_center[0], pin_center[1] - 2, 0], travel),
+    keyframe(36, [pin_center[0], pin_center[1] - 2, 0]),
+])
+pin = document(
+    "Tonarink settings PIN toggle icon (Segoe Fluent Icons)",
+    0xE72E,
+    pin_name,
+    [
+        layer(1, "PIN shackle", [pin_shackle_outer, pin_contours[1]], pin_center, position=pin_shackle_position),
+        layer(2, "PIN body", [pin_body_outer, pin_contours[2], pin_contours[3]], pin_center),
+    ],
+    state_markers,
+)
+
+notification_name, notification_contours, notification_bounds = extract_glyph(0xEA8F)
+if len(notification_contours) != 3:
+    raise ValueError(f"Expected three contours for U+EA8F, got {len(notification_contours)}")
+notification_pivot = normalized_point((1024, 1792), notification_bounds)
+notification_rotation = animated([
+    keyframe(0, [0], [-5.5], travel),
+    keyframe(4, [-5.5], [5], settle),
+    keyframe(8, [5], [-3], settle),
+    keyframe(12, [-3], [0], settle),
+    keyframe(16, [0]),
+    keyframe(20, [0], [5.5], travel),
+    keyframe(24, [5.5], [-5], settle),
+    keyframe(28, [-5], [3], settle),
+    keyframe(32, [3], [0], settle),
+    keyframe(36, [0]),
+])
+notification = document(
+    "Tonarink settings notification toggle icon (Segoe Fluent Icons)",
+    0xEA8F,
+    notification_name,
+    [layer(1, "Notification bell", notification_contours, notification_pivot, notification_rotation)],
+    state_markers,
+)
+
 outputs = {
     "SettingsHistoryToggleIcon.json": history,
     "SettingsStartupToggleIcon.json": startup,
+    "SettingsPinToggleIcon.json": pin,
+    "SettingsNotificationToggleIcon.json": notification,
 }
 for filename, value in outputs.items():
     serialized = json.dumps(value, ensure_ascii=False, separators=(",", ":")) + "\n"
@@ -448,7 +555,12 @@ for filename, value in outputs.items():
 if len(sys.argv) > 1:
     player_root = Path(sys.argv[1]).resolve()
     for filename, value in outputs.items():
-        slug = "tonarink-settings-history" if "History" in filename else "tonarink-settings-startup"
+        slug = {
+            "SettingsHistoryToggleIcon.json": "tonarink-settings-history",
+            "SettingsStartupToggleIcon.json": "tonarink-settings-startup",
+            "SettingsPinToggleIcon.json": "tonarink-settings-pin",
+            "SettingsNotificationToggleIcon.json": "tonarink-settings-notification",
+        }[filename]
         player_path = player_root / "public" / "projects" / slug / "scene-1" / "lottie.json"
         player_path.parent.mkdir(parents=True, exist_ok=True)
         player_path.write_text(json.dumps(value, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")

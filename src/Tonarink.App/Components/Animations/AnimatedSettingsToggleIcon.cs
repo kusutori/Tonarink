@@ -11,6 +11,8 @@ enum SettingsToggleIconKind
 {
     History,
     Startup,
+    Pin,
+    Notification,
 }
 
 static class AnimatedSettingsToggleIcon
@@ -30,7 +32,14 @@ static class AnimatedSettingsToggleIcon
                 icon.FallbackIconSource ??= new FontIconSource
                 {
                     FontFamily = new FontFamily("Segoe Fluent Icons"),
-                    Glyph = kind == SettingsToggleIconKind.History ? "\uE81C" : "\uEC4A",
+                    Glyph = kind switch
+                    {
+                        SettingsToggleIconKind.History => "\uE81C",
+                        SettingsToggleIconKind.Startup => "\uEC4A",
+                        SettingsToggleIconKind.Pin => "\uE72E",
+                        SettingsToggleIconKind.Notification => "\uEA8F",
+                        _ => throw new ArgumentOutOfRangeException(nameof(kind)),
+                    },
                 };
 
                 Microsoft.UI.Xaml.Controls.AnimatedIcon.SetState(icon, state);
@@ -41,6 +50,8 @@ static class AnimatedSettingsToggleIcon
     {
         SettingsToggleIconKind.History => new Tonarink.SettingsHistoryToggleIcon(),
         SettingsToggleIconKind.Startup => new Tonarink.SettingsStartupToggleIcon(),
+        SettingsToggleIconKind.Pin => new Tonarink.SettingsPinToggleIcon(),
+        SettingsToggleIconKind.Notification => new Tonarink.SettingsNotificationToggleIcon(),
         _ => throw new ArgumentOutOfRangeException(nameof(kind)),
     };
 }

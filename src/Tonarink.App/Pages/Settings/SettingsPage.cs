@@ -12,6 +12,7 @@ using Tonarink.Components.Animations;
 using static Microsoft.UI.Reactor.Factories;
 using static Tonarink.Controls.SettingsCardElement;
 using static Tonarink.Controls.SettingsExpanderElement;
+using NativeToggleSwitch = Microsoft.UI.Xaml.Controls.ToggleSwitch;
 
 namespace Tonarink.Pages.Settings;
 
@@ -223,7 +224,8 @@ sealed class SettingsPage : Component<SettingsPageProps>
                         },
                         t.Message(new("App", "SettingsNotificationsEnabled")),
                         t.Message(new("App", "SettingsNotificationsEnabledDescription"))),
-                    headerIcon: HeaderGlyph(AppIcons.Notification),
+                    headerIcon: AnimatedButtons.SettingsNotificationIcon(Props.Settings.NotificationsEnabled)
+                        .WithKey("settings-notification-icon"),
                     items:
                     [
                         SettingsCard(
@@ -328,7 +330,8 @@ sealed class SettingsPage : Component<SettingsPageProps>
                         value => Props.UpdateSettings(settings => settings with { ReceivePinEnabled = value }),
                         t.Message(new("App", "SettingsReceivePinEnabled")),
                         t.Message(new("App", "SettingsReceivePinEnabledDescription"))),
-                    headerIcon: HeaderGlyph(AppIcons.PinCode),
+                    headerIcon: AnimatedButtons.SettingsPinIcon(Props.Settings.ReceivePinEnabled)
+                        .WithKey("settings-pin-icon"),
                     items:
                     [
                         SettingsCard(
@@ -759,13 +762,13 @@ sealed class SettingsPage : Component<SettingsPageProps>
     private static Element HeaderGlyph(string glyph) =>
         Icon(glyph).AccessibilityHidden();
 
-    private static Microsoft.UI.Xaml.Controls.ToggleSwitch ExpanderToggle(
+    private static NativeToggleSwitch ExpanderToggle(
         bool isOn,
         Action<bool> onChanged,
         string automationName,
         string helpText)
     {
-        var toggle = new Microsoft.UI.Xaml.Controls.ToggleSwitch
+        var toggle = new NativeToggleSwitch
         {
             IsOn = isOn,
         };
