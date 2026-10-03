@@ -90,6 +90,15 @@ public static class AnimatedButtons
         Component<AnimatedUndoRedoButton, AnimatedUndoRedoButtonProps>(
             new(UndoRedoIconKind.Redo, automationName, onClick, toolTip, isEnabled, iconSize));
 
+    public static Element SelectAll(
+        bool? checkedState,
+        Action<bool?> onChanged,
+        string automationName,
+        string? toolTip = null,
+        bool isEnabled = true) =>
+        Component<AnimatedSelectAllToggle, AnimatedSelectAllToggleProps>(
+            new(checkedState, onChanged, automationName, toolTip, isEnabled));
+
     public static Element FileSelection(
         string label,
         string automationName,

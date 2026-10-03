@@ -277,44 +277,32 @@ static class IncomingFileCard
                 Grid(
                         columns: [GridSize.Star(), GridSize.Auto],
                         rows: [GridSize.Auto],
+                        TextBlock(t.Message(new("App", "IncomingFiles")))
+                            .SemiBold()
+                            .VAlign(VerticalAlignment.Center)
+                            .Grid(column: 0),
                         HStack(8,
-                                TextBlock(t.Message(new("App", "IncomingFiles")))
-                                    .SemiBold()
-                                    .VAlign(VerticalAlignment.Center),
                                 AnimatedButtons.QuickActions(
                                         t.Message(new("App", "QuickActionsTitle")),
                                         model.OpenQuickActions,
                                         isEnabled: model.CanEdit)
                                     .VAlign(VerticalAlignment.Center),
-                                Button(
-                                        Icon(AppIcons.Undo).AccessibilityHidden(),
-                                        model.Reset)
-                                    .AutomationName(t.Message(new("App", "ResetReceiveOptions")))
-                                    .ToolTip(t.Message(new("App", "ResetReceiveOptions")))
-                                    .IsEnabled(model.CanEdit)
-                                    .MinWidth(40)
-                                    .MinHeight(40)
+                                AnimatedButtons.Undo(
+                                        t.Message(new("App", "ResetReceiveOptions")),
+                                        model.Reset,
+                                        isEnabled: model.CanEdit)
+                                    .VAlign(VerticalAlignment.Center),
+                                AnimatedButtons.SelectAll(
+                                        SelectAllState(model.SelectedItemIds.Count, request.Items.Count),
+                                        _ => model.ToggleSelectAll(),
+                                        t.Message(new(
+                                            "App",
+                                            model.SelectedItemIds.Count == request.Items.Count
+                                                ? "DeselectAllIncomingFiles"
+                                                : "SelectAllIncomingFiles")),
+                                        isEnabled: model.CanEdit)
                                     .VAlign(VerticalAlignment.Center))
-                            .HAlign(HorizontalAlignment.Left)
-                            .VAlign(VerticalAlignment.Center)
-                            .Grid(column: 0),
-                        ThreeStateCheckBox(
-                                SelectAllState(model.SelectedItemIds.Count, request.Items.Count),
-                                _ => model.ToggleSelectAll())
-                            .AutomationName(t.Message(new(
-                                "App",
-                                model.SelectedItemIds.Count == request.Items.Count
-                                    ? "DeselectAllIncomingFiles"
-                                    : "SelectAllIncomingFiles")))
-                            .ToolTip(t.Message(new(
-                                "App",
-                                model.SelectedItemIds.Count == request.Items.Count
-                                    ? "DeselectAllIncomingFiles"
-                                    : "SelectAllIncomingFiles")))
-                            .IsEnabled(model.CanEdit)
-                            .Scale(1.3f)
-                            .MinWidth(32)
-                            .MinHeight(32)
+                            .HAlign(HorizontalAlignment.Right)
                             .VAlign(VerticalAlignment.Center)
                             .Grid(column: 1))
                     .Grid(row: 1),
