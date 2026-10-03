@@ -8,6 +8,7 @@ using Microsoft.UI.Reactor.Layout;
 using Microsoft.UI.Reactor.Localization;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
+using Tonarink.Components.Animations;
 using Windows.UI.Text;
 using static Microsoft.UI.Reactor.Factories;
 
@@ -78,12 +79,10 @@ sealed class NetworkInterfacesPage : Component<NetworkInterfacesPageProps>
                                         TextBlock("123.123.123.123"),
                                         TextBlock("123.123.123.*"))
                                     .Grid(column: 0),
-                                Button(
-                                        HStack(8,
-                                            Icon("Add").AccessibilityHidden(),
-                                            TextBlock(t.Message(new("App", "Add")))),
-                                        AddPattern)
-                                    .AutomationName(t.Message(new("App", "Add")))
+                                AnimatedButtons.Add(
+                                        t.Message(new("App", "Add")),
+                                        AddPattern,
+                                        label: t.Message(new("App", "Add")))
                                     .VAlign(VerticalAlignment.Bottom)
                                     .Grid(column: 1)))
                     .Padding(AppLayout.PagePadding))
