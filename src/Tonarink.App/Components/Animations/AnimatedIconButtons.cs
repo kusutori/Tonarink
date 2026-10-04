@@ -17,6 +17,12 @@ public static class AnimatedButtons
     public static Element SettingsNotificationIcon(bool isOn, double iconSize = 24) =>
         AnimatedSettingsToggleIcon.Create(SettingsToggleIconKind.Notification, isOn, iconSize);
 
+    public static Element SettingsContactIcon(bool isOn, double iconSize = 24) =>
+        AnimatedSettingsToggleIcon.Create(SettingsToggleIconKind.Contact, isOn, iconSize);
+
+    public static Element SettingsContextMenuIcon(bool isOn, double iconSize = 24) =>
+        AnimatedSettingsToggleIcon.Create(SettingsToggleIconKind.ContextMenu, isOn, iconSize);
+
     public static Element Add(
         string automationName,
         Action onClick,

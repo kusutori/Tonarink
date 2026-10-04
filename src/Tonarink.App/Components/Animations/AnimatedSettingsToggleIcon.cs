@@ -13,6 +13,8 @@ enum SettingsToggleIconKind
     Startup,
     Pin,
     Notification,
+    Contact,
+    ContextMenu,
 }
 
 static class AnimatedSettingsToggleIcon
@@ -38,6 +40,8 @@ static class AnimatedSettingsToggleIcon
                         SettingsToggleIconKind.Startup => "\uEC4A",
                         SettingsToggleIconKind.Pin => "\uE72E",
                         SettingsToggleIconKind.Notification => "\uEA8F",
+                        SettingsToggleIconKind.Contact => "\uE716",
+                        SettingsToggleIconKind.ContextMenu => "\uE7AC",
                         _ => throw new ArgumentOutOfRangeException(nameof(kind)),
                     },
                 };
@@ -52,6 +56,8 @@ static class AnimatedSettingsToggleIcon
         SettingsToggleIconKind.Startup => new Tonarink.SettingsStartupToggleIcon(),
         SettingsToggleIconKind.Pin => new Tonarink.SettingsPinToggleIcon(),
         SettingsToggleIconKind.Notification => new Tonarink.SettingsNotificationToggleIcon(),
+        SettingsToggleIconKind.Contact => new Tonarink.SettingsContactToggleIcon(),
+        SettingsToggleIconKind.ContextMenu => new Tonarink.SettingsContextMenuToggleIcon(),
         _ => throw new ArgumentOutOfRangeException(nameof(kind)),
     };
 }

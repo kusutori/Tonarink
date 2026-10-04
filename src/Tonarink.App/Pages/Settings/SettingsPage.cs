@@ -201,7 +201,8 @@ sealed class SettingsPage : Component<SettingsPageProps>
             SettingsCard(
                 header: t.Message(new("App", "SettingsWindowsShareSuggestions")),
                 description: t.Message(new("App", "SettingsWindowsShareSuggestionsDescription")),
-                headerIcon: HeaderGlyph(AppIcons.Contact),
+                headerIcon: AnimatedButtons.SettingsContactIcon(Props.Settings.ShowFavoriteDevicesInWindowsShare)
+                    .WithKey("settings-contact-icon"),
                 isClickEnabled: false,
                 isActionIconVisible: false,
                 content:
@@ -277,7 +278,8 @@ sealed class SettingsPage : Component<SettingsPageProps>
             SettingsCard(
                 header: t.Message(new("App", "SettingsExplorerContextMenu")),
                 description: t.Message(new("App", "SettingsExplorerContextMenuDescription")),
-                headerIcon: HeaderGlyph(AppIcons.ContextMenu),
+                headerIcon: AnimatedButtons.SettingsContextMenuIcon(Props.Settings.ShowExplorerContextMenu)
+                    .WithKey("settings-context-menu-icon"),
                 isClickEnabled: false,
                 isActionIconVisible: false,
                 content:

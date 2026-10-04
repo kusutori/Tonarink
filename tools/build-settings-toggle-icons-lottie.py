@@ -173,6 +173,141 @@ def rotate_contour(
     return result
 
 
+def translate_contour(
+    contour: dict[str, object],
+    x: float,
+    y: float,
+) -> dict[str, object]:
+    result = deepcopy(contour)
+    result["v"] = [
+        [round(vertex[0] + x, 4), round(vertex[1] + y, 4)]
+        for vertex in result["v"]
+    ]
+    return result
+
+
+def contour_polyline(
+    contour: dict[str, object],
+    samples_per_segment: int = 16,
+) -> list[list[float]]:
+    points: list[list[float]] = []
+    vertices = contour["v"]
+    incoming = contour["i"]
+    outgoing = contour["o"]
+
+    for index, start in enumerate(vertices):
+        next_index = (index + 1) % len(vertices)
+        end = vertices[next_index]
+        control1 = [start[0] + outgoing[index][0], start[1] + outgoing[index][1]]
+        control2 = [end[0] + incoming[next_index][0], end[1] + incoming[next_index][1]]
+        for step in range(samples_per_segment):
+            t = step / samples_per_segment
+            inverse = 1 - t
+            points.append([
+                inverse**3 * start[0]
+                + 3 * inverse**2 * t * control1[0]
+                + 3 * inverse * t**2 * control2[0]
+                + t**3 * end[0],
+                inverse**3 * start[1]
+                + 3 * inverse**2 * t * control1[1]
+                + 3 * inverse * t**2 * control2[1]
+                + t**3 * end[1],
+            ])
+    return points
+
+
+def resample_closed_polyline(points: list[list[float]], count: int) -> list[list[float]]:
+    lengths: list[float] = []
+    total = 0.0
+    for index, point in enumerate(points):
+        next_point = points[(index + 1) % len(points)]
+        length = math.dist(point, next_point)
+        lengths.append(length)
+        total += length
+
+    result: list[list[float]] = []
+    segment = 0
+    traversed = 0.0
+    for sample_index in range(count):
+        target = total * sample_index / count
+        while traversed + lengths[segment] < target:
+            traversed += lengths[segment]
+            segment = (segment + 1) % len(points)
+        start = points[segment]
+        end = points[(segment + 1) % len(points)]
+        distance = target - traversed
+        ratio = 0 if lengths[segment] == 0 else distance / lengths[segment]
+        result.append([
+            round(start[0] + (end[0] - start[0]) * ratio, 4),
+            round(start[1] + (end[1] - start[1]) * ratio, 4),
+        ])
+    return result
+
+
+def right_side_run(points: list[list[float]], cut_x: float) -> list[list[float]]:
+    runs: list[list[list[float]]] = []
+    current: list[list[float]] = []
+    for index, start in enumerate(points):
+        end = points[(index + 1) % len(points)]
+        start_inside = start[0] >= cut_x
+        end_inside = end[0] >= cut_x
+        if start_inside and not current:
+            current = [start]
+        elif start_inside:
+            current.append(start)
+
+        if start_inside != end_inside:
+            ratio = (cut_x - start[0]) / (end[0] - start[0])
+            intersection = [cut_x, start[1] + (end[1] - start[1]) * ratio]
+            if start_inside:
+                current.append(intersection)
+                runs.append(current)
+                current = []
+            else:
+                current = [intersection]
+
+    if current:
+        if runs and points[0][0] >= cut_x:
+            runs[0] = current + runs[0]
+        else:
+            runs.append(current)
+    return max(runs, key=len)
+
+
+def aligned_contours(
+    start: dict[str, object],
+    target_points: list[list[float]],
+    vertex_count: int = 96,
+) -> tuple[dict[str, object], dict[str, object]]:
+    start_points = resample_closed_polyline(contour_polyline(start), vertex_count)
+    target = resample_closed_polyline(target_points, vertex_count)
+    candidates = [target, list(reversed(target))]
+    best: list[list[float]] | None = None
+    best_score = math.inf
+    for candidate in candidates:
+        for shift in range(vertex_count):
+            shifted = candidate[shift:] + candidate[:shift]
+            score = sum(
+                (source[0] - destination[0]) ** 2 + (source[1] - destination[1]) ** 2
+                for source, destination in zip(start_points, shifted)
+            )
+            if score < best_score:
+                best_score = score
+                best = shifted
+
+    def contour(points: list[list[float]]) -> dict[str, object]:
+        return {
+            "i": [[0, 0] for _ in points],
+            "o": [[0, 0] for _ in points],
+            "v": points,
+            "c": True,
+        }
+
+    if best is None:
+        raise ValueError("Unable to align contact body contours")
+    return contour(start_points), contour(best)
+
+
 def rectangle_contour(left: float, top: float, right: float, bottom: float) -> dict[str, object]:
     return {
         "i": [[0, 0], [0, 0], [0, 0], [0, 0]],
@@ -202,12 +337,17 @@ def layer(
     masks: list[dict[str, object]] | None = None,
     opacity: dict[str, object] | float = 100,
     position: dict[str, object] | list[float] | None = None,
+    scale: dict[str, object] | list[float] | None = None,
 ) -> dict[str, object]:
     rotation_property = rotation if isinstance(rotation, dict) else {"a": 0, "k": rotation}
     opacity_property = opacity if isinstance(opacity, dict) else {"a": 0, "k": opacity}
     position_property = position if isinstance(position, dict) else {
         "a": 0,
         "k": [*(position or anchor), 0],
+    }
+    scale_property = scale if isinstance(scale, dict) else {
+        "a": 0,
+        "k": scale or [100, 100, 100],
     }
     paths = []
     for contour_index, contour in enumerate(contours):
@@ -228,7 +368,7 @@ def layer(
             "r": rotation_property,
             "p": position_property,
             "a": {"a": 0, "k": [*anchor, 0]},
-            "s": {"a": 0, "k": [100, 100, 100]},
+            "s": scale_property,
         },
         "ao": 0,
         "hasMask": bool(masks),
@@ -515,7 +655,7 @@ pin_gap_right = pin_right_outer_x + 0.75
 pin_gap_bottom = pin_body_top_y + 0.25
 pin_gap_open = rectangle_contour(
     pin_gap_left,
-    pin_body_top_y - 3.25,
+    pin_body_top_y - 5.25,
     pin_gap_right,
     pin_gap_bottom,
 )
@@ -579,11 +719,93 @@ notification = document(
     state_markers,
 )
 
+
+def contours_center(contours: list[dict[str, object]]) -> list[float]:
+    vertices = [vertex for contour in contours for vertex in contour["v"]]
+    return [
+        round((min(vertex[0] for vertex in vertices) + max(vertex[0] for vertex in vertices)) / 2, 4),
+        round((min(vertex[1] for vertex in vertices) + max(vertex[1] for vertex in vertices)) / 2, 4),
+    ]
+
+
+contact_name, contact_contours, _ = extract_glyph(0xE716)
+if len(contact_contours) != 7:
+    raise ValueError(f"Expected seven contours for U+E716, got {len(contact_contours)}")
+contact_front = [contact_contours[index] for index in (0, 1, 4, 6)]
+contact_back_head = [
+    animated_contour(contact_contours[2], contact_contours[0]),
+    animated_contour(contact_contours[3], contact_contours[1]),
+]
+contact_front_center = contours_center(contact_front)
+contact_front_body_center = contours_center([contact_contours[4], contact_contours[6]])
+contact_outer_right = right_side_run(contour_polyline(contact_contours[4]), contact_front_body_center[0])
+contact_inner_right = right_side_run(contour_polyline(contact_contours[6]), contact_front_body_center[0])
+if contact_outer_right[0][1] > contact_outer_right[-1][1]:
+    contact_outer_right.reverse()
+if contact_inner_right[0][1] < contact_inner_right[-1][1]:
+    contact_inner_right.reverse()
+contact_half_body_target = contact_outer_right + contact_inner_right
+contact_half_body_start, contact_half_body_end = aligned_contours(
+    contact_contours[5],
+    contact_half_body_target,
+)
+contact_back_body = [animated_contour(contact_half_body_start, contact_half_body_end)]
+contact = document(
+    "Tonarink settings contact toggle icon (Segoe Fluent Icons)",
+    0xE716,
+    contact_name,
+    [
+        layer(1, "Contact foreground person", contact_front, contact_front_center),
+        layer(2, "Contact background head", contact_back_head, [24, 24]),
+        layer(3, "Contact background half body", contact_back_body, [24, 24]),
+    ],
+)
+
+context_menu_name, context_menu_contours, _ = extract_glyph(0xE7AC)
+if len(context_menu_contours) != 10:
+    raise ValueError(f"Expected ten contours for U+E7AC, got {len(context_menu_contours)}")
+context_menu_list = [context_menu_contours[index] for index in (0, 1, 2, 3, 4, 5, 8, 9)]
+context_menu_badge_center = contours_center([context_menu_contours[6]])
+context_menu_arrow = context_menu_contours[7]
+context_menu_arrow_exit = translate_contour(context_menu_arrow, 24, -24)
+context_menu_arrow_entry = translate_contour(context_menu_arrow, -24, 24)
+context_menu_arrow_mask = {
+    "inv": False,
+    "mode": "s",
+    "pt": animated([
+        keyframe(0, [context_menu_arrow], [context_menu_arrow_exit], (0.55, 0.05, 0.90, 0.35)),
+        {"t": 10, "s": [context_menu_arrow_exit], "h": 1},
+        keyframe(12, [context_menu_arrow_entry], [context_menu_arrow], (0.16, 0.80, 0.20, 1.00)),
+        keyframe(28, [context_menu_arrow]),
+        keyframe(MOTION_END_FRAME, [context_menu_arrow]),
+    ]),
+    "o": {"a": 0, "k": 100},
+    "x": {"a": 0, "k": 0},
+    "nm": "Animated arrow cutout",
+}
+context_menu = document(
+    "Tonarink settings Explorer context-menu toggle icon (Segoe Fluent Icons)",
+    0xE7AC,
+    context_menu_name,
+    [
+        layer(
+            1,
+            "Explorer context-menu arrow badge",
+            [context_menu_contours[6]],
+            context_menu_badge_center,
+            masks=[context_menu_arrow_mask],
+        ),
+        layer(2, "Explorer context-menu list", context_menu_list, contours_center(context_menu_list)),
+    ],
+)
+
 outputs = {
     "SettingsHistoryToggleIcon.json": history,
     "SettingsStartupToggleIcon.json": startup,
     "SettingsPinToggleIcon.json": pin,
     "SettingsNotificationToggleIcon.json": notification,
+    "SettingsContactToggleIcon.json": contact,
+    "SettingsContextMenuToggleIcon.json": context_menu,
 }
 for filename, value in outputs.items():
     serialized = json.dumps(value, ensure_ascii=False, separators=(",", ":")) + "\n"
@@ -599,6 +821,8 @@ if len(sys.argv) > 1:
             "SettingsStartupToggleIcon.json": "tonarink-settings-startup",
             "SettingsPinToggleIcon.json": "tonarink-settings-pin",
             "SettingsNotificationToggleIcon.json": "tonarink-settings-notification",
+            "SettingsContactToggleIcon.json": "tonarink-settings-contact",
+            "SettingsContextMenuToggleIcon.json": "tonarink-settings-context-menu",
         }[filename]
         player_path = player_root / "public" / "projects" / slug / "scene-1" / "lottie.json"
         player_path.parent.mkdir(parents=True, exist_ok=True)
