@@ -800,6 +800,78 @@ pin = document(
 )
 pin["meta"]["targetCodepoint"] = "E785"
 
+
+MINIMIZE_TO_TRAY_ON_FRAME = 20
+MINIMIZE_TO_TRAY_OFF_START = 24
+MINIMIZE_TO_TRAY_OFF_END = 44
+MINIMIZE_TO_TRAY_OUT_FRAME = 52
+
+minimize_to_tray_name, minimize_to_tray_contours, _ = extract_glyph(0xF2AE)
+if len(minimize_to_tray_contours) != 10:
+    raise ValueError(
+        f"Expected ten contours for U+F2AE, got {len(minimize_to_tray_contours)}"
+    )
+minimize_to_tray_outer = [
+    minimize_to_tray_contours[index]
+    for index in (0, 1, 2, 7, 8, 9)
+]
+minimize_to_tray_cube = [
+    minimize_to_tray_contours[index]
+    for index in (3, 4, 5, 6)
+]
+# Around the shared [24,24] centre, the cube's top edge is 12.56 units away
+# and the upper frame's inner edge is 18.01 units away. 132% / 92% gives
+# 12.56 * 1.32 ~= 18.01 * 0.92, so both shapes physically meet at the end.
+minimize_to_tray_cube_scale = animated([
+    keyframe(0, [100, 100, 100], [135, 135, 100], (0.20, 0.75, 0.34, 0.94)),
+    keyframe(14, [135, 135, 100], [132, 132, 100], settle),
+    keyframe(MINIMIZE_TO_TRAY_ON_FRAME, [132, 132, 100]),
+    keyframe(MINIMIZE_TO_TRAY_OFF_START, [132, 132, 100], [98, 98, 100], travel),
+    keyframe(38, [98, 98, 100], [100, 100, 100], settle),
+    keyframe(MINIMIZE_TO_TRAY_OFF_END, [100, 100, 100]),
+])
+minimize_to_tray_outer_scale = animated([
+    keyframe(0, [100, 100, 100], [90, 90, 100], (0.20, 0.75, 0.34, 0.94)),
+    keyframe(14, [90, 90, 100], [92, 92, 100], settle),
+    keyframe(MINIMIZE_TO_TRAY_ON_FRAME, [92, 92, 100]),
+    keyframe(MINIMIZE_TO_TRAY_OFF_START, [92, 92, 100], [101, 101, 100], travel),
+    keyframe(38, [101, 101, 100], [100, 100, 100], settle),
+    keyframe(MINIMIZE_TO_TRAY_OFF_END, [100, 100, 100]),
+])
+minimize_to_tray = document(
+    "Tonarink minimize-to-tray convergence icon (Segoe Fluent Icons)",
+    0xF2AE,
+    minimize_to_tray_name,
+    [
+        layer(
+            1,
+            "Minimize to tray inner cube",
+            minimize_to_tray_cube,
+            [24, 24],
+            scale=minimize_to_tray_cube_scale,
+        ),
+        layer(
+            2,
+            "Minimize to tray outer frame",
+            minimize_to_tray_outer,
+            [24, 24],
+            scale=minimize_to_tray_outer_scale,
+        ),
+    ],
+    [
+        {"tm": 0, "cm": "Off", "dr": 0},
+        {"tm": MINIMIZE_TO_TRAY_ON_FRAME, "cm": "On", "dr": 0},
+        {"tm": 0, "cm": "OffToOn_Start", "dr": 0},
+        {"tm": MINIMIZE_TO_TRAY_ON_FRAME, "cm": "OffToOn_End", "dr": 0},
+        {"tm": MINIMIZE_TO_TRAY_OFF_START, "cm": "OnToOff_Start", "dr": 0},
+        {"tm": MINIMIZE_TO_TRAY_OFF_END, "cm": "OnToOff_End", "dr": 0},
+    ],
+)
+minimize_to_tray["op"] = MINIMIZE_TO_TRAY_OUT_FRAME
+for minimize_to_tray_layer in minimize_to_tray["layers"]:
+    minimize_to_tray_layer["op"] = MINIMIZE_TO_TRAY_OUT_FRAME
+
+
 notification_name, notification_contours, notification_bounds = extract_glyph(0xEA8F)
 if len(notification_contours) != 3:
     raise ValueError(f"Expected three contours for U+EA8F, got {len(notification_contours)}")
@@ -1565,6 +1637,7 @@ outputs = {
     "SettingsHistoryToggleIcon.json": history,
     "SettingsStartupToggleIcon.json": startup,
     "SettingsPinToggleIcon.json": pin,
+    "SettingsMinimizeToTrayToggleIcon.json": minimize_to_tray,
     "SettingsNotificationToggleIcon.json": notification,
     "SettingsContactToggleIcon.json": contact,
     "SettingsContextMenuToggleIcon.json": context_menu,
@@ -1587,6 +1660,7 @@ if len(sys.argv) > 1:
             "SettingsHistoryToggleIcon.json": "tonarink-settings-history",
             "SettingsStartupToggleIcon.json": "tonarink-settings-startup",
             "SettingsPinToggleIcon.json": "tonarink-settings-pin",
+            "SettingsMinimizeToTrayToggleIcon.json": "tonarink-settings-minimize-to-tray",
             "SettingsNotificationToggleIcon.json": "tonarink-settings-notification",
             "SettingsContactToggleIcon.json": "tonarink-settings-contact",
             "SettingsContextMenuToggleIcon.json": "tonarink-settings-context-menu",

@@ -31,7 +31,7 @@ static class AppIcons
     public const string IpAddress = "\uF272";
     public const string Language = "\uF2B7";
     public const string Link = "\uE71B";
-    public const string MinimizeToTray = "\uED1A";
+    public const string MinimizeToTray = "\uF2AE";
     public const string More = "\uE712";
     public const string MultipleReceivers = "\uF22C";
     public const string Network = "\uE704";

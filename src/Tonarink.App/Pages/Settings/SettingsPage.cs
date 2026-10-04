@@ -171,7 +171,8 @@ sealed class SettingsPage : Component<SettingsPageProps>
             SettingsCard(
                 header: t.Message(new("App", "SettingsMinimizeToTray")),
                 description: t.Message(new("App", "SettingsMinimizeToTrayDescription")),
-                headerIcon: HeaderGlyph(AppIcons.MinimizeToTray),
+                headerIcon: AnimatedButtons.SettingsMinimizeToTrayIcon(Props.Settings.MinimizeToTray)
+                    .WithKey("settings-minimize-to-tray-icon"),
                 isClickEnabled: false,
                 isActionIconVisible: false,
                 content:
