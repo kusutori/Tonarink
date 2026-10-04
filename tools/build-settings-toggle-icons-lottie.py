@@ -173,6 +173,15 @@ def rotate_contour(
     return result
 
 
+def rectangle_contour(left: float, top: float, right: float, bottom: float) -> dict[str, object]:
+    return {
+        "i": [[0, 0], [0, 0], [0, 0], [0, 0]],
+        "o": [[0, 0], [0, 0], [0, 0], [0, 0]],
+        "v": [[left, top], [right, top], [right, bottom], [left, bottom]],
+        "c": True,
+    }
+
+
 def animated_contour(
     start: dict[str, object],
     moved: dict[str, object],
@@ -482,11 +491,10 @@ state_markers = [
     {"tm": 36, "cm": "OnToOff_End", "dr": 0},
 ]
 
-pin_glyph_size = 44
-pin_name, pin_contours, pin_bounds = extract_glyph(0xE72E, pin_glyph_size)
+pin_name, pin_contours, pin_bounds = extract_glyph(0xE72E)
 if len(pin_contours) != 4:
     raise ValueError(f"Expected four contours for U+E72E, got {len(pin_contours)}")
-pin_center = normalized_point((1024, 1024), pin_bounds, pin_glyph_size)
+pin_center = normalized_point((1024, 1024), pin_bounds)
 pin_body_outer = subset_contour(
     pin_contours[0],
     [0, 1, 2, 3, 4, 5, 6, 10, 11],
@@ -499,18 +507,49 @@ pin_shackle_outer = subset_contour(
     reset_incoming={6},
     reset_outgoing={10},
 )
-pin_shackle_position = animated([
-    keyframe(0, [pin_center[0], pin_center[1] - 2, 0], [pin_center[0], pin_center[1], 0], travel),
-    keyframe(16, [pin_center[0], pin_center[1], 0]),
-    keyframe(20, [pin_center[0], pin_center[1], 0], [pin_center[0], pin_center[1] - 2, 0], travel),
-    keyframe(36, [pin_center[0], pin_center[1] - 2, 0]),
-])
+pin_right_outer_x = pin_contours[0]["v"][9][0]
+pin_right_inner_x = pin_contours[1]["v"][2][0]
+pin_body_top_y = pin_contours[0]["v"][10][1]
+pin_gap_left = pin_right_inner_x - 0.75
+pin_gap_right = pin_right_outer_x + 0.75
+pin_gap_bottom = pin_body_top_y + 0.25
+pin_gap_open = rectangle_contour(
+    pin_gap_left,
+    pin_body_top_y - 3.25,
+    pin_gap_right,
+    pin_gap_bottom,
+)
+pin_gap_closed = rectangle_contour(
+    pin_gap_left,
+    pin_gap_bottom,
+    pin_gap_right,
+    pin_gap_bottom,
+)
+pin_gap_mask = {
+    "inv": False,
+    "mode": "s",
+    "pt": animated([
+        keyframe(0, [pin_gap_open], [pin_gap_closed], travel),
+        keyframe(16, [pin_gap_closed]),
+        keyframe(20, [pin_gap_closed], [pin_gap_open], travel),
+        keyframe(36, [pin_gap_open]),
+    ]),
+    "o": {"a": 0, "k": 100},
+    "x": {"a": 0, "k": 0},
+    "nm": "Right shackle opening",
+}
 pin = document(
     "Tonarink settings PIN toggle icon (Segoe Fluent Icons)",
     0xE72E,
     pin_name,
     [
-        layer(1, "PIN shackle", [pin_shackle_outer, pin_contours[1]], pin_center, position=pin_shackle_position),
+        layer(
+            1,
+            "PIN shackle",
+            [pin_shackle_outer, pin_contours[1]],
+            pin_center,
+            masks=[pin_gap_mask],
+        ),
         layer(2, "PIN body", [pin_body_outer, pin_contours[2], pin_contours[3]], pin_center),
     ],
     state_markers,
