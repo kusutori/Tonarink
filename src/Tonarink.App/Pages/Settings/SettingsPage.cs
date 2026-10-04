@@ -168,30 +168,34 @@ sealed class SettingsPage : Component<SettingsPageProps>
                     .DropDownOpened(() =>
                         setLanguageAnimationVersion(languageAnimationVersion + 1))
                     .MinWidth(180)),
-            SettingsCard(
-                header: t.Message(new("App", "SettingsMinimizeToTray")),
-                description: t.Message(new("App", "SettingsMinimizeToTrayDescription")),
-                headerIcon: AnimatedButtons.SettingsMinimizeToTrayIcon(Props.Settings.MinimizeToTray)
-                    .WithKey("settings-minimize-to-tray-icon"),
-                isClickEnabled: false,
-                isActionIconVisible: false,
-                content:
-                ToggleSwitch(Props.Settings.MinimizeToTray, value =>
-                        Props.UpdateSettings(settings => settings with { MinimizeToTray = value }))
-                    .AutomationName(t.Message(new("App", "SettingsMinimizeToTray")))
-                    .HelpText(t.Message(new("App", "SettingsMinimizeToTrayDescription")))),
-            SettingsCard(
-                header: t.Message(new("App", "SettingsTrayClickOpensFlyout")),
-                description: t.Message(new("App", "SettingsTrayClickOpensFlyoutDescription")),
-                headerIcon: HeaderGlyph(AppIcons.TrayFlyout),
-                isClickEnabled: false,
-                isActionIconVisible: false,
-                content:
-                ToggleSwitch(Props.Settings.TrayClickOpensFlyout, value =>
-                    Props.UpdateSettings(settings => settings with { TrayClickOpensFlyout = value }))
-                    .AutomationName(t.Message(new("App", "SettingsTrayClickOpensFlyout")))
-                    .HelpText(t.Message(new("App", "SettingsTrayClickOpensFlyoutDescription")))
-                    .IsEnabled(Props.Settings.MinimizeToTray)),
+            SettingsExpander(
+                    content:
+                    ExpanderToggle(
+                        Props.Settings.MinimizeToTray,
+                        value => Props.UpdateSettings(settings => settings with { MinimizeToTray = value }),
+                        t.Message(new("App", "SettingsMinimizeToTray")),
+                        t.Message(new("App", "SettingsMinimizeToTrayDescription"))),
+                    headerIcon: AnimatedButtons.SettingsMinimizeToTrayIcon(Props.Settings.MinimizeToTray)
+                        .WithKey("settings-minimize-to-tray-icon"),
+                    items:
+                    [
+                        SettingsCard(
+                            header: t.Message(new("App", "SettingsTrayClickOpensFlyout")),
+                            description: t.Message(new("App", "SettingsTrayClickOpensFlyoutDescription")),
+                            isClickEnabled: false,
+                            isActionIconVisible: false,
+                            content:
+                            ToggleSwitch(Props.Settings.TrayClickOpensFlyout, value =>
+                                Props.UpdateSettings(settings => settings with { TrayClickOpensFlyout = value }))
+                                .AutomationName(t.Message(new("App", "SettingsTrayClickOpensFlyout")))
+                                .HelpText(t.Message(new("App", "SettingsTrayClickOpensFlyoutDescription")))
+                                .IsEnabled(Props.Settings.MinimizeToTray)),
+                    ])
+                .Set(expander =>
+                {
+                    expander.Header = t.Message(new("App", "SettingsMinimizeToTray"));
+                    expander.Description = t.Message(new("App", "SettingsMinimizeToTrayDescription"));
+                }),
             SettingsCard(
                 header: t.Message(new("App", "SettingsStartWithWindows")),
                 description: t.Message(new("App", "SettingsStartWithWindowsDescription")),

@@ -56,7 +56,6 @@ static class AppIcons
     public const string Stop = "\uE71A";
     public const string Success = "\uE73E";
     public const string Theme = "\uE771";
-    public const string TrayFlyout = "\uEB3B";
     public const string Undo = "\uE7A7";
     public const string Unpin = "\uE77A";
     public const string Verify = "\uF760";
