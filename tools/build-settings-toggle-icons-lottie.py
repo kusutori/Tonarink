@@ -709,69 +709,96 @@ state_markers = [
     {"tm": 36, "cm": "OnToOff_End", "dr": 0},
 ]
 
-pin_name, pin_contours, pin_bounds = extract_glyph(0xE72E)
-if len(pin_contours) != 4:
-    raise ValueError(f"Expected four contours for U+E72E, got {len(pin_contours)}")
-pin_center = normalized_point((1024, 1024), pin_bounds)
-pin_body_outer = subset_contour(
-    pin_contours[0],
+pin_lock_name, pin_lock_contours, _ = extract_glyph(0xE72E)
+pin_unlock_name, pin_unlock_contours, _ = extract_glyph(0xE785)
+if len(pin_lock_contours) != 4:
+    raise ValueError(f"Expected four contours for U+E72E, got {len(pin_lock_contours)}")
+if len(pin_unlock_contours) != 3:
+    raise ValueError(f"Expected three contours for U+E785, got {len(pin_unlock_contours)}")
+
+# Lock stores the shackle hole as a separate contour while Unlock folds it into
+# one open band. Cut both official silhouettes at the horizontal seam hidden by
+# the lock body, producing compatible body and shackle components before doing
+# any interpolation.
+pin_body_lock = subset_contour(
+    pin_lock_contours[0],
     [0, 1, 2, 3, 4, 5, 6, 10, 11],
     reset_incoming={10},
     reset_outgoing={6},
 )
-pin_shackle_outer = subset_contour(
-    pin_contours[0],
-    [6, 7, 8, 9, 10],
-    reset_incoming={6},
-    reset_outgoing={10},
+pin_body_unlock = subset_contour(
+    pin_unlock_contours[0],
+    [0, 1, 2, 3, 4, 5, 6, 18, 19],
+    reset_incoming={18},
+    reset_outgoing={6},
 )
-pin_right_outer_x = pin_contours[0]["v"][9][0]
-pin_right_inner_x = pin_contours[1]["v"][2][0]
-pin_body_top_y = pin_contours[0]["v"][10][1]
-pin_gap_left = pin_right_inner_x - 0.75
-pin_gap_right = pin_right_outer_x + 0.75
-pin_gap_bottom = pin_body_top_y + 0.25
-pin_gap_open = rectangle_contour(
-    pin_gap_left,
-    pin_body_top_y - 5.25,
-    pin_gap_right,
-    pin_gap_bottom,
+
+
+def pin_lock_shackle_band() -> dict[str, object]:
+    outer_indices = [6, 7, 8, 9, 10]
+    inner_indices = [1, 2, 3, 4, 0]
+    incoming = [deepcopy(pin_lock_contours[0]["i"][index]) for index in outer_indices]
+    outgoing = [deepcopy(pin_lock_contours[0]["o"][index]) for index in outer_indices]
+    vertices = [deepcopy(pin_lock_contours[0]["v"][index]) for index in outer_indices]
+    incoming.extend(deepcopy(pin_lock_contours[1]["i"][index]) for index in inner_indices)
+    outgoing.extend(deepcopy(pin_lock_contours[1]["o"][index]) for index in inner_indices)
+    vertices.extend(deepcopy(pin_lock_contours[1]["v"][index]) for index in inner_indices)
+    # Both joins are straight seams underneath the body.
+    incoming[0] = [0, 0]
+    outgoing[len(outer_indices) - 1] = [0, 0]
+    incoming[len(outer_indices)] = [0, 0]
+    outgoing[-1] = [0, 0]
+    return {"i": incoming, "o": outgoing, "v": vertices, "c": True}
+
+
+pin_shackle_unlock = subset_contour(
+    pin_unlock_contours[0],
+    list(range(7, 18)),
+    reset_incoming={7},
+    reset_outgoing={17},
 )
-pin_gap_closed = rectangle_contour(
-    pin_gap_left,
-    pin_gap_bottom,
-    pin_gap_right,
-    pin_gap_bottom,
+pin_shackle_unlock, pin_shackle_lock = aligned_contours(
+    pin_shackle_unlock,
+    contour_polyline(pin_lock_shackle_band()),
+    vertex_count=192,
+    preserve_direction=True,
 )
-pin_gap_mask = {
-    "inv": False,
-    "mode": "s",
-    "pt": animated([
-        keyframe(0, [pin_gap_open], [pin_gap_closed], travel),
-        keyframe(16, [pin_gap_closed]),
-        keyframe(20, [pin_gap_closed], [pin_gap_open], travel),
-        keyframe(36, [pin_gap_open]),
-    ]),
-    "o": {"a": 0, "k": 100},
-    "x": {"a": 0, "k": 0},
-    "nm": "Right shackle opening",
-}
+
+
+def pin_morph_path(unlocked: dict[str, object], locked: dict[str, object]) -> dict[str, object]:
+    return animated([
+        keyframe(0, [unlocked], [locked], travel),
+        keyframe(16, [locked]),
+        keyframe(20, [locked], [unlocked], travel),
+        keyframe(36, [unlocked]),
+    ])
+
+
 pin = document(
-    "Tonarink settings PIN toggle icon (Segoe Fluent Icons)",
+    "Tonarink settings PIN lock/unlock morph (Segoe Fluent Icons)",
     0xE72E,
-    pin_name,
+    f"{pin_lock_name}/{pin_unlock_name}",
     [
         layer(
             1,
-            "PIN shackle",
-            [pin_shackle_outer, pin_contours[1]],
-            pin_center,
-            masks=[pin_gap_mask],
+            "PIN official shackle morph",
+            [pin_morph_path(pin_shackle_unlock, pin_shackle_lock)],
+            [24, 24],
         ),
-        layer(2, "PIN body", [pin_body_outer, pin_contours[2], pin_contours[3]], pin_center),
+        layer(
+            2,
+            "PIN official body morph",
+            [
+                pin_morph_path(pin_body_unlock, pin_body_lock),
+                pin_morph_path(pin_unlock_contours[1], pin_lock_contours[2]),
+                pin_morph_path(pin_unlock_contours[2], pin_lock_contours[3]),
+            ],
+            [24, 24],
+        ),
     ],
     state_markers,
 )
+pin["meta"]["targetCodepoint"] = "E785"
 
 notification_name, notification_contours, notification_bounds = extract_glyph(0xEA8F)
 if len(notification_contours) != 3:
