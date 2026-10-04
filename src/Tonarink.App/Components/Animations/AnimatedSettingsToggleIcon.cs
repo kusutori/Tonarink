@@ -36,9 +36,9 @@ static class AnimatedSettingsToggleIcon
         string state,
         double iconSize = 24)
     {
-        _ = iconSize;
-
         return AnimatedIcon()
+            .Width(iconSize)
+            .Height(iconSize)
             .Set(icon =>
             {
                 icon.Source ??= CreateSource(kind);

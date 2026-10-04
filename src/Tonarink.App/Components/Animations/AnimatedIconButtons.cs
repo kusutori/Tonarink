@@ -15,7 +15,7 @@ public static class AnimatedButtons
     public static Element SettingsPinIcon(bool isOn, double iconSize = 24) =>
         AnimatedSettingsToggleIcon.Create(SettingsToggleIconKind.Pin, isOn, iconSize);
 
-    public static Element SettingsMinimizeToTrayIcon(bool isOn, double iconSize = 24) =>
+    public static Element SettingsMinimizeToTrayIcon(bool isOn, double iconSize = 28) =>
         AnimatedSettingsToggleIcon.Create(SettingsToggleIconKind.MinimizeToTray, isOn, iconSize);
 
     public static Element SettingsNotificationIcon(bool isOn, double iconSize = 24) =>
