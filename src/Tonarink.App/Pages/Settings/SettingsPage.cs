@@ -409,7 +409,8 @@ sealed class SettingsPage : Component<SettingsPageProps>
                     ? t.Message(new("App", "DeviceServer"))
                     : t.Message(new("App", "SettingsServerOffline")),
                 description: serverDescription,
-                headerIcon: HeaderGlyph(AppIcons.Server),
+                headerIcon: AnimatedButtons.SettingsServerIcon(nodeState)
+                    .WithKey("settings-server-icon"),
                 isClickEnabled: false,
                 isActionIconVisible: false,
                 content:

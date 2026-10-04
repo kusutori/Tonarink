@@ -1,3 +1,4 @@
+using LocalSendDotNet;
 using Microsoft.UI.Reactor.Core;
 using static Microsoft.UI.Reactor.Factories;
 
@@ -37,6 +38,17 @@ public static class AnimatedButtons
                 1 => "Sun",
                 2 => "Moon",
                 _ => "System",
+            },
+            iconSize);
+
+    public static Element SettingsServerIcon(LocalSendNodeState state, double iconSize = 24) =>
+        AnimatedSettingsToggleIcon.Create(
+            SettingsToggleIconKind.Server,
+            state switch
+            {
+                LocalSendNodeState.Running => "Running",
+                LocalSendNodeState.Starting or LocalSendNodeState.Stopping => "Busy",
+                _ => "Offline",
             },
             iconSize);
 

@@ -1157,6 +1157,154 @@ for theme_layer in theme["layers"]:
     theme_layer["op"] = THEME_OUT_FRAME
 
 
+# Server state icon (U+E703): the two devices separate while offline, exchange
+# small packets while the service is changing state, then lock back into the
+# original Segoe Fluent Icons silhouette when running.
+SERVER_OFFLINE_TO_BUSY_END = 30
+SERVER_BUSY_TO_OFFLINE_START = 34
+SERVER_BUSY_TO_OFFLINE_END = 64
+SERVER_BUSY_TO_RUNNING_START = 68
+SERVER_BUSY_TO_RUNNING_END = 100
+SERVER_RUNNING_TO_BUSY_START = 104
+SERVER_RUNNING_TO_BUSY_END = 136
+SERVER_OFFLINE_TO_RUNNING_START = 140
+SERVER_OFFLINE_TO_RUNNING_END = 180
+SERVER_RUNNING_TO_OFFLINE_START = 184
+SERVER_RUNNING_TO_OFFLINE_END = 224
+SERVER_OUT_FRAME = 232
+
+server_name, server_contours, _ = extract_glyph(0xE703)
+if len(server_contours) != 4:
+    raise ValueError(f"Expected four contours for U+E703, got {len(server_contours)}")
+
+
+def server_state_position(
+    offline: list[float],
+    busy: list[float],
+    running: list[float],
+) -> dict[str, object]:
+    return animated([
+        keyframe(0, offline, busy, travel),
+        keyframe(SERVER_OFFLINE_TO_BUSY_END, busy),
+        keyframe(SERVER_BUSY_TO_OFFLINE_START, busy, offline, travel),
+        keyframe(SERVER_BUSY_TO_OFFLINE_END, offline),
+        keyframe(SERVER_BUSY_TO_RUNNING_START, busy, running, settle),
+        keyframe(SERVER_BUSY_TO_RUNNING_END, running),
+        keyframe(SERVER_RUNNING_TO_BUSY_START, running, busy, travel),
+        keyframe(SERVER_RUNNING_TO_BUSY_END, busy),
+        keyframe(SERVER_OFFLINE_TO_RUNNING_START, offline, running, settle),
+        keyframe(SERVER_OFFLINE_TO_RUNNING_END, running),
+        keyframe(SERVER_RUNNING_TO_OFFLINE_START, running, offline, travel),
+        keyframe(SERVER_RUNNING_TO_OFFLINE_END, offline),
+    ])
+
+
+def server_packet_position(delay: int) -> dict[str, object]:
+    phone = [15, 31, 0]
+    middle = [24, 24, 0]
+    desktop = [32, 17, 0]
+    return animated([
+        keyframe(delay, phone, middle, travel),
+        keyframe(SERVER_OFFLINE_TO_BUSY_END, middle),
+        keyframe(SERVER_BUSY_TO_OFFLINE_START + delay, middle, phone, travel),
+        keyframe(SERVER_BUSY_TO_OFFLINE_END, phone),
+        keyframe(SERVER_BUSY_TO_RUNNING_START + delay, middle, desktop, travel),
+        keyframe(SERVER_BUSY_TO_RUNNING_END, desktop),
+        keyframe(SERVER_RUNNING_TO_BUSY_START + delay, desktop, middle, travel),
+        keyframe(SERVER_RUNNING_TO_BUSY_END, middle),
+        keyframe(SERVER_OFFLINE_TO_RUNNING_START + delay, phone, desktop, travel),
+        keyframe(SERVER_OFFLINE_TO_RUNNING_END, desktop),
+        keyframe(SERVER_RUNNING_TO_OFFLINE_START + delay, desktop, phone, travel),
+        keyframe(SERVER_RUNNING_TO_OFFLINE_END, phone),
+    ])
+
+
+def server_packet_opacity(delay: int) -> dict[str, object]:
+    segments = [
+        (0, SERVER_OFFLINE_TO_BUSY_END),
+        (SERVER_BUSY_TO_OFFLINE_START, SERVER_BUSY_TO_OFFLINE_END),
+        (SERVER_BUSY_TO_RUNNING_START, SERVER_BUSY_TO_RUNNING_END),
+        (SERVER_RUNNING_TO_BUSY_START, SERVER_RUNNING_TO_BUSY_END),
+        (SERVER_OFFLINE_TO_RUNNING_START, SERVER_OFFLINE_TO_RUNNING_END),
+        (SERVER_RUNNING_TO_OFFLINE_START, SERVER_RUNNING_TO_OFFLINE_END),
+    ]
+    frames: list[dict[str, object]] = []
+    for start, end in segments:
+        visible_start = min(start + delay, end - 8)
+        visible_end = max(visible_start + 4, end - 6)
+        frames.extend([
+            {"t": start, "s": [0], "h": 1},
+            keyframe(visible_start, [0], [100], (0.20, 0.75, 0.34, 0.94)),
+            keyframe(visible_start + 4, [100]),
+            keyframe(visible_end, [100], [0], (1.00, 0.02, 0.54, 0.42)),
+            keyframe(end, [0]),
+        ])
+    return animated(sorted(frames, key=lambda frame: frame["t"]))
+
+
+server_packet = arc_contour([24, 24], 1.45, 0, 360)
+server_packet["c"] = True
+server_layers = [
+    layer(
+        1,
+        "Server desktop",
+        [server_contours[0]],
+        [24, 24],
+        position=server_state_position([25.5, 22.5, 0], [25, 23, 0], [24, 24, 0]),
+    ),
+    layer(
+        2,
+        "Server phone",
+        server_contours[1:],
+        [24, 24],
+        position=server_state_position([22.5, 25.5, 0], [23, 25, 0], [24, 24, 0]),
+    ),
+    layer(
+        3,
+        "Server packet leading",
+        [server_packet],
+        [24, 24],
+        position=server_packet_position(2),
+        opacity=server_packet_opacity(2),
+    ),
+    layer(
+        4,
+        "Server packet trailing",
+        [scale_contour(server_packet, [24, 24], 0.72)],
+        [24, 24],
+        position=server_packet_position(8),
+        opacity=server_packet_opacity(8),
+    ),
+]
+server_markers = [
+    {"tm": 0, "cm": "Offline", "dr": 0},
+    {"tm": SERVER_OFFLINE_TO_BUSY_END, "cm": "Busy", "dr": 0},
+    {"tm": SERVER_BUSY_TO_RUNNING_END, "cm": "Running", "dr": 0},
+    {"tm": 0, "cm": "OfflineToBusy_Start", "dr": 0},
+    {"tm": SERVER_OFFLINE_TO_BUSY_END, "cm": "OfflineToBusy_End", "dr": 0},
+    {"tm": SERVER_BUSY_TO_OFFLINE_START, "cm": "BusyToOffline_Start", "dr": 0},
+    {"tm": SERVER_BUSY_TO_OFFLINE_END, "cm": "BusyToOffline_End", "dr": 0},
+    {"tm": SERVER_BUSY_TO_RUNNING_START, "cm": "BusyToRunning_Start", "dr": 0},
+    {"tm": SERVER_BUSY_TO_RUNNING_END, "cm": "BusyToRunning_End", "dr": 0},
+    {"tm": SERVER_RUNNING_TO_BUSY_START, "cm": "RunningToBusy_Start", "dr": 0},
+    {"tm": SERVER_RUNNING_TO_BUSY_END, "cm": "RunningToBusy_End", "dr": 0},
+    {"tm": SERVER_OFFLINE_TO_RUNNING_START, "cm": "OfflineToRunning_Start", "dr": 0},
+    {"tm": SERVER_OFFLINE_TO_RUNNING_END, "cm": "OfflineToRunning_End", "dr": 0},
+    {"tm": SERVER_RUNNING_TO_OFFLINE_START, "cm": "RunningToOffline_Start", "dr": 0},
+    {"tm": SERVER_RUNNING_TO_OFFLINE_END, "cm": "RunningToOffline_End", "dr": 0},
+]
+server = document(
+    "Tonarink settings server state icon (Segoe Fluent Icons)",
+    0xE703,
+    server_name,
+    server_layers,
+    server_markers,
+)
+server["op"] = SERVER_OUT_FRAME
+for server_layer in server["layers"]:
+    server_layer["op"] = SERVER_OUT_FRAME
+
+
 LANGUAGE_END_FRAME = 68
 LANGUAGE_OUT_FRAME = 76
 
@@ -1396,6 +1544,7 @@ outputs = {
     "SettingsChecksumToggleIcon.json": checksum,
     "SettingsDragDropToggleIcon.json": drag_drop,
     "SettingsThemeIcon.json": theme,
+    "SettingsServerIcon.json": server,
     "SettingsLanguageIcon.json": language,
 }
 for filename, value in outputs.items():
@@ -1417,6 +1566,7 @@ if len(sys.argv) > 1:
             "SettingsChecksumToggleIcon.json": "tonarink-settings-checksum",
             "SettingsDragDropToggleIcon.json": "tonarink-settings-drag-drop",
             "SettingsThemeIcon.json": "tonarink-settings-theme",
+            "SettingsServerIcon.json": "tonarink-settings-server",
             "SettingsLanguageIcon.json": "tonarink-settings-language",
         }[filename]
         player_path = player_root / "public" / "projects" / slug / "scene-1" / "lottie.json"
