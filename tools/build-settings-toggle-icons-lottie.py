@@ -983,10 +983,18 @@ drag_drop = document(
 )
 
 
-THEME_SUN_FRAME = 36
-THEME_REVERSE_START = 40
-THEME_MOON_FRAME = 76
-THEME_OUT_FRAME = 84
+THEME_MOON_TO_SUN_END = 36
+THEME_SUN_TO_MOON_START = 40
+THEME_SUN_TO_MOON_END = 76
+THEME_SUN_TO_SYSTEM_START = 80
+THEME_SUN_TO_SYSTEM_END = 116
+THEME_SYSTEM_TO_SUN_START = 120
+THEME_SYSTEM_TO_SUN_END = 156
+THEME_MOON_TO_SYSTEM_START = 160
+THEME_MOON_TO_SYSTEM_END = 196
+THEME_SYSTEM_TO_MOON_START = 200
+THEME_SYSTEM_TO_MOON_END = 236
+THEME_OUT_FRAME = 244
 
 theme_moon_name, theme_moon_contours, _ = extract_glyph(0xE708)
 theme_sun_name, theme_sun_contours, _ = extract_glyph(0xE706)
@@ -1012,37 +1020,83 @@ def theme_center_path(moon: dict[str, object], sun: dict[str, object]) -> dict[s
     return animated([
         keyframe(0, [moon], [sun], travel),
         keyframe(16, [sun]),
-        keyframe(THEME_SUN_FRAME, [sun]),
-        keyframe(THEME_REVERSE_START, [sun]),
-        keyframe(60, [sun], [moon], travel),
-        keyframe(THEME_MOON_FRAME, [moon]),
+        {"t": THEME_MOON_TO_SUN_END, "s": [sun], "h": 1},
+        keyframe(THEME_SUN_TO_MOON_START, [sun], [moon], travel),
+        keyframe(56, [moon]),
+        {"t": THEME_SUN_TO_MOON_END, "s": [moon], "h": 1},
+        {"t": THEME_SUN_TO_SYSTEM_START, "s": [sun], "h": 1},
+        {"t": THEME_SUN_TO_SYSTEM_END, "s": [sun], "h": 1},
+        {"t": THEME_SYSTEM_TO_SUN_START, "s": [sun], "h": 1},
+        {"t": THEME_SYSTEM_TO_SUN_END, "s": [sun], "h": 1},
+        keyframe(THEME_MOON_TO_SYSTEM_START, [moon], [sun], travel),
+        keyframe(176, [sun]),
+        {"t": THEME_MOON_TO_SYSTEM_END, "s": [sun], "h": 1},
+        keyframe(THEME_SYSTEM_TO_MOON_START, [sun], [moon], travel),
+        keyframe(216, [moon]),
+        keyframe(THEME_SYSTEM_TO_MOON_END, [moon]),
     ])
 
 
-def theme_ray_properties(clockwise_index: int) -> tuple[dict[str, object], dict[str, object]]:
-    reveal_start = 12 + clockwise_index * 2
-    reveal_end = reveal_start + 6
-    hide_start = THEME_REVERSE_START + (7 - clockwise_index) * 2
-    hide_end = hide_start + 6
-    opacity = animated([
+def theme_ray_opacity(clockwise_index: int) -> dict[str, object]:
+    moon_to_sun_start = 12 + clockwise_index * 2
+    moon_to_sun_end = moon_to_sun_start + 6
+    sun_to_moon_start = THEME_SUN_TO_MOON_START + (7 - clockwise_index) * 2
+    sun_to_moon_end = sun_to_moon_start + 6
+    moon_to_system_start = THEME_MOON_TO_SYSTEM_START + 12 + clockwise_index * 2
+    moon_to_system_end = moon_to_system_start + 6
+    system_to_moon_start = THEME_SYSTEM_TO_MOON_START + (7 - clockwise_index) * 2
+    system_to_moon_end = system_to_moon_start + 6
+    return animated([
         {"t": 0, "s": [0], "h": 1},
-        keyframe(reveal_start, [0], [100], (0.20, 0.75, 0.34, 0.94)),
-        keyframe(reveal_end, [100]),
-        keyframe(THEME_SUN_FRAME, [100]),
-        keyframe(hide_start, [100], [0], (1.00, 0.02, 0.54, 0.42)),
-        keyframe(hide_end, [0]),
-        keyframe(THEME_MOON_FRAME, [0]),
+        keyframe(moon_to_sun_start, [0], [100], (0.20, 0.75, 0.34, 0.94)),
+        keyframe(moon_to_sun_end, [100]),
+        {"t": THEME_MOON_TO_SUN_END, "s": [100], "h": 1},
+        keyframe(sun_to_moon_start, [100], [0], (1.00, 0.02, 0.54, 0.42)),
+        keyframe(sun_to_moon_end, [0]),
+        {"t": THEME_SUN_TO_MOON_END, "s": [0], "h": 1},
+        {"t": THEME_SUN_TO_SYSTEM_START, "s": [100], "h": 1},
+        {"t": THEME_SUN_TO_SYSTEM_END, "s": [100], "h": 1},
+        {"t": THEME_SYSTEM_TO_SUN_START, "s": [100], "h": 1},
+        {"t": THEME_SYSTEM_TO_SUN_END, "s": [100], "h": 1},
+        {"t": THEME_MOON_TO_SYSTEM_START, "s": [0], "h": 1},
+        keyframe(moon_to_system_start, [0], [100], (0.20, 0.75, 0.34, 0.94)),
+        keyframe(moon_to_system_end, [100]),
+        {"t": THEME_MOON_TO_SYSTEM_END, "s": [100], "h": 1},
+        keyframe(system_to_moon_start, [100], [0], (1.00, 0.02, 0.54, 0.42)),
+        keyframe(system_to_moon_end, [0]),
+        keyframe(THEME_SYSTEM_TO_MOON_END, [0]),
     ])
-    scale = animated([
-        {"t": 0, "s": [55, 55, 100], "h": 1},
-        keyframe(reveal_start, [55, 55, 100], [100, 100, 100], settle),
-        keyframe(reveal_end, [100, 100, 100]),
-        keyframe(THEME_SUN_FRAME, [100, 100, 100]),
-        keyframe(hide_start, [100, 100, 100], [55, 55, 100], travel),
-        keyframe(hide_end, [55, 55, 100]),
-        keyframe(THEME_MOON_FRAME, [55, 55, 100]),
-    ])
-    return opacity, scale
+
+
+theme_ray_rotation = animated([
+    {"t": 0, "s": [0], "h": 1},
+    {"t": THEME_SUN_TO_MOON_END, "s": [0], "h": 1},
+    keyframe(THEME_SUN_TO_SYSTEM_START, [0], [360], travel),
+    {"t": THEME_SUN_TO_SYSTEM_END, "s": [360], "h": 1},
+    keyframe(THEME_SYSTEM_TO_SUN_START, [360], [720], travel),
+    {"t": THEME_SYSTEM_TO_SUN_END, "s": [720], "h": 1},
+    {"t": THEME_MOON_TO_SYSTEM_START, "s": [0], "h": 1},
+    {"t": THEME_SYSTEM_TO_MOON_END, "s": [0], "h": 1},
+])
+
+theme_half_fill = arc_contour([24, 24], 8.625, -90, -270)
+theme_half_fill["c"] = True
+theme_half_fill_opacity = animated([
+    {"t": 0, "s": [0], "h": 1},
+    {"t": THEME_SUN_TO_MOON_END, "s": [0], "h": 1},
+    keyframe(THEME_SUN_TO_SYSTEM_START, [0], [100], settle),
+    keyframe(112, [100]),
+    {"t": THEME_SUN_TO_SYSTEM_END, "s": [100], "h": 1},
+    keyframe(THEME_SYSTEM_TO_SUN_START, [100], [0], travel),
+    keyframe(152, [0]),
+    {"t": THEME_SYSTEM_TO_SUN_END, "s": [0], "h": 1},
+    keyframe(THEME_MOON_TO_SYSTEM_START, [0], [100], settle),
+    keyframe(192, [100]),
+    {"t": THEME_MOON_TO_SYSTEM_END, "s": [100], "h": 1},
+    keyframe(THEME_SYSTEM_TO_MOON_START, [100], [0], travel),
+    keyframe(224, [0]),
+    keyframe(THEME_SYSTEM_TO_MOON_END, [0]),
+])
 
 
 theme_layers = [
@@ -1055,32 +1109,47 @@ theme_layers = [
         ],
         [24, 24],
     ),
+    layer(
+        2,
+        "Theme system half fill",
+        [theme_half_fill],
+        [24, 24],
+        opacity=theme_half_fill_opacity,
+    ),
 ]
 theme_ray_clockwise_order = [0, 2, 6, 8, 9, 7, 5, 1]
 for clockwise_index, contour_index in enumerate(theme_ray_clockwise_order):
     ray = theme_sun_contours[contour_index]
-    ray_opacity, ray_scale = theme_ray_properties(clockwise_index)
     theme_layers.append(layer(
-        2 + clockwise_index,
+        3 + clockwise_index,
         f"Theme sun ray {clockwise_index + 1}",
         [ray],
-        contours_center([ray]),
-        opacity=ray_opacity,
-        scale=ray_scale,
+        [24, 24],
+        rotation=theme_ray_rotation,
+        opacity=theme_ray_opacity(clockwise_index),
     ))
 
 theme = document(
-    "Tonarink settings theme moon and sun icon (Segoe Fluent Icons)",
+    "Tonarink settings theme moon, sun, and system icon (Segoe Fluent Icons)",
     0xE706,
     f"{theme_moon_name}/{theme_sun_name}",
     theme_layers,
     [
         {"tm": 0, "cm": "Moon", "dr": 0},
-        {"tm": THEME_SUN_FRAME, "cm": "Sun", "dr": 0},
+        {"tm": THEME_MOON_TO_SUN_END, "cm": "Sun", "dr": 0},
+        {"tm": THEME_SUN_TO_SYSTEM_END, "cm": "System", "dr": 0},
         {"tm": 0, "cm": "MoonToSun_Start", "dr": 0},
-        {"tm": THEME_SUN_FRAME, "cm": "MoonToSun_End", "dr": 0},
-        {"tm": THEME_REVERSE_START, "cm": "SunToMoon_Start", "dr": 0},
-        {"tm": THEME_MOON_FRAME, "cm": "SunToMoon_End", "dr": 0},
+        {"tm": THEME_MOON_TO_SUN_END, "cm": "MoonToSun_End", "dr": 0},
+        {"tm": THEME_SUN_TO_MOON_START, "cm": "SunToMoon_Start", "dr": 0},
+        {"tm": THEME_SUN_TO_MOON_END, "cm": "SunToMoon_End", "dr": 0},
+        {"tm": THEME_SUN_TO_SYSTEM_START, "cm": "SunToSystem_Start", "dr": 0},
+        {"tm": THEME_SUN_TO_SYSTEM_END, "cm": "SunToSystem_End", "dr": 0},
+        {"tm": THEME_SYSTEM_TO_SUN_START, "cm": "SystemToSun_Start", "dr": 0},
+        {"tm": THEME_SYSTEM_TO_SUN_END, "cm": "SystemToSun_End", "dr": 0},
+        {"tm": THEME_MOON_TO_SYSTEM_START, "cm": "MoonToSystem_Start", "dr": 0},
+        {"tm": THEME_MOON_TO_SYSTEM_END, "cm": "MoonToSystem_End", "dr": 0},
+        {"tm": THEME_SYSTEM_TO_MOON_START, "cm": "SystemToMoon_Start", "dr": 0},
+        {"tm": THEME_SYSTEM_TO_MOON_END, "cm": "SystemToMoon_End", "dr": 0},
     ],
 )
 theme["op"] = THEME_OUT_FRAME
