@@ -15,6 +15,8 @@ enum SettingsToggleIconKind
     Notification,
     Contact,
     ContextMenu,
+    Checksum,
+    DragDrop,
     Language,
 }
 
@@ -48,6 +50,8 @@ static class AnimatedSettingsToggleIcon
                         SettingsToggleIconKind.Notification => "\uEA8F",
                         SettingsToggleIconKind.Contact => "\uE716",
                         SettingsToggleIconKind.ContextMenu => "\uE7AC",
+                        SettingsToggleIconKind.Checksum => "\uF32A",
+                        SettingsToggleIconKind.DragDrop => "\uF413",
                         SettingsToggleIconKind.Language => "\uF2B7",
                         _ => throw new ArgumentOutOfRangeException(nameof(kind)),
                     },
@@ -65,6 +69,8 @@ static class AnimatedSettingsToggleIcon
         SettingsToggleIconKind.Notification => new Tonarink.SettingsNotificationToggleIcon(),
         SettingsToggleIconKind.Contact => new Tonarink.SettingsContactToggleIcon(),
         SettingsToggleIconKind.ContextMenu => new Tonarink.SettingsContextMenuToggleIcon(),
+        SettingsToggleIconKind.Checksum => new Tonarink.SettingsChecksumToggleIcon(),
+        SettingsToggleIconKind.DragDrop => new Tonarink.SettingsDragDropToggleIcon(),
         SettingsToggleIconKind.Language => new Tonarink.SettingsLanguageIcon(),
         _ => throw new ArgumentOutOfRangeException(nameof(kind)),
     };

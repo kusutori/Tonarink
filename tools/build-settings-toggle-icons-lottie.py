@@ -186,6 +186,39 @@ def translate_contour(
     return result
 
 
+def scale_contour(
+    contour: dict[str, object],
+    center: list[float],
+    scale: float,
+) -> dict[str, object]:
+    result = deepcopy(contour)
+    result["v"] = [
+        [
+            round(center[0] + (vertex[0] - center[0]) * scale, 4),
+            round(center[1] + (vertex[1] - center[1]) * scale, 4),
+        ]
+        for vertex in result["v"]
+    ]
+    result["i"] = [
+        [round(handle[0] * scale, 4), round(handle[1] * scale, 4)]
+        for handle in result["i"]
+    ]
+    result["o"] = [
+        [round(handle[0] * scale, 4), round(handle[1] * scale, 4)]
+        for handle in result["o"]
+    ]
+    return result
+
+
+def reverse_contour(contour: dict[str, object]) -> dict[str, object]:
+    return {
+        "i": deepcopy(list(reversed(contour["o"]))),
+        "o": deepcopy(list(reversed(contour["i"]))),
+        "v": deepcopy(list(reversed(contour["v"]))),
+        "c": contour["c"],
+    }
+
+
 def contour_polyline(
     contour: dict[str, object],
     samples_per_segment: int = 16,
@@ -278,10 +311,11 @@ def aligned_contours(
     start: dict[str, object],
     target_points: list[list[float]],
     vertex_count: int = 96,
+    preserve_direction: bool = False,
 ) -> tuple[dict[str, object], dict[str, object]]:
     start_points = resample_closed_polyline(contour_polyline(start), vertex_count)
     target = resample_closed_polyline(target_points, vertex_count)
-    candidates = [target, list(reversed(target))]
+    candidates = [target] if preserve_direction else [target, list(reversed(target))]
     best: list[list[float]] | None = None
     best_score = math.inf
     for candidate in candidates:
@@ -844,6 +878,111 @@ context_menu = document(
 )
 
 
+checksum_name, checksum_contours, _ = extract_glyph(0xF32A)
+if len(checksum_contours) != 5:
+    raise ValueError(f"Expected five contours for U+F32A, got {len(checksum_contours)}")
+checksum_front_center = contours_center([checksum_contours[1]])
+# The original outer contour is the union of both overlapping blocks. Morph the
+# merged silhouette itself so no internal overlap edge is ever introduced.
+checksum_front_outer = reverse_contour(scale_contour(
+    checksum_contours[1],
+    checksum_front_center,
+    16.8667 / 13.8,
+))
+checksum_outer_start, checksum_outer_target = aligned_contours(
+    checksum_contours[0],
+    contour_polyline(checksum_front_outer),
+    vertex_count=192,
+    preserve_direction=True,
+)
+checksum_hole_start, checksum_hole_target = aligned_contours(
+    checksum_contours[3],
+    contour_polyline(checksum_contours[1]),
+    vertex_count=192,
+    preserve_direction=True,
+)
+checksum_front_hole_mask = {
+    "inv": False,
+    "mode": "s",
+    "pt": {"a": 0, "k": checksum_contours[1]},
+    "o": {"a": 0, "k": 100},
+    "x": {"a": 0, "k": 0},
+    "nm": "Checksum foreground opening",
+}
+checksum_back_hole_mask = {
+    "inv": False,
+    "mode": "s",
+    "pt": animated_contour(checksum_hole_start, checksum_hole_target),
+    "o": {"a": 0, "k": 100},
+    "x": {"a": 0, "k": 0},
+    "nm": "Checksum morphing background opening",
+}
+checksum = document(
+    "Tonarink settings checksum toggle icon (Segoe Fluent Icons)",
+    0xF32A,
+    checksum_name,
+    [
+        layer(
+            1,
+            "Checksum merged outer silhouette",
+            [animated_contour(checksum_outer_start, checksum_outer_target)],
+            checksum_front_center,
+            masks=[checksum_front_hole_mask, checksum_back_hole_mask],
+        ),
+        layer(2, "Checksum foreground check", [checksum_contours[2]], checksum_front_center),
+        layer(
+            3,
+            "Checksum morphing background check",
+            [animated_contour(checksum_contours[4], checksum_contours[2])],
+            checksum_front_center,
+        ),
+    ],
+)
+
+
+drag_drop_name, drag_drop_contours, _ = extract_glyph(0xF413)
+if len(drag_drop_contours) != 4:
+    raise ValueError(f"Expected four contours for U+F413, got {len(drag_drop_contours)}")
+drag_drop_badge_center = contours_center([drag_drop_contours[0]])
+drag_drop_arrow = drag_drop_contours[2]
+drag_drop_arrow_exit = translate_contour(drag_drop_arrow, 30, 0)
+drag_drop_arrow_entry = translate_contour(drag_drop_arrow, -30, 0)
+drag_drop_arrow_mask = {
+    "inv": False,
+    "mode": "s",
+    "pt": animated([
+        keyframe(0, [drag_drop_arrow], [drag_drop_arrow_exit], (0.55, 0.05, 0.90, 0.35)),
+        {"t": 10, "s": [drag_drop_arrow_exit], "h": 1},
+        keyframe(12, [drag_drop_arrow_entry], [drag_drop_arrow], (0.16, 0.80, 0.20, 1.00)),
+        keyframe(28, [drag_drop_arrow]),
+        keyframe(MOTION_END_FRAME, [drag_drop_arrow]),
+    ]),
+    "o": {"a": 0, "k": 100},
+    "x": {"a": 0, "k": 0},
+    "nm": "Flying drag-and-drop arrow cutout",
+}
+drag_drop = document(
+    "Tonarink settings extended drag-and-drop toggle icon (Segoe Fluent Icons)",
+    0xF413,
+    drag_drop_name,
+    [
+        layer(
+            1,
+            "Drag-and-drop arrow badge",
+            [drag_drop_contours[0]],
+            drag_drop_badge_center,
+            masks=[drag_drop_arrow_mask],
+        ),
+        layer(
+            2,
+            "Drag-and-drop destination",
+            [drag_drop_contours[1], drag_drop_contours[3]],
+            contours_center([drag_drop_contours[1], drag_drop_contours[3]]),
+        ),
+    ],
+)
+
+
 LANGUAGE_END_FRAME = 68
 LANGUAGE_OUT_FRAME = 76
 
@@ -1080,6 +1219,8 @@ outputs = {
     "SettingsNotificationToggleIcon.json": notification,
     "SettingsContactToggleIcon.json": contact,
     "SettingsContextMenuToggleIcon.json": context_menu,
+    "SettingsChecksumToggleIcon.json": checksum,
+    "SettingsDragDropToggleIcon.json": drag_drop,
     "SettingsLanguageIcon.json": language,
 }
 for filename, value in outputs.items():
@@ -1098,6 +1239,8 @@ if len(sys.argv) > 1:
             "SettingsNotificationToggleIcon.json": "tonarink-settings-notification",
             "SettingsContactToggleIcon.json": "tonarink-settings-contact",
             "SettingsContextMenuToggleIcon.json": "tonarink-settings-context-menu",
+            "SettingsChecksumToggleIcon.json": "tonarink-settings-checksum",
+            "SettingsDragDropToggleIcon.json": "tonarink-settings-drag-drop",
             "SettingsLanguageIcon.json": "tonarink-settings-language",
         }[filename]
         player_path = player_root / "public" / "projects" / slug / "scene-1" / "lottie.json"

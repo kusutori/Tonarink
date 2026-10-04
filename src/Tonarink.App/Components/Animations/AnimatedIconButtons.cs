@@ -23,10 +23,16 @@ public static class AnimatedButtons
     public static Element SettingsContextMenuIcon(bool isOn, double iconSize = 24) =>
         AnimatedSettingsToggleIcon.Create(SettingsToggleIconKind.ContextMenu, isOn, iconSize);
 
-    public static Element SettingsLanguageIcon(int languageIndex, double iconSize = 24) =>
+    public static Element SettingsChecksumIcon(bool isOn, double iconSize = 24) =>
+        AnimatedSettingsToggleIcon.Create(SettingsToggleIconKind.Checksum, isOn, iconSize);
+
+    public static Element SettingsDragDropIcon(bool isOn, double iconSize = 24) =>
+        AnimatedSettingsToggleIcon.Create(SettingsToggleIconKind.DragDrop, isOn, iconSize);
+
+    public static Element SettingsLanguageIcon(int animationVersion, double iconSize = 24) =>
         AnimatedSettingsToggleIcon.Create(
             SettingsToggleIconKind.Language,
-            $"Language{languageIndex}",
+            $"Language{Math.Abs(animationVersion % 3)}",
             iconSize);
 
     public static Element Add(

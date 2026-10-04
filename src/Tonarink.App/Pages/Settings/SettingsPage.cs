@@ -78,6 +78,7 @@ sealed class SettingsPage : Component<SettingsPageProps>
             Props.Runtime.DiscoveryWarning);
         var (encryptionNoticeOpen, setEncryptionNoticeOpen) = UseState(false);
         var (previewOverridePath, setPreviewOverridePath) = UseState("");
+        var (languageAnimationVersion, setLanguageAnimationVersion) = UseState(0);
         var nodeState = Props.Runtime.NodeState;
         var serverBusy = nodeState is LocalSendNodeState.Starting or LocalSendNodeState.Stopping;
         var serverRunning = nodeState == LocalSendNodeState.Running;
@@ -151,7 +152,7 @@ sealed class SettingsPage : Component<SettingsPageProps>
             SettingsCard(
                 header: t.Message(new("App", "SettingsLanguage")),
                 description: t.Message(new("App", "SettingsLanguageDescription")),
-                headerIcon: AnimatedButtons.SettingsLanguageIcon(Props.Settings.LanguageIndex)
+                headerIcon: AnimatedButtons.SettingsLanguageIcon(languageAnimationVersion)
                     .WithKey("settings-language-icon"),
                 isClickEnabled: false,
                 isActionIconVisible: false,
@@ -163,6 +164,8 @@ sealed class SettingsPage : Component<SettingsPageProps>
                     })
                     .AutomationName(t.Message(new("App", "SettingsLanguage")))
                     .HelpText(t.Message(new("App", "SettingsLanguageDescription")))
+                    .DropDownOpened(() =>
+                        setLanguageAnimationVersion(languageAnimationVersion + 1))
                     .MinWidth(180)),
             SettingsCard(
                 header: t.Message(new("App", "SettingsMinimizeToTray")),
@@ -318,7 +321,8 @@ sealed class SettingsPage : Component<SettingsPageProps>
             SettingsCard(
                 header: t.Message(new("App", "SettingsVerifyChecksumsOnReceive")),
                 description: t.Message(new("App", "SettingsVerifyChecksumsOnReceiveDescription")),
-                headerIcon: HeaderGlyph(AppIcons.Checksum),
+                headerIcon: AnimatedButtons.SettingsChecksumIcon(Props.Settings.VerifyChecksumsOnReceive)
+                    .WithKey("settings-receive-checksum-icon"),
                 isClickEnabled: false,
                 isActionIconVisible: false,
                 content:
@@ -362,7 +366,8 @@ sealed class SettingsPage : Component<SettingsPageProps>
             SettingsCard(
                 header: t.Message(new("App", "SettingsExpandDragDrop")),
                 description: t.Message(new("App", "SettingsExpandDragDropDescription")),
-                headerIcon: HeaderGlyph(AppIcons.DragDrop),
+                headerIcon: AnimatedButtons.SettingsDragDropIcon(Props.Settings.ExpandDragDropToEntireApp)
+                    .WithKey("settings-drag-drop-icon"),
                 isClickEnabled: false,
                 isActionIconVisible: false,
                 content:
@@ -373,7 +378,8 @@ sealed class SettingsPage : Component<SettingsPageProps>
             SettingsCard(
                 header: t.Message(new("App", "SettingsVerifyChecksumsOnSend")),
                 description: t.Message(new("App", "SettingsVerifyChecksumsOnSendDescription")),
-                headerIcon: HeaderGlyph(AppIcons.Checksum),
+                headerIcon: AnimatedButtons.SettingsChecksumIcon(Props.Settings.VerifyChecksumsOnSend)
+                    .WithKey("settings-send-checksum-icon"),
                 isClickEnabled: false,
                 isActionIconVisible: false,
                 content:
