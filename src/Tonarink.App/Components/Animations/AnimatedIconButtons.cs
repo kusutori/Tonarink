@@ -23,6 +23,12 @@ public static class AnimatedButtons
     public static Element SettingsContextMenuIcon(bool isOn, double iconSize = 24) =>
         AnimatedSettingsToggleIcon.Create(SettingsToggleIconKind.ContextMenu, isOn, iconSize);
 
+    public static Element SettingsLanguageIcon(int languageIndex, double iconSize = 24) =>
+        AnimatedSettingsToggleIcon.Create(
+            SettingsToggleIconKind.Language,
+            $"Language{languageIndex}",
+            iconSize);
+
     public static Element Add(
         string automationName,
         Action onClick,

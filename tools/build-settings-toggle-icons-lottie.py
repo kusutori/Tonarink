@@ -317,6 +317,50 @@ def rectangle_contour(left: float, top: float, right: float, bottom: float) -> d
     }
 
 
+def arc_contour(
+    center: list[float],
+    radius: float,
+    start_angle: float,
+    end_angle: float,
+) -> dict[str, object]:
+    segment_count = max(1, math.ceil(abs(end_angle - start_angle) / 90))
+    step = (end_angle - start_angle) / segment_count
+    vertices: list[list[float]] = []
+    incoming: list[list[float]] = []
+    outgoing: list[list[float]] = []
+    for index in range(segment_count + 1):
+        angle = start_angle + step * index
+        radians = math.radians(angle)
+        vertices.append([
+            round(center[0] + math.cos(radians) * radius, 4),
+            round(center[1] + math.sin(radians) * radius, 4),
+        ])
+        incoming.append([0, 0])
+        outgoing.append([0, 0])
+    for index in range(segment_count):
+        start_radians = math.radians(start_angle + step * index)
+        end_radians = math.radians(start_angle + step * (index + 1))
+        handle = 4 / 3 * math.tan(math.radians(step) / 4) * radius
+        outgoing[index] = [
+            round(-math.sin(start_radians) * handle, 4),
+            round(math.cos(start_radians) * handle, 4),
+        ]
+        incoming[index + 1] = [
+            round(math.sin(end_radians) * handle, 4),
+            round(-math.cos(end_radians) * handle, 4),
+        ]
+    return {"i": incoming, "o": outgoing, "v": vertices, "c": False}
+
+
+def horizontal_line_contour(left: float, right: float, y: float) -> dict[str, object]:
+    return {
+        "i": [[0, 0], [0, 0]],
+        "o": [[0, 0], [0, 0]],
+        "v": [[left, y], [right, y]],
+        "c": False,
+    }
+
+
 def animated_contour(
     start: dict[str, object],
     moved: dict[str, object],
@@ -799,6 +843,236 @@ context_menu = document(
     ],
 )
 
+
+LANGUAGE_END_FRAME = 68
+LANGUAGE_OUT_FRAME = 76
+
+
+def language_longitude_path(amplitude: float) -> dict[str, object]:
+    center_x = 15.375
+    center_y = 16.5429
+    globe_radius = 12.95
+    top = center_y - globe_radius
+    # The source glyph's internal meridians stop at the lower-cell apex; the
+    # outer shell alone continues down to the globe's cropped south edge.
+    bottom = 25.1
+    count = 13
+    points = []
+    for index in range(count):
+        progress = index / (count - 1)
+        y = top + (bottom - top) * progress
+        normalized_y = (y - center_y) / globe_radius
+        projection = math.sqrt(max(0.0, 1.0 - normalized_y * normalized_y))
+        points.append([
+            round(center_x + amplitude * projection, 4),
+            round(y, 4),
+        ])
+
+    incoming = []
+    outgoing = []
+    for index, point in enumerate(points):
+        previous = points[max(0, index - 1)]
+        following = points[min(count - 1, index + 1)]
+        tangent = [(following[0] - previous[0]) / 6, (following[1] - previous[1]) / 6]
+        incoming.append([round(-tangent[0], 4), round(-tangent[1], 4)])
+        outgoing.append([round(tangent[0], 4), round(tangent[1], 4)])
+    incoming[0] = [0, 0]
+    outgoing[-1] = [0, 0]
+    return {"i": incoming, "o": outgoing, "v": points, "c": False}
+
+
+def language_rotation_degrees(frame: int) -> float:
+    progress = frame / LANGUAGE_END_FRAME
+    # Three complete turns with zero velocity at both ends.
+    return 1080 * (0.5 - 0.5 * math.cos(math.pi * progress))
+
+
+def language_longitude_properties(phase: float) -> tuple[dict[str, object], dict[str, object]]:
+    # Bake every frame so the front/back hand-off happens only after the curve
+    # reaches the globe limb; two-frame opacity holds made it disappear early.
+    frames = list(range(0, LANGUAGE_END_FRAME + 1))
+    paths = []
+    opacities = []
+    for frame in frames:
+        angle = math.radians(language_rotation_degrees(frame) + phase)
+        # Orthographic globe projection: the equator reaches the inner edge of
+        # the shell at +/-90 degrees, rather than stopping halfway across.
+        paths.append(language_longitude_path(11.35 * math.sin(angle)))
+        facing = math.cos(angle)
+        # A line vanishes into the right limb, travels behind the globe, then a
+        # fresh line emerges from the left limb. The narrow blend hides the seam.
+        opacities.append(100 if facing > 0 else 0)
+
+    path_keyframes = []
+    opacity_keyframes = []
+    for index, frame in enumerate(frames):
+        if index + 1 < len(frames):
+            path_keyframes.append(keyframe(frame, [paths[index]], [paths[index + 1]]))
+            opacity_keyframes.append({"t": frame, "s": [opacities[index]], "h": 1})
+        else:
+            path_keyframes.append(keyframe(frame, [paths[index]]))
+            opacity_keyframes.append(keyframe(frame, [opacities[index]]))
+    return animated(path_keyframes), animated(opacity_keyframes)
+
+
+def language_longitude_layer(
+    index: int,
+    phase: float,
+    globe_clip: dict[str, object],
+) -> dict[str, object]:
+    path, opacity = language_longitude_properties(phase)
+    return {
+        "ddd": 0,
+        "ind": index,
+        "ty": 4,
+        "nm": f"Directional longitude {phase:g}",
+        "sr": 1,
+        "ks": {
+            "o": opacity,
+            "r": {"a": 0, "k": 0},
+            "p": {"a": 0, "k": [0, 0, 0]},
+            "a": {"a": 0, "k": [0, 0, 0]},
+            "s": {"a": 0, "k": [100, 100, 100]},
+        },
+        "ao": 0,
+        "hasMask": True,
+        "masksProperties": [{
+            "inv": False,
+            "mode": "a",
+            "pt": {"a": 0, "k": globe_clip},
+            "o": {"a": 0, "k": 100},
+            "x": {"a": 0, "k": 0},
+            "nm": "Clip longitude to original globe silhouette",
+        }],
+        "shapes": [
+            {"ty": "sh", "nm": "Longitude curve", "ks": path},
+            {
+                "ty": "st",
+                "nm": "Foreground {Color:var(Foreground)}",
+                "c": {"a": 0, "k": [0, 0, 0, 1]},
+                "o": {"a": 0, "k": 100},
+                "w": {"a": 0, "k": 2.875},
+                "lc": 2,
+                "lj": 2,
+                "ml": 4,
+            },
+        ],
+        "ip": 0,
+        "op": LANGUAGE_OUT_FRAME,
+        "st": 0,
+        "bm": 0,
+    }
+
+
+def language_fixed_globe_layer(index: int) -> dict[str, object]:
+    globe_center = [15.375, 16.5429]
+    fixed_paths = [
+        # Leave the lower-right quadrant open for the foreground lettering.
+        # Authoring an open arc gives the shell a real rounded endpoint instead
+        # of the visibly clipped edge produced by a rectangular mask.
+        arc_contour(globe_center, 12.95, 107, 360),
+        horizontal_line_contour(3.25, 27.45, 12.5),
+        horizontal_line_contour(4.05, 20.6982, 21.125),
+    ]
+    return {
+        "ddd": 0,
+        "ind": index,
+        "ty": 4,
+        "nm": "Language fixed globe shell and latitudes",
+        "sr": 1,
+        "ks": {
+            "o": {"a": 0, "k": 100},
+            "r": {"a": 0, "k": 0},
+            "p": {"a": 0, "k": [0, 0, 0]},
+            "a": {"a": 0, "k": [0, 0, 0]},
+            "s": {"a": 0, "k": [100, 100, 100]},
+        },
+        "ao": 0,
+        "hasMask": False,
+        "masksProperties": [],
+        "shapes": [
+            *(
+                {
+                    "ty": "sh",
+                    "nm": f"Fixed globe contour {path_index + 1}",
+                    "ks": {"a": 0, "k": path},
+                }
+                for path_index, path in enumerate(fixed_paths)
+            ),
+            {
+                "ty": "st",
+                "nm": "Foreground {Color:var(Foreground)}",
+                "c": {"a": 0, "k": [0, 0, 0, 1]},
+                "o": {"a": 0, "k": 100},
+                "w": {"a": 0, "k": 2.875},
+                "lc": 2,
+                "lj": 2,
+                "ml": 4,
+            },
+        ],
+        "ip": 0,
+        "op": LANGUAGE_OUT_FRAME,
+        "st": 0,
+        "bm": 0,
+    }
+
+
+language_name, language_contours, _ = extract_glyph(0xF2B7)
+if len(language_contours) != 11:
+    raise ValueError(f"Expected eleven contours for U+F2B7, got {len(language_contours)}")
+language_text = [language_contours[index] for index in (6, 8, 9, 10)]
+language_text_center = contours_center(language_text)
+language_text_scale = animated([
+    keyframe(0, [100, 100, 100], [106, 106, 100], (0.20, 0.75, 0.34, 0.94)),
+    keyframe(8, [106, 106, 100], [103, 103, 100], settle),
+    keyframe(16, [103, 103, 100]),
+    keyframe(48, [103, 103, 100], [100, 100, 100], settle),
+    keyframe(LANGUAGE_END_FRAME, [100, 100, 100]),
+])
+language_markers = [
+    *({"tm": 0, "cm": f"Language{index}", "dr": 0} for index in range(3)),
+    *(
+        marker
+        for source in range(3)
+        for destination in range(3)
+        if source != destination
+        for marker in (
+            {"tm": 0, "cm": f"Language{source}ToLanguage{destination}_Start", "dr": 0},
+            {
+                "tm": LANGUAGE_END_FRAME,
+                "cm": f"Language{source}ToLanguage{destination}_End",
+                "dr": 0,
+            },
+        )
+    ),
+]
+language = document(
+    "Tonarink settings language icon (Segoe Fluent Icons)",
+    0xF2B7,
+    language_name,
+    [
+        layer(
+            1,
+            "Language foreground text",
+            language_text,
+            language_text_center,
+            scale=language_text_scale,
+        ),
+        language_fixed_globe_layer(2),
+        # The source glyph's resting meridians sit about 4.3 units from the
+        # centre, which corresponds to +/-22.5 degrees in the 11.35-unit globe
+        # projection. Opposite phases supply the hidden/back counterparts.
+        language_longitude_layer(3, -22.5, language_contours[0]),
+        language_longitude_layer(4, 22.5, language_contours[0]),
+        language_longitude_layer(5, 157.5, language_contours[0]),
+        language_longitude_layer(6, 202.5, language_contours[0]),
+    ],
+    language_markers,
+)
+language["op"] = LANGUAGE_OUT_FRAME
+for language_layer in language["layers"]:
+    language_layer["op"] = LANGUAGE_OUT_FRAME
+
 outputs = {
     "SettingsHistoryToggleIcon.json": history,
     "SettingsStartupToggleIcon.json": startup,
@@ -806,6 +1080,7 @@ outputs = {
     "SettingsNotificationToggleIcon.json": notification,
     "SettingsContactToggleIcon.json": contact,
     "SettingsContextMenuToggleIcon.json": context_menu,
+    "SettingsLanguageIcon.json": language,
 }
 for filename, value in outputs.items():
     serialized = json.dumps(value, ensure_ascii=False, separators=(",", ":")) + "\n"
@@ -823,6 +1098,7 @@ if len(sys.argv) > 1:
             "SettingsNotificationToggleIcon.json": "tonarink-settings-notification",
             "SettingsContactToggleIcon.json": "tonarink-settings-contact",
             "SettingsContextMenuToggleIcon.json": "tonarink-settings-context-menu",
+            "SettingsLanguageIcon.json": "tonarink-settings-language",
         }[filename]
         player_path = player_root / "public" / "projects" / slug / "scene-1" / "lottie.json"
         player_path.parent.mkdir(parents=True, exist_ok=True)

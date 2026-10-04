@@ -151,7 +151,8 @@ sealed class SettingsPage : Component<SettingsPageProps>
             SettingsCard(
                 header: t.Message(new("App", "SettingsLanguage")),
                 description: t.Message(new("App", "SettingsLanguageDescription")),
-                headerIcon: HeaderGlyph(AppIcons.Language),
+                headerIcon: AnimatedButtons.SettingsLanguageIcon(Props.Settings.LanguageIndex)
+                    .WithKey("settings-language-icon"),
                 isClickEnabled: false,
                 isActionIconVisible: false,
                 content:

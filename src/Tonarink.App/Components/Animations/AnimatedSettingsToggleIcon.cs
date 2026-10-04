@@ -15,6 +15,7 @@ enum SettingsToggleIconKind
     Notification,
     Contact,
     ContextMenu,
+    Language,
 }
 
 static class AnimatedSettingsToggleIcon
@@ -22,10 +23,15 @@ static class AnimatedSettingsToggleIcon
     public static Element Create(
         SettingsToggleIconKind kind,
         bool isOn,
+        double iconSize = 24) =>
+        Create(kind, isOn ? "On" : "Off", iconSize);
+
+    public static Element Create(
+        SettingsToggleIconKind kind,
+        string state,
         double iconSize = 24)
     {
         _ = iconSize;
-        var state = isOn ? "On" : "Off";
 
         return AnimatedIcon()
             .Set(icon =>
@@ -42,6 +48,7 @@ static class AnimatedSettingsToggleIcon
                         SettingsToggleIconKind.Notification => "\uEA8F",
                         SettingsToggleIconKind.Contact => "\uE716",
                         SettingsToggleIconKind.ContextMenu => "\uE7AC",
+                        SettingsToggleIconKind.Language => "\uF2B7",
                         _ => throw new ArgumentOutOfRangeException(nameof(kind)),
                     },
                 };
@@ -58,6 +65,7 @@ static class AnimatedSettingsToggleIcon
         SettingsToggleIconKind.Notification => new Tonarink.SettingsNotificationToggleIcon(),
         SettingsToggleIconKind.Contact => new Tonarink.SettingsContactToggleIcon(),
         SettingsToggleIconKind.ContextMenu => new Tonarink.SettingsContextMenuToggleIcon(),
+        SettingsToggleIconKind.Language => new Tonarink.SettingsLanguageIcon(),
         _ => throw new ArgumentOutOfRangeException(nameof(kind)),
     };
 }
