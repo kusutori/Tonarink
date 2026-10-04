@@ -983,6 +983,111 @@ drag_drop = document(
 )
 
 
+THEME_SUN_FRAME = 36
+THEME_REVERSE_START = 40
+THEME_MOON_FRAME = 76
+THEME_OUT_FRAME = 84
+
+theme_moon_name, theme_moon_contours, _ = extract_glyph(0xE708)
+theme_sun_name, theme_sun_contours, _ = extract_glyph(0xE706)
+if len(theme_moon_contours) != 2:
+    raise ValueError(f"Expected two contours for U+E708, got {len(theme_moon_contours)}")
+if len(theme_sun_contours) != 10:
+    raise ValueError(f"Expected ten contours for U+E706, got {len(theme_sun_contours)}")
+theme_outer_moon, theme_outer_sun = aligned_contours(
+    theme_moon_contours[0],
+    contour_polyline(theme_sun_contours[3]),
+    vertex_count=192,
+    preserve_direction=True,
+)
+theme_inner_moon, theme_inner_sun = aligned_contours(
+    theme_moon_contours[1],
+    contour_polyline(theme_sun_contours[4]),
+    vertex_count=192,
+    preserve_direction=True,
+)
+
+
+def theme_center_path(moon: dict[str, object], sun: dict[str, object]) -> dict[str, object]:
+    return animated([
+        keyframe(0, [moon], [sun], travel),
+        keyframe(16, [sun]),
+        keyframe(THEME_SUN_FRAME, [sun]),
+        keyframe(THEME_REVERSE_START, [sun]),
+        keyframe(60, [sun], [moon], travel),
+        keyframe(THEME_MOON_FRAME, [moon]),
+    ])
+
+
+def theme_ray_properties(clockwise_index: int) -> tuple[dict[str, object], dict[str, object]]:
+    reveal_start = 12 + clockwise_index * 2
+    reveal_end = reveal_start + 6
+    hide_start = THEME_REVERSE_START + (7 - clockwise_index) * 2
+    hide_end = hide_start + 6
+    opacity = animated([
+        {"t": 0, "s": [0], "h": 1},
+        keyframe(reveal_start, [0], [100], (0.20, 0.75, 0.34, 0.94)),
+        keyframe(reveal_end, [100]),
+        keyframe(THEME_SUN_FRAME, [100]),
+        keyframe(hide_start, [100], [0], (1.00, 0.02, 0.54, 0.42)),
+        keyframe(hide_end, [0]),
+        keyframe(THEME_MOON_FRAME, [0]),
+    ])
+    scale = animated([
+        {"t": 0, "s": [55, 55, 100], "h": 1},
+        keyframe(reveal_start, [55, 55, 100], [100, 100, 100], settle),
+        keyframe(reveal_end, [100, 100, 100]),
+        keyframe(THEME_SUN_FRAME, [100, 100, 100]),
+        keyframe(hide_start, [100, 100, 100], [55, 55, 100], travel),
+        keyframe(hide_end, [55, 55, 100]),
+        keyframe(THEME_MOON_FRAME, [55, 55, 100]),
+    ])
+    return opacity, scale
+
+
+theme_layers = [
+    layer(
+        1,
+        "Theme moon-to-sun center",
+        [
+            theme_center_path(theme_outer_moon, theme_outer_sun),
+            theme_center_path(theme_inner_moon, theme_inner_sun),
+        ],
+        [24, 24],
+    ),
+]
+theme_ray_clockwise_order = [0, 2, 6, 8, 9, 7, 5, 1]
+for clockwise_index, contour_index in enumerate(theme_ray_clockwise_order):
+    ray = theme_sun_contours[contour_index]
+    ray_opacity, ray_scale = theme_ray_properties(clockwise_index)
+    theme_layers.append(layer(
+        2 + clockwise_index,
+        f"Theme sun ray {clockwise_index + 1}",
+        [ray],
+        contours_center([ray]),
+        opacity=ray_opacity,
+        scale=ray_scale,
+    ))
+
+theme = document(
+    "Tonarink settings theme moon and sun icon (Segoe Fluent Icons)",
+    0xE706,
+    f"{theme_moon_name}/{theme_sun_name}",
+    theme_layers,
+    [
+        {"tm": 0, "cm": "Moon", "dr": 0},
+        {"tm": THEME_SUN_FRAME, "cm": "Sun", "dr": 0},
+        {"tm": 0, "cm": "MoonToSun_Start", "dr": 0},
+        {"tm": THEME_SUN_FRAME, "cm": "MoonToSun_End", "dr": 0},
+        {"tm": THEME_REVERSE_START, "cm": "SunToMoon_Start", "dr": 0},
+        {"tm": THEME_MOON_FRAME, "cm": "SunToMoon_End", "dr": 0},
+    ],
+)
+theme["op"] = THEME_OUT_FRAME
+for theme_layer in theme["layers"]:
+    theme_layer["op"] = THEME_OUT_FRAME
+
+
 LANGUAGE_END_FRAME = 68
 LANGUAGE_OUT_FRAME = 76
 
@@ -1221,6 +1326,7 @@ outputs = {
     "SettingsContextMenuToggleIcon.json": context_menu,
     "SettingsChecksumToggleIcon.json": checksum,
     "SettingsDragDropToggleIcon.json": drag_drop,
+    "SettingsThemeIcon.json": theme,
     "SettingsLanguageIcon.json": language,
 }
 for filename, value in outputs.items():
@@ -1241,6 +1347,7 @@ if len(sys.argv) > 1:
             "SettingsContextMenuToggleIcon.json": "tonarink-settings-context-menu",
             "SettingsChecksumToggleIcon.json": "tonarink-settings-checksum",
             "SettingsDragDropToggleIcon.json": "tonarink-settings-drag-drop",
+            "SettingsThemeIcon.json": "tonarink-settings-theme",
             "SettingsLanguageIcon.json": "tonarink-settings-language",
         }[filename]
         player_path = player_root / "public" / "projects" / slug / "scene-1" / "lottie.json"

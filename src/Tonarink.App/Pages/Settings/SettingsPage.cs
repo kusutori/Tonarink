@@ -132,12 +132,20 @@ sealed class SettingsPage : Component<SettingsPageProps>
             t.Message(new("App", "SettingsFilePreviewProviderPowerToysPeek")),
             t.Message(new("App", "SettingsFilePreviewProviderQuickLook")),
         ];
+        var effectiveTheme = Props.Settings.ThemeIndex switch
+        {
+            1 => ElementTheme.Light,
+            2 => ElementTheme.Dark,
+            _ when window?.NativeWindow?.Content is FrameworkElement root => root.ActualTheme,
+            _ => ElementTheme.Light,
+        };
         var generalCards = SettingsGroup(
             t.Message(new("App", "SettingsGeneral")),
             SettingsCard(
                 header: t.Message(new("App", "SettingsTheme")),
                 description: t.Message(new("App", "SettingsThemeDescription")),
-                headerIcon: HeaderGlyph(AppIcons.Theme),
+                headerIcon: AnimatedButtons.SettingsThemeIcon(effectiveTheme == ElementTheme.Dark)
+                    .WithKey("settings-theme-icon"),
                 isClickEnabled: false,
                 isActionIconVisible: false,
                 content:

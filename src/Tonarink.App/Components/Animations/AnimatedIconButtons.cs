@@ -29,6 +29,12 @@ public static class AnimatedButtons
     public static Element SettingsDragDropIcon(bool isOn, double iconSize = 24) =>
         AnimatedSettingsToggleIcon.Create(SettingsToggleIconKind.DragDrop, isOn, iconSize);
 
+    public static Element SettingsThemeIcon(bool isDark, double iconSize = 24) =>
+        AnimatedSettingsToggleIcon.Create(
+            SettingsToggleIconKind.Theme,
+            isDark ? "Moon" : "Sun",
+            iconSize);
+
     public static Element SettingsLanguageIcon(int animationVersion, double iconSize = 24) =>
         AnimatedSettingsToggleIcon.Create(
             SettingsToggleIconKind.Language,
