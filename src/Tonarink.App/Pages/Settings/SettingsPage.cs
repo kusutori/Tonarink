@@ -133,6 +133,11 @@ sealed class SettingsPage : Component<SettingsPageProps>
         [
             .. AppLanguages.Choices.Select(choice => t.Message(new("App", choice.NameKey))),
         ];
+        string[] trayClickActionOptions =
+        [
+            t.Message(new("App", "SettingsTrayClickOpenPanel")),
+            t.Message(new("App", "SettingsTrayClickOpenWindow")),
+        ];
         string[] notificationDefaultActionOptions =
         [
             t.Message(new("App", "SettingsNotificationsDefaultOpenFile")),
@@ -197,11 +202,21 @@ sealed class SettingsPage : Component<SettingsPageProps>
                             isClickEnabled: false,
                             isActionIconVisible: false,
                             content:
-                            ToggleSwitch(Props.Settings.TrayClickOpensFlyout, value =>
-                                Props.UpdateSettings(settings => settings with { TrayClickOpensFlyout = value }))
+                            ComboBox(trayClickActionOptions, Props.Settings.TrayClickOpensFlyout ? 0 : 1, index =>
+                                {
+                                    if (index is >= 0 and <= 1
+                                        && (index == 0) != Props.Settings.TrayClickOpensFlyout)
+                                    {
+                                        Props.UpdateSettings(settings => settings with
+                                        {
+                                            TrayClickOpensFlyout = index == 0,
+                                        });
+                                    }
+                                })
                                 .AutomationName(t.Message(new("App", "SettingsTrayClickOpensFlyout")))
                                 .HelpText(t.Message(new("App", "SettingsTrayClickOpensFlyoutDescription")))
-                                .IsEnabled(Props.Settings.MinimizeToTray)),
+                                .IsEnabled(Props.Settings.MinimizeToTray)
+                                .MinWidth(180)),
                     ])
                 .Set(expander =>
                 {
@@ -220,22 +235,6 @@ sealed class SettingsPage : Component<SettingsPageProps>
                         _ = SetStartupAsync(value))
                     .AutomationName(t.Message(new("App", "SettingsStartWithWindows")))
                     .HelpText(t.Message(new("App", "SettingsStartWithWindowsDescription")))),
-            SettingsCard(
-                header: t.Message(new("App", "SettingsWindowsShareSuggestions")),
-                description: t.Message(new("App", "SettingsWindowsShareSuggestionsDescription")),
-                headerIcon: AnimatedButtons.SettingsContactIcon(Props.Settings.ShowFavoriteDevicesInWindowsShare)
-                    .WithKey("settings-contact-icon"),
-                isClickEnabled: false,
-                isActionIconVisible: false,
-                content:
-                ToggleSwitch(Props.Settings.ShowFavoriteDevicesInWindowsShare, value =>
-                    Props.UpdateSettings(settings => settings with
-                    {
-                        ShowFavoriteDevicesInWindowsShare = value,
-                    }))
-                    .AutomationName(t.Message(new("App", "SettingsWindowsShareSuggestions")))
-                    .HelpText(t.Message(new("App", "SettingsWindowsShareSuggestionsDescription")))
-                    .IsEnabled(AppPlatform.HasPackageIdentity())),
             SettingsExpander(
                     content:
                     ToggleSwitch(
@@ -561,6 +560,22 @@ sealed class SettingsPage : Component<SettingsPageProps>
 
         var experimentalCards = SettingsGroup(
             t.Message(new("App", "SettingsExperimental")),
+            SettingsCard(
+                header: t.Message(new("App", "SettingsWindowsShareSuggestions")),
+                description: t.Message(new("App", "SettingsWindowsShareSuggestionsDescription")),
+                headerIcon: AnimatedButtons.SettingsContactIcon(Props.Settings.ShowFavoriteDevicesInWindowsShare)
+                    .WithKey("settings-contact-icon"),
+                isClickEnabled: false,
+                isActionIconVisible: false,
+                content:
+                ToggleSwitch(Props.Settings.ShowFavoriteDevicesInWindowsShare, value =>
+                    Props.UpdateSettings(settings => settings with
+                    {
+                        ShowFavoriteDevicesInWindowsShare = value,
+                    }))
+                    .AutomationName(t.Message(new("App", "SettingsWindowsShareSuggestions")))
+                    .HelpText(t.Message(new("App", "SettingsWindowsShareSuggestionsDescription")))
+                    .IsEnabled(AppPlatform.HasPackageIdentity())),
             SettingsExpander(
                     content:
                     ToggleSwitch(Props.Settings.FilePreviewEnabled, value =>

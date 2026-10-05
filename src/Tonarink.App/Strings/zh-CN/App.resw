@@ -196,7 +196,7 @@
   <data name="Undo" xml:space="preserve"><value>撤回</value></data>
   <data name="Redo" xml:space="preserve"><value>重做</value></data>
   <data name="ShareFileFailed" xml:space="preserve"><value>无法通过 Windows 分享此文件</value></data>
-  <data name="SettingsExperimental" xml:space="preserve"><value>实验性扩展</value></data>
+  <data name="SettingsExperimental" xml:space="preserve"><value>实验性功能</value></data>
   <data name="SettingsFilePreview" xml:space="preserve"><value>文件预览</value></data>
   <data name="SettingsFilePreviewDescription" xml:space="preserve"><value>在待发送列表中按空格键，使用第三方工具预览文件</value></data>
   <data name="SettingsFilePreviewEnabled" xml:space="preserve"><value>启用文件预览</value></data>
@@ -324,8 +324,10 @@
   <data name="SettingsMulticastWarning" xml:space="preserve"><value>自定义多播地址需与其他设备一致，默认地址为 {group}</value></data>
   <data name="SettingsMinimizeToTray" xml:space="preserve"><value>关闭时最小化到托盘</value></data>
   <data name="SettingsMinimizeToTrayDescription" xml:space="preserve"><value>隐藏主窗口并继续在后台运行</value></data>
-  <data name="SettingsTrayClickOpensFlyout" xml:space="preserve"><value>单击打开托盘面板</value></data>
-  <data name="SettingsTrayClickOpensFlyoutDescription" xml:space="preserve"><value>关闭此选项后，单击托盘图标打开主窗口</value></data>
+  <data name="SettingsTrayClickOpensFlyout" xml:space="preserve"><value>托盘图标单击操作</value></data>
+  <data name="SettingsTrayClickOpensFlyoutDescription" xml:space="preserve"><value>选择单击托盘图标时打开的界面</value></data>
+  <data name="SettingsTrayClickOpenPanel" xml:space="preserve"><value>打开托盘面板</value></data>
+  <data name="SettingsTrayClickOpenWindow" xml:space="preserve"><value>打开主窗口</value></data>
   <data name="SettingsReceive" xml:space="preserve"><value>接收</value></data>
   <data name="SettingsSend" xml:space="preserve"><value>发送</value></data>
   <data name="SettingsExpandDragDrop" xml:space="preserve"><value>扩展拖放范围</value></data>

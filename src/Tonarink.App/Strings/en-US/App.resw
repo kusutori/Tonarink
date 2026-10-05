@@ -196,7 +196,7 @@
   <data name="Undo" xml:space="preserve"><value>Undo</value></data>
   <data name="Redo" xml:space="preserve"><value>Redo</value></data>
   <data name="ShareFileFailed" xml:space="preserve"><value>Could not share this file with Windows</value></data>
-  <data name="SettingsExperimental" xml:space="preserve"><value>Experimental extensions</value></data>
+  <data name="SettingsExperimental" xml:space="preserve"><value>Experimental features</value></data>
   <data name="SettingsFilePreview" xml:space="preserve"><value>File preview</value></data>
   <data name="SettingsFilePreviewDescription" xml:space="preserve"><value>Press Space in the send list to preview files with a third-party tool</value></data>
   <data name="SettingsFilePreviewEnabled" xml:space="preserve"><value>Enable file preview</value></data>
@@ -324,8 +324,10 @@
   <data name="SettingsMulticastWarning" xml:space="preserve"><value>Custom multicast addresses must match on all devices; the default is {group}</value></data>
   <data name="SettingsMinimizeToTray" xml:space="preserve"><value>Minimize to tray on close</value></data>
   <data name="SettingsMinimizeToTrayDescription" xml:space="preserve"><value>Hide the main window and keep running in the background</value></data>
-  <data name="SettingsTrayClickOpensFlyout" xml:space="preserve"><value>Open tray panel on click</value></data>
-  <data name="SettingsTrayClickOpensFlyoutDescription" xml:space="preserve"><value>When off, clicking the tray icon opens the main window</value></data>
+  <data name="SettingsTrayClickOpensFlyout" xml:space="preserve"><value>Tray icon click action</value></data>
+  <data name="SettingsTrayClickOpensFlyoutDescription" xml:space="preserve"><value>Choose what opens when you click the tray icon</value></data>
+  <data name="SettingsTrayClickOpenPanel" xml:space="preserve"><value>Open tray panel</value></data>
+  <data name="SettingsTrayClickOpenWindow" xml:space="preserve"><value>Open main window</value></data>
   <data name="SettingsReceive" xml:space="preserve"><value>Receive</value></data>
   <data name="SettingsSend" xml:space="preserve"><value>Send</value></data>
   <data name="SettingsExpandDragDrop" xml:space="preserve"><value>App-wide drag and drop</value></data>
