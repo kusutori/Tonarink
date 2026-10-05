@@ -21,10 +21,10 @@ sealed class SettingsPage : Component<SettingsPageProps>
         var t = UseIntl();
         var window = UseWindow();
         var (_, refreshCachedPage) = UseReducer(0);
-        // NavigationHost updates the cached component's props without reconciling its
-        // element tree. Match SendPage and DeviceDetailsPage: request one render before
-        // the page transition so the restored page uses the latest settings props.
-        UseNavigationLifecycle(onNavigatingTo: _ =>
+        // Refresh only once NavigationHost has committed the restored page.
+        // Rendering in the destination guard can re-enter cache restoration before
+        // CurrentChildControl/LastRenderedRoute are committed, mounting a second page.
+        UseNavigationLifecycle(onNavigatedTo: _ =>
             refreshCachedPage(value => value + 1));
 
         var storagePicker = new StoragePicker(
@@ -75,7 +75,6 @@ sealed class SettingsPage : Component<SettingsPageProps>
             Props.Runtime.Error,
             Props.Runtime.DiscoveryWarning);
         var (encryptionNoticeOpen, setEncryptionNoticeOpen) = UseState(false);
-        var (previewOverridePath, setPreviewOverridePath) = UseState("");
         var (languageAnimationVersion, setLanguageAnimationVersion) = UseState(0);
         var savedInputs = SettingsInputDraft.FromSettings(Props.Settings);
         var (draft, setDraft) = UseState(savedInputs);
@@ -143,6 +142,7 @@ sealed class SettingsPage : Component<SettingsPageProps>
             t.Message(new("App", "SettingsFilePreviewProviderPowerToysPeek")),
             t.Message(new("App", "SettingsFilePreviewProviderQuickLook")),
         ];
+        var previewProviders = FilePreviewSettings.Providers(Props.Settings);
         var generalCards = SettingsGroup(
             t.Message(new("App", "SettingsGeneral")),
             SettingsCard(
@@ -558,56 +558,53 @@ sealed class SettingsPage : Component<SettingsPageProps>
         var experimentalCards = SettingsGroup(
             t.Message(new("App", "SettingsExperimental")),
             SettingsExpander(
+                    content:
+                    ToggleSwitch(Props.Settings.FilePreviewEnabled, value =>
+                            Props.UpdateSettings(settings => settings with { FilePreviewEnabled = value }))
+                        .AutomationName(t.Message(new("App", "SettingsFilePreviewEnabled")))
+                        .HelpText(t.Message(new("App", "SettingsFilePreviewEnabledDescription"))),
                     headerIcon: HeaderGlyph(AppIcons.Preview),
                     items:
                     [
-                        SettingsCard(
-                            header: t.Message(new("App", "SettingsFilePreviewEnabled")),
-                            description: t.Message(new("App", "SettingsFilePreviewEnabledDescription")),
-                            isClickEnabled: false,
-                            isActionIconVisible: false,
-                            content:
-                            ToggleSwitch(Props.Settings.FilePreviewEnabled, value =>
-                                    Props.UpdateSettings(settings => settings with
-                                    {
-                                        FilePreviewEnabled = value,
-                                    }))
-                                .AutomationName(t.Message(new("App", "SettingsFilePreviewEnabled")))
-                                .HelpText(t.Message(new("App", "SettingsFilePreviewEnabledDescription")))),
                         SettingsCard(
                             header: t.Message(new("App", "SettingsFilePreviewProvider")),
                             description: t.Message(new("App", "SettingsFilePreviewProviderDescription")),
                             isClickEnabled: false,
                             isActionIconVisible: false,
                             content:
-                            ComboBox(filePreviewProviderOptions, (int)Props.Settings.PreviewProvider, index =>
-                                {
-                                    if (Enum.IsDefined(typeof(FilePreviewProvider), index))
+                            HStack(8,
+                                    AnimatedButtons.Add(
+                                            t.Message(new("App", "SettingsFilePreviewAddTool")),
+                                            AddPreviewProvider,
+                                            isEnabled: Props.Settings.FilePreviewEnabled
+                                                       && !previewProviders.Contains(Props.Settings.PreviewProvider),
+                                            buttonSize: 32)
+                                        .Size(32, 32)
+                                        .VAlign(VerticalAlignment.Center),
+                                    ComboBox(filePreviewProviderOptions, (int)Props.Settings.PreviewProvider, index =>
                                     {
-                                        Props.UpdateSettings(settings => settings with
+                                        if (Enum.IsDefined(typeof(FilePreviewProvider), index))
                                         {
-                                            PreviewProvider = (FilePreviewProvider)index,
-                                        });
-                                    }
-                                })
-                                .AutomationName(t.Message(new("App", "SettingsFilePreviewProvider")))
-                                .HelpText(t.Message(new("App", "SettingsFilePreviewProviderDescription")))
-                                .MinWidth(180)
-                                .IsEnabled(Props.Settings.FilePreviewEnabled)),
-                        SettingsCard(
-                            header: t.Message(new("App", "SettingsFilePreviewPath")),
-                            description: t.Message(new("App", "SettingsFilePreviewPathDescription")),
-                            isClickEnabled: false,
-                            isActionIconVisible: false,
-                            content:
-                            TextBox(
-                                    previewOverridePath,
-                                    setPreviewOverridePath,
-                                    t.Message(new("App", "SettingsFilePreviewPathPlaceholder")))
-                                .OnLostFocus((_, _) => ApplyPreviewOverride())
-                                .AutomationName(t.Message(new("App", "SettingsFilePreviewPath")))
-                                .MinWidth(280)
-                                .IsEnabled(Props.Settings.FilePreviewEnabled)),
+                                            Props.UpdateSettings(settings => settings with
+                                            {
+                                                PreviewProvider = (FilePreviewProvider)index,
+                                            });
+                                        }
+                                    })
+                                        .AutomationName(t.Message(new("App", "SettingsFilePreviewProvider")))
+                                        .HelpText(t.Message(new("App", "SettingsFilePreviewProviderDescription")))
+                                        .MinWidth(180)
+                                        .VAlign(VerticalAlignment.Center)
+                                        .IsEnabled(Props.Settings.FilePreviewEnabled))
+                                .VAlign(VerticalAlignment.Center)),
+                        .. previewProviders.Select(provider =>
+                            FilePreviewProviderContent.CreateCard(t, new(
+                                    provider,
+                                    FilePreviewSettings.ExecutablePath(Props.Settings, provider),
+                                    path => Props.UpdateSettings(settings =>
+                                        FilePreviewSettings.SetExecutablePath(settings, provider, path)),
+                                    () => Props.UpdateSettings(settings => FilePreviewSettings.Remove(settings, provider))))
+                                .WithKey($"preview-provider-{provider}")),
                     ])
                 .Set(expander =>
                 {
@@ -768,36 +765,10 @@ sealed class SettingsPage : Component<SettingsPageProps>
             }
         }
 
-        void ApplyPreviewOverride()
+        void AddPreviewProvider()
         {
-            if (string.IsNullOrWhiteSpace(previewOverridePath))
-                return;
-
-            if (!FilePreviewLauncher.TryResolveOverride(
-                    previewOverridePath,
-                    out var provider,
-                    out var executablePath))
-            {
-                setStatusMessage(t.Message(new("App", "SettingsFilePreviewPathInvalid")));
-                return;
-            }
-
-            Props.UpdateSettings(settings => provider switch
-            {
-                FilePreviewProvider.PowerToysPeek => settings with
-                {
-                    PreviewProvider = provider,
-                    PowerToysPeekExecutablePath = executablePath,
-                },
-                FilePreviewProvider.QuickLook => settings with
-                {
-                    PreviewProvider = provider,
-                    QuickLookExecutablePath = executablePath,
-                },
-                _ => settings,
-            });
-            setPreviewOverridePath("");
-            setStatusMessage(null);
+            var provider = Props.Settings.PreviewProvider;
+            Props.UpdateSettings(settings => FilePreviewSettings.Add(settings, provider));
         }
     }
 

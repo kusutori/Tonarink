@@ -67,9 +67,10 @@ public static class AnimatedButtons
         string? label = null,
         string? toolTip = null,
         bool isEnabled = true,
-        double iconSize = 20) =>
+        double iconSize = 20,
+        double? buttonSize = null) =>
         Component<AnimatedAddButton, AnimatedAddButtonProps>(
-            new(automationName, onClick, label, toolTip, isEnabled, iconSize));
+            new(automationName, onClick, label, toolTip, isEnabled, iconSize, buttonSize));
 
     public static Element OpenFolder(
         string automationName,
@@ -207,6 +208,16 @@ public static class AnimatedButtons
         Component<AnimatedCopyButton, AnimatedCopyButtonProps>(
             new(successVersion, automationName, onClick, successAnnouncement, toolTip, isEnabled));
 
+    public static Element VerifyFeedback(
+        int successVersion,
+        string automationName,
+        Action onClick,
+        string? successAnnouncement = null,
+        bool isEnabled = true,
+        bool succeeded = true) =>
+        Component<AnimatedVerifyButton, AnimatedVerifyButtonProps>(
+            new(successVersion, automationName, onClick, successAnnouncement, isEnabled, succeeded));
+
     public static Element Refresh(
         string automationName,
         Action onClick,
@@ -290,7 +301,8 @@ public static class AnimatedButtons
         bool subtle = false,
         bool critical = false,
         int shakeVersion = 0,
-        double iconSize = 24) =>
+        double iconSize = 24,
+        double? buttonSize = null) =>
         Component<AnimatedDeleteButton, AnimatedDeleteButtonProps>(
             new(
                 automationName,
@@ -301,5 +313,6 @@ public static class AnimatedButtons
                 subtle,
                 critical,
                 shakeVersion,
-                iconSize));
+                iconSize,
+                buttonSize));
 }

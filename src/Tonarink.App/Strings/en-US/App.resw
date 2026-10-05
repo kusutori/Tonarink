@@ -202,13 +202,18 @@
   <data name="SettingsFilePreviewEnabled" xml:space="preserve"><value>Enable file preview</value></data>
   <data name="SettingsFilePreviewEnabledDescription" xml:space="preserve"><value>Select a file in the send list and press Space to preview it with the selected tool.</value></data>
   <data name="SettingsFilePreviewProvider" xml:space="preserve"><value>Preview tool</value></data>
-  <data name="SettingsFilePreviewProviderDescription" xml:space="preserve"><value>Choose the third-party tool used to open file previews.</value></data>
+  <data name="SettingsFilePreviewProviderDescription" xml:space="preserve"><value>Select a tool to use its automatically detected path. Click the plus button only to add a path override.</value></data>
   <data name="SettingsFilePreviewProviderPowerToysPeek" xml:space="preserve"><value>PowerToys Peek</value></data>
   <data name="SettingsFilePreviewProviderQuickLook" xml:space="preserve"><value>QuickLook</value></data>
-  <data name="SettingsFilePreviewPath" xml:space="preserve"><value>Override tool path</value></data>
-  <data name="SettingsFilePreviewPathDescription" xml:space="preserve"><value>Tonarink automatically detects and remembers installed preview tools, so this is normally left empty. To override a path, enter the full path to PowerToys.Peek.UI.exe or QuickLook.exe. Tonarink uses the file name to save each path to the corresponding tool.</value></data>
-  <data name="SettingsFilePreviewPathPlaceholder" xml:space="preserve"><value>Path to PowerToys.Peek.UI.exe or QuickLook.exe</value></data>
-  <data name="SettingsFilePreviewPathInvalid" xml:space="preserve"><value>Select an existing PowerToys.Peek.UI.exe or QuickLook.exe file.</value></data>
+  <data name="SettingsFilePreviewAddTool" xml:space="preserve"><value>Add path override</value></data>
+  <data name="SettingsFilePreviewToolPath" xml:space="preserve"><value>{tool} executable path</value></data>
+  <data name="SettingsFilePreviewToolPathDescription" xml:space="preserve"><value>Validate to save the override. Remove this entry to restore automatic detection.</value></data>
+  <data name="SettingsFilePreviewVerifyPath" xml:space="preserve"><value>Validate and save path</value></data>
+  <data name="SettingsFilePreviewAutoPathPlaceholder" xml:space="preserve"><value>Enter override path</value></data>
+  <data name="SettingsFilePreviewAutoPathSaved" xml:space="preserve"><value>Saved. The tool will be detected automatically.</value></data>
+  <data name="SettingsFilePreviewPathSaved" xml:space="preserve"><value>The path exists. Override saved.</value></data>
+  <data name="SettingsFilePreviewPathExists" xml:space="preserve"><value>The path exists.</value></data>
+  <data name="SettingsFilePreviewPathMissing" xml:space="preserve"><value>The path does not exist. Check your input.</value></data>
   <data name="ReceiveCancelled" xml:space="preserve"><value>Receive cancelled</value></data>
   <data name="ReceivedMessage" xml:space="preserve"><value>Sent you a message:</value></data>
   <data name="ReceivedTextContent" xml:space="preserve"><value>Received text content</value></data>

@@ -11,7 +11,24 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\LocalSendDotNet.Core\LocalSendDotNet.Core.csproj" />
+    <ProjectReference Include="..\..\src\Tonarink.Application\Tonarink.Application.csproj" />
     <Compile Include="..\..\src\Tonarink.App\Models\SettingsModels.cs" Link="App\SettingsModels.cs" />
     <Compile Include="..\..\src\Tonarink.App\Pages\Settings\SettingsInputDraft.cs" Link="App\SettingsInputDraft.cs" />
+    <Compile Include="..\..\src\Tonarink.App\Services\Settings\FilePreviewSettings.cs" Link="App\FilePreviewSettings.cs" />
+    <Compile Include="..\..\src\Tonarink.App\Services\Settings\AppSettingsStore.cs" Link="App\AppSettingsStore.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="..\..\src\Tonarink.App\Pages\Settings\SettingsPage.cs"
+             Link="UiSources\SettingsPage.cs" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\src\Tonarink.App\Components\Settings\FilePreviewProviderContent.cs"
+             Link="UiSources\FilePreviewProviderContent.cs" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\src\Tonarink.App\Components\Animations\AnimatedAddButton.cs"
+             Link="UiSources\AnimatedAddButton.cs" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\src\Tonarink.App\Components\Animations\AnimatedDeleteButton.cs"
+             Link="UiSources\AnimatedDeleteButton.cs" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\src\Tonarink.App\Components\Animations\AnimatedVerifyButton.cs"
+             Link="UiSources\AnimatedVerifyButton.cs" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\src\Tonarink.App\Components\Animations\AnimatedCopyButton.cs"
+             Link="UiSources\AnimatedCopyButton.cs" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

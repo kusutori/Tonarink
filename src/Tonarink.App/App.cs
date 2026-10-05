@@ -16,6 +16,19 @@ try
     WidgetAppHost.Start();
     try
     {
+#if DEBUG
+        // Reactor's multi-window startup overload doesn't dispatch --devtools.
+        // Use its root-host entry only for an explicitly requested debug session.
+        if (Environment.GetCommandLineArgs().Contains("--devtools"))
+        {
+            ReactorApp.Run<AppShell>(AppWindows.MainSpec(startHidden: false), configure: _ =>
+            {
+                Application.Current.HighContrastAdjustment = ApplicationHighContrastAdjustment.None;
+                ReactorApp.ShutdownPolicy = ShutdownPolicy.OnLastSurfaceClosed;
+            });
+        }
+        else
+#endif
         ReactorApp.Run(_ =>
         {
             Application.Current.HighContrastAdjustment = ApplicationHighContrastAdjustment.None;

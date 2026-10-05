@@ -202,13 +202,18 @@
   <data name="SettingsFilePreviewEnabled" xml:space="preserve"><value>启用文件预览</value></data>
   <data name="SettingsFilePreviewEnabledDescription" xml:space="preserve"><value>在待发送列表中选中文件后，按空格键使用所选工具预览。</value></data>
   <data name="SettingsFilePreviewProvider" xml:space="preserve"><value>预览工具</value></data>
-  <data name="SettingsFilePreviewProviderDescription" xml:space="preserve"><value>选择用于打开文件预览的第三方工具。</value></data>
+  <data name="SettingsFilePreviewProviderDescription" xml:space="preserve"><value>选中即可使用，路径自动检测；需要覆盖路径时，点击左侧加号。</value></data>
   <data name="SettingsFilePreviewProviderPowerToysPeek" xml:space="preserve"><value>PowerToys Peek</value></data>
   <data name="SettingsFilePreviewProviderQuickLook" xml:space="preserve"><value>QuickLook</value></data>
-  <data name="SettingsFilePreviewPath" xml:space="preserve"><value>覆盖工具路径</value></data>
-  <data name="SettingsFilePreviewPathDescription" xml:space="preserve"><value>Tonarink 会自动检测并记住已安装的预览工具，通常无需填写。需要覆盖时，可依次输入 PowerToys.Peek.UI.exe 或 QuickLook.exe 的完整路径；Tonarink 会根据文件名将路径保存到对应工具。</value></data>
-  <data name="SettingsFilePreviewPathPlaceholder" xml:space="preserve"><value>PowerToys.Peek.UI.exe 或 QuickLook.exe 的路径</value></data>
-  <data name="SettingsFilePreviewPathInvalid" xml:space="preserve"><value>请选择存在的 PowerToys.Peek.UI.exe 或 QuickLook.exe 文件。</value></data>
+  <data name="SettingsFilePreviewAddTool" xml:space="preserve"><value>添加路径覆盖</value></data>
+  <data name="SettingsFilePreviewToolPath" xml:space="preserve"><value>{tool} 的程序路径</value></data>
+  <data name="SettingsFilePreviewToolPathDescription" xml:space="preserve"><value>校验后保存覆盖路径；删除此项可恢复自动检测。</value></data>
+  <data name="SettingsFilePreviewVerifyPath" xml:space="preserve"><value>校验并保存路径</value></data>
+  <data name="SettingsFilePreviewAutoPathPlaceholder" xml:space="preserve"><value>输入覆盖路径</value></data>
+  <data name="SettingsFilePreviewAutoPathSaved" xml:space="preserve"><value>已保存，将自动检测工具。</value></data>
+  <data name="SettingsFilePreviewPathSaved" xml:space="preserve"><value>路径存在，已保存覆盖路径。</value></data>
+  <data name="SettingsFilePreviewPathExists" xml:space="preserve"><value>路径存在。</value></data>
+  <data name="SettingsFilePreviewPathMissing" xml:space="preserve"><value>路径不存在，请检查输入。</value></data>
   <data name="ReceiveCancelled" xml:space="preserve"><value>接收已取消</value></data>
   <data name="ReceivedMessage" xml:space="preserve"><value>发送给你了一条消息：</value></data>
   <data name="ReceivedTextContent" xml:space="preserve"><value>收到的文本内容</value></data>

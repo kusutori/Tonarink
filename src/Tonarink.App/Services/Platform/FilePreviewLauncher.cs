@@ -54,40 +54,14 @@ static class FilePreviewLauncher
             ?? ""
         );
 
-    public static bool TryResolveOverride(
-        string? path,
-        out FilePreviewProvider provider,
-        out string executablePath)
-    {
-        provider = default;
-        executablePath = "";
-
-        var resolved = ResolveExecutable(path);
-        if (resolved is null)
-            return false;
-
-        provider = Path.GetFileName(resolved) switch
-        {
-            var fileName when fileName.Equals("PowerToys.Peek.UI.exe", StringComparison.OrdinalIgnoreCase) =>
-                FilePreviewProvider.PowerToysPeek,
-            var fileName when fileName.Equals("QuickLook.exe", StringComparison.OrdinalIgnoreCase) =>
-                FilePreviewProvider.QuickLook,
-            _ => (FilePreviewProvider)(-1),
-        };
-        if (!Enum.IsDefined(provider))
-            return false;
-
-        executablePath = resolved;
-        return true;
-    }
-
     public static bool IsAvailable(
         FilePreviewProvider provider,
         string? executablePath) =>
         provider switch
         {
-            FilePreviewProvider.PowerToysPeek => ResolveExecutable(executablePath) is not null,
-            FilePreviewProvider.QuickLook => ResolveExecutable(executablePath) is not null || IsQuickLookRunning(),
+            FilePreviewProvider.PowerToysPeek => ResolveProviderExecutable(provider, executablePath) is not null,
+            FilePreviewProvider.QuickLook => ResolveProviderExecutable(provider, executablePath) is not null
+                                             || (string.IsNullOrWhiteSpace(executablePath) && IsQuickLookRunning()),
             _ => false,
         };
 
@@ -102,13 +76,17 @@ static class FilePreviewLauncher
             return false;
 
         var fullPath = Path.GetFullPath(path!);
+        var executable = ResolveProviderExecutable(provider, executablePath);
+        if (!string.IsNullOrWhiteSpace(executablePath) && executable is null)
+            return false;
+
         return provider switch
         {
             FilePreviewProvider.PowerToysPeek => TryStartExecutable(
-                executablePath,
+                executable,
                 fullPath,
                 "Could not preview a file with PowerToys Peek"),
-            FilePreviewProvider.QuickLook => TryQuickLook(executablePath, fullPath),
+            FilePreviewProvider.QuickLook => TryQuickLook(executable, fullPath),
             _ => false,
         };
     }
@@ -203,6 +181,14 @@ static class FilePreviewLauncher
 
     private static string? FindInstalledExecutable(IReadOnlyList<string> candidates) =>
         candidates.FirstOrDefault(File.Exists);
+
+    private static string? ResolveProviderExecutable(FilePreviewProvider provider, string? overridePath) =>
+        FilePreviewSettings.ResolveExecutablePath(overridePath, () => provider switch
+        {
+            FilePreviewProvider.PowerToysPeek => FindInstalledExecutable(PowerToysPeekExecutableCandidates),
+            FilePreviewProvider.QuickLook => FindInstalledExecutable(QuickLookExecutableCandidates),
+            _ => null,
+        });
 
     private static string? ResolveExecutable(string? path)
     {

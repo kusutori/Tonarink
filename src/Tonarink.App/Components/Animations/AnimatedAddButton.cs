@@ -12,7 +12,8 @@ sealed record AnimatedAddButtonProps(
     string? Label = null,
     string? ToolTip = null,
     bool IsEnabled = true,
-    double IconSize = 20);
+    double IconSize = 20,
+    double? ButtonSize = null);
 
 sealed class AnimatedAddButton : Component<AnimatedAddButtonProps>
 {
@@ -73,6 +74,19 @@ sealed class AnimatedAddButton : Component<AnimatedAddButtonProps>
                 })
             .AutomationName(Props.AutomationName)
             .IsEnabled(Props.IsEnabled);
+
+        // Component layout modifiers apply to its Border wrapper, not this Button.
+        // Compact icon buttons must set their native padding and dimensions here.
+        if (Props.Label is null && Props.ButtonSize is { } buttonSize)
+        {
+            button = button
+                .MinWidth(0)
+                .MinHeight(0)
+                .Size(buttonSize, buttonSize)
+                .Padding(0, 0)
+                .HorizontalContentAlignment(HorizontalAlignment.Center)
+                .VerticalContentAlignment(VerticalAlignment.Center);
+        }
 
         if (Props.ToolTip is { } toolTip)
             button = button.ToolTip(toolTip);

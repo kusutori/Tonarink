@@ -21,22 +21,23 @@ static class AppSettingsStore
 
         try
         {
-            var loaded = File.Exists(FilePath)
+            var stored = File.Exists(FilePath)
                 ? JsonSerializer.Deserialize(
                     File.ReadAllText(FilePath),
-                    AppSettingsJsonContext.Default.AppSettingsFile)?.ToSettings() ?? AppSettings.Default
-                : AppSettings.Default;
-            var detectedPaths = FilePreviewLauncher.DetectInstalledExecutables(
-                loaded.PowerToysPeekExecutablePath,
-                loaded.QuickLookExecutablePath);
-            var detected = loaded with
+                    AppSettingsJsonContext.Default.AppSettingsFile)
+                : null;
+            var loaded = stored?.ToSettings() ?? AppSettings.Default;
+            var detected = loaded;
+            if (loaded.PreviewProviders is null || stored?.FilePreviewPathsAreOverrides != true)
             {
-                PowerToysPeekExecutablePath = detectedPaths.PowerToysPeek,
-                QuickLookExecutablePath = detectedPaths.QuickLook,
-            };
+                var paths = FilePreviewLauncher.DetectInstalledExecutables(
+                    null, null);
+                detected = FilePreviewSettings.MigrateDetectedTools(loaded, paths.PowerToysPeek, paths.QuickLook,
+                    clearDetectedPaths: stored?.FilePreviewPathsAreOverrides != true);
+            }
             _cached = detected;
 
-            if (detected != loaded)
+            if (detected != loaded || stored?.FilePreviewPathsAreOverrides != true)
             {
                 try
                 {
@@ -96,6 +97,8 @@ sealed class AppSettingsFile
     public bool? ExpandDragDropToEntireApp { get; set; }
     public bool? FilePreviewEnabled { get; set; }
     public string? FilePreviewProvider { get; set; }
+    public string[]? FilePreviewProviders { get; set; }
+    public bool? FilePreviewPathsAreOverrides { get; set; }
     // Kept only to migrate settings written before preview providers were introduced.
     public bool? PowerToysPeekPreviewEnabled { get; set; }
     public string? PowerToysPeekExecutablePath { get; set; }
@@ -134,6 +137,8 @@ sealed class AppSettingsFile
         ExpandDragDropToEntireApp = settings.ExpandDragDropToEntireApp,
         FilePreviewEnabled = settings.FilePreviewEnabled,
         FilePreviewProvider = settings.PreviewProvider.ToString(),
+        FilePreviewProviders = settings.PreviewProviders?.Select(provider => provider.ToString()).ToArray(),
+        FilePreviewPathsAreOverrides = true,
         PowerToysPeekExecutablePath = settings.PowerToysPeekExecutablePath,
         QuickLookExecutablePath = settings.QuickLookExecutablePath,
         SaveReceiveHistory = settings.SaveReceiveHistory,
@@ -194,6 +199,7 @@ sealed class AppSettingsFile
                 out var previewProvider)
                     ? previewProvider
                     : defaults.PreviewProvider,
+            PreviewProviders = FilePreviewSettings.ParseProviders(FilePreviewProviders),
             PowerToysPeekExecutablePath = string.IsNullOrWhiteSpace(PowerToysPeekExecutablePath)
                 ? defaults.PowerToysPeekExecutablePath
                 : PowerToysPeekExecutablePath.Trim().Trim('"'),

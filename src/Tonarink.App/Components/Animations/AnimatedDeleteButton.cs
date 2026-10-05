@@ -19,7 +19,8 @@ sealed record AnimatedDeleteButtonProps(
     bool Subtle = false,
     bool Critical = false,
     int ShakeVersion = 0,
-    double IconSize = 24);
+    double IconSize = 24,
+    double? ButtonSize = null);
 
 sealed class AnimatedDeleteButton : Component<AnimatedDeleteButtonProps>
 {
@@ -48,7 +49,9 @@ sealed class AnimatedDeleteButton : Component<AnimatedDeleteButtonProps>
                 PlayShake(playback);
         }, Props.ShakeVersion, reduceMotion);
 
-        var player = DeleteIcon(playback, Props.IsEnabled, Props.IconSize);
+        var player = DeleteIcon(playback, Props.IsEnabled, Props.IconSize)
+            .HAlign(HorizontalAlignment.Center)
+            .VAlign(VerticalAlignment.Center);
         Element content = Props.Label is null
             ? player
             : HStack(8, player, TextBlock(Props.Label));
@@ -62,9 +65,24 @@ sealed class AnimatedDeleteButton : Component<AnimatedDeleteButtonProps>
 
         if (Props.Label is null)
         {
-            button = button
-                .MinWidth(40)
-                .MinHeight(40);
+            if (Props.ButtonSize is { } buttonSize)
+            {
+                // Size the native Button, not just the Component's Border wrapper.
+                // Default button padding otherwise pushes/clips the icon in a compact cell.
+                button = button
+                    .MinWidth(0)
+                    .MinHeight(0)
+                    .Size(buttonSize, buttonSize)
+                    .Padding(0, 0)
+                    .HorizontalContentAlignment(HorizontalAlignment.Center)
+                    .VerticalContentAlignment(VerticalAlignment.Center);
+            }
+            else
+            {
+                button = button
+                    .MinWidth(40)
+                    .MinHeight(40);
+            }
         }
 
         if (Props.Subtle)
