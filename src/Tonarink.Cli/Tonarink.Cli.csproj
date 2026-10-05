@@ -6,8 +6,22 @@
     <IsAotCompatible>true</IsAotCompatible>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Version>1.1.0</Version>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>tonarink-cli</ToolCommandName>
+    <PackageId>tonarink-cli</PackageId>
+    <Authors>kusutori</Authors>
+    <Description>Standalone LocalSend-compatible CLI for device discovery, file and text transfers, and server management.</Description>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageProjectUrl>https://github.com/kusutori/Tonarink</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/kusutori/Tonarink</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>localsend;cli;file-transfer;tonarink</PackageTags>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../Tonarink.CommandLine/Tonarink.CommandLine.csproj" />
+    <None Include="README.md" Pack="true" PackagePath="/" />
+    <None Include="../../LICENSE" Pack="true" PackagePath="/" />
+    <None Include="../../NOTICE" Pack="true" PackagePath="/" />
   </ItemGroup>
 </Project>

@@ -1,0 +1,274 @@
+name: release-cli
+
+on:
+  push:
+    tags:
+      - "cli-v*"
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: Publish (must run from a matching cli-v tag); otherwise build artifacts only
+        type: boolean
+        default: false
+      submit_winget:
+        description: Submit stable portable manifests to winget-pkgs after publishing
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cli-release-${{ github.ref }}
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: pwsh
+
+jobs:
+  version:
+    runs-on: windows-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      publish: ${{ steps.version.outputs.publish }}
+      prerelease: ${{ steps.version.outputs.prerelease }}
+      winget: ${{ steps.version.outputs.winget }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Resolve and validate CLI version
+        id: version
+        env:
+          REQUEST_PUBLISH: ${{ inputs.publish }}
+          REQUEST_WINGET: ${{ inputs.submit_winget }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $version = ([xml](Get-Content src/Tonarink.Cli/Tonarink.Cli.csproj -Raw)).Project.PropertyGroup.Version
+          if ($version -notmatch '^\d+\.\d+\.\d+(?:-[0-9A-Za-z]+(?:[.-][0-9A-Za-z]+)*)?$') {
+            throw "Invalid CLI package version: $version"
+          }
+          $publish = $env:GITHUB_EVENT_NAME -eq 'push' -or $env:REQUEST_PUBLISH -eq 'true'
+          if (($env:GITHUB_REF_TYPE -eq 'tag' -or $publish) -and
+              ($env:GITHUB_REF_TYPE -ne 'tag' -or $env:GITHUB_REF_NAME -ne "cli-v$version")) {
+            throw "Publish from cli-v$version, matching the CLI project version."
+          }
+          $prerelease = $version.Contains('-')
+          $winget = $publish -and -not $prerelease -and ($env:GITHUB_EVENT_NAME -eq 'push' -or $env:REQUEST_WINGET -eq 'true')
+          "version=$version" >> $env:GITHUB_OUTPUT
+          "publish=$($publish.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
+          "prerelease=$($prerelease.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
+          "winget=$($winget.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
+
+  nuget:
+    needs: version
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 11.0.100-rc.1.26425.128
+      - name: Pack framework-dependent JIT tool
+        run: >-
+          dotnet pack src/Tonarink.Cli/Tonarink.Cli.csproj --configuration Release
+          --output artifacts/cli/nuget -p:PublishAot=false -p:SelfContained=false
+          -p:UseAppHost=false -p:ContinuousIntegrationBuild=true
+      - name: Install and run the actual .NET tool
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $toolDirectory = Join-Path $env:RUNNER_TEMP 'cli-tool'
+          $profile = Join-Path $env:RUNNER_TEMP 'cli-tool-profile'
+          $config = Join-Path $env:RUNNER_TEMP 'cli-tool.nuget.config'
+          $feed = [Security.SecurityElement]::Escape((Join-Path $PWD.Path 'artifacts/cli/nuget'))
+          "<configuration><packageSources><clear/><add key=`"cli-build`" value=`"$feed`" /></packageSources></configuration>" | Set-Content $config
+          dotnet tool install tonarink-cli --tool-path $toolDirectory --version '${{ needs.version.outputs.version }}' --configfile $config --no-cache
+          if ($LASTEXITCODE -ne 0) { throw 'Tool installation failed.' }
+          $cli = Join-Path $toolDirectory 'tonarink-cli.exe'
+          & $cli --language en-US --help
+          if ($LASTEXITCODE -ne 0) { throw 'Tool help failed.' }
+          & $cli --language zh-CN --help
+          if ($LASTEXITCODE -ne 0) { throw 'Localized tool help failed.' }
+          try {
+            & $cli --profile $profile settings set alias ci-cli --json
+            if ($LASTEXITCODE -ne 0) { throw 'Tool shim could not start its standalone host.' }
+            & $cli --profile $profile settings get alias --json
+            if ($LASTEXITCODE -ne 0) { throw 'Could not query the standalone host.' }
+          }
+          finally {
+            & $cli --profile $profile app quit --yes --json
+            if ($LASTEXITCODE -ne 0) { throw 'Could not stop the isolated standalone host.' }
+          }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cli-nuget
+          path: artifacts/cli/nuget/*.nupkg
+          if-no-files-found: error
+
+  portable:
+    needs: version
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        rid: [win-x64, win-arm64]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 11.0.100-rc.1.26425.128
+      - name: Build Native AOT portable ZIP
+        run: >-
+          ./tools/Build-CliPortable.ps1 -RuntimeIdentifier '${{ matrix.rid }}'
+          -Version '${{ needs.version.outputs.version }}' -OutputDirectory artifacts/cli/portable
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cli-portable-${{ matrix.rid }}
+          path: artifacts/cli/portable/*.zip
+          if-no-files-found: error
+
+  assemble:
+    needs: [version, nuget, portable]
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: cli-nuget
+          path: artifacts/cli/release
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: cli-portable-*
+          merge-multiple: true
+          path: artifacts/cli/release
+      - name: Generate portable WinGet manifests
+        if: needs.version.outputs.prerelease == 'false'
+        run: >-
+          ./tools/New-CliWingetManifest.ps1 -Version '${{ needs.version.outputs.version }}'
+          -AssetDirectory artifacts/cli/release -OutputDirectory artifacts/cli/winget
+          -Repository '${{ github.repository }}'
+      - uses: actions/setup-node@v4
+        if: needs.version.outputs.prerelease == 'false'
+        with:
+          node-version: "22"
+      - name: Install isolated schema validator
+        if: needs.version.outputs.prerelease == 'false'
+        run: npm install --prefix "$env:RUNNER_TEMP/winget-validator" --no-audit --no-fund ajv@8.17.1 ajv-formats@3.0.1 yaml@2.8.1
+      - name: Validate WinGet manifests without publishing
+        if: needs.version.outputs.prerelease == 'false'
+        run: |
+          node tools/Validate-CliWingetManifest.cjs 'artifacts/cli/winget/manifests/k/kusutori/tonarink-cli/${{ needs.version.outputs.version }}' "$env:RUNNER_TEMP/winget-validator"
+          if ($LASTEXITCODE -ne 0) { throw 'WinGet manifest validation failed.' }
+          Compress-Archive -Path artifacts/cli/winget/manifests -DestinationPath artifacts/cli/release/tonarink-cli-winget-manifests.zip
+      - name: Hash all release assets
+        run: |
+          $lines = Get-ChildItem artifacts/cli/release -File | Sort-Object Name | ForEach-Object {
+            "$((Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant())  $($_.Name)"
+          }
+          $lines | Set-Content artifacts/cli/release/SHA256SUMS.txt -Encoding utf8NoBOM
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cli-release
+          path: artifacts/cli/release/*
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        if: needs.version.outputs.prerelease == 'false'
+        with:
+          name: cli-winget
+          path: artifacts/cli/winget/manifests
+          if-no-files-found: error
+
+  github-release:
+    if: needs.version.outputs.publish == 'true'
+    needs: [version, assemble]
+    runs-on: windows-latest
+    environment: release
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: cli-release
+          path: artifacts/cli/release
+      - name: Publish independent CLI release (never Latest)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: >-
+          ./tools/Publish-CliGitHubRelease.ps1 -Version '${{ needs.version.outputs.version }}'
+          -AssetDirectory artifacts/cli/release -Repository '${{ github.repository }}'
+          -Prerelease:('${{ needs.version.outputs.prerelease }}' -eq 'true')
+
+  publish-nuget:
+    if: needs.version.outputs.publish == 'true'
+    needs: [version, assemble]
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 11.0.100-rc.1.26425.128
+      - uses: actions/download-artifact@v4
+        with:
+          name: cli-nuget
+          path: artifacts/cli/nuget
+      - name: NuGet trusted publishing login
+        id: login
+        uses: NuGet/login@v1
+        with:
+          user: ${{ secrets.NUGET_USER }}
+      - name: Publish JIT tool to nuget.org
+        shell: bash
+        env:
+          NUGET_API_KEY: ${{ steps.login.outputs.NUGET_API_KEY }}
+        run: >-
+          dotnet nuget push 'artifacts/cli/nuget/tonarink-cli.${{ needs.version.outputs.version }}.nupkg'
+          --source https://api.nuget.org/v3/index.json --api-key "$NUGET_API_KEY" --skip-duplicate
+
+  submit-winget:
+    if: needs.version.outputs.winget == 'true'
+    needs: [version, github-release]
+    runs-on: windows-latest
+    environment: release
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v5
+        with:
+          # Required only by the pinned WingetCreate utility, not by the portable CLI.
+          dotnet-version: 9.0.x
+      - uses: actions/download-artifact@v4
+        with:
+          name: cli-winget
+          path: artifacts/cli/winget
+      - name: Install pinned WingetCreate
+        run: ./tools/Install-WingetCreate.ps1 -Destination "$env:RUNNER_TEMP/wingetcreate"
+      - name: Submit stable portable manifests
+        env:
+          WINGET_CREATE_GITHUB_TOKEN: ${{ secrets.WINGET_TOKEN }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          if (-not $env:WINGET_CREATE_GITHUB_TOKEN) { throw 'Configure WINGET_TOKEN (classic PAT with public_repo).' }
+          # Use the environment variable instead of --token so the PAT is not logged as an argument.
+          $env:GH_TOKEN = $env:WINGET_CREATE_GITHUB_TOKEN
+          $version = '${{ needs.version.outputs.version }}'
+          $path = "manifests/k/kusutori/tonarink-cli/$version"
+          $merged = gh api "repos/microsoft/winget-pkgs/contents/$path" 2>&1
+          if ($LASTEXITCODE -eq 0) {
+            Write-Host "Version $version is already present in winget-pkgs; skipping submission."
+            exit 0
+          }
+          if (($merged -join "`n") -notmatch 'HTTP 404') { throw "Could not check merged WinGet versions: $merged" }
+          $package = gh api 'repos/microsoft/winget-pkgs/contents/manifests/k/kusutori/tonarink-cli' 2>&1
+          if ($LASTEXITCODE -eq 0) { $prefix = 'New version' }
+          elseif (($package -join "`n") -match 'HTTP 404') { $prefix = 'New package' }
+          else { throw "Could not check WinGet package: $package" }
+          $title = "${prefix}: kusutori.tonarink-cli version $version"
+          $existing = gh pr list --repo microsoft/winget-pkgs --author '@me' --state open --search "in:title kusutori.tonarink-cli $version" --json title,url | ConvertFrom-Json
+          if ($LASTEXITCODE -ne 0) { throw 'Could not check existing WinGet pull requests.' }
+          if ($existing | Where-Object title -EQ $title) {
+            Write-Host 'An open pull request already exists; skipping duplicate submission.'
+            exit 0
+          }
+          wingetcreate submit "artifacts/cli/winget/k/kusutori/tonarink-cli/$version" --prtitle $title --no-open
+          if ($LASTEXITCODE -ne 0) { throw 'WinGet submission failed. The GitHub release is still available; rerun this job after fixing the token or manifests.' }

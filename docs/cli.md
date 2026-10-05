@@ -3,9 +3,27 @@
 CLI 使用微软 `System.CommandLine` 定义命令树、类型化参数、校验和子命令帮助，同一套命令支持两种入口：
 
 - 集成版：安装包含此功能的 MSIX 后通过应用执行别名运行 `tonarink`，与 GUI 共用设备身份、服务器、设置、收藏和接收历史，无需手动添加 PATH
-- 独立版：直接运行 `Tonarink.Cli.exe`，不依赖 WinUI 或主应用，管理自己的后台服务与配置目录，不自动注册 PATH
+- 独立版：运行 `tonarink-cli`，不依赖 WinUI 或主应用，管理自己的后台服务与配置目录；通过 .NET tool 或 winget 安装时注册命令路径
 
-下面示例中的 `tonarink` 均可替换为 `Tonarink.Cli.exe`，但 `app open` 和界面/Windows 集成相关设置仅适用于集成版。命令级帮助可直接使用 `send --help`、`receive accept --help` 等。
+下面示例中的 `tonarink` 均可替换为 `tonarink-cli`，但 `app open` 和界面/Windows 集成相关设置仅适用于集成版。命令级帮助可直接使用 `send --help`、`receive accept --help` 等。
+
+## 安装独立版
+
+两种分发使用相同的 `tonarink-cli` 命令，选择一种即可，避免 PATH 中出现同名工具冲突：
+
+```powershell
+# NuGet：框架依赖的 JIT 版本
+dotnet tool install --global tonarink-cli
+
+# winget：Windows x64 / ARM64 的 Native AOT portable 版本
+winget install --id kusutori.tonarink-cli --exact --source winget
+```
+
+JIT 版当前目标为 .NET 11 RC，需要匹配的 .NET 和 ASP.NET Core 共享运行时，安装 .NET 11 SDK 即可同时获得两者。AOT 版不需要 .NET 或 WinUI 运行时，清单要求 Windows 10 2004 或更高版本，winget 会注册 portable 命令路径；首次安装后必要时重新打开终端。
+
+也可以从 `cli-v...` 的 [GitHub Release](https://github.com/kusutori/Tonarink/releases?q=cli-v&expanded=true) 下载对应架构的 ZIP，解压后直接运行 `tonarink-cli.exe`，手动解压不会注册 PATH。winget 条目需要社区清单 PR 合并后才可安装，不会在 GitHub 发布瞬间立即可用。
+
+升级或卸载前运行 `tonarink-cli app quit --yes`，释放后台宿主对程序文件的占用；使用过自定义 `--profile` 时，也要退出对应宿主。分发流程及凭据配置见 [CLI 发布说明](cli-release-ci.md)。
 
 ```powershell
 tonarink --help
@@ -17,7 +35,7 @@ tonarink send --target "我的手机" --text "来自命令行的消息"
 Get-Content .\message.txt -Raw | tonarink send --target "我的手机" --text -
 ```
 
-如果提示找不到命令，请确认安装的是包含 CLI 的新版本，并在 Windows 设置的“应用执行别名”中启用 `tonarink.exe`。此功能不需要修改系统或用户 PATH。
+集成版如果提示找不到 `tonarink` 命令，请确认安装的是包含 CLI 的新版本，并在 Windows 设置的“应用执行别名”中启用 `tonarink.exe`。此功能不需要修改系统或用户 PATH。
 
 ## 运行方式
 
@@ -51,10 +69,10 @@ tonarink --language zh-CN status --json
 独立版默认使用 `%LocalAppData%\Tonarink.Cli`，通过全局 `--profile 目录` 可隔离多个配置、身份和后台宿主，不会读写 GUI 的配置。不同宿主不能监听同一端口；与 GUI 同时运行时，可先执行 `settings set port 53318` 再启动独立服务器。
 
 ```powershell
-.\Tonarink.Cli.exe --profile D:\CliProfile settings set port 53318
-.\Tonarink.Cli.exe --profile D:\CliProfile server start
-.\Tonarink.Cli.exe --profile D:\CliProfile status --json
-.\Tonarink.Cli.exe --profile D:\CliProfile app quit --yes
+tonarink-cli --profile D:\CliProfile settings set port 53318
+tonarink-cli --profile D:\CliProfile server start
+tonarink-cli --profile D:\CliProfile status --json
+tonarink-cli --profile D:\CliProfile app quit --yes
 ```
 
 ## 设备与发送
@@ -106,8 +124,8 @@ tonarink app quit --yes
 若独立 CLI 占用了 53317，必须用 **同一个独立入口和配置目录** 停止它，而不是运行控制 GUI 的 `tonarink` 别名：
 
 ```powershell
-.\Tonarink.Cli.exe server stop        # 释放监听端口，后台宿主仍运行
-.\Tonarink.Cli.exe app quit --yes     # 完全退出后台宿主
+tonarink-cli server stop              # 释放监听端口，后台宿主仍运行
+tonarink-cli app quit --yes           # 完全退出后台宿主
 # 自定义配置目录时，两条命令均加 --profile 对应目录
 ```
 
@@ -231,7 +249,7 @@ dotnet publish src/Tonarink.Cli/Tonarink.Cli.csproj -p:PublishProfile=win-x64-ao
 # ARM64 使用 win-arm64-aot
 ```
 
-Native AOT 输出位于 `artifacts/publish/cli/<rid>/`，不需要 .NET 或 Windows App Runtime，也不包含 GUI。分发该目录中的 `Tonarink.Cli.exe`，PDB 仅用于诊断，可不随包分发。项目也支持普通 `dotnet publish -c Release -r win-x64 --self-contained`。
+这些开发发布配置的 Native AOT 输出位于 `artifacts/publish/cli/<rid>/`，不需要 .NET 或 Windows App Runtime，也不包含 GUI；内部构建文件名仍为 `Tonarink.Cli.exe`，PDB 仅用于诊断。正式分发使用 [CLI 发布流程](cli-release-ci.md)，ZIP 内统一命名为 `tonarink-cli.exe`。普通自包含 JIT 发布可以显式指定 `-p:PackAsTool=false -p:PublishAot=false`。
 
 使用 WinApp CLI 验证集成版时，先准备 **不同于正式应用的临时清单身份和别名**，保留 console 子系统、多实例声明及所需资源，避免替换已安装的应用或注册其 COM/Explorer 扩展。临时清单必须命名为 `AppxManifest.xml`：
 
