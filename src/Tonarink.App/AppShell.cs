@@ -12,6 +12,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Windows.ApplicationModel.DataTransfer;
 using Tonarink.Hooks;
+using Tonarink.Cli;
 using static Microsoft.UI.Reactor.Factories;
 
 namespace Tonarink;
@@ -24,6 +25,13 @@ sealed class AppShell : Component
     {
         var (settings, updateSettings) = UseReducer(AppSettingsStore.Load());
         var window = UseWindow();
+
+        UseEffect(() =>
+        {
+            var cliHost = new CliHost(new AppCliRuntime(CliBridge.Get), AppPlatform.DataDirectory, AppDiagnostics.Report);
+            cliHost.Start();
+            return (Action)cliHost.Dispose;
+        });
 
         UseEffect(() => AppSettingsStore.Save(settings), settings);
         UseEffect(() =>
@@ -74,7 +82,7 @@ sealed class AppShell : Component
         var locale = AppLocale.Resolve(settings.LanguageIndex);
         var theme = AppTheme.ToElementTheme(settings.ThemeIndex);
         var reduceMotion = UseReducedMotion();
-        var startHidden = AppPlatform.StartHidden && settings.MinimizeToTray;
+        var startHidden = AppPlatform.CliBackground || (AppPlatform.StartHidden && settings.MinimizeToTray);
         var (splashVisible, setSplashVisible) = UseState(!startHidden);
         var (splashDismissing, setSplashDismissing) = UseState(false);
 
@@ -168,6 +176,8 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
         var runtime = nodeSession.Runtime;
         var windowController = context.UseShellWindow(window, settings.MinimizeToTray, t);
 
+        CliBridge.Current = new(nodeSession, settings, updateSettings, windowController.Restore, Props.Locale);
+
         var activations = context.UseShellActivations(
             navigation,
             nodeSession,
@@ -210,7 +220,7 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
 
         context.UseEffect(() =>
         {
-            if (runtime.IncomingTransfers.Count > 0)
+            if (runtime.IncomingTransfers.Count > 0 && !AppCliRuntime.HasReceiveClient)
                 windowController.Restore();
         }, runtime.IncomingTransfers.Count);
 

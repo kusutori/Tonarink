@@ -1,7 +1,8 @@
 <Solution>
   <Folder Name="/src/">
+    <Project Path="src/Tonarink.Cli/Tonarink.Cli.csproj" />
+    <Project Path="src/Tonarink.CommandLine/Tonarink.CommandLine.csproj" />
     <Project Path="src/LocalSendDotNet.Core/LocalSendDotNet.Core.csproj" />
-    <Project Path="src/LocalSendDotNet.Cli/LocalSendDotNet.Cli.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/LocalSendDotNet.Core.Tests/LocalSendDotNet.Core.Tests.csproj" />

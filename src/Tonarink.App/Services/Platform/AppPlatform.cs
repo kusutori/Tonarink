@@ -40,6 +40,9 @@ static class AppPlatform
 
     public static bool StartHidden => StartHiddenValue.Value;
 
+    public static bool CliBackground => Environment.GetCommandLineArgs().Contains(
+        Cli.CliProtocol.BackgroundArgument, StringComparer.Ordinal);
+
     public static bool HasPackageIdentity()
     {
         try

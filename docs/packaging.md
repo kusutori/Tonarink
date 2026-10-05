@@ -33,6 +33,31 @@ therefore absent from the trimmed retail binary.
 
 ## MSIX
 
+### Command-line execution alias
+
+Both managed and Native AOT packages declare the `tonarink.exe` execution
+alias in `Package.appxmanifest`. The alias uses the console subsystem and
+launches the same `Tonarink.exe` that normally starts the GUI. The entry point
+recognizes the WindowsApps alias invocation, including unqualified names from
+cmd.exe; it does not rely on manifest parameters being prepended to a native
+command line. Keep this extension when preparing the Native AOT manifest.
+The app references the shared `Tonarink.CommandLine` library; the independent
+`Tonarink.Cli` executable is not bundled into the app package. Console aliases
+also require the Application's
+`desktop4:SupportsMultipleInstances="true"`: CLI callers run independently,
+while normal GUI launches still use the existing primary-instance broker.
+Windows registers the alias during installation,
+and users can toggle it under App execution aliases. Portable builds do not
+register a PATH entry.
+
+After installing a new package, verify `tonarink --help`, `tonarink status
+--json`, redirected stdout/stderr, and Ctrl+C in a terminal. A successful
+direct EXE invocation alone does not validate Windows alias activation.
+See [CLI usage and architecture](cli.md).
+
+Schema references: [AppExecutionAlias](https://learn.microsoft.com/en-us/uwp/schemas/appxpackage/uapmanifestschema/element-uap5-appexecutionalias),
+[Application multi-instancing](https://learn.microsoft.com/en-us/uwp/schemas/appxpackage/uapmanifestschema/element-application).
+
 ### Start tile artwork
 
 The four Start tile layouts use the existing `Assets/AppIcon.svg` glyph over

@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>Tonarink.Cli</AssemblyName>
+    <Features>$(Features);runtime-async=on</Features>
+    <IsAotCompatible>true</IsAotCompatible>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Version>1.1.0</Version>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Tonarink.CommandLine/Tonarink.CommandLine.csproj" />
+  </ItemGroup>
+</Project>

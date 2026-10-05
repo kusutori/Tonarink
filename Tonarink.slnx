@@ -1,6 +1,8 @@
 <Solution>
   <Folder Name="/src/">
     <Project Path="src/Tonarink.App/Tonarink.App.csproj" />
+    <Project Path="src/Tonarink.Cli/Tonarink.Cli.csproj" />
+    <Project Path="src/Tonarink.CommandLine/Tonarink.CommandLine.csproj" />
     <Project Path="src/Tonarink.ExplorerCommand/Tonarink.ExplorerCommand.csproj" />
     <Project Path="src/Tonarink.WidgetProvider/Tonarink.WidgetProvider.csproj" />
     <Project Path="src/Tonarink.Application/Tonarink.Application.csproj" />
@@ -12,7 +14,6 @@
     <Project Path="src/Tonarink.LocalSend.Mobile/Tonarink.LocalSend.Mobile.csproj" />
     <Project Path="src/LocalSendDotNet.Core/LocalSendDotNet.Core.csproj" />
     <Project Path="src/LocalSendDotNet.Core.Mobile/LocalSendDotNet.Core.Mobile.csproj" />
-    <Project Path="src/LocalSendDotNet.Cli/LocalSendDotNet.Cli.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Tonarink.App.Settings.Tests/Tonarink.App.Settings.Tests.csproj" />

@@ -1,5 +1,9 @@
 using Microsoft.UI.Reactor;
 using Microsoft.UI.Xaml;
+using Tonarink.Cli;
+
+if (CliClient.ShouldRun(args))
+    return await CliClient.RunAsync(args, new(AppPlatform.DataDirectory, AppPlatform.ExecutablePath, Integrated: true));
 
 AppDiagnostics.Initialize();
 var startupSettings = AppSettingsStore.Load();
@@ -8,7 +12,7 @@ try
     if (await ShareTargetActivationBroker.RedirectToPrimaryInstanceAsync(
             () => AppNotificationService.Initialize(startupSettings.NotificationsEnabled)))
     {
-        return;
+        return 0;
     }
 
     ToolkitXamlMetadata.Register();
@@ -34,7 +38,7 @@ try
             Application.Current.HighContrastAdjustment = ApplicationHighContrastAdjustment.None;
             ReactorApp.ShutdownPolicy = ShutdownPolicy.OnLastSurfaceClosed;
             AppWindows.OpenMain(
-                startHidden: (AppPlatform.StartHidden && startupSettings.MinimizeToTray)
+                startHidden: AppPlatform.CliBackground || (AppPlatform.StartHidden && startupSettings.MinimizeToTray)
                     || AppNotificationService.HasPendingBackgroundAction);
         });
     }
@@ -47,3 +51,4 @@ finally
 {
     AppNotificationService.Shutdown();
 }
+return 0;

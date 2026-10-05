@@ -55,6 +55,8 @@
 - Integrate with Windows Share, File Explorer context menus, notifications,
   taskbar progress, the system tray, and Windows 11 materials.
 - Switch between light and dark themes and change language at runtime.
+- Use the integrated or independent [`Tonarink CLI`](docs/cli.md) for discovery,
+  transfers, server control, and settings management.
 - Choose a signed MSIX package or a portable Native AOT build for x64 and ARM64.
 
 ## Download

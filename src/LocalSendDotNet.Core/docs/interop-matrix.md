@@ -39,11 +39,17 @@ These require interactive actions in an official client and are not CI blockers:
 
 ### CLI commands
 
+Install the Windows Tonarink MSIX with CLI support; the `tonarink` execution
+alias reuses the main app's identity and settings. See [CLI usage](../../../docs/cli.md).
+The independent `src/Tonarink.Cli` reuses the same System.CommandLine command
+tree without depending on the Windows GUI. The older trial CLI project has
+been removed; the historical official-client observations above are unchanged.
+
 ```powershell
-dotnet run --project src/LocalSendDotNet.Cli -- discover --seconds 10
-dotnet run --project src/LocalSendDotNet.Cli -- listen --download-dir artifacts/interop-received
-dotnet run --project src/LocalSendDotNet.Cli -- send --target "Device Alias" FILE1 FILE2
-dotnet run --project src/LocalSendDotNet.Cli -- send-text --target "Device Alias" "interop text"
+tonarink discover --seconds 10
+tonarink receive watch --auto-accept --directory artifacts/interop-received
+tonarink send --target "Device Alias" FILE1 FILE2
+tonarink send --target "Device Alias" --text "interop text"
 ```
 
 Record the official app version, operating system, date and result when completing a remaining row. A future v3 implementation must add a separate matrix rather than replacing this v2 evidence.

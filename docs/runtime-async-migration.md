@@ -22,9 +22,11 @@ Android、iOS 和 Mac Catalyst 项目同时显式固定为 CoreCLR：
 - `Tonarink.LocalSend` 与 `Tonarink.LocalSend.Mobile`；
 - `Tonarink.Application`；
 - `Tonarink.App`；
+- `Tonarink.CommandLine` 与 `Tonarink.Cli`；
 - `Tonarink.Blazor.Shared` 与 `Tonarink.Web`；
-- `Tonarink.Hybrid` 与 iOS Share Extension；
-- `LocalSendDotNet.Cli`。
+- `Tonarink.Hybrid` 与 iOS Share Extension。
+
+CLI 共用逻辑位于 `Tonarink.CommandLine`，由 `Tonarink.App` 和独立的 `Tonarink.Cli` 引用；旧的试验 CLI 项目已移除。
 
 Widget 和 Explorer Command 当前没有异步热点，不为了配置统一而启用。
 

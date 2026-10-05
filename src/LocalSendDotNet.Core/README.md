@@ -53,8 +53,10 @@ await foreach (var request in node.WatchIncomingTransfersAsync(cancellationToken
 }
 ```
 
-The sibling `LocalSendDotNet.Cli` project provides discovery, send, receive, and
-diagnostic commands for development and interoperability testing.
+The Windows app and independent `Tonarink.Cli` share a System.CommandLine
+implementation for discovery, transfers and administration. See the
+[CLI guide](https://github.com/kusutori/Tonarink/blob/main/docs/cli.md).
+Other .NET applications can use the platform-independent Core API directly.
 
 ## Documentation
 
