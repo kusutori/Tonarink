@@ -134,6 +134,9 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
                 return () => FavoriteDeviceStore.Changed -= listener;
             },
             static () => FavoriteDeviceStore.Revision);
+        var navigationCoordinator = context.UseMemo(
+            () => new ShellNavigationCoordinator(navigation), Props.Locale, favoriteRevision);
+        context.UseEffect(() => (Action)navigationCoordinator.Dispose, navigationCoordinator);
         context.UsePeopleSuggestions(
             settings.ShowFavoriteDevicesInWindowsShare,
             favoriteRevision);
@@ -229,7 +232,8 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
                     navigationView.IsPaneOpen = !navigationView.IsPaneOpen;
             }));
 
-        var content = (NavigationHost(navigation, route => route switch
+        var content = (NavigationHost(navigation, route =>
+            Component<NavigationPage, NavigationPageProps>(new(navigationCoordinator, route switch
             {
                 AppRoute.Receive => Component<ReceivePage, ReceivePageProps>(new(
                     runtime,
@@ -306,7 +310,7 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
                             contentTheme))
                         .WithKey(detailsDevice.Fingerprint),
                 _ => TextBlock(t.Message(new("App", "PageNotFound"))),
-            }) with
+            }))) with
         {
             CacheMode = NavigationCacheMode.Enabled,
             CacheSize = 3,
