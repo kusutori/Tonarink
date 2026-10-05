@@ -1,4 +1,7 @@
 using CommunityToolkit.WinUI.Controls;
+using Microsoft.UI.Reactor.Core;
+using Microsoft.UI.Reactor.Core.V1Protocol.Descriptor;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Reactor.Wrappers;
 
 namespace Tonarink.Controls;
@@ -9,7 +12,38 @@ public partial record SettingsCardElement;
 
 [GenerateReactorWrapper(typeof(SettingsExpander), RegisterAssembly = false)]
 [WrapElementSlot("HeaderIcon")]
-public partial record SettingsExpanderElement;
+[WrapManual("Content")]
+public partial record SettingsExpanderElement
+{
+    public Element? Content { get; init; }
+
+    public static SettingsExpanderElement SettingsExpander(
+        Element? content,
+        Element? headerIcon = null,
+        params object[] items) =>
+        SettingsExpander(headerIcon: headerIcon, items: items) with { Content = content };
+
+    // Items is the primary child collection; the header content needs its own
+    // reconciled slot so updates preserve the live control and its visual state.
+    private static partial ControlDescriptor<SettingsExpanderElement, SettingsExpander> Customize(
+        ControlDescriptor<SettingsExpanderElement, SettingsExpander> d) =>
+        d.ImperativeBridged(
+            mount: static (context, control, element) =>
+            {
+                if (element.Content is not null)
+                    control.Content = context.MountChild(element.Content)!;
+            },
+            update: static (context, control, oldElement, newElement) =>
+            {
+                if (oldElement.Content is null && newElement.Content is null)
+                    return;
+
+                var existing = control.Content as UIElement;
+                var next = context.ReconcileChild(oldElement.Content, newElement.Content, existing);
+                if (!ReferenceEquals(existing, next))
+                    control.Content = next!;
+            });
+}
 
 [GenerateReactorWrapper(typeof(Segmented), RegisterAssembly = false)]
 [WrapControlled("SelectedIndex", ChangedEvent = "SelectionChanged")]

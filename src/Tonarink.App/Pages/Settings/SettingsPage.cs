@@ -5,14 +5,12 @@ using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Core;
 using Microsoft.UI.Reactor.Localization;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Tonarink.Components.Animations;
 using static Microsoft.UI.Reactor.Factories;
 using static Tonarink.Controls.SettingsCardElement;
 using static Tonarink.Controls.SettingsExpanderElement;
-using NativeToggleSwitch = Microsoft.UI.Xaml.Controls.ToggleSwitch;
 
 namespace Tonarink.Pages.Settings;
 
@@ -170,11 +168,11 @@ sealed class SettingsPage : Component<SettingsPageProps>
                     .MinWidth(180)),
             SettingsExpander(
                     content:
-                    ExpanderToggle(
+                    ToggleSwitch(
                         Props.Settings.MinimizeToTray,
-                        value => Props.UpdateSettings(settings => settings with { MinimizeToTray = value }),
-                        t.Message(new("App", "SettingsMinimizeToTray")),
-                        t.Message(new("App", "SettingsMinimizeToTrayDescription"))),
+                        value => Props.UpdateSettings(settings => settings with { MinimizeToTray = value }))
+                        .AutomationName(t.Message(new("App", "SettingsMinimizeToTray")))
+                        .HelpText(t.Message(new("App", "SettingsMinimizeToTrayDescription"))),
                     headerIcon: AnimatedButtons.SettingsMinimizeToTrayIcon(Props.Settings.MinimizeToTray)
                         .WithKey("settings-minimize-to-tray-icon"),
                     items:
@@ -226,15 +224,15 @@ sealed class SettingsPage : Component<SettingsPageProps>
                     .IsEnabled(AppPlatform.HasPackageIdentity())),
             SettingsExpander(
                     content:
-                    ExpanderToggle(
+                    ToggleSwitch(
                         Props.Settings.NotificationsEnabled,
                         value =>
                         {
                             Props.UpdateSettings(settings => settings with { NotificationsEnabled = value });
                             AppNotificationService.SetEnabled(value);
-                        },
-                        t.Message(new("App", "SettingsNotificationsEnabled")),
-                        t.Message(new("App", "SettingsNotificationsEnabledDescription"))),
+                        })
+                        .AutomationName(t.Message(new("App", "SettingsNotificationsEnabled")))
+                        .HelpText(t.Message(new("App", "SettingsNotificationsEnabledDescription"))),
                     headerIcon: AnimatedButtons.SettingsNotificationIcon(Props.Settings.NotificationsEnabled)
                         .WithKey("settings-notification-icon"),
                     items:
@@ -338,11 +336,11 @@ sealed class SettingsPage : Component<SettingsPageProps>
                     .HelpText(t.Message(new("App", "SettingsVerifyChecksumsOnReceiveDescription")))),
             SettingsExpander(
                     content:
-                    ExpanderToggle(
+                    ToggleSwitch(
                         Props.Settings.ReceivePinEnabled,
-                        value => Props.UpdateSettings(settings => settings with { ReceivePinEnabled = value }),
-                        t.Message(new("App", "SettingsReceivePinEnabled")),
-                        t.Message(new("App", "SettingsReceivePinEnabledDescription"))),
+                        value => Props.UpdateSettings(settings => settings with { ReceivePinEnabled = value }))
+                        .AutomationName(t.Message(new("App", "SettingsReceivePinEnabled")))
+                        .HelpText(t.Message(new("App", "SettingsReceivePinEnabledDescription"))),
                     headerIcon: AnimatedButtons.SettingsPinIcon(Props.Settings.ReceivePinEnabled)
                         .WithKey("settings-pin-icon"),
                     items:
@@ -777,22 +775,6 @@ sealed class SettingsPage : Component<SettingsPageProps>
 
     private static Element HeaderGlyph(string glyph) =>
         Icon(glyph).AccessibilityHidden();
-
-    private static NativeToggleSwitch ExpanderToggle(
-        bool isOn,
-        Action<bool> onChanged,
-        string automationName,
-        string helpText)
-    {
-        var toggle = new NativeToggleSwitch
-        {
-            IsOn = isOn,
-        };
-        AutomationProperties.SetName(toggle, automationName);
-        AutomationProperties.SetHelpText(toggle, helpText);
-        toggle.Toggled += (_, _) => onChanged(toggle.IsOn);
-        return toggle;
-    }
 
     private static Element DeviceTypeOption(LocalSendDeviceType type, string label) =>
         HStack(10,
