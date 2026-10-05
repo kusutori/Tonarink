@@ -75,10 +75,16 @@ sealed class HistoryPage : Component<HistoryPageProps>
                 },
                 t.Locale)));
 
+        var previousJumpListHistory = UseRef<Guid?>(null);
         UseEffect(() =>
         {
             if (Props.JumpListHistoryId is not { } historyId)
+            {
+                if (previousJumpListHistory.Current is not null) setInfoEntry(null);
+                previousJumpListHistory.Current = null;
                 return;
+            }
+            previousJumpListHistory.Current = historyId;
 
             var entry = entries.FirstOrDefault(candidate => candidate.Id == historyId);
             if (entry is null)

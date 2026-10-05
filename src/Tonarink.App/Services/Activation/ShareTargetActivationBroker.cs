@@ -71,7 +71,7 @@ static class ShareTargetActivationBroker
             {
                 case ExtendedActivationKind.Launch
                     when activation.Data is ILaunchActivatedEventArgs launchArgs:
-                    JumpListService.TryEnqueueActivation(launchArgs.Arguments);
+                    AppCommandActivation.EnqueueLaunch(launchArgs.Arguments);
                     break;
 
                 // AppActivationArguments.Data exposes the activation *interface*, not

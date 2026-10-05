@@ -1,4 +1,5 @@
 using System.IO.Pipes;
+using System.CommandLine;
 using System.Threading.Channels;
 
 namespace Tonarink.Cli;
@@ -6,7 +7,6 @@ namespace Tonarink.Cli;
 sealed class CliHost(ICliRuntime runtime, string dataDirectory, Action<string, Exception> report) : IDisposable
 {
     private readonly CancellationTokenSource _lifetime = new();
-    private readonly CliCommands _commands = new(runtime);
     public void Start() => _ = RunAsync();
     public void Dispose() => _lifetime.Cancel();
 
@@ -38,20 +38,28 @@ sealed class CliHost(ICliRuntime runtime, string dataDirectory, Action<string, E
                 cancellation.CancelAfter(TimeSpan.FromSeconds(10));
                 var request = await CliProtocol.ReadAsync(pipe, CliJsonContext.Default.CliRequest, cancellation.Token).ConfigureAwait(false);
                 cancellation.CancelAfter(Timeout.InfiniteTimeSpan);
-                var args = new CliCommandLine(runtime.Integrated).Parse(request.Arguments);
-                var timeout = args.Integer("timeout", 0);
-                if (timeout > 0) cancellation.CancelAfter(TimeSpan.FromSeconds(timeout));
                 var output = Channel.CreateUnbounded<CliResponse>(new() { SingleReader = true });
                 var writing = WriteResponsesAsync(pipe, output.Reader, cancellation);
                 var disconnected = WatchDisconnectAsync(pipe, cancellation);
-                CliResponse result;
-                try { result = await _commands.ExecuteAsync(request, args, response => output.Writer.TryWrite(response), cancellation.Token).ConfigureAwait(false); }
-                catch (CliException exception) { result = CliProtocol.Error(exception.Message, exception.ExitCode); }
-                catch (OperationCanceledException) { result = CliProtocol.Error("Command cancelled or timed out", 130); }
-                catch (Exception exception) { result = CliProtocol.Error(exception.Message); }
-                output.Writer.TryWrite(result); output.Writer.TryComplete();
+                var responded = false;
+                var commandLine = new CliCommandLine(runtime.Integrated, runtime: runtime, request: request,
+                    emit: response => { if (response.Type == "result") responded = true; output.Writer.TryWrite(response); });
+                var parsed = commandLine.Root.Parse(request.Arguments);
+                using var diagnostics = new StringWriter();
+                var exit = 2;
+                if (parsed.Errors.Count > 0)
+                    output.Writer.TryWrite(CliProtocol.Error(string.Join('\n', parsed.Errors.Select(e => e.Message)), 2));
+                else
+                {
+                    if (parsed.GetValue(commandLine.Timeout) is { } timeout) cancellation.CancelAfter(TimeSpan.FromSeconds(timeout));
+                    exit = await parsed.InvokeAsync(new InvocationConfiguration
+                    { EnableDefaultExceptionHandler = false, ProcessTerminationTimeout = null,
+                      Output = diagnostics, Error = diagnostics }, cancellation.Token).ConfigureAwait(false);
+                    if (!responded) output.Writer.TryWrite(new("result", exit, diagnostics.ToString().TrimEnd()));
+                }
+                output.Writer.TryComplete();
                 await writing.ConfigureAwait(false);
-                if (result.ExitCode == 0 && (args.Command, args.Action) is ("app", "quit"))
+                if (exit == 0 && commandLine.IsQuit(parsed))
                     await runtime.QuitAsync(_lifetime.Token).ConfigureAwait(false);
                 await cancellation.CancelAsync().ConfigureAwait(false);
                 await disconnected.ConfigureAwait(false);

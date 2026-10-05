@@ -66,15 +66,15 @@ sealed class StandaloneCliRuntime : ICliRuntime, IAsyncDisposable
                 _error, _node?.DiscoveryError, _pending.Values.ToArray(),
                 new(_settings.DownloadDirectory, _settings.SendChecksums, _settings.ReceiveChecksums, _settings.ReceiveHistory, _settings.Language)));
     }
-    public async Task<CliResponse> ServerAsync(string action, CancellationToken token)
+    public async Task<CliResponse> ServerAsync(CliServerAction action, CancellationToken token)
     {
         await _serverGate.WaitAsync(token).ConfigureAwait(false);
         try
         {
             lock (_gate)
-                if (action == "start" && _node?.State == LocalSendNodeState.Running) return CliProtocol.Success("Server is already running");
+                if (action == CliServerAction.Start && _node?.State == LocalSendNodeState.Running) return CliProtocol.Success("Server is already running");
             await StopNodeAsync().ConfigureAwait(false);
-            if (action == "stop") return CliProtocol.Success("Server stopped");
+            if (action == CliServerAction.Stop) return CliProtocol.Success("Server stopped");
             StandaloneSettings settings;
             lock (_gate) { settings = _settings; _state = LocalSendNodeState.Starting; _desired = true; _error = null; }
             var node = new LocalSendNode(settings.NodeOptions(_profile));
@@ -87,7 +87,7 @@ sealed class StandaloneCliRuntime : ICliRuntime, IAsyncDisposable
             }
             catch (Exception exception)
             { lock (_gate) { _state = LocalSendNodeState.Faulted; _error = exception.Message; } throw; }
-            return CliProtocol.Success(action == "restart" ? "Server restarted" : "Server started");
+            return CliProtocol.Success(action == CliServerAction.Restart ? "Server restarted" : "Server started");
         }
         finally { _serverGate.Release(); }
     }
@@ -128,32 +128,23 @@ sealed class StandaloneCliRuntime : ICliRuntime, IAsyncDisposable
         catch (OperationCanceledException) when (token.IsCancellationRequested) { }
         catch (Exception exception) { Report("Automatic receive failed", exception); }
     }
-    public async Task<CliResponse> SettingsAsync(CliRequest request, CliArguments args, CancellationToken token)
+    public async Task<CliResponse> SaveSettingAsync(string key, string value, string workingDirectory, bool restart, CancellationToken token)
     {
-        if (args.Action == "set")
+        await _settingsGate.WaitAsync(token).ConfigureAwait(false);
+        try
         {
-            await _settingsGate.WaitAsync(token).ConfigureAwait(false);
-            try
+            lock (_gate)
             {
-                lock (_gate)
-                {
-                    var next = _settings.Set(args.Positionals[0], args.Positionals[1], request.WorkingDirectory);
-                    Save("settings.json", next, StandaloneJsonContext.Default.StandaloneSettings); _settings = next;
-                }
-                if (args.Has("restart")) return await ServerAsync("restart", token).ConfigureAwait(false);
-                return CliProtocol.Success("Setting saved; server-related changes apply after server restart");
+                var next = _settings.Set(key, value, workingDirectory);
+                Save("settings.json", next, StandaloneJsonContext.Default.StandaloneSettings); _settings = next;
             }
-            finally { _settingsGate.Release(); }
+            if (restart) return await ServerAsync(CliServerAction.Restart, token).ConfigureAwait(false);
+            return CliProtocol.Success("Setting saved; server-related changes apply after server restart");
         }
-        CliSetting[] entries;
-        lock (_gate) entries = _settings.List(args.Has("show-secrets"));
-        if (args.Action == "get")
-        {
-            entries = entries.Where(e => e.Key.Equals(args.Positionals[0], StringComparison.OrdinalIgnoreCase)).ToArray();
-            if (entries.Length == 0) throw new CliException("Unknown standalone setting: " + args.Positionals[0]);
-        }
-        return CliProtocol.Result(string.Join('\n', entries.Select(e => $"{e.Key}\t{e.Value}")), entries, CliJsonContext.Default.CliSettingArray);
+        finally { _settingsGate.Release(); }
     }
+    public Task<CliSetting[]> ReadSettingsAsync(bool showSecrets, CancellationToken token)
+    { token.ThrowIfCancellationRequested(); lock (_gate) return Task.FromResult(_settings.List(showSecrets)); }
     public Task<CliFavorite[]> FavoritesAsync(CancellationToken token) { token.ThrowIfCancellationRequested(); lock (_gate) return Task.FromResult(_favorites); }
     public Task SaveFavoriteAsync(LocalSendDevice device, CancellationToken token)
     {
@@ -203,7 +194,7 @@ sealed class StandaloneCliRuntime : ICliRuntime, IAsyncDisposable
     }
     public Task DismissIncomingAsync(Guid id, CancellationToken token) { token.ThrowIfCancellationRequested(); _pending.TryRemove(id, out _); return Task.CompletedTask; }
     public IDisposable BeginReceiveWatch() => new CliScope(() => { });
-    public Task OpenAppAsync(CancellationToken token) => throw new CliException("Standalone CLI has no graphical window.", 3);
+    public Task OpenAppAsync(string? favorite, Guid? history, CancellationToken token) => throw new CliException("Standalone CLI has no graphical window.", 3);
     public Task QuitAsync(CancellationToken token) { _quit.TrySetResult(); return Task.CompletedTask; }
     public async ValueTask DisposeAsync() { await _serverGate.WaitAsync().ConfigureAwait(false); try { await StopNodeAsync().ConfigureAwait(false); } finally { _serverGate.Release(); } }
     private T? ReadFile<T>(string file, JsonTypeInfo<T> type) => File.Exists(Path.Combine(_profile, file))

@@ -32,33 +32,15 @@ static class JumpListService
     private static HashSet<string>? _removedItems;
 
     public static bool HasPendingActivations => !PendingActivations.IsEmpty;
+    public static event EventHandler? Activated;
 
     public static bool TryDequeue(out JumpListActivation activation) =>
         PendingActivations.TryDequeue(out activation);
 
-    public static bool TryEnqueueActivation(string? arguments)
+    public static void Enqueue(JumpListActivation activation)
     {
-        if (string.IsNullOrWhiteSpace(arguments))
-            return false;
-
-        if (arguments.StartsWith(FavoritePrefix, StringComparison.Ordinal))
-        {
-            var fingerprint = arguments[FavoritePrefix.Length..];
-            if (fingerprint.Length == 0)
-                return false;
-
-            PendingActivations.Enqueue(new JumpListActivation.Favorite(fingerprint));
-            return true;
-        }
-
-        if (arguments.StartsWith(HistoryPrefix, StringComparison.Ordinal)
-            && Guid.TryParseExact(arguments[HistoryPrefix.Length..], "N", out var historyId))
-        {
-            PendingActivations.Enqueue(new JumpListActivation.History(historyId));
-            return true;
-        }
-
-        return false;
+        PendingActivations.Enqueue(activation);
+        Activated?.Invoke(null, EventArgs.Empty);
     }
 
     public static async Task RefreshAsync(JumpListLabels labels)
@@ -78,8 +60,8 @@ static class JumpListService
             foreach (var favorite in FavoriteDeviceStore.Entries.Values
                          .OrderBy(static favorite => favorite.Name, StringComparer.CurrentCultureIgnoreCase))
             {
-                var arguments = FavoritePrefix + favorite.Fingerprint;
-                if (WasRemoved(arguments))
+                var arguments = "app open --favorite " + favorite.Fingerprint;
+                if (WasRemoved(arguments) || WasRemoved(FavoritePrefix + favorite.Fingerprint))
                     continue;
 
                 jumpList.Items.Add(CreateItem(
@@ -96,8 +78,8 @@ static class JumpListService
             foreach (var entry in ReceiveHistoryStore.Entries
                          .Where(static entry => File.Exists(entry.Path) || Directory.Exists(entry.Path)))
             {
-                var arguments = HistoryPrefix + entry.Id.ToString("N");
-                if (WasRemoved(arguments))
+                var arguments = "app open --history " + entry.Id.ToString("D");
+                if (WasRemoved(arguments) || WasRemoved(HistoryPrefix + entry.Id.ToString("N")))
                     continue;
 
                 jumpList.Items.Add(CreateItem(

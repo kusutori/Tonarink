@@ -82,10 +82,16 @@ tonarink server start
 tonarink server stop
 tonarink server restart
 tonarink app open
+tonarink app open --favorite FINGERPRINT
+tonarink app open --history HISTORY_ID
 tonarink app quit --yes
 ```
 
 重启服务器会中断正在进行的传输。`app quit` 也会结束图形界面和所有服务，因此必须显式传入 `--yes`。
+
+集成版 `app open --favorite` 跳转到发送页，打开收藏列表并优先显示该设备；`app open --history` 跳转到接收历史并打开记录详情，两者不能同时使用。Windows 跳转列表也使用这组命令，旧版跳转列表参数仍兼容。
+
+切换这两个目标时会先关闭此前打开的收藏/历史对话框；若其他编辑对话框正在打开，则返回退出码 4，需先关闭它，命令不会丢弃未保存的编辑内容。
 
 ## 设置
 
@@ -190,6 +196,8 @@ tonarink web stop
 ```
 
 CLI 在图形启动和主实例重定向前解析命令；服务命令随后通过命名管道进入 GUI 所持有的节点。JSON 使用源生成序列化，普通 MSIX 和 Native AOT MSIX 共用实现及清单声明。安装与别名激活需使用实际打包版本验证，不能由直接调用未打包 EXE 替代。
+
+`System.CommandLine` 的命令处理器直接读取 `Option<T>` / `Argument<T>` 并调用类型化服务，不再转换成命令名、动作字符串或选项字典。客户端和宿主使用同一命令定义；GUI 的业务启动参数也复用其解析与执行。Windows 提前送达的启动命令仅排队到 UI 挂载后执行，避免冷启动时连接自身。通知/分享协议、`--minimized`、内部后台启动标记及开发工具参数仍由各自的平台启动层处理。
 
 独立版构建与分发：
 

@@ -4,8 +4,9 @@ using Microsoft.UI.Reactor;
 
 namespace Tonarink.Cli;
 
-sealed record CliBindings(LocalSendNodeSession Session, AppSettings Settings,
-    Action<Func<AppSettings, AppSettings>> UpdateSettings, Action RestoreWindow, string Locale);
+sealed record CliBindings(LocalSendNodeSession Session,
+    Action<Func<AppSettings, AppSettings>> UpdateSettings, Action RestoreWindow,
+    Func<CancellationToken, Task> PrepareNavigation, string Locale);
 
 static class CliBridge
 {
@@ -18,6 +19,7 @@ static class CliBridge
 sealed class AppCliRuntime(Func<CliBindings> bindings) : ICliRuntime
 {
     private readonly SemaphoreSlim _settingsGate = new(1, 1);
+    private static readonly SemaphoreSlim AppOpenGate = new(1, 1);
     private static int _receiveClients;
     public static bool HasReceiveClient => Volatile.Read(ref _receiveClients) > 0;
     public bool Integrated => true;
@@ -26,35 +28,35 @@ sealed class AppCliRuntime(Func<CliBindings> bindings) : ICliRuntime
     {
         var current = await StateAsync(token).ConfigureAwait(false);
         var state = current.Session.Runtime;
-        var s = current.Settings;
+        var s = AppSettingsStore.Load();
         return new(current.Session.Node, current.Session.IsServerDesired, state.NodeState, state.Identity,
             state.Error, state.DiscoveryWarning, state.IncomingTransfers,
             new(s.DownloadDirectory, s.VerifyChecksumsOnSend, s.VerifyChecksumsOnReceive, s.SaveReceiveHistory, current.Locale));
     }
 
-    public Task<CliResponse> ServerAsync(string action, CancellationToken token) => ServerAsync(action, token, null);
-    private async Task<CliResponse> ServerAsync(string action, CancellationToken token, AppSettings? settings)
+    public Task<CliResponse> ServerAsync(CliServerAction action, CancellationToken token) => ServerAsync(action, token, null);
+    private async Task<CliResponse> ServerAsync(CliServerAction action, CancellationToken token, AppSettings? settings)
     {
         var previous = await StateAsync(token).ConfigureAwait(false);
-        if (action == "start" && previous.Session.Node?.State == LocalSendNodeState.Running)
+        if (action == CliServerAction.Start && previous.Session.Node?.State == LocalSendNodeState.Running)
             return CliProtocol.Success("Server is already running");
         await CliUi.InvokeAsync(() =>
         {
             var current = bindings();
-            if (action == "stop") current.Session.Stop();
-            else current.Session.StartOrRestartWithSettings(settings ?? current.Settings);
+            if (action == CliServerAction.Stop) current.Session.Stop();
+            else current.Session.StartOrRestartWithSettings(settings ?? AppSettingsStore.Load());
             return true;
         }, token).ConfigureAwait(false);
         var clock = Stopwatch.StartNew();
         while (clock.Elapsed < TimeSpan.FromSeconds(45))
         {
             var current = await StateAsync(token).ConfigureAwait(false);
-            if (action == "stop" && current.Session.Runtime.NodeState == LocalSendNodeState.Stopped)
+            if (action == CliServerAction.Stop && current.Session.Runtime.NodeState == LocalSendNodeState.Stopped)
                 return CliProtocol.Success("Server stopped");
-            if (action != "stop" && current.Session.Node?.State == LocalSendNodeState.Running
+            if (action != CliServerAction.Stop && current.Session.Node?.State == LocalSendNodeState.Running
                 && !ReferenceEquals(current.Session.Node, previous.Session.Node))
-                return CliProtocol.Success(action == "restart" ? "Server restarted" : "Server started");
-            if (action != "stop" && current.Session.Runtime.NodeState == LocalSendNodeState.Faulted
+                return CliProtocol.Success(action == CliServerAction.Restart ? "Server restarted" : "Server started");
+            if (action != CliServerAction.Stop && current.Session.Runtime.NodeState == LocalSendNodeState.Faulted
                 && (previous.Session.Runtime.NodeState != LocalSendNodeState.Faulted || clock.Elapsed > TimeSpan.FromSeconds(1)))
                 throw new CliException(current.Session.Runtime.Error ?? "Server startup failed", 1);
             await Task.Delay(100, token).ConfigureAwait(false);
@@ -62,36 +64,31 @@ sealed class AppCliRuntime(Func<CliBindings> bindings) : ICliRuntime
         throw new CliException("Timed out waiting for the server state change.", 3);
     }
 
-    public async Task<CliResponse> SettingsAsync(CliRequest request, CliArguments args, CancellationToken token)
+    public async Task<CliResponse> SaveSettingAsync(string key, string value, string workingDirectory, bool restart, CancellationToken token)
     {
-        if (args.Action == "set")
+        await _settingsGate.WaitAsync(token).ConfigureAwait(false);
+        try
         {
-            await _settingsGate.WaitAsync(token).ConfigureAwait(false);
-            try
+            var saved = await (await CliUi.InvokeAsync(async () =>
             {
-                var saved = await (await CliUi.InvokeAsync(async () =>
-                {
-                    var current = bindings();
-                    var next = CliSettings.Set(current.Settings, args.Positionals[0], args.Positionals[1], request.WorkingDirectory);
-                    if (next.StartWithWindows != current.Settings.StartWithWindows)
-                        await WindowsStartup.SetEnabledAsync(next.StartWithWindows, next.MinimizeToTray);
-                    AppSettingsStore.Save(next); current.UpdateSettings(_ => next);
-                    AppNotificationService.SetEnabled(next.NotificationsEnabled);
-                    return next;
-                }, token).ConfigureAwait(false)).ConfigureAwait(false);
-                if (args.Has("restart")) return await ServerAsync("restart", token, saved).ConfigureAwait(false);
-            }
-            finally { _settingsGate.Release(); }
-            return CliProtocol.Success("Setting saved; server-related changes apply after server restart");
+                var current = bindings();
+                // Read the committed snapshot: the renderer may not have caught
+                // up with a preceding CLI write yet, even on the UI dispatcher.
+                var previous = AppSettingsStore.Load();
+                var next = CliSettings.Set(previous, key, value, workingDirectory);
+                if (next.StartWithWindows != previous.StartWithWindows)
+                    await WindowsStartup.SetEnabledAsync(next.StartWithWindows, next.MinimizeToTray);
+                AppSettingsStore.Save(next); current.UpdateSettings(_ => next);
+                AppNotificationService.SetEnabled(next.NotificationsEnabled);
+                return next;
+            }, token).ConfigureAwait(false)).ConfigureAwait(false);
+            if (restart) return await ServerAsync(CliServerAction.Restart, token, saved).ConfigureAwait(false);
         }
-        var entries = CliSettings.List((await StateAsync(token).ConfigureAwait(false)).Settings, args.Has("show-secrets"));
-        if (args.Action == "get")
-        {
-            entries = entries.Where(e => e.Key.Equals(args.Positionals[0], StringComparison.OrdinalIgnoreCase)).ToArray();
-            if (entries.Length == 0) throw new CliException("Unknown settings key: " + args.Positionals[0]);
-        }
-        return CliProtocol.Result(string.Join('\n', entries.Select(e => $"{e.Key}\t{e.Value}")), entries, CliJsonContext.Default.CliSettingArray);
+        finally { _settingsGate.Release(); }
+        return CliProtocol.Success("Setting saved; server-related changes apply after server restart");
     }
+    public Task<CliSetting[]> ReadSettingsAsync(bool showSecrets, CancellationToken token) =>
+        CliUi.InvokeAsync(() => CliSettings.List(AppSettingsStore.Load(), showSecrets), token);
     public Task<CliFavorite[]> FavoritesAsync(CancellationToken token) => CliUi.InvokeAsync(() =>
         FavoriteDeviceStore.Entries.Values.Select(f => new CliFavorite(f.Fingerprint, f.Name, f.Address, f.Port, f.DeviceType.ToString())).ToArray(), token);
     public Task SaveFavoriteAsync(LocalSendDevice device, CancellationToken token) => CliUi.InvokeAsync(() =>
@@ -126,7 +123,31 @@ sealed class AppCliRuntime(Func<CliBindings> bindings) : ICliRuntime
     public Task DismissIncomingAsync(Guid id, CancellationToken token) => CliUi.InvokeAsync(() => { bindings().Session.DismissIncoming(id); return true; }, token);
     public IDisposable BeginReceiveWatch()
     { Interlocked.Increment(ref _receiveClients); return new CliScope(() => Interlocked.Decrement(ref _receiveClients)); }
-    public Task OpenAppAsync(CancellationToken token) => CliUi.InvokeAsync(() => { bindings().RestoreWindow(); return true; }, token);
+    public async Task OpenAppAsync(string? favorite, Guid? history, CancellationToken token)
+    {
+        await AppOpenGate.WaitAsync(token).ConfigureAwait(false);
+        try
+        {
+            var stored = await CliUi.InvokeAsync(() =>
+            {
+                var fingerprint = favorite is null ? null : FavoriteDeviceStore.Entries.Keys
+                    .FirstOrDefault(k => k.Equals(favorite, StringComparison.OrdinalIgnoreCase))
+                    ?? throw new CliException("Favorite fingerprint not found.", 3);
+                if (history is { } id && !ReceiveHistoryStore.Entries.Any(e => e.Id == id))
+                    throw new CliException("History entry not found.", 3);
+                return fingerprint;
+            }, token).ConfigureAwait(false);
+            if (stored is not null || history is not null)
+                await (await CliUi.InvokeAsync(() => bindings().PrepareNavigation(token), token).ConfigureAwait(false)).ConfigureAwait(false);
+            await CliUi.InvokeAsync(() =>
+            {
+                if (stored is not null) JumpListService.Enqueue(new JumpListActivation.Favorite(stored));
+                if (history is { } id) JumpListService.Enqueue(new JumpListActivation.History(id));
+                bindings().RestoreWindow(); return true;
+            }, token).ConfigureAwait(false);
+        }
+        finally { AppOpenGate.Release(); }
+    }
     public Task QuitAsync(CancellationToken token) => CliUi.InvokeAsync(() => { ReactorApp.Exit(); return true; }, token);
 }
 

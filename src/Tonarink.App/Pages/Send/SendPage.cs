@@ -96,10 +96,14 @@ sealed class SendPage : Component<SendPageProps>
             onNavigatedTo: _ =>
                 PlaySearchingAnimation(searchingPlayerRef.Current, play: !reduceMotion));
 
+        var previousJumpListFavorite = context.UseRef<string?>(null);
         context.UseEffect(() =>
         {
             if (Props.JumpListFavoriteFingerprint is not null)
                 setShowFavoritesDialog(true);
+            else if (previousJumpListFavorite.Current is not null)
+                setShowFavoritesDialog(false);
+            previousJumpListFavorite.Current = Props.JumpListFavoriteFingerprint;
         }, Props.JumpListFavoriteFingerprint);
 
         context.UseEffect(() =>

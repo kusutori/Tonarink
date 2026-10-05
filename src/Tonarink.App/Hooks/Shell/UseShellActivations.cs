@@ -34,11 +34,15 @@ static class ShellActivationHooks
             EventHandler notificationActivated = (_, _) => ScheduleActivationDrain();
             ShareTargetActivationBroker.ActivationReceived += activationReceived;
             AppNotificationService.Activated += notificationActivated;
+            JumpListService.Activated += activationReceived;
+            AppCommandActivation.Queued += activationReceived;
             ScheduleActivationDrain();
             return () =>
             {
                 ShareTargetActivationBroker.ActivationReceived -= activationReceived;
                 AppNotificationService.Activated -= notificationActivated;
+                JumpListService.Activated -= activationReceived;
+                AppCommandActivation.Queued -= activationReceived;
             };
         });
 
@@ -108,6 +112,9 @@ static class ShellActivationHooks
             drainingActivations.Current = true;
             try
             {
+                while (AppCommandActivation.TryDequeue(out var invocation))
+                    _ = invocation!();
+
                 while (AppNotificationService.TryDequeueActivation(out var activation))
                     _ = HandleNotificationActivationAsync(activation);
 
@@ -117,11 +124,13 @@ static class ShellActivationHooks
                     {
                         case JumpListActivation.Favorite(var fingerprint)
                             when FavoriteDeviceStore.Contains(fingerprint):
+                            setJumpListHistoryId(null);
                             setJumpListFavoriteFingerprint(fingerprint);
                             break;
 
                         case JumpListActivation.History(var historyId)
                             when ReceiveHistoryStore.Entries.Any(entry => entry.Id == historyId):
+                            setJumpListFavoriteFingerprint(null);
                             setJumpListHistoryId(historyId);
                             break;
 
@@ -146,6 +155,7 @@ static class ShellActivationHooks
             {
                 drainingActivations.Current = false;
                 if (ShareTargetActivationBroker.HasPendingActivations
+                    || AppCommandActivation.HasPending
                     || JumpListService.HasPendingActivations
                     || AppNotificationService.HasPendingActivations)
                     ScheduleActivationDrain();

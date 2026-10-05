@@ -15,8 +15,9 @@ interface ICliRuntime
 {
     bool Integrated { get; }
     Task<CliState> ReadAsync(CancellationToken token);
-    Task<CliResponse> ServerAsync(string action, CancellationToken token);
-    Task<CliResponse> SettingsAsync(CliRequest request, CliArguments args, CancellationToken token);
+    Task<CliResponse> ServerAsync(CliServerAction action, CancellationToken token);
+    Task<CliSetting[]> ReadSettingsAsync(bool showSecrets, CancellationToken token);
+    Task<CliResponse> SaveSettingAsync(string key, string value, string workingDirectory, bool restart, CancellationToken token);
     Task<CliFavorite[]> FavoritesAsync(CancellationToken token);
     Task SaveFavoriteAsync(LocalSendDevice device, CancellationToken token);
     Task RemoveFavoriteAsync(string fingerprint, CancellationToken token);
@@ -25,9 +26,11 @@ interface ICliRuntime
     Task RecordReceiveAsync(IncomingTransferRequest request, ReceiveOutcome.Completed result, CancellationToken token);
     Task DismissIncomingAsync(Guid id, CancellationToken token);
     IDisposable BeginReceiveWatch();
-    Task OpenAppAsync(CancellationToken token);
+    Task OpenAppAsync(string? favorite, Guid? history, CancellationToken token);
     Task QuitAsync(CancellationToken token);
 }
+
+enum CliServerAction { Start, Stop, Restart }
 
 static class CliPath
 {

@@ -7,15 +7,17 @@ namespace Tonarink.Cli;
 
 sealed partial class CliCommands
 {
-    private async Task<CliResponse> SendAsync(CliRequest request, CliArguments args, Action<CliResponse> emit, CancellationToken token)
+    public async Task<CliResponse> SendAsync(CliRequest request, string[] paths, string? text, string targetName,
+        string? pin, bool noChecksum, Action<CliResponse> emit, CancellationToken token)
     {
-        var items = BuildItems(request, args);
+        var items = BuildItems(request, paths, text);
         var node = await RunningNodeAsync(token).ConfigureAwait(false);
-        var target = await ResolveAsync(node, args.Required("target"), token).ConfigureAwait(false);
+        var target = await ResolveAsync(node, targetName, token).ConfigureAwait(false);
         var settings = (await StateAsync(token).ConfigureAwait(false)).Settings;
         var outcome = await node.SendAsync(target, items, new SendOptions
         {
-            Pin = args.Value("pin"), ComputeSha256 = !args.Has("no-checksum") && settings.VerifyChecksumsOnSend,
+            Pin = pin,
+            ComputeSha256 = !noChecksum && settings.VerifyChecksumsOnSend,
         }, new CliTransferProgress(emit), token).ConfigureAwait(false);
         return outcome switch
         {
@@ -85,12 +87,12 @@ sealed partial class CliCommands
         throw new CliException($"Device '{target}' was not found. Use tonarink discover or provide an IP address.", 3);
     }
 
-    private static List<SendItem> BuildItems(CliRequest request, CliArguments args)
+    private static List<SendItem> BuildItems(CliRequest request, string[] paths, string? text)
     {
-        if (args.Value("text") is { } text)
+        if (text is not null)
             return [new SendTextItem(text == "-" ? request.StandardInput ?? throw new CliException("No stdin text was supplied.") : text)];
         var items = new List<SendItem>();
-        foreach (var input in args.Positionals)
+        foreach (var input in paths)
         {
             var path = CliPath.FullPath(input, request.WorkingDirectory);
             if (File.Exists(path)) items.Add(new SendFileItem(path));
@@ -109,58 +111,58 @@ sealed partial class CliCommands
         return items;
     }
 
-    private async Task<CliResponse> ReceiveAsync(CliRequest request, CliArguments args, Action<CliResponse> emit, CancellationToken token)
+    public async Task<CliResponse> WatchAsync(CliRequest request, int? seconds, bool autoAccept,
+        string? directory, bool noChecksum, Action<CliResponse> emit, CancellationToken token)
     {
-        if (args.Action == "watch")
+        _ = await RunningNodeAsync(token).ConfigureAwait(false);
+        using (runtime.BeginReceiveWatch())
         {
-            _ = await RunningNodeAsync(token).ConfigureAwait(false);
-            using (runtime.BeginReceiveWatch())
+            var seen = new HashSet<Guid>();
+            var clock = Stopwatch.StartNew();
+            while (seconds is null || clock.Elapsed < TimeSpan.FromSeconds(seconds.Value))
             {
-                var seen = new HashSet<Guid>();
-                var clock = Stopwatch.StartNew();
-                while (!args.Has("seconds") || clock.Elapsed < TimeSpan.FromSeconds(args.Integer("seconds", 5)))
+                var state = await StateAsync(token).ConfigureAwait(false);
+                foreach (var incoming in state.IncomingTransfers)
                 {
-                    var state = await StateAsync(token).ConfigureAwait(false);
-                    foreach (var incoming in state.IncomingTransfers)
+                    if (!seen.Add(incoming.RequestId)) continue;
+                    var value = Incoming(incoming);
+                    emit(CliProtocol.Result($"Incoming {value.Id}\t{value.Sender}\t{string.Join(", ", value.Files)}",
+                        new[] { value }, CliJsonContext.Default.CliIncomingArray) with
+                    { Type = "incoming" });
+                    if (autoAccept)
                     {
-                        if (!seen.Add(incoming.RequestId)) continue;
-                        var value = Incoming(incoming);
-                        emit(CliProtocol.Result($"Incoming {value.Id}\t{value.Sender}\t{string.Join(", ", value.Files)}",
-                            new[] { value }, CliJsonContext.Default.CliIncomingArray) with { Type = "incoming" });
-                        if (args.Has("auto-accept"))
-                        {
-                            var result = await AcceptAsync(request, args, incoming.RequestId, emit, token).ConfigureAwait(false);
-                            emit(result with { Type = "transfer" });
-                        }
+                        var result = await AcceptAsync(request, incoming.RequestId, directory, noChecksum, emit, token).ConfigureAwait(false);
+                        emit(result with { Type = "transfer" });
                     }
-                    await Task.Delay(200, token).ConfigureAwait(false);
                 }
-                return CliProtocol.Success("Receive watch finished");
+                await Task.Delay(200, token).ConfigureAwait(false);
             }
+            return CliProtocol.Success("Receive watch finished");
         }
-        if (args.Action == "accept")
-            return await AcceptAsync(request, args, Guid.Parse(args.Positionals[0]), emit, token).ConfigureAwait(false);
-        if (args.Action == "decline")
-        {
-            var state = await StateAsync(token).ConfigureAwait(false);
-            var id = Guid.Parse(args.Positionals[0]);
-            if (!state.IncomingTransfers.Any(r => r.RequestId == id)) throw new CliException("Incoming request not found.", 3);
-            var node = state.Node ?? throw new CliException("Server is stopped.", 3);
-            await node.DeclineAsync(id, token).ConfigureAwait(false);
-            await runtime.DismissIncomingAsync(id, token).ConfigureAwait(false);
-            return CliProtocol.Success("Incoming request declined");
-        }
+    }
+    public async Task<CliResponse> DeclineAsync(Guid id, CancellationToken token)
+    {
+        var state = await StateAsync(token).ConfigureAwait(false);
+        if (!state.IncomingTransfers.Any(r => r.RequestId == id)) throw new CliException("Incoming request not found.", 3);
+        var node = state.Node ?? throw new CliException("Server is stopped.", 3);
+        await node.DeclineAsync(id, token).ConfigureAwait(false);
+        await runtime.DismissIncomingAsync(id, token).ConfigureAwait(false);
+        return CliProtocol.Success("Incoming request declined");
+    }
+    public async Task<CliResponse> IncomingAsync(CancellationToken token)
+    {
         var pending = (await StateAsync(token).ConfigureAwait(false)).IncomingTransfers.Select(Incoming).ToArray();
         return CliProtocol.Result(string.Join('\n', pending.Select(r => $"{r.Id}\t{r.Sender}\t{string.Join(", ", r.Files)}\t{r.Bytes}")),
             pending, CliJsonContext.Default.CliIncomingArray);
     }
 
-    private async Task<CliResponse> AcceptAsync(CliRequest request, CliArguments args, Guid id, Action<CliResponse> emit, CancellationToken token)
+    public async Task<CliResponse> AcceptAsync(CliRequest request, Guid id, string? destination,
+        bool noChecksum, Action<CliResponse> emit, CancellationToken token)
     {
         var initial = await StateAsync(token).ConfigureAwait(false);
         if (!initial.IncomingTransfers.Any(r => r.RequestId == id))
             throw new CliException("Incoming request not found or already handled.", 3);
-        var directory = args.Value("directory") is { } path
+        var directory = destination is { } path
             ? CliPath.FullPath(path, request.WorkingDirectory)
             : initial.Settings.DownloadDirectory;
         // Check the destination before removing the GUI's pending request.
@@ -173,7 +175,7 @@ sealed partial class CliCommands
         var result = await node.AcceptAsync(id, new AcceptTransferOptions
         {
             DestinationDirectory = directory,
-            VerifySha256 = !args.Has("no-checksum") && state.Settings.VerifyChecksumsOnReceive,
+            VerifySha256 = !noChecksum && state.Settings.VerifyChecksumsOnReceive,
         }, new CliTransferProgress(emit), cancellationToken: token).ConfigureAwait(false);
         if (result is ReceiveOutcome.Completed completed && state.Settings.SaveReceiveHistory)
         {
@@ -211,7 +213,8 @@ sealed class CliTransferProgress(Action<CliResponse> emit) : IProgress<TransferP
             _last = now;
             emit(CliProtocol.Result($"{value.TransferId}\t{value.Direction}\t{value.State}\t{value.BytesTransferred}/{value.TotalBytes}",
                 new CliProgress(value.TransferId, value.Direction.ToString(), value.State.ToString(), value.BytesTransferred, value.TotalBytes),
-                CliJsonContext.Default.CliProgress) with { Type = "progress" });
+                CliJsonContext.Default.CliProgress) with
+            { Type = "progress" });
         }
     }
 }

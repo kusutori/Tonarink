@@ -9,10 +9,15 @@ sealed record CliClientContext(string DataDirectory, string ExecutablePath, bool
 
 static class CliClient
 {
-    public static bool ShouldRun(string[] arguments) => IsExecutionAliasInvocation() || (arguments.Length == 0 ? CliConsole.HasConsole
-        : arguments[0].ToLowerInvariant() is "--cli" or "--help" or "-h" or "--version"
-            or "--json" or "--timeout" or "--no-start" or "status" or "devices" or "discover"
-            or "send" or "receive" or "cancel" or "server" or "settings" or "favorites" or "history" or "app" or "web");
+    public static bool ShouldRun(string[] arguments)
+    {
+        if (IsExecutionAliasInvocation()) return true;
+        if (arguments.Length == 0) return CliConsole.HasConsole;
+        if (arguments[0] == "--cli") return true;
+        var root = new CliCommandLine(integrated: true).Root;
+        return root.Subcommands.Any(command => command.Name == arguments[0] || command.Aliases.Contains(arguments[0]))
+            || root.Options.Any(option => option.Name == arguments[0] || option.Aliases.Contains(arguments[0]));
+    }
 
     private static bool IsExecutionAliasInvocation()
     {
@@ -47,7 +52,7 @@ static class CliClient
         if (arguments.FirstOrDefault() == "--cli") arguments = arguments[1..];
         if (arguments.Length == 0) arguments = ["--help"];
         CliCommandLine? commandLine = null;
-        commandLine = new(context.Integrated, (parse, token) => ExecuteAsync(arguments, commandLine!.Bind(parse), context, token));
+        commandLine = new(context.Integrated, (parse, token) => ExecuteAsync(arguments, parse, commandLine!, context, token));
         var parsed = commandLine.Root.Parse(arguments);
         var json = parsed.GetValue(commandLine.Json);
         if (parsed.Errors.Count > 0)
@@ -66,18 +71,18 @@ static class CliClient
         return exit;
     }
 
-    private static async Task<int> ExecuteAsync(string[] arguments, CliArguments parsed, CliClientContext context, CancellationToken token)
+    private static async Task<int> ExecuteAsync(string[] arguments, ParseResult parsed, CliCommandLine commandLine,
+        CliClientContext context, CancellationToken token)
     {
         using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(token);
-        var json = parsed.Json;
+        var json = parsed.GetValue(commandLine.Json);
         try
         {
-            if (!context.Integrated && parsed.Value("profile") is { } directory)
+            if (!context.Integrated && parsed.GetValue(commandLine.Profile) is { } directory)
                 context = context with { DataDirectory = CliPath.FullPath(directory, Environment.CurrentDirectory) };
-            var timeout = parsed.Integer("timeout", 0);
-            if (timeout > 0) cancellation.CancelAfter(TimeSpan.FromSeconds(timeout));
+            if (parsed.GetValue(commandLine.Timeout) is { } timeout) cancellation.CancelAfter(TimeSpan.FromSeconds(timeout));
             string? input = null;
-            if (parsed.Value("text") == "-")
+            if (commandLine.ReadsStandardInput(parsed))
             {
                 if (!Console.IsInputRedirected) throw new CliException("--text - requires redirected standard input.");
                 var buffer = new char[1024 * 1024 + 1]; var length = 0;
@@ -90,10 +95,10 @@ static class CliClient
                 if (length == buffer.Length) throw new CliException("Stdin text must not exceed 1 MiB of characters.");
                 input = new string(buffer, 0, length);
             }
-            using var pipe = await ConnectAsync(parsed, context, cancellation.Token).ConfigureAwait(false);
+            using var pipe = await ConnectAsync(parsed, commandLine, context, cancellation.Token).ConfigureAwait(false);
             if (pipe is null)
             {
-                Print(parsed.Command == "status"
+                Print(commandLine.IsStatus(parsed)
                     ? CliProtocol.Result("Host is not running", new CliStatus(false, "Stopped", null, null, null, null, null, null), CliJsonContext.Default.CliStatus)
                     : CliProtocol.Success("Host is already stopped"), json);
                 return 0;
@@ -112,13 +117,14 @@ static class CliClient
         catch (Exception exception) { Print(CliProtocol.Error(exception.Message), json); return 1; }
     }
 
-    private static async Task<NamedPipeClientStream?> ConnectAsync(CliArguments args, CliClientContext context, CancellationToken token)
+    private static async Task<NamedPipeClientStream?> ConnectAsync(ParseResult parsed, CliCommandLine commandLine,
+        CliClientContext context, CancellationToken token)
     {
         var pipe = NewPipe();
         try { await pipe.ConnectAsync(750, token).ConfigureAwait(false); return pipe; }
         catch (TimeoutException) { pipe.Dispose(); }
-        if (args.Command == "status" || (args.Command, args.Action) is ("server", "stop") or ("app", "quit")) return null;
-        if (args.Has("no-start")) throw new CliException("The host is not running; remove --no-start to start it.", 3);
+        if (commandLine.CanRunWithoutHost(parsed)) return null;
+        if (parsed.GetValue(commandLine.NoStart)) throw new CliException("The host is not running; remove --no-start to start it.", 3);
         if (context.Integrated)
         {
             // Shell launch detaches from redirected CLI stdio. The existing

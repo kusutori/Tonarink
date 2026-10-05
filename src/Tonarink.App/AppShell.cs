@@ -176,7 +176,9 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
         var runtime = nodeSession.Runtime;
         var windowController = context.UseShellWindow(window, settings.MinimizeToTray, t);
 
-        CliBridge.Current = new(nodeSession, settings, updateSettings, windowController.Restore, Props.Locale);
+        CliBridge.Current = new(nodeSession, updateSettings, windowController.Restore,
+            token => AppCommandNavigation.PrepareAsync(window?.NativeWindow?.Content?.XamlRoot,
+                t.Message(new("App", "FavoritesTitle")), t.Message(new("App", "HistoryInfoTitle")), token), Props.Locale);
 
         var activations = context.UseShellActivations(
             navigation,

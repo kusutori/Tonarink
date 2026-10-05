@@ -2,6 +2,7 @@ using Microsoft.UI.Reactor;
 using Microsoft.UI.Xaml;
 using Tonarink.Cli;
 
+args = AppCommandActivation.NormalizeLegacyArguments(args);
 if (CliClient.ShouldRun(args))
     return await CliClient.RunAsync(args, new(AppPlatform.DataDirectory, AppPlatform.ExecutablePath, Integrated: true));
 
