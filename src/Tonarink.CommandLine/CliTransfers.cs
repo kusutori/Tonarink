@@ -23,10 +23,10 @@ sealed partial class CliCommands
         {
             SendOutcome.Completed complete => TransferResult(complete.TransferId, "Completed", complete.Items, 0),
             SendOutcome.Cancelled cancelled => TransferResult(cancelled.TransferId, "Cancelled", cancelled.Items, 130),
-            SendOutcome.PinRequired required => CliProtocol.Error(required.InvalidPin ? "The PIN is incorrect" : "The receiving device requires --pin PIN", 5),
-            SendOutcome.PinRateLimited => CliProtocol.Error("Too many PIN attempts; try again later", 5),
-            SendOutcome.PeerBusy => CliProtocol.Error("The receiving device is busy", 4),
-            SendOutcome.Declined => CliProtocol.Error("The receiving device declined the transfer", 4),
+            SendOutcome.PinRequired required => CliProtocol.Error(required.InvalidPin ? CliText.Get("The PIN is incorrect") : CliText.Get("The receiving device requires --pin PIN"), 5),
+            SendOutcome.PinRateLimited => CliProtocol.Error(CliText.Get("Too many PIN attempts; try again later"), 5),
+            SendOutcome.PeerBusy => CliProtocol.Error(CliText.Get("The receiving device is busy"), 4),
+            SendOutcome.Declined => CliProtocol.Error(CliText.Get("The receiving device declined the transfer"), 4),
             SendOutcome.Failed failed => TransferResult(failed.TransferId, "Failed", failed.Items, 1, failed.Failure.Message),
         };
     }
@@ -35,11 +35,11 @@ sealed partial class CliCommands
     {
         var matches = node.GetDevices().Where(d => d.Alias.Equals(target, StringComparison.OrdinalIgnoreCase)
             || d.Fingerprint.Equals(target, StringComparison.OrdinalIgnoreCase)).ToArray();
-        if (matches.Length > 1) throw new CliException("Ambiguous device name; use a fingerprint or address.");
+        if (matches.Length > 1) throw new CliException(CliText.Get("Ambiguous device name; use a fingerprint or address."));
         if (matches.Length == 1) return matches[0];
         var favorites = (await runtime.FavoritesAsync(token).ConfigureAwait(false)).Where(f => f.Name.Equals(target, StringComparison.OrdinalIgnoreCase)
             || f.Fingerprint.Equals(target, StringComparison.OrdinalIgnoreCase)).ToArray();
-        if (favorites.Length > 1) throw new CliException("Ambiguous favorite name; use a fingerprint.");
+        if (favorites.Length > 1) throw new CliException(CliText.Get("Ambiguous favorite name; use a fingerprint."));
         if (favorites.Length == 1)
         {
             var favorite = favorites[0];
@@ -54,7 +54,7 @@ sealed partial class CliCommands
                 probe = await node.ProbeDeviceAsync(endpoint, token).ConfigureAwait(false);
             }
             if (!probe.Device.Fingerprint.Equals(favorite.Fingerprint, StringComparison.OrdinalIgnoreCase))
-                throw new CliException("The saved address belongs to a different device.", 1);
+                throw new CliException(CliText.Get("The saved address belongs to a different device."), 1);
             return await node.AddKnownDeviceAsync(endpoint, favorite.Fingerprint, token).ConfigureAwait(false);
         }
         DeviceEndpoint? manual = null;
@@ -62,7 +62,7 @@ sealed partial class CliCommands
             && IPAddress.TryParse(uri.Host.Trim('[', ']'), out var uriAddress))
         {
             if (uri.AbsolutePath != "/" || uri.Query.Length > 0 || uri.Fragment.Length > 0 || uri.UserInfo.Length > 0)
-                throw new CliException("Use an HTTP(S) IP address and port, without paths, credentials or query parameters.");
+                throw new CliException(CliText.Get("Use an HTTP(S) IP address and port, without paths, credentials or query parameters."));
             var authority = target[(target.IndexOf("://", StringComparison.Ordinal) + 3)..].Split('/', 2)[0];
             var explicitPort = authority.StartsWith('[') ? authority.Contains("]:", StringComparison.Ordinal) : authority.Contains(':');
             manual = new(uriAddress, explicitPort ? uri.Port : LocalSendOptions.DefaultPort,
@@ -81,16 +81,16 @@ sealed partial class CliCommands
             await Task.Delay(200, token).ConfigureAwait(false);
             matches = node.GetDevices().Where(d => d.Alias.Equals(target, StringComparison.OrdinalIgnoreCase)
                 || d.Fingerprint.Equals(target, StringComparison.OrdinalIgnoreCase)).ToArray();
-            if (matches.Length > 1) throw new CliException("Ambiguous device name; use a fingerprint or address.");
+            if (matches.Length > 1) throw new CliException(CliText.Get("Ambiguous device name; use a fingerprint or address."));
             if (matches.Length == 1) return matches[0];
         }
-        throw new CliException($"Device '{target}' was not found. Use tonarink discover or provide an IP address.", 3);
+        throw new CliException(CliText.Get("Device '{0}' was not found. Use tonarink discover or provide an IP address.", target), 3);
     }
 
     private static List<SendItem> BuildItems(CliRequest request, string[] paths, string? text)
     {
         if (text is not null)
-            return [new SendTextItem(text == "-" ? request.StandardInput ?? throw new CliException("No stdin text was supplied.") : text)];
+            return [new SendTextItem(text == "-" ? request.StandardInput ?? throw new CliException(CliText.Get("No stdin text was supplied.")) : text)];
         var items = new List<SendItem>();
         foreach (var input in paths)
         {
@@ -102,12 +102,12 @@ sealed partial class CliCommands
                 items.AddRange(LocalSendItems.FromDirectory(path).Select(file => new SendFileItem(file.Path,
                     prefix.Length == 0 ? file.FileName : prefix + "/" + file.FileName)));
             }
-            else throw new CliException("File or folder does not exist: " + input);
+            else throw new CliException(CliText.Get("File or folder does not exist: {0}", input));
         }
-        if (items.Count == 0) throw new CliException("No files to send.");
-        if (items.Count > 10000) throw new CliException("At most 10000 files may be sent in one transfer.");
+        if (items.Count == 0) throw new CliException(CliText.Get("No files to send."));
+        if (items.Count > 10000) throw new CliException(CliText.Get("At most 10000 files may be sent in one transfer."));
         if (items.Select(i => i.FileName).Distinct(StringComparer.OrdinalIgnoreCase).Count() != items.Count)
-            throw new CliException("Duplicate destination filenames; send the files separately or rename them.");
+            throw new CliException(CliText.Get("Duplicate destination filenames; send the files separately or rename them."));
         return items;
     }
 
@@ -126,7 +126,7 @@ sealed partial class CliCommands
                 {
                     if (!seen.Add(incoming.RequestId)) continue;
                     var value = Incoming(incoming);
-                    emit(CliProtocol.Result($"Incoming {value.Id}\t{value.Sender}\t{string.Join(", ", value.Files)}",
+                    emit(CliProtocol.Result(CliText.Get("Incoming {0}", value.Id) + $"\t{value.Sender}\t{string.Join(", ", value.Files)}",
                         new[] { value }, CliJsonContext.Default.CliIncomingArray) with
                     { Type = "incoming" });
                     if (autoAccept)
@@ -137,17 +137,17 @@ sealed partial class CliCommands
                 }
                 await Task.Delay(200, token).ConfigureAwait(false);
             }
-            return CliProtocol.Success("Receive watch finished");
+            return CliProtocol.Success(CliText.Get("Receive watch finished"));
         }
     }
     public async Task<CliResponse> DeclineAsync(Guid id, CancellationToken token)
     {
         var state = await StateAsync(token).ConfigureAwait(false);
-        if (!state.IncomingTransfers.Any(r => r.RequestId == id)) throw new CliException("Incoming request not found.", 3);
-        var node = state.Node ?? throw new CliException("Server is stopped.", 3);
+        if (!state.IncomingTransfers.Any(r => r.RequestId == id)) throw new CliException(CliText.Get("Incoming request not found."), 3);
+        var node = state.Node ?? throw new CliException(CliText.Get("Server is stopped."), 3);
         await node.DeclineAsync(id, token).ConfigureAwait(false);
         await runtime.DismissIncomingAsync(id, token).ConfigureAwait(false);
-        return CliProtocol.Success("Incoming request declined");
+        return CliProtocol.Success(CliText.Get("Incoming request declined"));
     }
     public async Task<CliResponse> IncomingAsync(CancellationToken token)
     {
@@ -161,7 +161,7 @@ sealed partial class CliCommands
     {
         var initial = await StateAsync(token).ConfigureAwait(false);
         if (!initial.IncomingTransfers.Any(r => r.RequestId == id))
-            throw new CliException("Incoming request not found or already handled.", 3);
+            throw new CliException(CliText.Get("Incoming request not found or already handled."), 3);
         var directory = destination is { } path
             ? CliPath.FullPath(path, request.WorkingDirectory)
             : initial.Settings.DownloadDirectory;
@@ -169,8 +169,8 @@ sealed partial class CliCommands
         Directory.CreateDirectory(directory);
         var state = await StateAsync(token).ConfigureAwait(false);
         var incoming = state.IncomingTransfers.FirstOrDefault(r => r.RequestId == id)
-            ?? throw new CliException("Incoming request not found or already handled.", 3);
-        var node = state.Node is { State: LocalSendNodeState.Running } running ? running : throw new CliException("Server is stopped.", 3);
+            ?? throw new CliException(CliText.Get("Incoming request not found or already handled."), 3);
+        var node = state.Node is { State: LocalSendNodeState.Running } running ? running : throw new CliException(CliText.Get("Server is stopped."), 3);
         await runtime.DismissIncomingAsync(id, token).ConfigureAwait(false);
         var result = await node.AcceptAsync(id, new AcceptTransferOptions
         {
@@ -193,7 +193,7 @@ sealed partial class CliCommands
         request.Sender.Alias, request.Sender.Fingerprint, request.Items.Select(i => i.FileName).ToArray(), request.Items.Sum(i => i.Size));
 
     private static CliResponse TransferResult(Guid id, string state, IReadOnlyList<TransferredItemResult> items, int exitCode, string? error = null) =>
-        CliProtocol.Result($"Transfer {id}: {state}\n" + string.Join('\n', items.Select(i => i.SavedPath ?? i.FileName))
+        CliProtocol.Result(CliText.Get("Transfer {0}: {1}", id, CliText.Get(state)) + "\n" + string.Join('\n', items.Select(i => i.SavedPath ?? i.FileName))
             + (error is null ? "" : "\n" + error), new CliTransfer(id, state, items.Select(i => i.SavedPath ?? i.FileName).ToArray(), error),
             CliJsonContext.Default.CliTransfer, exitCode);
 }
@@ -201,17 +201,19 @@ sealed partial class CliCommands
 sealed class CliTransferProgress(Action<CliResponse> emit) : IProgress<TransferProgress>
 {
     private readonly Lock _gate = new();
+    private readonly System.Globalization.CultureInfo _culture = System.Globalization.CultureInfo.CurrentUICulture;
     private long _last;
     private TransferState? _state;
     public void Report(TransferProgress value)
     {
+        using var culture = CliText.UseCulture(_culture);
         lock (_gate)
         {
             var now = Environment.TickCount64;
             if (_state == value.State && now - _last < 200) return;
             _state = value.State;
             _last = now;
-            emit(CliProtocol.Result($"{value.TransferId}\t{value.Direction}\t{value.State}\t{value.BytesTransferred}/{value.TotalBytes}",
+            emit(CliProtocol.Result($"{value.TransferId}\t{CliText.Get(value.Direction.ToString())}\t{CliText.Get(value.State.ToString())}\t{value.BytesTransferred}/{value.TotalBytes}",
                 new CliProgress(value.TransferId, value.Direction.ToString(), value.State.ToString(), value.BytesTransferred, value.TotalBytes),
                 CliJsonContext.Default.CliProgress) with
             { Type = "progress" });

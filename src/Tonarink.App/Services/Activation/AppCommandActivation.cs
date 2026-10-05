@@ -48,6 +48,7 @@ static class AppCommandActivation
         }
         Pending.Enqueue(async () =>
         {
+            using var language = CliText.UseLanguage(parsed.GetValue(model.Language));
             try
             {
                 using var cancellation = new CancellationTokenSource();

@@ -49,14 +49,14 @@ sealed record StandaloneSettings
     {
         var next = key.ToLowerInvariant() switch
         {
-            "alias" => this with { Alias = string.IsNullOrWhiteSpace(value) ? throw new CliException("Alias cannot be empty.") : value.Trim() },
+            "alias" => this with { Alias = string.IsNullOrWhiteSpace(value) ? throw new CliException(CliText.Get("Alias cannot be empty.")) : value.Trim() },
             "download-directory" => this with { DownloadDirectory = CliPath.FullPath(value, directory) },
             "port" => this with { Port = Number(value, 1, 65535) },
             "discovery-timeout" => this with { DiscoveryTimeout = Number(value, 1, 60000) },
             "encryption" => this with { Encryption = Boolean(value) },
             "multicast" => this with { Multicast = value.Trim() },
             "device-model" => this with { DeviceModel = value.Trim() },
-            "device-type" => this with { DeviceType = Enum.TryParse<LocalSendDeviceType>(value, true, out var type) && Enum.IsDefined(type) ? type : throw new CliException("Invalid device type.") },
+            "device-type" => this with { DeviceType = Enum.TryParse<LocalSendDeviceType>(value, true, out var type) && Enum.IsDefined(type) ? type : throw new CliException(CliText.Get("Invalid device type.")) },
             "network-allowlist" => this with { NetworkAllowlist = Csv(value), NetworkBlocklist = null },
             "network-blocklist" => this with { NetworkBlocklist = Csv(value), NetworkAllowlist = null },
             "send-checksums" => this with { SendChecksums = Boolean(value) },
@@ -66,30 +66,30 @@ sealed record StandaloneSettings
             "receive-pin" => this with { ReceivePin = value.Trim() },
             "auto-save" => this with { AutoSave = Choice(value, ["off", "favorites", "on"]) },
             "language" => this with { Language = Choice(value, ["en-US", "zh-CN"]) },
-            _ => throw new CliException("Unsupported standalone setting: " + key + ". Run settings list for supported keys."),
+            _ => throw new CliException(CliText.Get("Unsupported standalone setting: {0}. Run settings list for supported keys.", key)),
         };
         next.Validate();
         return next;
     }
     public void Validate()
     {
-        if (string.IsNullOrWhiteSpace(Alias)) throw new CliException("Alias cannot be empty.");
-        if (Port is < 1 or > 65535 || DiscoveryTimeout is < 1 or > 60000) throw new CliException("Invalid port/discovery timeout.");
+        if (string.IsNullOrWhiteSpace(Alias)) throw new CliException(CliText.Get("Alias cannot be empty."));
+        if (Port is < 1 or > 65535 || DiscoveryTimeout is < 1 or > 60000) throw new CliException(CliText.Get("Invalid port/discovery timeout."));
         if (!IPAddress.TryParse(Multicast, out var multicast) || multicast.AddressFamily != System.Net.Sockets.AddressFamily.InterNetwork
-            || multicast.GetAddressBytes()[0] is < 224 or > 239) throw new CliException("An IPv4 multicast address is required.");
-        if (ReceivePin.Length > 32 || (PinEnabled && ReceivePin.Length == 0)) throw new CliException("PIN must be at most 32 characters and non-empty when enabled.");
+            || multicast.GetAddressBytes()[0] is < 224 or > 239) throw new CliException(CliText.Get("An IPv4 multicast address is required."));
+        if (ReceivePin.Length > 32 || (PinEnabled && ReceivePin.Length == 0)) throw new CliException(CliText.Get("PIN must be at most 32 characters and non-empty when enabled."));
         _ = Choice(AutoSave, ["off", "favorites", "on"]); _ = Choice(Language, ["en-US", "zh-CN"]);
-        if (!Enum.IsDefined(DeviceType)) throw new CliException("Invalid device type.");
-        if (!Path.IsPathFullyQualified(DownloadDirectory)) throw new CliException("Download directory must be absolute.");
+        if (!Enum.IsDefined(DeviceType)) throw new CliException(CliText.Get("Invalid device type."));
+        if (!Path.IsPathFullyQualified(DownloadDirectory)) throw new CliException(CliText.Get("Download directory must be absolute."));
     }
     private static CliSetting Flag(string key, bool value) => new(key, value ? "true" : "false");
     private static string[]? Csv(string value) => string.IsNullOrWhiteSpace(value) ? null : value.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
     private static bool Boolean(string value) => value.ToLowerInvariant() switch
-    { "true" or "on" or "1" => true, "false" or "off" or "0" => false, _ => throw new CliException("Expected true or false.") };
-    private static int Number(string value, int min, int max) => int.TryParse(value, out var number) && number >= min && number <= max
-        ? number : throw new CliException($"Expected an integer between {min} and {max}.");
+    { "true" or "on" or "1" => true, "false" or "off" or "0" => false, _ => throw new CliException(CliText.Get("Expected true or false.")) };
+    private static int Number(string value, int min, int max) => int.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out var number) && number >= min && number <= max
+        ? number : throw new CliException(CliText.Get("Expected an integer between {0} and {1}.", min, max));
     private static string Choice(string value, string[] choices) => choices.FirstOrDefault(v => v.Equals(value, StringComparison.OrdinalIgnoreCase))
-        ?? throw new CliException("Expected one of: " + string.Join(", ", choices));
+        ?? throw new CliException(CliText.Get("Expected one of: {0}", string.Join(", ", choices)));
 }
 
 [JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase, WriteIndented = true, UseStringEnumConverter = true)]

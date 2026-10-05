@@ -32,7 +32,21 @@ Get-Content .\message.txt -Raw | tonarink send --target "我的手机" --text -
 - Ctrl+C 或 `--timeout 秒数` 取消当前命令；正在执行的 CLI 传输随之取消，主应用不会因此退出
 - 本机通信使用当前用户专属、按应用数据目录隔离的命名管道；不同包身份及未打包开发版本不混用服务
 
-所有命令支持 `--json`、`--timeout 秒数`、`--no-start`，全局选项可放在子命令前后。秒数取值为 1–86400。
+所有命令支持 `--json`、`--timeout 秒数`、`--no-start`、`--language 语言`，全局选项可放在子命令前后。秒数取值为 1–86400。
+
+### 命令行语言
+
+帮助、参数校验、操作结果和传输状态支持简体中文与英语，默认跟随调用者的系统语言；中文系统使用简体中文，其他语言回退到英语。用 `--language zh-CN`、`--language en-US` 或 `--language system` 覆盖本次调用。
+
+```powershell
+tonarink --language zh-CN --help
+tonarink server stop --language en-US
+tonarink --language zh-CN status --json
+```
+
+此选项不会修改 GUI 或浏览器分享的语言设置（`settings set language`），也不会影响其他并发命令的语言。JSON 的 `message` 会本地化，字段名、状态值、设置键和退出码保持不变；脚本应读取 `data` 和退出码，不依赖 `message`。底层网络、系统和第三方异常保留原始诊断信息。
+
+文案集中在共用命令库的 `Resources/CliStrings*.resx` 中，中英文资源均嵌入共用库，Native AOT 独立版只分发 EXE 也能使用两种语言。命令帮助仍由 `System.CommandLine` 生成，仅补齐库中未翻译的帮助标签。
 
 独立版默认使用 `%LocalAppData%\Tonarink.Cli`，通过全局 `--profile 目录` 可隔离多个配置、身份和后台宿主，不会读写 GUI 的配置。不同宿主不能监听同一端口；与 GUI 同时运行时，可先执行 `settings set port 53318` 再启动独立服务器。
 
@@ -88,6 +102,16 @@ tonarink app quit --yes
 ```
 
 重启服务器会中断正在进行的传输。`app quit` 也会结束图形界面和所有服务，因此必须显式传入 `--yes`。
+
+若独立 CLI 占用了 53317，必须用 **同一个独立入口和配置目录** 停止它，而不是运行控制 GUI 的 `tonarink` 别名：
+
+```powershell
+.\Tonarink.Cli.exe server stop        # 释放监听端口，后台宿主仍运行
+.\Tonarink.Cli.exe app quit --yes     # 完全退出后台宿主
+# 自定义配置目录时，两条命令均加 --profile 对应目录
+```
+
+已停止的服务器会在执行需要联网的命令（例如 `send`、`discover`）时自动启动。Ctrl+C 只取消当前前台命令，并不退出后台宿主。
 
 集成版 `app open --favorite` 跳转到发送页，打开收藏列表并优先显示该设备；`app open --history` 跳转到接收历史并打开记录详情，两者不能同时使用。Windows 跳转列表也使用这组命令，旧版跳转列表参数仍兼容。
 

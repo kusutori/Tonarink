@@ -51,6 +51,10 @@ static class CliClient
         CliConsole.Initialize();
         if (arguments.FirstOrDefault() == "--cli") arguments = arguments[1..];
         if (arguments.Length == 0) arguments = ["--help"];
+        // Use the same typed option to select culture before constructing help
+        // descriptions and library diagnostics; no separate argument scanner.
+        var bootstrap = new CliCommandLine(context.Integrated);
+        using var language = CliText.UseLanguage(bootstrap.Root.Parse(arguments).GetValue(bootstrap.Language));
         CliCommandLine? commandLine = null;
         commandLine = new(context.Integrated, (parse, token) => ExecuteAsync(arguments, parse, commandLine!, context, token));
         var parsed = commandLine.Root.Parse(arguments);
@@ -58,16 +62,25 @@ static class CliClient
         if (parsed.Errors.Count > 0)
         {
             if (json) Print(CliProtocol.Error(string.Join('\n', parsed.Errors.Select(e => e.Message)), 2), true);
-            else await parsed.InvokeAsync().ConfigureAwait(false); // library-owned usage and diagnostics
+            else
+            {
+                using var usage = new StringWriter();
+                using var diagnostics = new StringWriter();
+                await parsed.InvokeAsync(new InvocationConfiguration { Output = usage, Error = diagnostics }).ConfigureAwait(false);
+                if (diagnostics.GetStringBuilder().Length > 0) Console.Error.Write(CliText.LibraryHelp(diagnostics.ToString()));
+                if (usage.GetStringBuilder().Length > 0) Console.Out.Write(CliText.LibraryHelp(usage.ToString()));
+            } // library-owned usage and diagnostics
             return 2;
         }
         var configuration = new InvocationConfiguration { ProcessTerminationTimeout = TimeSpan.FromSeconds(10) };
         // Capture only the library's own help/version output when JSON is requested.
         // Business commands already emit NDJSON through Print, not this writer.
         using var generated = new StringWriter();
-        if (json) configuration.Output = generated;
+        var libraryAction = !commandLine.IsBusinessInvocation(parsed) || parsed.Action != parsed.CommandResult.Command.Action;
+        if (libraryAction) configuration.Output = generated;
         var exit = await parsed.InvokeAsync(configuration).ConfigureAwait(false);
-        if (json && generated.GetStringBuilder().Length > 0) Print(CliProtocol.Success(generated.ToString().TrimEnd()), true);
+        if (generated.GetStringBuilder().Length > 0)
+            Print(CliProtocol.Success(CliText.LibraryHelp(generated.ToString().TrimEnd())), json);
         return exit;
     }
 
@@ -84,7 +97,7 @@ static class CliClient
             string? input = null;
             if (commandLine.ReadsStandardInput(parsed))
             {
-                if (!Console.IsInputRedirected) throw new CliException("--text - requires redirected standard input.");
+                if (!Console.IsInputRedirected) throw new CliException(CliText.Get("--text - requires redirected standard input."));
                 var buffer = new char[1024 * 1024 + 1]; var length = 0;
                 while (length < buffer.Length)
                 {
@@ -92,18 +105,18 @@ static class CliClient
                     if (read == 0) break;
                     length += read;
                 }
-                if (length == buffer.Length) throw new CliException("Stdin text must not exceed 1 MiB of characters.");
+                if (length == buffer.Length) throw new CliException(CliText.Get("Stdin text must not exceed 1 MiB of characters."));
                 input = new string(buffer, 0, length);
             }
             using var pipe = await ConnectAsync(parsed, commandLine, context, cancellation.Token).ConfigureAwait(false);
             if (pipe is null)
             {
                 Print(commandLine.IsStatus(parsed)
-                    ? CliProtocol.Result("Host is not running", new CliStatus(false, "Stopped", null, null, null, null, null, null), CliJsonContext.Default.CliStatus)
-                    : CliProtocol.Success("Host is already stopped"), json);
+                    ? CliProtocol.Result(CliText.Get("Host is not running"), new CliStatus(false, "Stopped", null, null, null, null, null, null), CliJsonContext.Default.CliStatus)
+                    : CliProtocol.Success(CliText.Get("Host is already stopped")), json);
                 return 0;
             }
-            await CliProtocol.WriteAsync(pipe, new CliRequest(arguments, Environment.CurrentDirectory, input),
+            await CliProtocol.WriteAsync(pipe, new CliRequest(arguments, Environment.CurrentDirectory, input, System.Globalization.CultureInfo.CurrentUICulture.Name),
                 CliJsonContext.Default.CliRequest, cancellation.Token).ConfigureAwait(false);
             while (true)
             {
@@ -112,7 +125,7 @@ static class CliClient
                 if (response.Type == "result") return response.ExitCode;
             }
         }
-        catch (OperationCanceledException) { Print(CliProtocol.Error("Command cancelled or timed out", 130), json); return 130; }
+        catch (OperationCanceledException) { Print(CliProtocol.Error(CliText.Get("Command cancelled or timed out"), 130), json); return 130; }
         catch (CliException exception) { Print(CliProtocol.Error(exception.Message, exception.ExitCode), json); return exception.ExitCode; }
         catch (Exception exception) { Print(CliProtocol.Error(exception.Message), json); return 1; }
     }
@@ -124,14 +137,14 @@ static class CliClient
         try { await pipe.ConnectAsync(750, token).ConfigureAwait(false); return pipe; }
         catch (TimeoutException) { pipe.Dispose(); }
         if (commandLine.CanRunWithoutHost(parsed)) return null;
-        if (parsed.GetValue(commandLine.NoStart)) throw new CliException("The host is not running; remove --no-start to start it.", 3);
+        if (parsed.GetValue(commandLine.NoStart)) throw new CliException(CliText.Get("The host is not running; remove --no-start to start it."), 3);
         if (context.Integrated)
         {
             // Shell launch detaches from redirected CLI stdio. The existing
             // packaged primary-instance broker serializes concurrent startups.
             using var startup = Process.Start(new ProcessStartInfo(context.ExecutablePath)
             { UseShellExecute = true, Arguments = CliProtocol.BackgroundArgument, WindowStyle = ProcessWindowStyle.Hidden })
-                ?? throw new CliException("Could not start the background app.", 3);
+                ?? throw new CliException(CliText.Get("Could not start the background app."), 3);
         }
         else
         {
@@ -145,7 +158,7 @@ static class CliClient
             if (Path.GetFileNameWithoutExtension(context.ExecutablePath).Equals("dotnet", StringComparison.OrdinalIgnoreCase))
                 start.ArgumentList.Add(Path.Combine(AppContext.BaseDirectory, "Tonarink.Cli.dll"));
             start.ArgumentList.Add("--cli-daemon"); start.ArgumentList.Add(context.DataDirectory);
-            using var startup = Process.Start(start) ?? throw new CliException("Could not start the independent host.", 3);
+            using var startup = Process.Start(start) ?? throw new CliException(CliText.Get("Could not start the independent host."), 3);
             // The headless host writes diagnostics to its profile's log, never
             // these inherited pipe handles; it also never reads console input.
         }

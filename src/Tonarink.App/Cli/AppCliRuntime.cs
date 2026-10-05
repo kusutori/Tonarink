@@ -13,7 +13,7 @@ static class CliBridge
     // UI-only snapshot, replaced on every render. The host belongs to the outer
     // shell, so locale changes cannot replace the listener or outstanding calls.
     public static CliBindings? Current { get; set; }
-    public static CliBindings Get() => Current ?? throw new CliException("The app is still initializing.", 3);
+    public static CliBindings Get() => Current ?? throw new CliException(CliText.Get("The app is still initializing."), 3);
 }
 
 sealed class AppCliRuntime(Func<CliBindings> bindings) : ICliRuntime
@@ -39,7 +39,7 @@ sealed class AppCliRuntime(Func<CliBindings> bindings) : ICliRuntime
     {
         var previous = await StateAsync(token).ConfigureAwait(false);
         if (action == CliServerAction.Start && previous.Session.Node?.State == LocalSendNodeState.Running)
-            return CliProtocol.Success("Server is already running");
+            return CliProtocol.Success(CliText.Get("Server is already running"));
         await CliUi.InvokeAsync(() =>
         {
             var current = bindings();
@@ -52,16 +52,16 @@ sealed class AppCliRuntime(Func<CliBindings> bindings) : ICliRuntime
         {
             var current = await StateAsync(token).ConfigureAwait(false);
             if (action == CliServerAction.Stop && current.Session.Runtime.NodeState == LocalSendNodeState.Stopped)
-                return CliProtocol.Success("Server stopped");
+                return CliProtocol.Success(CliText.Get("Server stopped"));
             if (action != CliServerAction.Stop && current.Session.Node?.State == LocalSendNodeState.Running
                 && !ReferenceEquals(current.Session.Node, previous.Session.Node))
-                return CliProtocol.Success(action == CliServerAction.Restart ? "Server restarted" : "Server started");
+                return CliProtocol.Success(action == CliServerAction.Restart ? CliText.Get("Server restarted") : CliText.Get("Server started"));
             if (action != CliServerAction.Stop && current.Session.Runtime.NodeState == LocalSendNodeState.Faulted
                 && (previous.Session.Runtime.NodeState != LocalSendNodeState.Faulted || clock.Elapsed > TimeSpan.FromSeconds(1)))
-                throw new CliException(current.Session.Runtime.Error ?? "Server startup failed", 1);
+                throw new CliException(current.Session.Runtime.Error ?? CliText.Get("Server startup failed"), 1);
             await Task.Delay(100, token).ConfigureAwait(false);
         }
-        throw new CliException("Timed out waiting for the server state change.", 3);
+        throw new CliException(CliText.Get("Timed out waiting for the server state change."), 3);
     }
 
     public async Task<CliResponse> SaveSettingAsync(string key, string value, string workingDirectory, bool restart, CancellationToken token)
@@ -85,7 +85,7 @@ sealed class AppCliRuntime(Func<CliBindings> bindings) : ICliRuntime
             if (restart) return await ServerAsync(CliServerAction.Restart, token, saved).ConfigureAwait(false);
         }
         finally { _settingsGate.Release(); }
-        return CliProtocol.Success("Setting saved; server-related changes apply after server restart");
+        return CliProtocol.Success(CliText.Get("Setting saved; server-related changes apply after server restart"));
     }
     public Task<CliSetting[]> ReadSettingsAsync(bool showSecrets, CancellationToken token) =>
         CliUi.InvokeAsync(() => CliSettings.List(AppSettingsStore.Load(), showSecrets), token);
@@ -93,14 +93,14 @@ sealed class AppCliRuntime(Func<CliBindings> bindings) : ICliRuntime
         FavoriteDeviceStore.Entries.Values.Select(f => new CliFavorite(f.Fingerprint, f.Name, f.Address, f.Port, f.DeviceType.ToString())).ToArray(), token);
     public Task SaveFavoriteAsync(LocalSendDevice device, CancellationToken token) => CliUi.InvokeAsync(() =>
     {
-        var endpoint = device.PreferredEndpoint ?? throw new CliException("Device has no usable address.", 3);
+        var endpoint = device.PreferredEndpoint ?? throw new CliException(CliText.Get("Device has no usable address."), 3);
         FavoriteDeviceStore.Upsert(new(device.Fingerprint, device.Alias, endpoint.Address.ToString(), endpoint.Port, device.DeviceType));
         return true;
     }, token);
     public Task RemoveFavoriteAsync(string fingerprint, CancellationToken token) => CliUi.InvokeAsync(() =>
     {
         var key = FavoriteDeviceStore.Entries.Keys.FirstOrDefault(k => k.Equals(fingerprint, StringComparison.OrdinalIgnoreCase))
-            ?? throw new CliException("Favorite fingerprint not found.", 3);
+            ?? throw new CliException(CliText.Get("Favorite fingerprint not found."), 3);
         FavoriteDeviceStore.Remove(key); return true;
     }, token);
     public Task<CliHistory[]> HistoryAsync(CancellationToken token) => CliUi.InvokeAsync(() => ReceiveHistoryStore.Entries
@@ -110,7 +110,7 @@ sealed class AppCliRuntime(Func<CliBindings> bindings) : ICliRuntime
         if (id is null) ReceiveHistoryStore.Clear();
         else
         {
-            if (!ReceiveHistoryStore.Entries.Any(e => e.Id == id)) throw new CliException("History entry not found.", 3);
+            if (!ReceiveHistoryStore.Entries.Any(e => e.Id == id)) throw new CliException(CliText.Get("History entry not found."), 3);
             ReceiveHistoryStore.Remove(id.Value);
         }
         return true;
@@ -132,9 +132,9 @@ sealed class AppCliRuntime(Func<CliBindings> bindings) : ICliRuntime
             {
                 var fingerprint = favorite is null ? null : FavoriteDeviceStore.Entries.Keys
                     .FirstOrDefault(k => k.Equals(favorite, StringComparison.OrdinalIgnoreCase))
-                    ?? throw new CliException("Favorite fingerprint not found.", 3);
+                    ?? throw new CliException(CliText.Get("Favorite fingerprint not found."), 3);
                 if (history is { } id && !ReceiveHistoryStore.Entries.Any(e => e.Id == id))
-                    throw new CliException("History entry not found.", 3);
+                    throw new CliException(CliText.Get("History entry not found."), 3);
                 return fingerprint;
             }, token).ConfigureAwait(false);
             if (stored is not null || history is not null)
@@ -157,12 +157,13 @@ static class CliUi
     {
         var completion = new TaskCompletionSource<T>(TaskCreationOptions.RunContinuationsAsynchronously);
         var dispatcher = ReactorApp.UIDispatcher;
+        var culture = System.Globalization.CultureInfo.CurrentUICulture;
         if (dispatcher is null || !dispatcher.TryEnqueue(() =>
         {
             if (token.IsCancellationRequested) { completion.TrySetCanceled(token); return; }
-            try { completion.TrySetResult(action()); }
+            try { using var language = CliText.UseCulture(culture); completion.TrySetResult(action()); }
             catch (Exception exception) { completion.TrySetException(exception); }
-        })) completion.TrySetException(new CliException("The app dispatcher is unavailable.", 3));
+        })) completion.TrySetException(new CliException(CliText.Get("The app dispatcher is unavailable."), 3));
         return completion.Task.WaitAsync(token);
     }
 }

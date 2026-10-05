@@ -12,7 +12,7 @@ sealed partial class CliCommands(ICliRuntime runtime)
         var id = state.Identity;
         var status = new CliStatus(true, state.NodeState.ToString(), id?.Alias, id?.Fingerprint,
             id?.Port, id?.Protocol.ToString(), state.Error, state.DiscoveryWarning);
-        return CliProtocol.Result($"{status.State}\t{status.Name}\t{status.Port}\t{status.Protocol}\n{status.Error ?? status.DiscoveryWarning}".TrimEnd(), status, CliJsonContext.Default.CliStatus);
+        return CliProtocol.Result($"{CliText.Get(status.State)}\t{status.Name}\t{status.Port}\t{status.Protocol}\n{status.Error ?? status.DiscoveryWarning}".TrimEnd(), status, CliJsonContext.Default.CliStatus);
     }
     public async Task<CliResponse> DevicesAsync(bool refresh, int seconds, CancellationToken token)
     {
@@ -27,7 +27,7 @@ sealed partial class CliCommands(ICliRuntime runtime)
         var pending = (await StateAsync(token).ConfigureAwait(false)).IncomingTransfers.FirstOrDefault(r => r.TransferId == transferId);
         var cancelled = await (await RunningNodeAsync(token).ConfigureAwait(false)).CancelTransferAsync(transferId, token).ConfigureAwait(false);
         if (cancelled && pending is not null) await runtime.DismissIncomingAsync(pending.RequestId, token).ConfigureAwait(false);
-        return cancelled ? CliProtocol.Success("Transfer cancelled") : CliProtocol.Error("Transfer not found", 3);
+        return cancelled ? CliProtocol.Success(CliText.Get("Transfer cancelled")) : CliProtocol.Error(CliText.Get("Transfer not found"), 3);
     }
     private async Task<LocalSendNode> RunningNodeAsync(CancellationToken token)
     {
@@ -41,11 +41,11 @@ sealed partial class CliCommands(ICliRuntime runtime)
         while (clock.Elapsed < TimeSpan.FromSeconds(45))
         {
             if (current.Node is { State: LocalSendNodeState.Running } node) return node;
-            if (current.NodeState == LocalSendNodeState.Faulted) throw new CliException(current.Error ?? "Server startup failed", 1);
+            if (current.NodeState == LocalSendNodeState.Faulted) throw new CliException(current.Error ?? CliText.Get("Server startup failed"), 1);
             await Task.Delay(100, token).ConfigureAwait(false);
             current = await StateAsync(token).ConfigureAwait(false);
         }
-        throw new CliException("The server did not become ready in time.", 3);
+        throw new CliException(CliText.Get("The server did not become ready in time."), 3);
     }
     public async Task<CliResponse> SettingsAsync(string? key, bool showSecrets, CancellationToken token)
     {
@@ -53,7 +53,7 @@ sealed partial class CliCommands(ICliRuntime runtime)
         if (key is not null)
         {
             entries = entries.Where(e => e.Key.Equals(key, StringComparison.OrdinalIgnoreCase)).ToArray();
-            if (entries.Length == 0) throw new CliException("Unknown settings key: " + key);
+            if (entries.Length == 0) throw new CliException(CliText.Get("Unknown settings key: {0}", key));
         }
         return CliProtocol.Result(string.Join('\n', entries.Select(e => $"{e.Key}\t{e.Value}")), entries, CliJsonContext.Default.CliSettingArray);
     }
@@ -61,17 +61,17 @@ sealed partial class CliCommands(ICliRuntime runtime)
     {
         var device = await ResolveAsync(await RunningNodeAsync(token).ConfigureAwait(false), target, token).ConfigureAwait(false);
         await runtime.SaveFavoriteAsync(device, token).ConfigureAwait(false);
-        return CliProtocol.Success("Favorite saved: " + device.Alias);
+        return CliProtocol.Success(CliText.Get("Favorite saved: {0}", device.Alias));
     }
     public async Task<CliResponse> RemoveFavoriteAsync(string fingerprint, CancellationToken token)
-    { await runtime.RemoveFavoriteAsync(fingerprint, token).ConfigureAwait(false); return CliProtocol.Success("Favorite removed"); }
+    { await runtime.RemoveFavoriteAsync(fingerprint, token).ConfigureAwait(false); return CliProtocol.Success(CliText.Get("Favorite removed")); }
     public async Task<CliResponse> FavoritesAsync(CancellationToken token)
     {
         var favorites = await runtime.FavoritesAsync(token).ConfigureAwait(false);
         return CliProtocol.Result(string.Join('\n', favorites.Select(f => $"{f.Name}\t{f.Fingerprint}\t{f.Address}:{f.Port}")), favorites, CliJsonContext.Default.CliFavoriteArray);
     }
     public async Task<CliResponse> RemoveHistoryAsync(Guid? id, CancellationToken token)
-    { await runtime.RemoveHistoryAsync(id, token).ConfigureAwait(false); return CliProtocol.Success("History updated; saved files were not deleted"); }
+    { await runtime.RemoveHistoryAsync(id, token).ConfigureAwait(false); return CliProtocol.Success(CliText.Get("History updated; saved files were not deleted")); }
     public async Task<CliResponse> HistoryAsync(CancellationToken token)
     {
         var entries = await runtime.HistoryAsync(token).ConfigureAwait(false);
@@ -95,7 +95,7 @@ sealed partial class CliCommands(ICliRuntime runtime)
     public async Task<CliResponse> WebDecisionAsync(string session, bool accept, CancellationToken token)
     {
         var node = await RunningNodeAsync(token).ConfigureAwait(false);
-        if (!(accept ? node.AcceptWebShareRequest(session) : node.DeclineWebShareRequest(session))) throw new CliException("Browser request not found.", 3);
+        if (!(accept ? node.AcceptWebShareRequest(session) : node.DeclineWebShareRequest(session))) throw new CliException(CliText.Get("Browser request not found."), 3);
         return WebStatus(node);
     }
     private async Task<WebShareOptions> WebOptionsAsync(bool autoAccept, string? pin, CancellationToken token) => new()
@@ -106,7 +106,7 @@ sealed partial class CliCommands(ICliRuntime runtime)
         var links = share.Active ? NetworkLinks(node.Identity!).ToArray() : [];
         var result = new CliWebShare(share.Active, share.Mode.ToString(), share.AutoAccept, share.Pin is not null,
             share.Files.Select(f => f.FileName).ToArray(), share.Requests.Where(r => r.Pending).Select(r => r.SessionId).ToArray(), links);
-        return CliProtocol.Result($"Browser share: {(share.Active ? share.Mode.ToString() : "stopped")}\n" + string.Join('\n', links), result, CliJsonContext.Default.CliWebShare);
+        return CliProtocol.Result(CliText.Get("Browser share: {0}", CliText.Get(share.Active ? share.Mode.ToString() : "Stopped")) + "\n" + string.Join('\n', links), result, CliJsonContext.Default.CliWebShare);
     }
     private static IEnumerable<string> NetworkLinks(LocalSendIdentity identity)
     {

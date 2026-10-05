@@ -66,14 +66,14 @@ static class CliSettings
             "network-allowlist" => s with { NetworkWhitelist = string.IsNullOrWhiteSpace(value) ? null : Csv(value), NetworkBlacklist = null },
             "network-blocklist" => s with { NetworkBlacklist = string.IsNullOrWhiteSpace(value) ? null : Csv(value), NetworkWhitelist = null },
             "explorer-menu" => s with { ShowExplorerContextMenu = Boolean(value) },
-            _ => throw new CliException($"Unknown settings key: {key}. Run tonarink settings list."),
+            _ => throw new CliException(CliText.Get("Unknown settings key: {0}. Run tonarink settings list.", key)),
         };
         if (!SettingsInputDraft.FromSettings(next).TryValidate(next.ReceivePinEnabled, out var error))
             throw new CliException(error switch
             {
-                "SettingsMulticastInvalid" => "Multicast must be an IPv4 address between 224.0.0.0 and 239.255.255.255.",
-                "SettingsReceivePinInvalid" => "PIN must be at most 32 characters and non-empty when enabled.",
-                _ => "Invalid server settings: " + error,
+                "SettingsMulticastInvalid" => CliText.Get("Multicast must be an IPv4 address between 224.0.0.0 and 239.255.255.255."),
+                "SettingsReceivePinInvalid" => CliText.Get("PIN must be at most 32 characters and non-empty when enabled."),
+                _ => CliText.Get("Invalid server settings: {0}", error),
             });
         return next;
     }
@@ -81,7 +81,7 @@ static class CliSettings
     private static AppSettings Override(AppSettings s, FilePreviewProvider provider, string value, string directory)
     {
         var path = value.Length == 0 ? "" : FullPath(FilePreviewSettings.NormalizePath(value), directory);
-        if (path.Length > 0 && !FilePreviewSettings.PathExists(path)) throw new CliException("The override file does not exist.");
+        if (path.Length > 0 && !FilePreviewSettings.PathExists(path)) throw new CliException(CliText.Get("The override file does not exist."));
         s = FilePreviewSettings.Add(s, provider);
         return FilePreviewSettings.SetExecutablePath(s, provider, path);
     }
@@ -90,22 +90,22 @@ static class CliSettings
     private static CliSetting Flag(string key, bool value) => new(key, value ? "true" : "false");
     private static string[] Csv(string value) => value.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
     private static string Required(string value, string key) => !string.IsNullOrWhiteSpace(value)
-        ? value.Trim() : throw new CliException($"{key} cannot be empty.");
+        ? value.Trim() : throw new CliException(CliText.Get("{0} cannot be empty.", key));
     private static bool Boolean(string value) => value.ToLowerInvariant() switch
     {
         "true" or "on" or "1" => true,
         "false" or "off" or "0" => false,
-        _ => throw new CliException("Expected true or false."),
+        _ => throw new CliException(CliText.Get("Expected true or false.")),
     };
     private static int Choice(string value, string[] choices)
     {
         var index = Array.FindIndex(choices, item => item.Equals(value, StringComparison.OrdinalIgnoreCase));
-        return index >= 0 ? index : throw new CliException("Expected one of: " + string.Join(", ", choices));
+        return index >= 0 ? index : throw new CliException(CliText.Get("Expected one of: {0}", string.Join(", ", choices)));
     }
     private static int Number(string value, int min, int max) =>
         int.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out var number) && number >= min && number <= max
-            ? number : throw new CliException($"Expected an integer between {min} and {max}.");
+            ? number : throw new CliException(CliText.Get("Expected an integer between {0} and {1}.", min, max));
     private static T EnumValue<T>(string value) where T : struct, Enum =>
         Enum.TryParse<T>(value, true, out var result) && Enum.IsDefined(result)
-            ? result : throw new CliException("Invalid option value: " + value);
+            ? result : throw new CliException(CliText.Get("Invalid option value: {0}", value));
 }

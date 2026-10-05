@@ -72,9 +72,9 @@ sealed class StandaloneCliRuntime : ICliRuntime, IAsyncDisposable
         try
         {
             lock (_gate)
-                if (action == CliServerAction.Start && _node?.State == LocalSendNodeState.Running) return CliProtocol.Success("Server is already running");
+                if (action == CliServerAction.Start && _node?.State == LocalSendNodeState.Running) return CliProtocol.Success(CliText.Get("Server is already running"));
             await StopNodeAsync().ConfigureAwait(false);
-            if (action == CliServerAction.Stop) return CliProtocol.Success("Server stopped");
+            if (action == CliServerAction.Stop) return CliProtocol.Success(CliText.Get("Server stopped"));
             StandaloneSettings settings;
             lock (_gate) { settings = _settings; _state = LocalSendNodeState.Starting; _desired = true; _error = null; }
             var node = new LocalSendNode(settings.NodeOptions(_profile));
@@ -87,7 +87,7 @@ sealed class StandaloneCliRuntime : ICliRuntime, IAsyncDisposable
             }
             catch (Exception exception)
             { lock (_gate) { _state = LocalSendNodeState.Faulted; _error = exception.Message; } throw; }
-            return CliProtocol.Success(action == CliServerAction.Restart ? "Server restarted" : "Server started");
+            return CliProtocol.Success(action == CliServerAction.Restart ? CliText.Get("Server restarted") : CliText.Get("Server started"));
         }
         finally { _serverGate.Release(); }
     }
@@ -139,7 +139,7 @@ sealed class StandaloneCliRuntime : ICliRuntime, IAsyncDisposable
                 Save("settings.json", next, StandaloneJsonContext.Default.StandaloneSettings); _settings = next;
             }
             if (restart) return await ServerAsync(CliServerAction.Restart, token).ConfigureAwait(false);
-            return CliProtocol.Success("Setting saved; server-related changes apply after server restart");
+            return CliProtocol.Success(CliText.Get("Setting saved; server-related changes apply after server restart"));
         }
         finally { _settingsGate.Release(); }
     }
@@ -149,7 +149,7 @@ sealed class StandaloneCliRuntime : ICliRuntime, IAsyncDisposable
     public Task SaveFavoriteAsync(LocalSendDevice device, CancellationToken token)
     {
         token.ThrowIfCancellationRequested();
-        var e = device.PreferredEndpoint ?? throw new CliException("Device has no usable endpoint.", 3);
+        var e = device.PreferredEndpoint ?? throw new CliException(CliText.Get("Device has no usable endpoint."), 3);
         lock (_gate)
         {
             var next = _favorites.Where(f => f.Fingerprint != device.Fingerprint).Append(new(device.Fingerprint, device.Alias, e.Address.ToString(), e.Port, device.DeviceType.ToString())).ToArray();
@@ -163,7 +163,7 @@ sealed class StandaloneCliRuntime : ICliRuntime, IAsyncDisposable
         lock (_gate)
         {
             var next = _favorites.Where(f => !f.Fingerprint.Equals(fingerprint, StringComparison.OrdinalIgnoreCase)).ToArray();
-            if (next.Length == _favorites.Length) throw new CliException("Favorite fingerprint not found.", 3);
+            if (next.Length == _favorites.Length) throw new CliException(CliText.Get("Favorite fingerprint not found."), 3);
             Save("favorites.json", next, CliJsonContext.Default.CliFavoriteArray); _favorites = next;
         }
         return Task.CompletedTask;
@@ -174,7 +174,7 @@ sealed class StandaloneCliRuntime : ICliRuntime, IAsyncDisposable
         token.ThrowIfCancellationRequested();
         lock (_gate)
         {
-            if (id is not null && !_history.Any(e => e.Id == id)) throw new CliException("History entry not found.", 3);
+            if (id is not null && !_history.Any(e => e.Id == id)) throw new CliException(CliText.Get("History entry not found."), 3);
             var next = id is null ? [] : _history.Where(e => e.Id != id).ToArray();
             Save("history.json", next, CliJsonContext.Default.CliHistoryArray); _history = next;
         }
@@ -194,7 +194,7 @@ sealed class StandaloneCliRuntime : ICliRuntime, IAsyncDisposable
     }
     public Task DismissIncomingAsync(Guid id, CancellationToken token) { token.ThrowIfCancellationRequested(); _pending.TryRemove(id, out _); return Task.CompletedTask; }
     public IDisposable BeginReceiveWatch() => new CliScope(() => { });
-    public Task OpenAppAsync(string? favorite, Guid? history, CancellationToken token) => throw new CliException("Standalone CLI has no graphical window.", 3);
+    public Task OpenAppAsync(string? favorite, Guid? history, CancellationToken token) => throw new CliException(CliText.Get("Standalone CLI has no graphical window."), 3);
     public Task QuitAsync(CancellationToken token) { _quit.TrySetResult(); return Task.CompletedTask; }
     public async ValueTask DisposeAsync() { await _serverGate.WaitAsync().ConfigureAwait(false); try { await StopNodeAsync().ConfigureAwait(false); } finally { _serverGate.Release(); } }
     private T? ReadFile<T>(string file, JsonTypeInfo<T> type) => File.Exists(Path.Combine(_profile, file))

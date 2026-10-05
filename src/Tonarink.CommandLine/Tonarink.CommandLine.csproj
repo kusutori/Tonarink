@@ -4,8 +4,16 @@
     <IsAotCompatible>true</IsAotCompatible>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Version>1.1.0</Version>
+    <NeutralLanguage>en-US</NeutralLanguage>
   </PropertyGroup>
   <ItemGroup>
+    <!-- Keep both locales in the common assembly. Native AOT doesn't include
+         this project reference's satellite DLL in its compiler inputs; the
+         standalone executable must remain independently distributable. -->
+    <EmbeddedResource Update="Resources/CliStrings.zh-CN.resx">
+      <WithCulture>false</WithCulture>
+      <LogicalName>Tonarink.CommandLine.Resources.CliStrings.zh-CN.resources</LogicalName>
+    </EmbeddedResource>
     <PackageReference Include="System.CommandLine" />
     <ProjectReference Include="../LocalSendDotNet.Core/LocalSendDotNet.Core.csproj" />
     <ProjectReference Include="../Tonarink.Application/Tonarink.Application.csproj" />

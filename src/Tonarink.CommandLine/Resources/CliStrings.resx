@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <data name="Independent configuration/data directory" xml:space="preserve"><value>Independent configuration/data directory</value></data>
+  <data name="Tonarink CLI: reuse the desktop app's server and saved settings" xml:space="preserve"><value>Tonarink CLI: reuse the desktop app's server and saved settings</value></data>
+  <data name="Tonarink standalone CLI: manage an independent background LocalSend service" xml:space="preserve"><value>Tonarink standalone CLI: manage an independent background LocalSend service</value></data>
+  <data name="Write progress and results as NDJSON" xml:space="preserve"><value>Write progress and results as NDJSON</value></data>
+  <data name="Cancel this command after N seconds (1-86400)" xml:space="preserve"><value>Cancel this command after N seconds (1-86400)</value></data>
+  <data name="Only connect to an already running host" xml:space="preserve"><value>Only connect to an already running host</value></data>
+  <data name="CLI output language: system, zh-CN or en-US (default: system)" xml:space="preserve"><value>CLI output language: system, zh-CN or en-US (default: system)</value></data>
+  <data name="Expected --language system, zh-CN or en-US." xml:space="preserve"><value>Expected --language system, zh-CN or en-US.</value></data>
+  <data name="Show server state without starting the host" xml:space="preserve"><value>Show server state without starting the host</value></data>
+  <data name="Refresh discovery and list nearby devices" xml:space="preserve"><value>Refresh discovery and list nearby devices</value></data>
+  <data name="List known devices" xml:space="preserve"><value>List known devices</value></data>
+  <data name="Discovery duration (default: devices 1, discover 5)" xml:space="preserve"><value>Discovery duration (default: devices 1, discover 5)</value></data>
+  <data name="Send files, folders or text to a device" xml:space="preserve"><value>Send files, folders or text to a device</value></data>
+  <data name="Device name, fingerprint, favorite or HTTP(S) IP address" xml:space="preserve"><value>Device name, fingerprint, favorite or HTTP(S) IP address</value></data>
+  <data name="Receiver PIN (may be visible in process listings)" xml:space="preserve"><value>Receiver PIN (may be visible in process listings)</value></data>
+  <data name="Disable checksums for this transfer" xml:space="preserve"><value>Disable checksums for this transfer</value></data>
+  <data name="Cancel a pending or active transfer" xml:space="preserve"><value>Cancel a pending or active transfer</value></data>
+  <data name="Inspect and handle incoming requests" xml:space="preserve"><value>Inspect and handle incoming requests</value></data>
+  <data name="List pending requests" xml:space="preserve"><value>List pending requests</value></data>
+  <data name="Accept all items in an incoming request" xml:space="preserve"><value>Accept all items in an incoming request</value></data>
+  <data name="Decline an incoming request" xml:space="preserve"><value>Decline an incoming request</value></data>
+  <data name="Watch incoming requests until cancelled or the duration expires" xml:space="preserve"><value>Watch incoming requests until cancelled or the duration expires</value></data>
+  <data name="Accept incoming requests while watching" xml:space="preserve"><value>Accept incoming requests while watching</value></data>
+  <data name="Watch duration; omit to watch until Ctrl+C" xml:space="preserve"><value>Watch duration; omit to watch until Ctrl+C</value></data>
+  <data name="Control the LocalSend server" xml:space="preserve"><value>Control the LocalSend server</value></data>
+  <data name="Start the server" xml:space="preserve"><value>Start the server</value></data>
+  <data name="Stop the server" xml:space="preserve"><value>Stop the server</value></data>
+  <data name="Restart the server (interrupts active transfers)" xml:space="preserve"><value>Restart the server (interrupts active transfers)</value></data>
+  <data name="Read or persist host settings" xml:space="preserve"><value>Read or persist host settings</value></data>
+  <data name="Read one setting" xml:space="preserve"><value>Read one setting</value></data>
+  <data name="List supported settings" xml:space="preserve"><value>List supported settings</value></data>
+  <data name="Setting key" xml:space="preserve"><value>Setting key</value></data>
+  <data name="Include the receiving PIN" xml:space="preserve"><value>Include the receiving PIN</value></data>
+  <data name="Validate and save one setting" xml:space="preserve"><value>Validate and save one setting</value></data>
+  <data name="Setting value; quote paths and empty strings" xml:space="preserve"><value>Setting value; quote paths and empty strings</value></data>
+  <data name="Restart using the saved settings" xml:space="preserve"><value>Restart using the saved settings</value></data>
+  <data name="Manage saved device identities" xml:space="preserve"><value>Manage saved device identities</value></data>
+  <data name="List saved favorites" xml:space="preserve"><value>List saved favorites</value></data>
+  <data name="Probe and save a device" xml:space="preserve"><value>Probe and save a device</value></data>
+  <data name="Device name, fingerprint or address" xml:space="preserve"><value>Device name, fingerprint or address</value></data>
+  <data name="Remove a favorite" xml:space="preserve"><value>Remove a favorite</value></data>
+  <data name="Complete saved fingerprint" xml:space="preserve"><value>Complete saved fingerprint</value></data>
+  <data name="Manage receive history without deleting saved files" xml:space="preserve"><value>Manage receive history without deleting saved files</value></data>
+  <data name="List receive history" xml:space="preserve"><value>List receive history</value></data>
+  <data name="Remove one history record" xml:space="preserve"><value>Remove one history record</value></data>
+  <data name="Clear history; saved files are retained" xml:space="preserve"><value>Clear history; saved files are retained</value></data>
+  <data name="Manage browser sharing" xml:space="preserve"><value>Manage browser sharing</value></data>
+  <data name="Share files, folders or text in a browser" xml:space="preserve"><value>Share files, folders or text in a browser</value></data>
+  <data name="Receive uploads from a browser" xml:space="preserve"><value>Receive uploads from a browser</value></data>
+  <data name="Show browser sharing state and links" xml:space="preserve"><value>Show browser sharing state and links</value></data>
+  <data name="Stop browser sharing" xml:space="preserve"><value>Stop browser sharing</value></data>
+  <data name="Approve a browser request" xml:space="preserve"><value>Approve a browser request</value></data>
+  <data name="Reject a browser request" xml:space="preserve"><value>Reject a browser request</value></data>
+  <data name="Browser session ID" xml:space="preserve"><value>Browser session ID</value></data>
+  <data name="Control the desktop application" xml:space="preserve"><value>Control the desktop application</value></data>
+  <data name="Control the independent CLI host" xml:space="preserve"><value>Control the independent CLI host</value></data>
+  <data name="Show the main window, a favorite device or a history entry" xml:space="preserve"><value>Show the main window, a favorite device or a history entry</value></data>
+  <data name="Open a saved device by fingerprint" xml:space="preserve"><value>Open a saved device by fingerprint</value></data>
+  <data name="Locate a receive history entry by UUID" xml:space="preserve"><value>Locate a receive history entry by UUID</value></data>
+  <data name="Do not combine --favorite and --history." xml:space="preserve"><value>Do not combine --favorite and --history.</value></data>
+  <data name="Main window opened" xml:space="preserve"><value>Main window opened</value></data>
+  <data name="Exit the host and stop its services" xml:space="preserve"><value>Exit the host and stop its services</value></data>
+  <data name="Host is exiting" xml:space="preserve"><value>Host is exiting</value></data>
+  <data name="Command cancelled or timed out" xml:space="preserve"><value>Command cancelled or timed out</value></data>
+  <data name="--{0} must be between 1 and 86400." xml:space="preserve"><value>--{0} must be between 1 and 86400.</value></data>
+  <data name="UUID reported by the corresponding list or progress command" xml:space="preserve"><value>UUID reported by the corresponding list or progress command</value></data>
+  <data name="Files or folders; relative to the caller's working directory" xml:space="preserve"><value>Files or folders; relative to the caller's working directory</value></data>
+  <data name="Send literal text; use '-' for redirected stdin" xml:space="preserve"><value>Send literal text; use '-' for redirected stdin</value></data>
+  <data name="Provide paths or --text TEXT." xml:space="preserve"><value>Provide paths or --text TEXT.</value></data>
+  <data name="Do not combine paths with --text." xml:space="preserve"><value>Do not combine paths with --text.</value></data>
+  <data name="Confirm this action" xml:space="preserve"><value>Confirm this action</value></data>
+  <data name="This action requires --yes." xml:space="preserve"><value>This action requires --yes.</value></data>
+  <data name="Receive destination for this invocation" xml:space="preserve"><value>Receive destination for this invocation</value></data>
+  <data name="Disable checksum verification" xml:space="preserve"><value>Disable checksum verification</value></data>
+  <data name="Approve browser requests automatically" xml:space="preserve"><value>Approve browser requests automatically</value></data>
+  <data name="Protect browser sharing with a PIN" xml:space="preserve"><value>Protect browser sharing with a PIN</value></data>
+  <data name="--text - requires redirected standard input." xml:space="preserve"><value>--text - requires redirected standard input.</value></data>
+  <data name="Stdin text must not exceed 1 MiB of characters." xml:space="preserve"><value>Stdin text must not exceed 1 MiB of characters.</value></data>
+  <data name="Host is not running" xml:space="preserve"><value>Host is not running</value></data>
+  <data name="Host is already stopped" xml:space="preserve"><value>Host is already stopped</value></data>
+  <data name="The host is not running; remove --no-start to start it." xml:space="preserve"><value>The host is not running; remove --no-start to start it.</value></data>
+  <data name="Could not start the background app." xml:space="preserve"><value>Could not start the background app.</value></data>
+  <data name="Could not start the independent host." xml:space="preserve"><value>Could not start the independent host.</value></data>
+  <data name="Transfer cancelled" xml:space="preserve"><value>Transfer cancelled</value></data>
+  <data name="Transfer not found" xml:space="preserve"><value>Transfer not found</value></data>
+  <data name="Server startup failed" xml:space="preserve"><value>Server startup failed</value></data>
+  <data name="The server did not become ready in time." xml:space="preserve"><value>The server did not become ready in time.</value></data>
+  <data name="Unknown settings key: {0}" xml:space="preserve"><value>Unknown settings key: {0}</value></data>
+  <data name="Favorite saved: {0}" xml:space="preserve"><value>Favorite saved: {0}</value></data>
+  <data name="Favorite removed" xml:space="preserve"><value>Favorite removed</value></data>
+  <data name="History updated; saved files were not deleted" xml:space="preserve"><value>History updated; saved files were not deleted</value></data>
+  <data name="Browser request not found." xml:space="preserve"><value>Browser request not found.</value></data>
+  <data name="Browser share: {0}" xml:space="preserve"><value>Browser share: {0}</value></data>
+  <data name="The PIN is incorrect" xml:space="preserve"><value>The PIN is incorrect</value></data>
+  <data name="The receiving device requires --pin PIN" xml:space="preserve"><value>The receiving device requires --pin PIN</value></data>
+  <data name="Too many PIN attempts; try again later" xml:space="preserve"><value>Too many PIN attempts; try again later</value></data>
+  <data name="The receiving device is busy" xml:space="preserve"><value>The receiving device is busy</value></data>
+  <data name="The receiving device declined the transfer" xml:space="preserve"><value>The receiving device declined the transfer</value></data>
+  <data name="Ambiguous device name; use a fingerprint or address." xml:space="preserve"><value>Ambiguous device name; use a fingerprint or address.</value></data>
+  <data name="Ambiguous favorite name; use a fingerprint." xml:space="preserve"><value>Ambiguous favorite name; use a fingerprint.</value></data>
+  <data name="The saved address belongs to a different device." xml:space="preserve"><value>The saved address belongs to a different device.</value></data>
+  <data name="Use an HTTP(S) IP address and port, without paths, credentials or query parameters." xml:space="preserve"><value>Use an HTTP(S) IP address and port, without paths, credentials or query parameters.</value></data>
+  <data name="Device '{0}' was not found. Use tonarink discover or provide an IP address." xml:space="preserve"><value>Device '{0}' was not found. Use tonarink discover or provide an IP address.</value></data>
+  <data name="No stdin text was supplied." xml:space="preserve"><value>No stdin text was supplied.</value></data>
+  <data name="File or folder does not exist: {0}" xml:space="preserve"><value>File or folder does not exist: {0}</value></data>
+  <data name="No files to send." xml:space="preserve"><value>No files to send.</value></data>
+  <data name="At most 10000 files may be sent in one transfer." xml:space="preserve"><value>At most 10000 files may be sent in one transfer.</value></data>
+  <data name="Duplicate destination filenames; send the files separately or rename them." xml:space="preserve"><value>Duplicate destination filenames; send the files separately or rename them.</value></data>
+  <data name="Incoming {0}" xml:space="preserve"><value>Incoming {0}</value></data>
+  <data name="Receive watch finished" xml:space="preserve"><value>Receive watch finished</value></data>
+  <data name="Incoming request not found." xml:space="preserve"><value>Incoming request not found.</value></data>
+  <data name="Server is stopped." xml:space="preserve"><value>Server is stopped.</value></data>
+  <data name="Incoming request declined" xml:space="preserve"><value>Incoming request declined</value></data>
+  <data name="Incoming request not found or already handled." xml:space="preserve"><value>Incoming request not found or already handled.</value></data>
+  <data name="Transfer {0}: {1}" xml:space="preserve"><value>Transfer {0}: {1}</value></data>
+  <data name="Invalid path: {0}" xml:space="preserve"><value>Invalid path: {0}</value></data>
+  <data name="Command or response exceeds the 4 MiB limit." xml:space="preserve"><value>Command or response exceeds the 4 MiB limit.</value></data>
+  <data name="Invalid CLI message length." xml:space="preserve"><value>Invalid CLI message length.</value></data>
+  <data name="Empty CLI message." xml:space="preserve"><value>Empty CLI message.</value></data>
+  <data name="Alias cannot be empty." xml:space="preserve"><value>Alias cannot be empty.</value></data>
+  <data name="Invalid device type." xml:space="preserve"><value>Invalid device type.</value></data>
+  <data name="Unsupported standalone setting: {0}. Run settings list for supported keys." xml:space="preserve"><value>Unsupported standalone setting: {0}. Run settings list for supported keys.</value></data>
+  <data name="Invalid port/discovery timeout." xml:space="preserve"><value>Invalid port/discovery timeout.</value></data>
+  <data name="An IPv4 multicast address is required." xml:space="preserve"><value>An IPv4 multicast address is required.</value></data>
+  <data name="PIN must be at most 32 characters and non-empty when enabled." xml:space="preserve"><value>PIN must be at most 32 characters and non-empty when enabled.</value></data>
+  <data name="Download directory must be absolute." xml:space="preserve"><value>Download directory must be absolute.</value></data>
+  <data name="Expected true or false." xml:space="preserve"><value>Expected true or false.</value></data>
+  <data name="Expected an integer between {0} and {1}." xml:space="preserve"><value>Expected an integer between {0} and {1}.</value></data>
+  <data name="Expected one of: {0}" xml:space="preserve"><value>Expected one of: {0}</value></data>
+  <data name="Server is already running" xml:space="preserve"><value>Server is already running</value></data>
+  <data name="Server stopped" xml:space="preserve"><value>Server stopped</value></data>
+  <data name="Server restarted" xml:space="preserve"><value>Server restarted</value></data>
+  <data name="Server started" xml:space="preserve"><value>Server started</value></data>
+  <data name="Setting saved; server-related changes apply after server restart" xml:space="preserve"><value>Setting saved; server-related changes apply after server restart</value></data>
+  <data name="Device has no usable endpoint." xml:space="preserve"><value>Device has no usable endpoint.</value></data>
+  <data name="Device has no usable address." xml:space="preserve"><value>Device has no usable address.</value></data>
+  <data name="Favorite fingerprint not found." xml:space="preserve"><value>Favorite fingerprint not found.</value></data>
+  <data name="History entry not found." xml:space="preserve"><value>History entry not found.</value></data>
+  <data name="Standalone CLI has no graphical window." xml:space="preserve"><value>Standalone CLI has no graphical window.</value></data>
+  <data name="Unknown settings key: {0}. Run tonarink settings list." xml:space="preserve"><value>Unknown settings key: {0}. Run tonarink settings list.</value></data>
+  <data name="Multicast must be an IPv4 address between 224.0.0.0 and 239.255.255.255." xml:space="preserve"><value>Multicast must be an IPv4 address between 224.0.0.0 and 239.255.255.255.</value></data>
+  <data name="Invalid server settings: {0}" xml:space="preserve"><value>Invalid server settings: {0}</value></data>
+  <data name="The override file does not exist." xml:space="preserve"><value>The override file does not exist.</value></data>
+  <data name="{0} cannot be empty." xml:space="preserve"><value>{0} cannot be empty.</value></data>
+  <data name="Invalid option value: {0}" xml:space="preserve"><value>Invalid option value: {0}</value></data>
+  <data name="The app is still initializing." xml:space="preserve"><value>The app is still initializing.</value></data>
+  <data name="Timed out waiting for the server state change." xml:space="preserve"><value>Timed out waiting for the server state change.</value></data>
+  <data name="The app dispatcher is unavailable." xml:space="preserve"><value>The app dispatcher is unavailable.</value></data>
+  <data name="Close the current dialog before opening a device or history entry." xml:space="preserve"><value>Close the current dialog before opening a device or history entry.</value></data>
+  <data name="Stopped" xml:space="preserve"><value>Stopped</value></data>
+  <data name="Starting" xml:space="preserve"><value>Starting</value></data>
+  <data name="Running" xml:space="preserve"><value>Running</value></data>
+  <data name="Stopping" xml:space="preserve"><value>Stopping</value></data>
+  <data name="Faulted" xml:space="preserve"><value>Faulted</value></data>
+  <data name="Completed" xml:space="preserve"><value>Completed</value></data>
+  <data name="Cancelled" xml:space="preserve"><value>Cancelled</value></data>
+  <data name="Failed" xml:space="preserve"><value>Failed</value></data>
+  <data name="Pending" xml:space="preserve"><value>Pending</value></data>
+  <data name="Preparing" xml:space="preserve"><value>Preparing</value></data>
+  <data name="WaitingForAcceptance" xml:space="preserve"><value>WaitingForAcceptance</value></data>
+  <data name="Transferring" xml:space="preserve"><value>Transferring</value></data>
+  <data name="Sending" xml:space="preserve"><value>Sending</value></data>
+  <data name="Receiving" xml:space="preserve"><value>Receiving</value></data>
+  <data name="Send" xml:space="preserve"><value>Send</value></data>
+  <data name="Receive" xml:space="preserve"><value>Receive</value></data>
+  <data name="Created" xml:space="preserve"><value>Created</value></data>
+  <data name="Disposed" xml:space="preserve"><value>Disposed</value></data>
+  <data name="Show help and usage information" xml:space="preserve"><value>Show help and usage information</value></data>
+  <data name="Description:" xml:space="preserve"><value>Description:</value></data>
+  <data name="[command]" xml:space="preserve"><value>[command]</value></data>
+  <data name="[options]" xml:space="preserve"><value>[options]</value></data>
+  <data name="Expected a UUID for {0}." xml:space="preserve"><value>Expected a UUID for {0}.</value></data>
+  <data name="Expected an integer for {0}." xml:space="preserve"><value>Expected an integer for {0}.</value></data>
+</root>

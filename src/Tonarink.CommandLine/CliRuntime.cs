@@ -38,7 +38,7 @@ static class CliPath
     {
         try { return Path.GetFullPath(Environment.ExpandEnvironmentVariables(value), directory); }
         catch (Exception exception) when (exception is ArgumentException or NotSupportedException)
-        { throw new CliException("Invalid path: " + value); }
+        { throw new CliException(CliText.Get("Invalid path: {0}", value)); }
     }
 }
 

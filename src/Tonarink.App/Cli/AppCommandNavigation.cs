@@ -16,7 +16,7 @@ static class AppCommandNavigation
         {
             if (FindDialog(popup.Child) is not { } dialog) continue;
             if (dialog.Title is not string title || (title != favoritesTitle && title != historyTitle))
-                throw new CliException("Close the current dialog before opening a device or history entry.", 4);
+                throw new CliException(CliText.Get("Close the current dialog before opening a device or history entry."), 4);
             var closed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             void OnClosed(ContentDialog sender, ContentDialogClosedEventArgs args) => closed.TrySetResult();
             dialog.Closed += OnClosed;
@@ -31,7 +31,7 @@ static class AppCommandNavigation
             var settled = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             if (ReactorApp.UIDispatcher is not { } dispatcher || !dispatcher.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low,
                     () => settled.TrySetResult()))
-                throw new CliException("The app dispatcher is unavailable.", 3);
+                throw new CliException(CliText.Get("The app dispatcher is unavailable."), 3);
             await settled.Task.WaitAsync(token);
         }
     }

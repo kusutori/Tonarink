@@ -37,6 +37,9 @@ sealed class CliHost(ICliRuntime runtime, string dataDirectory, Action<string, E
             {
                 cancellation.CancelAfter(TimeSpan.FromSeconds(10));
                 var request = await CliProtocol.ReadAsync(pipe, CliJsonContext.Default.CliRequest, cancellation.Token).ConfigureAwait(false);
+                // The caller's resolved system language travels with the
+                // request; a GUI host can have a different display language.
+                using var language = CliText.UseLanguage(request.Language);
                 cancellation.CancelAfter(Timeout.InfiniteTimeSpan);
                 var output = Channel.CreateUnbounded<CliResponse>(new() { SingleReader = true });
                 var writing = WriteResponsesAsync(pipe, output.Reader, cancellation);
