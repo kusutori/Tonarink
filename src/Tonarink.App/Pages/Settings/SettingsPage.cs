@@ -563,7 +563,7 @@ sealed class SettingsPage : Component<SettingsPageProps>
                             Props.UpdateSettings(settings => settings with { FilePreviewEnabled = value }))
                         .AutomationName(t.Message(new("App", "SettingsFilePreviewEnabled")))
                         .HelpText(t.Message(new("App", "SettingsFilePreviewEnabledDescription"))),
-                    headerIcon: HeaderGlyph(AppIcons.Preview),
+                    headerIcon: AnimatedButtons.SettingsPreviewIcon(Props.Settings.FilePreviewEnabled),
                     items:
                     [
                         SettingsCard(

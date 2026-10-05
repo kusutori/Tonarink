@@ -68,7 +68,10 @@ sealed class FilePreviewProviderContent : Component<FilePreviewProviderContentPr
                         .Grid(column: 1),
                     // Delete's 48px canvas includes 4px of top/bottom whitespace.
                     // At 24px its visible mark is 20px, matching the FontIcon.
-                    AnimatedButtons.Delete(removeName, Props.Remove, subtle: true, iconSize: 24, buttonSize: 40)
+                    // Same hover-to-open lid as the send card. Removal is immediate,
+                    // so this entry never requests the optional shake feedback.
+                    AnimatedButtons.Delete(removeName, Props.Remove, subtle: true,
+                            shakeVersion: 0, iconSize: 24, buttonSize: 40)
                         .Size(40, 40)
                         .VAlign(VerticalAlignment.Center)
                         .Grid(column: 2)) with { ColumnSpacing = 8 })

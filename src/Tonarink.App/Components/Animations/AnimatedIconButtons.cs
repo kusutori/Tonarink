@@ -33,6 +33,9 @@ public static class AnimatedButtons
     public static Element SettingsDragDropIcon(bool isOn, double iconSize = 24) =>
         AnimatedSettingsToggleIcon.Create(SettingsToggleIconKind.DragDrop, isOn, iconSize);
 
+    public static Element SettingsPreviewIcon(bool isOn, double iconSize = 24) =>
+        AnimatedSettingsToggleIcon.Create(SettingsToggleIconKind.Preview, isOn, iconSize);
+
     public static Element SettingsThemeIcon(int themeIndex, double iconSize = 24) =>
         AnimatedSettingsToggleIcon.Create(
             SettingsToggleIconKind.Theme,
