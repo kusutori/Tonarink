@@ -272,6 +272,7 @@ sealed class SettingsPage : Component<SettingsPageProps>
                                     })
                                 .AutomationName(t.Message(new("App", "SettingsNotificationsDefaultAction")))
                                 .HelpText(t.Message(new("App", "SettingsNotificationsDefaultActionDescription")))
+                                .IsEnabled(Props.Settings.NotificationsEnabled)
                                 .MinWidth(180)),
                         SettingsCard(
                             header: t.Message(new("App", "SettingsNotificationsTest")),
