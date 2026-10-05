@@ -30,18 +30,19 @@ jobs:
       - uses: actions/setup-dotnet@v5
         with:
           dotnet-version: 11.0.100-rc.1.26425.128
-      - name: Pack and install standalone JIT tool
+      - name: Pack and install standalone AOT tool
         shell: pwsh
         run: |
-          dotnet pack src/Tonarink.Cli/Tonarink.Cli.csproj -c Release -o artifacts/cli/nuget -p:PublishAot=false -p:SelfContained=false -p:UseAppHost=false
+          dotnet pack src/Tonarink.Cli/Tonarink.Cli.csproj -c Release -o artifacts/cli/nuget -p:CreateRidSpecificToolPackages=false
           if ($LASTEXITCODE -ne 0) { throw 'CLI packing failed.' }
           $version = ([xml](Get-Content src/Tonarink.Cli/Tonarink.Cli.csproj -Raw)).Project.PropertyGroup.Version
+          ./tools/Build-CliPortable.ps1 -RuntimeIdentifier win-x64 -Version $version -OutputDirectory artifacts/cli/nuget -PackTool
           $config = Join-Path $env:RUNNER_TEMP 'cli-tool.nuget.config'
           $feed = [Security.SecurityElement]::Escape((Join-Path $PWD.Path 'artifacts/cli/nuget'))
           "<configuration><packageSources><clear/><add key=`"cli-build`" value=`"$feed`" /></packageSources></configuration>" | Set-Content $config
           dotnet tool install tonarink-cli --tool-path "$env:RUNNER_TEMP/cli-tool" --version $version --configfile $config --no-cache
           if ($LASTEXITCODE -ne 0) { throw 'CLI tool installation failed.' }
-          & "$env:RUNNER_TEMP/cli-tool/tonarink-cli.exe" --language en-US --help
+          & "$env:RUNNER_TEMP/cli-tool/tonarink-cli" --language en-US --help
           if ($LASTEXITCODE -ne 0) { throw 'Installed CLI tool failed to start.' }
 
   ui:

@@ -6,10 +6,10 @@ Standalone [Tonarink](https://github.com/kusutori/Tonarink) command-line client 
 
 Choose one distribution; both expose the same `tonarink-cli` command.
 
-- **NuGet / .NET tool (JIT):** `dotnet tool install --global tonarink-cli`
+- **NuGet / .NET tool (Native AOT):** `dotnet tool install --global tonarink-cli`
 - **Windows portable (Native AOT):** `winget install --id kusutori.tonarink-cli --exact --source winget`
 
-The .NET tool currently targets **.NET 11 RC** and needs matching `Microsoft.NETCore.App` and `Microsoft.AspNetCore.App` shared runtimes. Installing the .NET 11 SDK supplies both. It is framework-dependent, not an AOT executable.
+Both distributions contain **Native AOT** executables for **Windows x64 / ARM64**, with no JIT fallback. The .NET tool requires **.NET SDK 10 or newer to install**; the SDK automatically selects the matching RID package. The installed tool does not need .NET 11 or ASP.NET Core shared runtimes. .NET 11 RC is a build-time requirement only.
 
 The Windows x64 / ARM64 portable packages need neither .NET nor WinUI. WinGet registers the portable command in PATH. Alternatively, extract the matching ZIP from [CLI releases](https://github.com/kusutori/Tonarink/releases?q=cli-v&expanded=true) and run `tonarink-cli.exe` directly; manual extraction does not register PATH. Open a new terminal if a newly installed command is not found.
 

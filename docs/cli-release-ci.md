@@ -4,10 +4,12 @@
 
 | 路线 | 包名 / 安装命令 | 运行方式 |
 | --- | --- | --- |
-| NuGet | `dotnet tool install --global tonarink-cli` | JIT，框架依赖，需要 .NET 11 RC 的 .NET / ASP.NET Core 运行时 |
+| NuGet | `dotnet tool install --global tonarink-cli` | Windows x64 / ARM64，Native AOT；安装需要 .NET SDK 10+ |
 | winget | `winget install --id kusutori.tonarink-cli --exact` | Windows x64 / ARM64，Native AOT，自包含 portable |
 
 两者的命令均为 `tonarink-cli`，与主 App 的 `tonarink` 不冲突。不要同时安装两条路线，以免同名命令的 PATH 优先级造成混淆。
+
+两条路线复用同一架构的一次 Native AOT 编译输出，不依赖 .NET 11 / ASP.NET Core 共享运行时。NuGet 采用 [官方 RID-specific tools](https://learn.microsoft.com/zh-cn/dotnet/core/tools/rid-specific-tools) 机制：一个顶级选择器包引用两个 RID 子包，SDK 安装时自动选取原生 EXE；不分发 `any` 包，不保留 JIT 回退。当前只发布 Windows x64 / ARM64，其他系统没有匹配包，不能使用这次分发。
 
 ## GitHub 配置
 
@@ -30,10 +32,10 @@
 - Repository：`Tonarink`
 - Workflow file：`release-cli.yml`（仅文件名）
 - Environment：`release`
-- 包 ID 范围：`tonarink-cli`
+- 包 ID 范围：`tonarink-cli`、`tonarink-cli.win-x64`、`tonarink-cli.win-arm64`（需要同时授权三个 ID；也可以用 `tonarink-cli` 和 `tonarink-cli.*` 两条规则）
 - 允许发布新包和新版本，首次发布需要“新包”权限
 
-填写的 owner / repository / environment 必须与实际工作流完全匹配。只给该 CLI 包的发布权限，不要扩大到其他包。
+填写的 owner / repository / environment 必须与实际工作流完全匹配。只给该 CLI 包及其 RID 子包的发布权限，不要扩大到其他包。原先只包含 `tonarink-cli` 的 JIT 发布策略需要补上两个子包，否则 Native AOT 发布会因未授权的新包失败；Secrets 不变。
 
 ## 构建与发布
 
@@ -51,11 +53,12 @@ git push origin cli-v1.1.0
 标签触发的工作流会：
 
 1. 检查标签与 CLI 项目版本一致
-2. 构建 JIT 工具包，实际通过 `dotnet tool install` 安装到隔离目录，运行中英文帮助和独立宿主的设置读写 / 退出流程
-3. 分别构建 x64、ARM64 AOT ZIP，检查 EXE 的 PE 架构；在 x64 runner 上运行 x64 包的帮助，ARM64 包只检查架构，不声称已运行验证
+2. 构建 NuGet 顶级 RID 选择器包，包含平台映射及文档，不含实现 DLL
+3. 分别编译 x64、ARM64 Native AOT，一次编译同时生成对应 NuGet 子包和 portable ZIP；检查 EXE 的 PE 架构、确认没有托管 CLR 头，在 x64 runner 上运行 x64 包的帮助，ARM64 包只检查格式和架构
 4. 根据 ZIP 的真实 SHA256 生成多文件 winget 清单，使用微软的 1.12.0 JSON schemas 校验，并生成全部发布附件的 `SHA256SUMS.txt`
-5. 创建 CLI 专用的 GitHub Release，并通过可信发布上传 NuGet 包
-6. 对正式版使用 WingetCreate 自动向 `microsoft/winget-pkgs` 提交 PR，合并后才进入 winget 源
+5. 实际从隔离本地源通过 `dotnet tool install` 安装主包，确认原生工具可运行中英文帮助、读写设置及退出后台宿主
+6. 创建 CLI 专用的 GitHub Release，通过可信发布先上传两个 NuGet RID 子包，最后上传顶级包，保证用户安装时对应的架构包可用
+7. 对正式版使用 WingetCreate 自动向 `microsoft/winget-pkgs` 提交 PR，合并后才进入 winget 源
 
 手动触发并选择 `publish=true` 时，也必须选择匹配的现有 `cli-v...` 标签；从分支运行只能做不发布的构建。手动发布可以设置 `submit_winget=false` 暂不提交社区 PR。带 `-preview.1` 等后缀的版本发布为 prerelease，不生成或提交 winget 清单；安装这样的 NuGet 版本时使用 `--prerelease` 或指定 `--version`。
 
@@ -63,6 +66,8 @@ CLI Release 使用 `latest=false`，不会覆盖主 App 的 Latest 下载入口�
 
 ```text
 tonarink-cli.<version>.nupkg
+tonarink-cli.win-x64.<version>.nupkg
+tonarink-cli.win-arm64.<version>.nupkg
 tonarink-cli-<version>-win-x64.zip
 tonarink-cli-<version>-win-arm64.zip
 tonarink-cli-winget-manifests.zip       # 仅正式版
@@ -84,18 +89,21 @@ GitHub Release 托管二进制，winget-pkgs 只存清单。第一次提交可�
 - NuGet 使用 `--skip-duplicate`，同一版本不会覆盖；有缺陷的包应发布新版本
 - winget 提交前检查已合并版本和自己创建的同名未关闭 PR，避免重复提交
 - 若只有 NuGet / winget 发布步骤失败，修复凭据后使用 Actions 的 **Re-run failed jobs**，复用原构建产物；不要全量重新构建同一公开版本
-- SDK 当前固定为 `11.0.100-rc.1.26425.128`，跟随仓库 `global.json` 升级；JIT 的运行时要求也随目标框架变化
+- 构建 SDK 当前固定为 `11.0.100-rc.1.26425.128`，跟随仓库 `global.json` 升级；Native AOT 工具的运行不需要该 SDK 或其共享运行时，NuGet 安装需要 .NET SDK 10+ 支持 RID 工具
 - WingetCreate 固定为 `1.12.13.0` 并校验官方附件 SHA256；它自身需要 .NET 9，因此仅在提交清单的 CI job 安装此 SDK，与 AOT CLI 用户的运行时要求无关
 
-普通 `ci.yml` 也会构建、打包、实际安装并运行 JIT CLI，防止只在发布标签时才发现工具包不能安装。没有添加单元测试用例。
+普通 `ci.yml` 也会构建选择器包和 x64 AOT 子包、实际安装并运行原生 CLI，防止只在发布标签时才发现工具包不能安装。没有添加单元测试用例。
 
 本地生成 portable / 清单：
 
 ```powershell
-./tools/Build-CliPortable.ps1 -RuntimeIdentifier win-x64 -Version 1.1.0 -OutputDirectory artifacts/cli/portable
-./tools/Build-CliPortable.ps1 -RuntimeIdentifier win-arm64 -Version 1.1.0 -OutputDirectory artifacts/cli/portable
-./tools/New-CliWingetManifest.ps1 -Version 1.1.0 -AssetDirectory artifacts/cli/portable -OutputDirectory artifacts/cli/winget
+dotnet pack src/Tonarink.Cli/Tonarink.Cli.csproj -c Release -o artifacts/cli/native -p:CreateRidSpecificToolPackages=false
+./tools/Build-CliPortable.ps1 -RuntimeIdentifier win-x64 -Version 1.1.0 -OutputDirectory artifacts/cli/native -PackTool
+./tools/Build-CliPortable.ps1 -RuntimeIdentifier win-arm64 -Version 1.1.0 -OutputDirectory artifacts/cli/native -PackTool
+./tools/New-CliWingetManifest.ps1 -Version 1.1.0 -AssetDirectory artifacts/cli/native -OutputDirectory artifacts/cli/winget
 winget validate --manifest artifacts/cli/winget/manifests/k/kusutori/tonarink-cli/1.1.0 --disable-interactivity
 ```
 
 跨架构 Native AOT 构建需要 Visual Studio 的对应 C++ 工具链和 Windows SDK。脚本使用唯一临时目录并保留用于诊断，不删除用户文件；若输出 ZIP 已存在会拒绝覆盖，请使用新的输出目录。
+
+`-PackTool` 使用 SDK 的 `dotnet pack -r <RID>` 生成 `DotnetToolRidPackage`，然后从同一个 PublishDir 创建 portable ZIP。省略该开关则仅生成 portable ZIP。构建选择器时的 `CreateRidSpecificToolPackages=false` 只关闭当前 SDK 11 自动编排 RID 编译的步骤，不清除平台映射，也不会生成 JIT 实现；两个子包由矩阵分别构建。

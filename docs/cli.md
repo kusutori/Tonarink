@@ -12,14 +12,14 @@ CLI 使用微软 `System.CommandLine` 定义命令树、类型化参数、校验
 两种分发使用相同的 `tonarink-cli` 命令，选择一种即可，避免 PATH 中出现同名工具冲突：
 
 ```powershell
-# NuGet：框架依赖的 JIT 版本
+# NuGet：RID 专用的 Native AOT 版本，安装需要 .NET SDK 10 或更高版本
 dotnet tool install --global tonarink-cli
 
 # winget：Windows x64 / ARM64 的 Native AOT portable 版本
 winget install --id kusutori.tonarink-cli --exact --source winget
 ```
 
-JIT 版当前目标为 .NET 11 RC，需要匹配的 .NET 和 ASP.NET Core 共享运行时，安装 .NET 11 SDK 即可同时获得两者。AOT 版不需要 .NET 或 WinUI 运行时，清单要求 Windows 10 2004 或更高版本，winget 会注册 portable 命令路径；首次安装后必要时重新打开终端。
+两条路线统一使用 Windows x64 / ARM64 的 Native AOT 版本，不提供 `any` / JIT 回退包。.NET tool 安装需要支持 RID 工具的 .NET SDK 10 或更高版本，自动选择匹配架构的原生包；安装后运行不需要 .NET 11、ASP.NET Core 或 WinUI 运行时。.NET 11 RC 只是构建要求。winget 清单要求 Windows 10 2004 或更高版本，会注册 portable 命令路径，不需要 .NET SDK；首次安装后必要时重新打开终端。
 
 也可以从 `cli-v...` 的 [GitHub Release](https://github.com/kusutori/Tonarink/releases?q=cli-v&expanded=true) 下载对应架构的 ZIP，解压后直接运行 `tonarink-cli.exe`，手动解压不会注册 PATH。winget 条目需要社区清单 PR 合并后才可安装，不会在 GitHub 发布瞬间立即可用。
 

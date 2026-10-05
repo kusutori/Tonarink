@@ -59,7 +59,7 @@ jobs:
           "prerelease=$($prerelease.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
           "winget=$($winget.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
 
-  nuget:
+  nuget-pointer:
     needs: version
     runs-on: windows-latest
     steps:
@@ -67,43 +67,20 @@ jobs:
       - uses: actions/setup-dotnet@v5
         with:
           dotnet-version: 11.0.100-rc.1.26425.128
-      - name: Pack framework-dependent JIT tool
+      - name: Pack RID selector (no implementation or JIT fallback)
+        # SDK 11 can automatically build host-compatible RIDs. The matrix below builds
+        # them separately, so disable that orchestration only for this pointer package.
         run: >-
           dotnet pack src/Tonarink.Cli/Tonarink.Cli.csproj --configuration Release
-          --output artifacts/cli/nuget -p:PublishAot=false -p:SelfContained=false
-          -p:UseAppHost=false -p:ContinuousIntegrationBuild=true
-      - name: Install and run the actual .NET tool
-        run: |
-          $ErrorActionPreference = 'Stop'
-          $toolDirectory = Join-Path $env:RUNNER_TEMP 'cli-tool'
-          $profile = Join-Path $env:RUNNER_TEMP 'cli-tool-profile'
-          $config = Join-Path $env:RUNNER_TEMP 'cli-tool.nuget.config'
-          $feed = [Security.SecurityElement]::Escape((Join-Path $PWD.Path 'artifacts/cli/nuget'))
-          "<configuration><packageSources><clear/><add key=`"cli-build`" value=`"$feed`" /></packageSources></configuration>" | Set-Content $config
-          dotnet tool install tonarink-cli --tool-path $toolDirectory --version '${{ needs.version.outputs.version }}' --configfile $config --no-cache
-          if ($LASTEXITCODE -ne 0) { throw 'Tool installation failed.' }
-          $cli = Join-Path $toolDirectory 'tonarink-cli.exe'
-          & $cli --language en-US --help
-          if ($LASTEXITCODE -ne 0) { throw 'Tool help failed.' }
-          & $cli --language zh-CN --help
-          if ($LASTEXITCODE -ne 0) { throw 'Localized tool help failed.' }
-          try {
-            & $cli --profile $profile settings set alias ci-cli --json
-            if ($LASTEXITCODE -ne 0) { throw 'Tool shim could not start its standalone host.' }
-            & $cli --profile $profile settings get alias --json
-            if ($LASTEXITCODE -ne 0) { throw 'Could not query the standalone host.' }
-          }
-          finally {
-            & $cli --profile $profile app quit --yes --json
-            if ($LASTEXITCODE -ne 0) { throw 'Could not stop the isolated standalone host.' }
-          }
+          --output artifacts/cli/nuget -p:CreateRidSpecificToolPackages=false
+          -p:ContinuousIntegrationBuild=true
       - uses: actions/upload-artifact@v4
         with:
-          name: cli-nuget
+          name: cli-nuget-pointer
           path: artifacts/cli/nuget/*.nupkg
           if-no-files-found: error
 
-  portable:
+  native:
     needs: version
     runs-on: windows-latest
     strategy:
@@ -115,30 +92,62 @@ jobs:
       - uses: actions/setup-dotnet@v5
         with:
           dotnet-version: 11.0.100-rc.1.26425.128
-      - name: Build Native AOT portable ZIP
+      - name: Compile once, pack AOT tool and portable ZIP
         run: >-
           ./tools/Build-CliPortable.ps1 -RuntimeIdentifier '${{ matrix.rid }}'
-          -Version '${{ needs.version.outputs.version }}' -OutputDirectory artifacts/cli/portable
+          -Version '${{ needs.version.outputs.version }}' -OutputDirectory artifacts/cli/native -PackTool
       - uses: actions/upload-artifact@v4
         with:
-          name: cli-portable-${{ matrix.rid }}
-          path: artifacts/cli/portable/*.zip
+          name: cli-native-${{ matrix.rid }}
+          path: artifacts/cli/native/*
           if-no-files-found: error
 
   assemble:
-    needs: [version, nuget, portable]
+    needs: [version, nuget-pointer, native]
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
-          name: cli-nuget
+          name: cli-nuget-pointer
           path: artifacts/cli/release
       - uses: actions/download-artifact@v4
         with:
-          pattern: cli-portable-*
+          pattern: cli-native-*
           merge-multiple: true
           path: artifacts/cli/release
+      - uses: actions/setup-dotnet@v5
+        id: installer-sdk
+        with:
+          dotnet-version: 10.0.x
+      - name: Install and run the actual AOT .NET tool
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $toolDirectory = Join-Path $env:RUNNER_TEMP 'cli-tool'
+          $profile = Join-Path $env:RUNNER_TEMP 'cli-tool-profile'
+          $config = Join-Path $env:RUNNER_TEMP 'cli-tool.nuget.config'
+          $feed = [Security.SecurityElement]::Escape((Join-Path $PWD.Path 'artifacts/cli/release'))
+          "<configuration><packageSources><clear/><add key=`"cli-build`" value=`"$feed`" /></packageSources></configuration>" | Set-Content $config
+          # Invoke SDK 10 explicitly: the checkout's global.json selects SDK 11 for builds,
+          # but installing this native tool must not require that SDK or its runtimes.
+          $sdkCli = Join-Path $env:DOTNET_ROOT 'sdk/${{ steps.installer-sdk.outputs.dotnet-version }}/dotnet.dll'
+          dotnet exec $sdkCli tool install tonarink-cli --tool-path $toolDirectory --version '${{ needs.version.outputs.version }}' --configfile $config --no-cache
+          if ($LASTEXITCODE -ne 0) { throw 'AOT tool installation failed.' }
+          $cli = Join-Path $toolDirectory 'tonarink-cli'
+          & $cli --language en-US --help
+          if ($LASTEXITCODE -ne 0) { throw 'Tool help failed.' }
+          & $cli --language zh-CN --help
+          if ($LASTEXITCODE -ne 0) { throw 'Localized tool help failed.' }
+          try {
+            & $cli --profile $profile settings set alias ci-cli --json
+            if ($LASTEXITCODE -ne 0) { throw 'AOT tool could not start its standalone host.' }
+            & $cli --profile $profile settings get alias --json
+            if ($LASTEXITCODE -ne 0) { throw 'Could not query the standalone host.' }
+          }
+          finally {
+            & $cli --profile $profile app quit --yes --json
+            if ($LASTEXITCODE -ne 0) { throw 'Could not stop the isolated standalone host.' }
+          }
       - name: Generate portable WinGet manifests
         if: needs.version.outputs.prerelease == 'false'
         run: >-
@@ -211,20 +220,23 @@ jobs:
           dotnet-version: 11.0.100-rc.1.26425.128
       - uses: actions/download-artifact@v4
         with:
-          name: cli-nuget
+          name: cli-release
           path: artifacts/cli/nuget
       - name: NuGet trusted publishing login
         id: login
         uses: NuGet/login@v1
         with:
           user: ${{ secrets.NUGET_USER }}
-      - name: Publish JIT tool to nuget.org
+      - name: Publish RID packages first, selector last
         shell: bash
         env:
           NUGET_API_KEY: ${{ steps.login.outputs.NUGET_API_KEY }}
-        run: >-
-          dotnet nuget push 'artifacts/cli/nuget/tonarink-cli.${{ needs.version.outputs.version }}.nupkg'
-          --source https://api.nuget.org/v3/index.json --api-key "$NUGET_API_KEY" --skip-duplicate
+        run: |
+          set -euo pipefail
+          version='${{ needs.version.outputs.version }}'
+          for package in "tonarink-cli.win-x64.$version.nupkg" "tonarink-cli.win-arm64.$version.nupkg" "tonarink-cli.$version.nupkg"; do
+            dotnet nuget push "artifacts/cli/nuget/$package" --source https://api.nuget.org/v3/index.json --api-key "$NUGET_API_KEY" --skip-duplicate
+          done
 
   submit-winget:
     if: needs.version.outputs.winget == 'true'

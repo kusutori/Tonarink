@@ -14,7 +14,7 @@ param(
 $ErrorActionPreference = 'Stop'
 $tag = "cli-v$Version"
 $assets = @(Get-ChildItem -LiteralPath $AssetDirectory -File)
-foreach ($required in @("tonarink-cli.$Version.nupkg", "tonarink-cli-$Version-win-x64.zip", "tonarink-cli-$Version-win-arm64.zip", 'SHA256SUMS.txt')) {
+foreach ($required in @("tonarink-cli.$Version.nupkg", "tonarink-cli.win-x64.$Version.nupkg", "tonarink-cli.win-arm64.$Version.nupkg", "tonarink-cli-$Version-win-x64.zip", "tonarink-cli-$Version-win-arm64.zip", 'SHA256SUMS.txt')) {
     if ($required -notin $assets.Name) { throw "Missing release asset: $required." }
 }
 $response = gh api "repos/$Repository/releases/tags/$tag" 2>&1
@@ -41,7 +41,7 @@ else {
     $arguments = @('release', 'create', $tag, '--repo', $Repository, '--verify-tag', '--draft', '--latest=false', '--title', "tonarink-cli $Version", '--notes', @"
 Standalone CLI, separate from the Tonarink desktop app.
 
-- JIT / NuGet: ``dotnet tool install --global tonarink-cli --version $Version`` (requires .NET 11 SDK / shared runtimes)
+- Native AOT / NuGet: ``dotnet tool install --global tonarink-cli --version $Version`` (.NET SDK 10+ selects the Windows x64 or ARM64 package; no .NET 11 runtime required)
 - Native AOT / Windows: download the matching x64 or ARM64 portable ZIP; no .NET or WinUI runtime required
 - WinGet: ``winget install --id kusutori.tonarink-cli --exact`` after the community manifest is merged (stable versions only)
 

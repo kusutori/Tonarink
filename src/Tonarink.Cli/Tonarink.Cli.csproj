@@ -7,6 +7,8 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Version>1.1.0</Version>
     <PackAsTool>true</PackAsTool>
+    <PublishAot>true</PublishAot>
+    <ToolPackageRuntimeIdentifiers>win-x64;win-arm64</ToolPackageRuntimeIdentifiers>
     <ToolCommandName>tonarink-cli</ToolCommandName>
     <PackageId>tonarink-cli</PackageId>
     <Authors>kusutori</Authors>
