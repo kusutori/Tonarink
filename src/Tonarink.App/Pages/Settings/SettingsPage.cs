@@ -77,6 +77,19 @@ sealed class SettingsPage : Component<SettingsPageProps>
         var (encryptionNoticeOpen, setEncryptionNoticeOpen) = UseState(false);
         var (previewOverridePath, setPreviewOverridePath) = UseState("");
         var (languageAnimationVersion, setLanguageAnimationVersion) = UseState(0);
+        var savedInputs = SettingsInputDraft.FromSettings(Props.Settings);
+        var (draft, setDraft) = UseState(savedInputs);
+        var draftRef = UseRef(draft);
+        draftRef.Current = draft;
+        var savedInputsRef = UseRef(savedInputs);
+        UseEffect(() =>
+        {
+            var rebased = draftRef.Current.Rebase(savedInputsRef.Current, savedInputs);
+            savedInputsRef.Current = savedInputs;
+            if (rebased != draftRef.Current)
+                UpdateDraft(_ => rebased);
+        }, savedInputs);
+        var hasDraftChanges = draft != savedInputs;
         var nodeState = Props.Runtime.NodeState;
         var serverBusy = nodeState is LocalSendNodeState.Starting or LocalSendNodeState.Stopping;
         var serverRunning = nodeState == LocalSendNodeState.Running;
@@ -351,12 +364,14 @@ sealed class SettingsPage : Component<SettingsPageProps>
                             isClickEnabled: false,
                             isActionIconVisible: false,
                             content:
-                            Component<DeferredPasswordSetting, DeferredPasswordSettingProps>(new(
-                                    Props.Settings.ReceivePin,
-                                    value => Props.UpdateSettings(settings => settings with { ReceivePin = value }),
-                                    t.Message(new("App", "SettingsReceivePin")),
-                                    t.Message(new("App", "PinPlaceholder")),
-                                    MinWidth: 180))
+                            PasswordBox(
+                                    draft.ReceivePin,
+                                    value => UpdateDraft(current => current with { ReceivePin = value }),
+                                    placeholderText: t.Message(new("App", "PinPlaceholder")))
+                                .MaxLength(32)
+                                .Required()
+                                .AutomationName(t.Message(new("App", "SettingsReceivePin")))
+                                .MinWidth(180)
                                 .IsEnabled(Props.Settings.ReceivePinEnabled)),
                     ])
                 .Set(expander =>
@@ -392,11 +407,13 @@ sealed class SettingsPage : Component<SettingsPageProps>
                     .AutomationName(t.Message(new("App", "SettingsVerifyChecksumsOnSend")))
                     .HelpText(t.Message(new("App", "SettingsVerifyChecksumsOnSendDescription")))));
 
-        var startOrRestartName = serverOnline
-            ? t.Message(new("App", "SettingsRestartServer"))
-            : t.Message(new("App", "SettingsStartServer"));
+        var startOrRestartName = hasDraftChanges
+            ? t.Message(new("App", serverOnline ? "SettingsApplyAndRestart" : "SettingsApplyAndStart"))
+            : t.Message(new("App", serverOnline ? "SettingsRestartServer" : "SettingsStartServer"));
         var stopName = t.Message(new("App", "SettingsStopServer"));
-        var serverDescription = needsRestart
+        var serverDescription = hasDraftChanges
+            ? t.Message(new("App", "SettingsInputsPending"))
+            : needsRestart
             ? t.Message(new("App", "SettingsNeedRestart"))
             : nodeState switch
             {
@@ -422,7 +439,7 @@ sealed class SettingsPage : Component<SettingsPageProps>
                     nodeState == LocalSendNodeState.Starting,
                     serverBusy,
                     serverRunning,
-                    Props.StartOrRestartServer,
+                    ApplyAndRestart,
                     Props.StopServer,
                     startOrRestartName,
                     stopName)),
@@ -433,11 +450,9 @@ sealed class SettingsPage : Component<SettingsPageProps>
                 isClickEnabled: false,
                 isActionIconVisible: false,
                 content:
-                Component<DeferredTextSetting, DeferredTextSettingProps>(new(
-                    Props.Settings.Alias,
-                    value => Props.UpdateSettings(settings => settings with { Alias = value }),
-                    t.Message(new("App", "SettingsDeviceName")),
-                    MinWidth: 240))),
+                TextBox(draft.Alias, value => UpdateDraft(current => current with { Alias = value }))
+                    .AutomationName(t.Message(new("App", "SettingsDeviceName")))
+                    .MinWidth(240)),
             SettingsExpander(
                     headerIcon: HeaderGlyph(AppIcons.Fingerprint),
                     items:
@@ -463,12 +478,11 @@ sealed class SettingsPage : Component<SettingsPageProps>
                             isClickEnabled: false,
                             isActionIconVisible: false,
                             content:
-                            Component<DeferredTextSetting, DeferredTextSettingProps>(new(
-                                Props.Settings.DeviceModel,
-                                value => Props.UpdateSettings(settings => settings with { DeviceModel = value }),
-                                t.Message(new("App", "SettingsDeviceModel")),
-                                PlaceholderText: Environment.MachineName,
-                                MinWidth: 240))),
+                            TextBox(draft.DeviceModel,
+                                    value => UpdateDraft(current => current with { DeviceModel = value }),
+                                    Environment.MachineName)
+                                .AutomationName(t.Message(new("App", "SettingsDeviceModel")))
+                                .MinWidth(240)),
                         SettingsCard(
                             header: t.Message(new("App", "SettingsPort")),
                             description: Props.Settings.Port == LocalSendOptions.DefaultPort
@@ -477,18 +491,11 @@ sealed class SettingsPage : Component<SettingsPageProps>
                             isClickEnabled: false,
                             isActionIconVisible: false,
                             content:
-                            Component<DeferredNumberSetting, DeferredNumberSettingProps>(new(
-                                Props.Settings.Port,
-                                value =>
-                                {
-                                    var port = (int)Math.Round(value);
-                                    if (port is >= 1 and <= ushort.MaxValue && port != Props.Settings.Port)
-                                        Props.UpdateSettings(settings => settings with { Port = port });
-                                },
-                                t.Message(new("App", "SettingsPort")),
-                                1,
-                                ushort.MaxValue,
-                                MinWidth: 160))),
+                            NumberBox(draft.Port, value => UpdateDraft(current => current with { Port = value }))
+                                .Range(1, ushort.MaxValue)
+                                .SpinButtons()
+                                .AutomationName(t.Message(new("App", "SettingsPort")))
+                                .MinWidth(160)),
                         SettingsCard(
                             header: t.Message(new("App", "SettingsNetworkInterfaces")),
                             description: NetworkInterfacesSummary(t, Props.Settings),
@@ -504,19 +511,12 @@ sealed class SettingsPage : Component<SettingsPageProps>
                             isClickEnabled: false,
                             isActionIconVisible: false,
                             content:
-                            Component<DeferredNumberSetting, DeferredNumberSettingProps>(new(
-                                Props.Settings.DiscoveryTimeoutMs,
-                                value =>
-                                {
-                                    var timeout = (int)Math.Round(value);
-                                    if (timeout > 0 && timeout != Props.Settings.DiscoveryTimeoutMs)
-                                        Props.UpdateSettings(settings =>
-                                            settings with { DiscoveryTimeoutMs = timeout });
-                                },
-                                t.Message(new("App", "SettingsDiscoveryTimeout")),
-                                1,
-                                60_000,
-                                MinWidth: 160))),
+                            NumberBox(draft.DiscoveryTimeoutMs,
+                                    value => UpdateDraft(current => current with { DiscoveryTimeoutMs = value }))
+                                .Range(1, 60_000)
+                                .SpinButtons()
+                                .AutomationName(t.Message(new("App", "SettingsDiscoveryTimeout")))
+                                .MinWidth(160)),
                         SettingsCard(
                             header: t.Message(new("App", "SettingsEncryption")),
                             description: t.Message(new("App", "SettingsEncryptionDescription")),
@@ -544,11 +544,10 @@ sealed class SettingsPage : Component<SettingsPageProps>
                             isClickEnabled: false,
                             isActionIconVisible: false,
                             content:
-                            Component<DeferredTextSetting, DeferredTextSettingProps>(new(
-                                Props.Settings.MulticastGroup,
-                                value => Props.UpdateSettings(settings => settings with { MulticastGroup = value }),
-                                t.Message(new("App", "SettingsMulticast")),
-                                MinWidth: 180))),
+                            TextBox(draft.MulticastGroup,
+                                    value => UpdateDraft(current => current with { MulticastGroup = value }))
+                                .AutomationName(t.Message(new("App", "SettingsMulticast")))
+                                .MinWidth(180)),
                     ])
                 .Set(expander =>
                 {
@@ -700,6 +699,35 @@ sealed class SettingsPage : Component<SettingsPageProps>
             .HorizontalContentAlignment(HorizontalAlignment.Stretch)
             .AutomationName(t.Message(new("App", "SettingsTitle")))
             .Landmark(AutomationLandmarkType.Main);
+
+        void UpdateDraft(Func<SettingsInputDraft, SettingsInputDraft> update)
+        {
+            var next = update(draftRef.Current);
+            draftRef.Current = next;
+            setDraft(next);
+        }
+
+        void ApplyAndRestart()
+        {
+            var pending = draftRef.Current;
+            if (!pending.TryValidate(Props.Settings.ReceivePinEnabled, out var errorKey))
+            {
+                setStatusMessage(t.Message(new("App", errorKey!)));
+                return;
+            }
+
+            try
+            {
+                Props.ApplyAndRestartServer(pending.ApplyTo);
+                UpdateDraft(_ => SettingsInputDraft.FromSettings(pending.ApplyTo(Props.Settings)));
+                setStatusMessage(null);
+            }
+            catch (Exception exception)
+            {
+                AppDiagnostics.Report("Could not apply server settings", exception);
+                setStatusMessage(t.Message(new("App", "SettingsApplyFailed"), ("error", exception.Message)));
+            }
+        }
 
         async Task SetStartupAsync(bool enabled)
         {

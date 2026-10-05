@@ -122,6 +122,8 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
         var window = context.UseWindow();
         var useTitleBarPaneToggle = !context.UseBreakpoint(AppLayout.CompactBreakpoint);
         var settings = Props.Settings;
+        var settingsRef = context.UseRef(settings);
+        settingsRef.Current = settings;
         var contentTheme = AppTheme.ToElementTheme(settings.ThemeIndex);
         var updateSettings = Props.UpdateSettings;
         var navigation = context.UseNavigation(AppRoute.Receive);
@@ -274,7 +276,14 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
                     settings,
                     runtime,
                     updateSettings,
-                    nodeSession.StartOrRestart,
+                    apply =>
+                    {
+                        var next = apply(settingsRef.Current);
+                        AppSettingsStore.Save(next);
+                        settingsRef.Current = next;
+                        updateSettings(_ => next);
+                        nodeSession.StartOrRestartWithSettings(next);
+                    },
                     nodeSession.Stop)),
                 AppRoute.NetworkInterfaces => Component<NetworkInterfacesPage, NetworkInterfacesPageProps>(
                     new(settings, updateSettings)),

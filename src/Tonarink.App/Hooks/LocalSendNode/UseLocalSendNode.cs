@@ -11,6 +11,7 @@ sealed record LocalSendNodeSession(
     bool IsServerDesired,
     Func<Task> RefreshAsync,
     Action StartOrRestart,
+    Action<AppSettings> StartOrRestartWithSettings,
     Action Stop,
     Action<bool?> SetHttpsOverride,
     Action<Guid> DismissIncoming,
@@ -32,6 +33,7 @@ static class LocalSendNodeHooks
         intlRef.Current = t;
         var (serverDesired, setServerDesired) = context.UseState(true);
         var (serverEpoch, updateServerEpoch) = context.UseReducer(0);
+        var restartSettingsRef = context.UseRef<AppSettings?>();
         var (httpsOverride, setHttpsOverride) = context.UseState<bool?>(null);
         var lifecycleRef = context.UseRef<LocalSendNodeLifecycle?>();
         var lifecycle = lifecycleRef.Current ??= new LocalSendNodeLifecycle();
@@ -46,7 +48,9 @@ static class LocalSendNodeHooks
         {
             var session = lifecycle.CreateSession();
             var cancellation = new CancellationTokenSource();
-            _ = RunNodeSessionAsync(session, serverDesired, cancellation.Token);
+            var sessionSettings = restartSettingsRef.Current ?? settings;
+            restartSettingsRef.Current = null;
+            _ = RunNodeSessionAsync(session, serverDesired, sessionSettings, cancellation.Token);
             return () =>
             {
                 cancellation.Cancel();
@@ -72,13 +76,18 @@ static class LocalSendNodeHooks
             serverDesired,
             RefreshAsync,
             StartOrRestart,
+            StartOrRestartWithSettings,
             Stop,
             SetHttpsOverride,
             incoming.Dismiss,
             incoming.HandleActivationAsync);
 
-        void StartOrRestart()
+        void StartOrRestart() => StartOrRestartWithSettings(settings);
+
+        void StartOrRestartWithSettings(AppSettings nextSettings)
         {
+            // Capture the exact committed snapshot before any render/effect runs.
+            restartSettingsRef.Current = nextSettings;
             dispatchRuntime(new AppRuntimeAction.Starting());
             setServerDesired(true);
             updateServerEpoch(epoch => epoch + 1);
@@ -104,7 +113,8 @@ static class LocalSendNodeHooks
             setServerDesired(false);
         }
 
-        async Task RunNodeSessionAsync(int session, bool desired, CancellationToken cancellationToken)
+        async Task RunNodeSessionAsync(
+            int session, bool desired, AppSettings sessionSettings, CancellationToken cancellationToken)
         {
             LocalSendNodeClient? node = null;
             try
@@ -115,7 +125,7 @@ static class LocalSendNodeHooks
                 node = await lifecycle.StartSessionAsync(
                     session,
                     desired,
-                    settings,
+                    sessionSettings,
                     httpsOverride,
                     cancellationToken).ConfigureAwait(false);
                 if (node is null)
@@ -128,11 +138,11 @@ static class LocalSendNodeHooks
                     node.State,
                     node.Identity,
                     node.GetDevices(),
-                    settings.ResolvedMulticastAddress.ToString(),
-                    settings.ResolvedReceivePin,
+                    sessionSettings.ResolvedMulticastAddress.ToString(),
+                    sessionSettings.ResolvedReceivePin,
                     node.DiscoveryError,
-                    settings.NetworkWhitelist,
-                    settings.NetworkBlacklist));
+                    sessionSettings.NetworkWhitelist,
+                    sessionSettings.NetworkBlacklist));
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {

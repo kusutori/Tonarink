@@ -60,10 +60,14 @@ static class AppSettingsStore
     public static void Save(AppSettings settings)
     {
         var previous = _cached;
-        _cached = settings;
+        // Explicit apply saves before restarting; the subsequent render must not
+        // write the same snapshot again. Do not publish a failed disk write.
+        if (previous == settings)
+            return;
+
         Write(settings);
-        if (previous != settings)
-            Changed?.Invoke();
+        _cached = settings;
+        Changed?.Invoke();
     }
 
     private static void Write(AppSettings settings)

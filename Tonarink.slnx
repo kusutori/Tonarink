@@ -15,6 +15,7 @@
     <Project Path="src/LocalSendDotNet.Cli/LocalSendDotNet.Cli.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/Tonarink.App.Settings.Tests/Tonarink.App.Settings.Tests.csproj" />
     <Project Path="tests/Tonarink.Application.Tests/Tonarink.Application.Tests.csproj" />
     <Project Path="tests/Tonarink.Blazor.Shared.Tests/Tonarink.Blazor.Shared.Tests.csproj" />
     <Project Path="tests/Tonarink.LocalSend.Tests/Tonarink.LocalSend.Tests.csproj" />

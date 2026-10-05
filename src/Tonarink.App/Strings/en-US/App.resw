@@ -292,6 +292,14 @@
   <data name="SettingsLanguage" xml:space="preserve"><value>Language</value></data>
   <data name="SettingsLanguageDescription" xml:space="preserve"><value>Change the language used by the interface.</value></data>
   <data name="SettingsNeedRestart" xml:space="preserve"><value>Settings changed. Restart the server to apply them.</value></data>
+  <data name="SettingsInputsPending" xml:space="preserve"><value>Inputs are not saved yet. Click start or restart to save and apply them.</value></data>
+  <data name="SettingsApplyAndRestart" xml:space="preserve"><value>Save and restart server</value></data>
+  <data name="SettingsApplyAndStart" xml:space="preserve"><value>Save and start server</value></data>
+  <data name="SettingsPortInvalid" xml:space="preserve"><value>Port must be an integer between 1 and 65535.</value></data>
+  <data name="SettingsDiscoveryTimeoutInvalid" xml:space="preserve"><value>Discovery timeout must be an integer between 1 and 60000 milliseconds.</value></data>
+  <data name="SettingsMulticastInvalid" xml:space="preserve"><value>Enter a valid IPv4 multicast address (224.0.0.0 to 239.255.255.255).</value></data>
+  <data name="SettingsReceivePinInvalid" xml:space="preserve"><value>PIN must not be empty when enabled and must not exceed 32 characters.</value></data>
+  <data name="SettingsApplyFailed" xml:space="preserve"><value>Could not save server settings: {error}</value></data>
   <data name="SettingsNetwork" xml:space="preserve"><value>Network</value></data>
   <data name="SettingsNetworkInterfaces" xml:space="preserve"><value>Network interfaces</value></data>
   <data name="SettingsNetworkInterfacesAll" xml:space="preserve"><value>All</value></data>

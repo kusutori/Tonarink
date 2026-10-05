@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net11.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+    <Using Include="Xunit" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\LocalSendDotNet.Core\LocalSendDotNet.Core.csproj" />
+    <Compile Include="..\..\src\Tonarink.App\Models\SettingsModels.cs" Link="App\SettingsModels.cs" />
+    <Compile Include="..\..\src\Tonarink.App\Pages\Settings\SettingsInputDraft.cs" Link="App\SettingsInputDraft.cs" />
+  </ItemGroup>
+</Project>
