@@ -22,6 +22,7 @@ enum SettingsToggleIconKind
     Server,
     Language,
     Preview,
+    Rename,
 }
 
 static class AnimatedSettingsToggleIcon
@@ -61,6 +62,7 @@ static class AnimatedSettingsToggleIcon
                         SettingsToggleIconKind.Server => "\uE703",
                         SettingsToggleIconKind.Language => "\uF2B7",
                         SettingsToggleIconKind.Preview => state == "Off" ? "\uED1A" : "\uE890",
+                        SettingsToggleIconKind.Rename => AppIcons.Rename,
                         _ => throw new ArgumentOutOfRangeException(nameof(kind)),
                     },
                 };
@@ -84,6 +86,7 @@ static class AnimatedSettingsToggleIcon
         SettingsToggleIconKind.Server => new Tonarink.SettingsServerIcon(),
         SettingsToggleIconKind.Language => new Tonarink.SettingsLanguageIcon(),
         SettingsToggleIconKind.Preview => new Tonarink.SettingsPreviewToggleIcon(),
+        SettingsToggleIconKind.Rename => new Tonarink.SettingsRenameFocusIcon(),
         _ => throw new ArgumentOutOfRangeException(nameof(kind)),
     };
 }

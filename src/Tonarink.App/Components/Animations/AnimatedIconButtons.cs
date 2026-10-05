@@ -36,6 +36,9 @@ public static class AnimatedButtons
     public static Element SettingsPreviewIcon(bool isOn, double iconSize = 24) =>
         AnimatedSettingsToggleIcon.Create(SettingsToggleIconKind.Preview, isOn, iconSize);
 
+    public static Element SettingsRenameIcon(bool isFocused, double iconSize = 24) =>
+        AnimatedSettingsToggleIcon.Create(SettingsToggleIconKind.Rename, isFocused, iconSize);
+
     public static Element SettingsThemeIcon(int themeIndex, double iconSize = 24) =>
         AnimatedSettingsToggleIcon.Create(
             SettingsToggleIconKind.Theme,

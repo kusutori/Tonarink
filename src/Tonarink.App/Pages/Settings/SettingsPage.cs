@@ -76,6 +76,7 @@ sealed class SettingsPage : Component<SettingsPageProps>
             Props.Runtime.DiscoveryWarning);
         var (encryptionNoticeOpen, setEncryptionNoticeOpen) = UseState(false);
         var (languageAnimationVersion, setLanguageAnimationVersion) = UseState(0);
+        var (deviceNameFocused, setDeviceNameFocused) = UseState(false);
         var savedInputs = SettingsInputDraft.FromSettings(Props.Settings);
         var (draft, setDraft) = UseState(savedInputs);
         var draftRef = UseRef(draft);
@@ -446,11 +447,13 @@ sealed class SettingsPage : Component<SettingsPageProps>
             SettingsCard(
                 header: t.Message(new("App", "SettingsDeviceName")),
                 description: t.Message(new("App", "SettingsDeviceNameDescription")),
-                headerIcon: HeaderGlyph(AppIcons.Rename),
+                headerIcon: AnimatedButtons.SettingsRenameIcon(deviceNameFocused),
                 isClickEnabled: false,
                 isActionIconVisible: false,
                 content:
                 TextBox(draft.Alias, value => UpdateDraft(current => current with { Alias = value }))
+                    .OnGotFocus((_, _) => setDeviceNameFocused(true))
+                    .OnLostFocus((_, _) => setDeviceNameFocused(false))
                     .AutomationName(t.Message(new("App", "SettingsDeviceName")))
                     .MinWidth(240)),
             SettingsExpander(

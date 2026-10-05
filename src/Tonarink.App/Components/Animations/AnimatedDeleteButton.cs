@@ -4,9 +4,7 @@ using Microsoft.UI.Reactor.Core;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Hosting;
-using Microsoft.UI.Xaml.Input;
 using static Microsoft.UI.Reactor.Factories;
-using XamlButton = Microsoft.UI.Xaml.Controls.Button;
 
 namespace Tonarink.Components.Animations;
 
@@ -31,6 +29,7 @@ sealed class AnimatedDeleteButton : Component<AnimatedDeleteButtonProps>
         var playback = playbackRef.Current ??= new DeleteButtonPlayback();
         var previousShakeVersionRef = UseRef(Props.ShakeVersion);
         playback.UseCriticalForeground = Props.Critical && Props.IsEnabled;
+        playback.ReduceMotion = reduceMotion;
 
         UseEffect(() =>
         {
@@ -60,8 +59,25 @@ sealed class AnimatedDeleteButton : Component<AnimatedDeleteButtonProps>
             .AutomationName(Props.AutomationName)
             .ToolTip(Props.ToolTip ?? Props.AutomationName)
             .IsEnabled(Props.IsEnabled)
-            .OnMountAdd(element => AttachPointerHandlers(element, playback, reduceMotion))
-            .OnUnmountAdd(element => DetachPointerHandlers(element, playback));
+            // SubtleButton/ApplyStyle replaces OnMount; declarative pointer
+            // bindings stay independent of that style's mount callback.
+            .OnPointerEntered((_, _) => BeginHover())
+            .OnPointerExited((_, _) =>
+            {
+                playback.IsHovered = false;
+                CloseImmediately(playback);
+            })
+            .OnUnmountAdd(_ =>
+            {
+                playback.IsHovered = false;
+                if (playback.Player is { } player)
+                {
+                    player.Stop();
+                    ResetShake(player);
+                }
+                // Only the player clears its own reference. The button and its
+                // content can be reconciled/unmounted in different orders.
+            });
 
         if (Props.Label is null)
         {
@@ -98,6 +114,15 @@ sealed class AnimatedDeleteButton : Component<AnimatedDeleteButtonProps>
         }
 
         return button;
+
+        void BeginHover()
+        {
+            if (playback.IsHovered || !Props.IsEnabled)
+                return;
+            playback.IsHovered = true;
+            if (!reduceMotion)
+                PlayHover(playback);
+        }
     }
 
     private static Element DeleteIcon(
@@ -118,7 +143,12 @@ sealed class AnimatedDeleteButton : Component<AnimatedDeleteButtonProps>
             playback.Player = player;
             playback.Source = source;
             UpdateForeground(playback);
-            player.Loaded += (_, _) => UpdateForeground(playback);
+            player.Loaded += (_, _) =>
+            {
+                UpdateForeground(playback);
+                if (playback.IsHovered && !playback.ReduceMotion)
+                    PlayHover(playback);
+            };
             player.ActualThemeChanged += (_, _) => UpdateForeground(playback);
             player.Source = source;
             player.SetProgress(0);
@@ -129,51 +159,12 @@ sealed class AnimatedDeleteButton : Component<AnimatedDeleteButtonProps>
             if (element is AnimatedVisualPlayer player)
                 player.Stop();
 
-            playback.Player = null;
-            playback.Source = null;
+            if (ReferenceEquals(playback.Player, element))
+            {
+                playback.Player = null;
+                playback.Source = null;
+            }
         });
-
-    private static void AttachPointerHandlers(
-        UIElement element,
-        DeleteButtonPlayback playback,
-        bool reduceMotion)
-    {
-        if (element is not XamlButton button)
-            return;
-
-        PointerEventHandler entered = (_, _) =>
-        {
-            if (!reduceMotion)
-                PlayHover(playback);
-        };
-        PointerEventHandler exited = (_, _) =>
-        {
-            CloseImmediately(playback);
-        };
-
-        button.AddHandler(UIElement.PointerEnteredEvent, entered, handledEventsToo: true);
-        button.AddHandler(UIElement.PointerExitedEvent, exited, handledEventsToo: true);
-        playback.DetachPointerHandlers = () =>
-        {
-            button.RemoveHandler(UIElement.PointerEnteredEvent, entered);
-            button.RemoveHandler(UIElement.PointerExitedEvent, exited);
-        };
-    }
-
-    private static void DetachPointerHandlers(
-        UIElement element,
-        DeleteButtonPlayback playback)
-    {
-        playback.DetachPointerHandlers?.Invoke();
-        playback.DetachPointerHandlers = null;
-        if (playback.Player is { } player)
-        {
-            player.Stop();
-            ResetShake(player);
-        }
-
-        playback.Player = null;
-    }
 
     private static void PlayHover(DeleteButtonPlayback playback)
     {
@@ -276,6 +267,8 @@ sealed class AnimatedDeleteButton : Component<AnimatedDeleteButtonProps>
 
         public bool UseCriticalForeground { get; set; }
 
-        public Action? DetachPointerHandlers { get; set; }
+        public bool IsHovered { get; set; }
+
+        public bool ReduceMotion { get; set; }
     }
 }
