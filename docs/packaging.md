@@ -33,6 +33,25 @@ therefore absent from the trimmed retail binary.
 
 ## MSIX
 
+### Start tile artwork
+
+The four Start tile layouts use the existing `Assets/AppIcon.svg` glyph over
+a full-bleed, opaque teal background (no rounded app-icon plate). Wide tiles
+keep the same glyph size as medium tiles and extend the background horizontally.
+Regenerate their base and 125%, 150%, 200%, and 400% PNG assets with ImageMagick:
+
+```powershell
+./tools/New-TileAssets.ps1
+```
+
+This only replaces `Square71x71Logo`, `Square150x150Logo`, `Wide310x150Logo`, and
+`Square310x310Logo` assets. The manifest already references these layouts and
+the packaging pipeline includes their scale variants. Desktop/taskbar icons,
+store artwork, and splash assets remain unchanged. Actual Start menu tile
+behavior must be checked on Windows 10; image previews alone cannot verify it.
+
+### Building packages
+
 The application uses single-project MSIX packaging, following ReactorGallery. The
 default build still has `WindowsPackageType=None`; opt into packaging with:
 
