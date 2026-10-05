@@ -8,8 +8,8 @@
   <data name="Add" xml:space="preserve"><value>添加</value></data>
   <data name="AddFavoriteTitle" xml:space="preserve"><value>添加到收藏夹</value></data>
   <data name="AddFolder" xml:space="preserve"><value>添加文件夹</value></data>
-  <data name="AutoSaveDescription" xml:space="preserve"><value>选择收到内容时的处理方式。</value></data>
-  <data name="AutoSaveFavorites" xml:space="preserve"><value>收藏设备</value></data>
+  <data name="AutoSaveDescription" xml:space="preserve"><value>选择是否自动接收并保存内容</value></data>
+  <data name="AutoSaveFavorites" xml:space="preserve"><value>仅收藏设备</value></data>
   <data name="AutoSaveOff" xml:space="preserve"><value>关闭</value></data>
   <data name="AutoSaveOn" xml:space="preserve"><value>开启</value></data>
   <data name="AutoSaveTitle" xml:space="preserve"><value>自动保存</value></data>
@@ -27,11 +27,11 @@
   <data name="DropFilesOrFoldersAnywhere" xml:space="preserve"><value>拖放文件或文件夹到应用内任意位置</value></data>
   <data name="DropFilesAnywherePrompt" xml:space="preserve"><value>松开以添加文件或文件夹到待发送列表</value></data>
   <data name="DropItemsFailed" xml:space="preserve"><value>无法添加拖放的项目：{error}</value></data>
-  <data name="DroppedItemsEmpty" xml:space="preserve"><value>拖放的项目中没有可访问的文件。</value></data>
+  <data name="DroppedItemsEmpty" xml:space="preserve"><value>拖放的项目中没有可访问的文件</value></data>
   <data name="ReleaseFilesToAdd" xml:space="preserve"><value>释放以添加</value></data>
   <data name="Clear" xml:space="preserve"><value>清空</value></data>
   <data name="Clipboard" xml:space="preserve"><value>剪贴板</value></data>
-  <data name="ClipboardEmpty" xml:space="preserve"><value>剪贴板中没有可发送的文本、文件或文件夹。</value></data>
+  <data name="ClipboardEmpty" xml:space="preserve"><value>剪贴板中没有可发送的文本、文件或文件夹</value></data>
   <data name="ClipboardImage" xml:space="preserve"><value>剪贴板图片</value></data>
   <data name="ClipboardReadFailed" xml:space="preserve"><value>无法读取剪贴板：{error}</value></data>
   <data name="ClipboardText" xml:space="preserve"><value>剪贴板文本</value></data>
@@ -40,7 +40,7 @@
   <data name="ContentManyItems" xml:space="preserve"><value>{count} 个项目</value></data>
   <data name="ContentOneFile" xml:space="preserve"><value>文件 {file}</value></data>
   <data name="ContentOneTextMessage" xml:space="preserve"><value>一条文本消息</value></data>
-  <data name="ContentSaved" xml:space="preserve"><value>内容已保存。</value></data>
+  <data name="ContentSaved" xml:space="preserve"><value>内容已保存</value></data>
   <data name="Copied" xml:space="preserve"><value>已复制</value></data>
   <data name="Copy" xml:space="preserve"><value>复制</value></data>
   <data name="CopyReceivedText" xml:space="preserve"><value>复制收到的文本</value></data>
@@ -71,7 +71,7 @@
   <data name="VerificationUnencryptedTitle" xml:space="preserve"><value>连接未加密</value></data>
   <data name="VerificationUnencryptedMessage" xml:space="preserve"><value>设备使用 HTTP 时，此比较结果没有加密身份绑定。</value></data>
   <data name="DeviceLog" xml:space="preserve"><value>日志</value></data>
-  <data name="DeviceLogEmpty" xml:space="preserve"><value>本次运行中尚未记录设备发现日志。</value></data>
+  <data name="DeviceLogEmpty" xml:space="preserve"><value>本次运行暂无设备发现日志</value></data>
   <data name="DeviceLogAdded" xml:space="preserve"><value>已发现</value></data>
   <data name="DeviceLogUpdated" xml:space="preserve"><value>已更新</value></data>
   <data name="DeviceLogRemoved" xml:space="preserve"><value>已过期</value></data>
@@ -88,22 +88,22 @@
   <data name="FavoriteDeviceName" xml:space="preserve"><value>收藏设备名称</value></data>
   <data name="FavoriteIpAddress" xml:space="preserve"><value>收藏设备 IP 地址</value></data>
   <data name="FavoritePort" xml:space="preserve"><value>收藏设备端口</value></data>
-  <data name="FavoritesEmpty" xml:space="preserve"><value>收藏夹中还没有设备。</value></data>
+  <data name="FavoritesEmpty" xml:space="preserve"><value>暂无收藏设备</value></data>
   <data name="FavoritesTitle" xml:space="preserve"><value>收藏夹</value></data>
   <data name="NewFavorite" xml:space="preserve"><value>新建</value></data>
   <data name="MultipleReceivers" xml:space="preserve"><value>发送给多个设备</value></data>
-  <data name="MultipleReceiversDescription" xml:space="preserve"><value>发送完成后保留待发送内容，以便继续选择其他设备。</value></data>
+  <data name="MultipleReceiversDescription" xml:space="preserve"><value>发送完成后保留列表，方便选择其他接收设备</value></data>
   <data name="SendToFavorite" xml:space="preserve"><value>发送到收藏设备“{device}”</value></data>
   <data name="File" xml:space="preserve"><value>文件</value></data>
   <data name="Fingerprint" xml:space="preserve"><value>指纹  {fingerprint}…</value></data>
   <data name="Folder" xml:space="preserve"><value>文件夹</value></data>
-  <data name="FolderEmpty" xml:space="preserve"><value>所选文件夹中没有可发送的文件。</value></data>
+  <data name="FolderEmpty" xml:space="preserve"><value>所选文件夹中没有可发送的文件</value></data>
   <data name="HistoryBack" xml:space="preserve"><value>返回</value></data>
   <data name="HistoryDeleteAll" xml:space="preserve"><value>删除历史</value></data>
   <data name="HistoryDeleteAllConfirm" xml:space="preserve"><value>删除接收历史？</value></data>
   <data name="HistoryDeleteAllConfirmMessage" xml:space="preserve"><value>这只会清空本机历史列表，不会删除已经保存到磁盘的文件。</value></data>
   <data name="HistoryDeleteItem" xml:space="preserve"><value>从历史记录中删除</value></data>
-  <data name="HistoryEmpty" xml:space="preserve"><value>还没有收到过文件。</value></data>
+  <data name="HistoryEmpty" xml:space="preserve"><value>暂无接收历史</value></data>
   <data name="HistoryEntryActions" xml:space="preserve"><value>{file} 的操作</value></data>
   <data name="HistoryInfo" xml:space="preserve"><value>信息</value></data>
   <data name="HistoryInfoFileName" xml:space="preserve"><value>文件名</value></data>
@@ -115,10 +115,10 @@
   <data name="HistoryOpenDirectory" xml:space="preserve"><value>打开目录</value></data>
   <data name="HistoryOpenFile" xml:space="preserve"><value>打开文件</value></data>
   <data name="HistoryOpenFileDescription" xml:space="preserve"><value>打开 {file} 的历史记录</value></data>
-  <data name="JumpListFavoriteDevicesGroup" xml:space="preserve"><value>收藏夹设备</value></data>
+  <data name="JumpListFavoriteDevicesGroup" xml:space="preserve"><value>收藏设备</value></data>
   <data name="JumpListHistoryGroup" xml:space="preserve"><value>历史记录</value></data>
   <data name="HistoryOpenReceiveHistory" xml:space="preserve"><value>接收历史</value></data>
-  <data name="HistoryShowInFolder" xml:space="preserve"><value>在文件管理器中显示</value></data>
+  <data name="HistoryShowInFolder" xml:space="preserve"><value>打开文件所在位置</value></data>
   <data name="HistorySubtitle" xml:space="preserve"><value>{date} · {size} · {sender}</value></data>
   <data name="HistoryTitle" xml:space="preserve"><value>接收历史</value></data>
   <data name="IdentityLoading" xml:space="preserve"><value>正在载入身份…</value></data>
@@ -126,14 +126,14 @@
   <data name="IncomingFiles" xml:space="preserve"><value>文件</value></data>
   <data name="IncomingItemsSummary" xml:space="preserve"><value>想要发送给你 {count} 个项目。</value></data>
   <data name="IncomingTextSummary" xml:space="preserve"><value>想要发送给你一条文本消息。</value></data>
-  <data name="InvalidIpAddress" xml:space="preserve"><value>请输入有效的 IP 地址。</value></data>
-  <data name="InvalidPort" xml:space="preserve"><value>端口必须在 1 到 65535 之间。</value></data>
+  <data name="InvalidIpAddress" xml:space="preserve"><value>请输入有效的 IP 地址</value></data>
+  <data name="InvalidPort" xml:space="preserve"><value>端口必须为 1 到 65535 之间的整数</value></data>
   <data name="IpAddress" xml:space="preserve"><value>IP 地址</value></data>
   <data name="ItemKindAndSize" xml:space="preserve"><value>{kind} · {size}</value></data>
   <data name="ItemsAdded" xml:space="preserve"><value>已添加 {count} 项</value></data>
   <data name="LanguageChinese" xml:space="preserve"><value>简体中文</value></data>
   <data name="LanguageEnglish" xml:space="preserve"><value>English</value></data>
-  <data name="LanguageSystem" xml:space="preserve"><value>使用系统设置</value></data>
+  <data name="LanguageSystem" xml:space="preserve"><value>跟随系统</value></data>
   <data name="MoreItems" xml:space="preserve"><value>另外 {count} 项…</value></data>
   <data name="Name" xml:space="preserve"><value>名称</value></data>
   <data name="NavReceive" xml:space="preserve"><value>接收</value></data>
@@ -157,13 +157,13 @@
   <data name="DeviceAddress" xml:space="preserve"><value>设备地址</value></data>
   <data name="DeviceAddressNotFound" xml:space="preserve"><value>在 {address} 未找到兼容的设备，请检查地址和网络连接。</value></data>
   <data name="EnterAddressTitle" xml:space="preserve"><value>输入地址</value></data>
-  <data name="InvalidDeviceAddress" xml:space="preserve"><value>请输入有效的 IP 地址。</value></data>
-  <data name="InvalidFileName" xml:space="preserve"><value>文件名为空或包含无效字符。</value></data>
+  <data name="InvalidDeviceAddress" xml:space="preserve"><value>请输入有效的 IP 地址</value></data>
+  <data name="InvalidFileName" xml:space="preserve"><value>文件名不能为空，且不能包含无效字符</value></data>
   <data name="RecentlyUsedAddress" xml:space="preserve"><value>最近使用：</value></data>
   <data name="SendToAddress" xml:space="preserve"><value>按地址发送</value></data>
   <data name="UseRecentAddress" xml:space="preserve"><value>使用最近的地址 {address}</value></data>
   <data name="NetworkStartFailed" xml:space="preserve"><value>无法启动网络服务</value></data>
-  <data name="DiscoveryScanHint" xml:space="preserve"><value>多播发现不可用。正在通过扫描局域网查找附近设备。</value></data>
+  <data name="DiscoveryScanHint" xml:space="preserve"><value>多播发现不可用，正在扫描局域网查找附近设备</value></data>
   <data name="NodeDisconnected" xml:space="preserve"><value>未连接</value></data>
   <data name="NetworkStatus" xml:space="preserve"><value>网络状态</value></data>
   <data name="NodeDiscoveryLimited" xml:space="preserve"><value>已连接；附近设备通过网络扫描查找</value></data>
@@ -173,52 +173,52 @@
   <data name="NodeStopping" xml:space="preserve"><value>正在停止…</value></data>
   <data name="NothingSelected" xml:space="preserve"><value>尚未选择内容</value></data>
   <data name="OptionSystem" xml:space="preserve"><value>跟随系统</value></data>
-  <data name="PageNotFound" xml:space="preserve"><value>找不到此页面。</value></data>
+  <data name="PageNotFound" xml:space="preserve"><value>找不到此页面</value></data>
   <data name="PendingRequests" xml:space="preserve"><value>{count} 个待处理请求</value></data>
   <data name="PickFileFailed" xml:space="preserve"><value>无法选择文件：{error}</value></data>
   <data name="PickFolderFailed" xml:space="preserve"><value>无法选择文件夹：{error}</value></data>
-  <data name="PinIncorrect" xml:space="preserve"><value>PIN 不正确，请重试。</value></data>
+  <data name="PinIncorrect" xml:space="preserve"><value>PIN 不正确，请重试</value></data>
   <data name="Pin" xml:space="preserve"><value>PIN</value></data>
   <data name="PinConfirm" xml:space="preserve"><value>确认</value></data>
   <data name="PinPlaceholder" xml:space="preserve"><value>输入 PIN</value></data>
-  <data name="PinRateLimited" xml:space="preserve"><value>PIN 尝试次数过多，请稍后再试。</value></data>
+  <data name="PinRateLimited" xml:space="preserve"><value>PIN 尝试次数过多，请稍后重试</value></data>
   <data name="PinRequiredMessage" xml:space="preserve"><value>{device} 要求输入接收 PIN。</value></data>
   <data name="PinRequiredTitle" xml:space="preserve"><value>需要 PIN</value></data>
   <data name="Port" xml:space="preserve"><value>端口</value></data>
-  <data name="PortInUseHint" xml:space="preserve"><value>请检查 53317 端口是否被 Tonarink 或其他兼容 LocalSend 的应用占用。</value></data>
+  <data name="PortInUseHint" xml:space="preserve"><value>请检查端口 53317 是否被 Tonarink 或其他 LocalSend 兼容应用占用</value></data>
   <data name="PreparingForDevice" xml:space="preserve"><value>正在准备发送给 {device}…</value></data>
   <data name="Preview" xml:space="preserve"><value>预览</value></data>
   <data name="SelectSendItem" xml:space="preserve"><value>选择 {item}</value></data>
   <data name="DeselectSendItem" xml:space="preserve"><value>取消选择 {item}</value></data>
-  <data name="SendItemPreviewHint" xml:space="preserve"><value>按空格键使用所选工具预览。</value></data>
+  <data name="SendItemPreviewHint" xml:space="preserve"><value>按空格键预览文件</value></data>
   <data name="SendItemRenamed" xml:space="preserve"><value>已重命名 · {kind} · {size}</value></data>
   <data name="Share" xml:space="preserve"><value>分享</value></data>
   <data name="Undo" xml:space="preserve"><value>撤回</value></data>
   <data name="Redo" xml:space="preserve"><value>重做</value></data>
-  <data name="ShareFileFailed" xml:space="preserve"><value>无法通过 Windows 分享此文件。</value></data>
+  <data name="ShareFileFailed" xml:space="preserve"><value>无法通过 Windows 分享此文件</value></data>
   <data name="SettingsExperimental" xml:space="preserve"><value>实验性扩展</value></data>
   <data name="SettingsFilePreview" xml:space="preserve"><value>文件预览</value></data>
-  <data name="SettingsFilePreviewDescription" xml:space="preserve"><value>与第三方文件预览工具的实验性集成。</value></data>
+  <data name="SettingsFilePreviewDescription" xml:space="preserve"><value>在待发送列表中按空格键，使用第三方工具预览文件</value></data>
   <data name="SettingsFilePreviewEnabled" xml:space="preserve"><value>启用文件预览</value></data>
-  <data name="SettingsFilePreviewEnabledDescription" xml:space="preserve"><value>在待发送列表中选中文件后，按空格键使用所选工具预览。</value></data>
+  <data name="SettingsFilePreviewEnabledDescription" xml:space="preserve"><value>选中文件后，按空格键使用所选工具预览</value></data>
   <data name="SettingsFilePreviewProvider" xml:space="preserve"><value>预览工具</value></data>
-  <data name="SettingsFilePreviewProviderDescription" xml:space="preserve"><value>选中即可使用，路径自动检测；需要覆盖路径时，点击左侧加号。</value></data>
+  <data name="SettingsFilePreviewProviderDescription" xml:space="preserve"><value>自动检测所选工具的路径，点击加号可设置覆盖路径</value></data>
   <data name="SettingsFilePreviewProviderPowerToysPeek" xml:space="preserve"><value>PowerToys Peek</value></data>
   <data name="SettingsFilePreviewProviderQuickLook" xml:space="preserve"><value>QuickLook</value></data>
-  <data name="SettingsFilePreviewAddTool" xml:space="preserve"><value>添加路径覆盖</value></data>
-  <data name="SettingsFilePreviewToolPath" xml:space="preserve"><value>{tool} 的程序路径</value></data>
-  <data name="SettingsFilePreviewToolPathDescription" xml:space="preserve"><value>校验后保存覆盖路径；删除此项可恢复自动检测。</value></data>
+  <data name="SettingsFilePreviewAddTool" xml:space="preserve"><value>添加覆盖路径</value></data>
+  <data name="SettingsFilePreviewToolPath" xml:space="preserve"><value>{tool} 的覆盖路径</value></data>
+  <data name="SettingsFilePreviewToolPathDescription" xml:space="preserve"><value>校验并保存覆盖路径，删除此项恢复自动检测</value></data>
   <data name="SettingsFilePreviewVerifyPath" xml:space="preserve"><value>校验并保存路径</value></data>
   <data name="SettingsFilePreviewAutoPathPlaceholder" xml:space="preserve"><value>输入覆盖路径</value></data>
-  <data name="SettingsFilePreviewAutoPathSaved" xml:space="preserve"><value>已保存，将自动检测工具。</value></data>
-  <data name="SettingsFilePreviewPathSaved" xml:space="preserve"><value>路径存在，已保存覆盖路径。</value></data>
-  <data name="SettingsFilePreviewPathExists" xml:space="preserve"><value>路径存在。</value></data>
-  <data name="SettingsFilePreviewPathMissing" xml:space="preserve"><value>路径不存在，请检查输入。</value></data>
+  <data name="SettingsFilePreviewAutoPathSaved" xml:space="preserve"><value>已恢复自动检测</value></data>
+  <data name="SettingsFilePreviewPathSaved" xml:space="preserve"><value>覆盖路径已保存</value></data>
+  <data name="SettingsFilePreviewPathExists" xml:space="preserve"><value>路径有效</value></data>
+  <data name="SettingsFilePreviewPathMissing" xml:space="preserve"><value>路径无效或文件不存在，请检查输入</value></data>
   <data name="ReceiveCancelled" xml:space="preserve"><value>接收已取消</value></data>
   <data name="ReceivedMessage" xml:space="preserve"><value>发送给你了一条消息：</value></data>
   <data name="ReceivedTextContent" xml:space="preserve"><value>收到的文本内容</value></data>
-  <data name="ReceiveFailed" xml:space="preserve"><value>接收失败。</value></data>
-  <data name="ReceiveSaveDirectory" xml:space="preserve"><value>保存目录</value></data>
+  <data name="ReceiveFailed" xml:space="preserve"><value>接收失败</value></data>
+  <data name="ReceiveSaveDirectory" xml:space="preserve"><value>保存位置</value></data>
   <data name="ReceiveTitle" xml:space="preserve"><value>接收</value></data>
   <data name="ReceivingContent" xml:space="preserve"><value>正在接收内容…</value></data>
   <data name="ReceivingPreparing" xml:space="preserve"><value>正在准备接收…</value></data>
@@ -237,13 +237,13 @@
   <data name="QuickActionsPadZero" xml:space="preserve"><value>以零填充</value></data>
   <data name="QuickActionsSortBeforeCount" xml:space="preserve"><value>事先以字母顺序排序</value></data>
   <data name="QuickActionsExample" xml:space="preserve"><value>示例: {name}</value></data>
-  <data name="QuickActionsInvalidPrefix" xml:space="preserve"><value>前缀包含无效字符。</value></data>
+  <data name="QuickActionsInvalidPrefix" xml:space="preserve"><value>前缀包含无效字符</value></data>
   <data name="UndoIncomingFileRename" xml:space="preserve"><value>撤回重命名</value></data>
   <data name="Retry" xml:space="preserve"><value>重试</value></data>
-  <data name="SameNetworkHint" xml:space="preserve"><value>请确保目标设备连接到同一个 Wi-Fi 网络。</value></data>
+  <data name="SameNetworkHint" xml:space="preserve"><value>请确保两台设备连接到同一局域网</value></data>
   <data name="Save" xml:space="preserve"><value>保存</value></data>
   <data name="SearchingDevices" xml:space="preserve"><value>正在寻找附近设备</value></data>
-  <data name="SelectContentFirst" xml:space="preserve"><value>请先选择要发送的内容。</value></data>
+  <data name="SelectContentFirst" xml:space="preserve"><value>请先选择待发送内容</value></data>
   <data name="SelectedItems" xml:space="preserve"><value>已选择 {count} 项 · {size}</value></data>
   <data name="SelectedIncomingFiles" xml:space="preserve"><value>已选择 {selected}/{count} 个文件</value></data>
   <data name="SelectIncomingFile" xml:space="preserve"><value>选择 {file}</value></data>
@@ -254,7 +254,7 @@
   <data name="HideReceiveOptions" xml:space="preserve"><value>收起</value></data>
   <data name="SendCancelled" xml:space="preserve"><value>发送已取消</value></data>
   <data name="SendFailed" xml:space="preserve"><value>发送失败</value></data>
-  <data name="SendHint" xml:space="preserve"><value>选择内容后，点击附近设备即可发送。</value></data>
+  <data name="SendHint" xml:space="preserve"><value>选择待发送内容，再点击接收设备</value></data>
   <data name="SendingPreparing" xml:space="preserve"><value>正在准备发送…</value></data>
   <data name="SendingTitle" xml:space="preserve"><value>正在发送</value></data>
   <data name="SendingToDevice" xml:space="preserve"><value>正在发送给 {device}…</value></data>
@@ -264,11 +264,11 @@
   <data name="SendTextTitle" xml:space="preserve"><value>发送文本</value></data>
   <data name="SendTitle" xml:space="preserve"><value>发送</value></data>
   <data name="SendToDevice" xml:space="preserve"><value>向 {device} 发送</value></data>
-  <data name="SentToDevice" xml:space="preserve"><value>已成功发送给 {device}。</value></data>
+  <data name="SentToDevice" xml:space="preserve"><value>已发送给 {device}</value></data>
   <data name="SettingsAdvanced" xml:space="preserve"><value>高级设置</value></data>
-  <data name="SettingsAdvancedDescription" xml:space="preserve"><value>设备类型、端口、加密等网络选项。</value></data>
+  <data name="SettingsAdvancedDescription" xml:space="preserve"><value>设备信息、网络接口与传输安全选项</value></data>
   <data name="SettingsAbout" xml:space="preserve"><value>关于</value></data>
-  <data name="SettingsAboutCopyright" xml:space="preserve"><value>© {year}。保留所有权利。</value></data>
+  <data name="SettingsAboutCopyright" xml:space="preserve"><value>© {year} 保留所有权利</value></data>
   <data name="SettingsAboutRelationship" xml:space="preserve"><value>Tonarink 是 LocalSend 协议的独立非官方实现，与 LocalSend 项目不存在从属、关联或官方认可关系。感谢 Tien Do Nam 与 LocalSend 贡献者创建并公开这一协议。</value></data>
   <data name="SettingsAboutFeedback" xml:space="preserve"><value>发送反馈</value></data>
   <data name="SettingsAboutViewLogs" xml:space="preserve"><value>查看日志</value></data>
@@ -278,101 +278,101 @@
   <data name="SettingsAboutThirdPartyLicenses" xml:space="preserve"><value>第三方许可证</value></data>
   <data name="SettingsAboutVersion" xml:space="preserve"><value>版本 {version}</value></data>
   <data name="SettingsAutoSave" xml:space="preserve"><value>自动保存</value></data>
-  <data name="SettingsAutoSaveDescription" xml:space="preserve"><value>自动接受并保存收到的内容。</value></data>
+  <data name="SettingsAutoSaveDescription" xml:space="preserve"><value>无需确认，自动接收并保存内容</value></data>
   <data name="SettingsDeviceModel" xml:space="preserve"><value>设备型号</value></data>
-  <data name="SettingsDeviceModelDescription" xml:space="preserve"><value>向其他设备展示的型号。留空则使用此电脑的名称。</value></data>
+  <data name="SettingsDeviceModelDescription" xml:space="preserve"><value>向其他设备显示的型号，留空使用此电脑的名称</value></data>
   <data name="SettingsDeviceName" xml:space="preserve"><value>设备名称</value></data>
-  <data name="SettingsDeviceNameDescription" xml:space="preserve"><value>其他设备将看到这个名称。更改后需重启服务器。</value></data>
+  <data name="SettingsDeviceNameDescription" xml:space="preserve"><value>向其他设备显示的名称，保存并启动或重启服务器后生效</value></data>
   <data name="SettingsDeviceType" xml:space="preserve"><value>设备类型</value></data>
-  <data name="SettingsDeviceTypeDescription" xml:space="preserve"><value>选择其他设备看到的图标，例如电脑或手机。</value></data>
-  <data name="SettingsDiscoveryTimeout" xml:space="preserve"><value>搜索超时</value></data>
-  <data name="SettingsDiscoveryTimeoutDescription" xml:space="preserve"><value>每次用 HTTP 探测附近设备时等待的毫秒数。</value></data>
+  <data name="SettingsDeviceTypeDescription" xml:space="preserve"><value>决定其他设备显示的设备图标</value></data>
+  <data name="SettingsDiscoveryTimeout" xml:space="preserve"><value>设备探测超时</value></data>
+  <data name="SettingsDiscoveryTimeoutDescription" xml:space="preserve"><value>探测附近设备时的等待时间（毫秒）</value></data>
   <data name="SettingsEncryption" xml:space="preserve"><value>加密</value></data>
-  <data name="SettingsEncryptionDescription" xml:space="preserve"><value>使用 HTTPS 和证书身份进行传输。</value></data>
+  <data name="SettingsEncryptionDescription" xml:space="preserve"><value>使用 HTTPS 加密传输，并通过证书标识设备</value></data>
   <data name="SettingsEncryptionDisabledNotice" xml:space="preserve"><value>加密已关闭。附近设备将通过 HTTP 连接，身份校验会变弱。需重启服务器后生效。</value></data>
   <data name="SettingsEncryptionDisabledTitle" xml:space="preserve"><value>已关闭加密</value></data>
-  <data name="SettingsFavoritesOnly" xml:space="preserve"><value>仅自动接收收藏设备</value></data>
-  <data name="SettingsFavoritesOnlyDescription" xml:space="preserve"><value>自动保存开启时，只信任收藏列表中的设备。</value></data>
+  <data name="SettingsFavoritesOnly" xml:space="preserve"><value>仅自动接收收藏设备的内容</value></data>
+  <data name="SettingsFavoritesOnlyDescription" xml:space="preserve"><value>自动保存开启时，仅自动接收收藏设备发送的内容</value></data>
   <data name="SettingsGeneral" xml:space="preserve"><value>通用</value></data>
   <data name="SettingsLanguage" xml:space="preserve"><value>语言</value></data>
-  <data name="SettingsLanguageDescription" xml:space="preserve"><value>更改界面显示语言。</value></data>
-  <data name="SettingsNeedRestart" xml:space="preserve"><value>设置已更改。重启服务器后生效。</value></data>
-  <data name="SettingsInputsPending" xml:space="preserve"><value>输入尚未保存。点击启动或重启按钮以保存并应用。</value></data>
+  <data name="SettingsLanguageDescription" xml:space="preserve"><value>选择界面语言或跟随系统</value></data>
+  <data name="SettingsNeedRestart" xml:space="preserve"><value>设置已更改，重启服务器后生效</value></data>
+  <data name="SettingsInputsPending" xml:space="preserve"><value>有未保存的更改，启动或重启服务器时保存并应用</value></data>
   <data name="SettingsApplyAndRestart" xml:space="preserve"><value>保存并重启服务器</value></data>
   <data name="SettingsApplyAndStart" xml:space="preserve"><value>保存并启动服务器</value></data>
-  <data name="SettingsPortInvalid" xml:space="preserve"><value>端口必须是 1 到 65535 之间的整数。</value></data>
-  <data name="SettingsDiscoveryTimeoutInvalid" xml:space="preserve"><value>发现超时必须是 1 到 60000 之间的整数（毫秒）。</value></data>
-  <data name="SettingsMulticastInvalid" xml:space="preserve"><value>请输入有效的 IPv4 多播地址（224.0.0.0 到 239.255.255.255）。</value></data>
-  <data name="SettingsReceivePinInvalid" xml:space="preserve"><value>启用 PIN 时密码不能为空，且最多为 32 个字符。</value></data>
+  <data name="SettingsPortInvalid" xml:space="preserve"><value>端口必须为 1 到 65535 之间的整数</value></data>
+  <data name="SettingsDiscoveryTimeoutInvalid" xml:space="preserve"><value>设备探测超时必须为 1 到 60000 之间的整数（毫秒）</value></data>
+  <data name="SettingsMulticastInvalid" xml:space="preserve"><value>请输入有效的 IPv4 多播地址（224.0.0.0 到 239.255.255.255）</value></data>
+  <data name="SettingsReceivePinInvalid" xml:space="preserve"><value>PIN 最多 32 个字符，启用保护时不能为空</value></data>
   <data name="SettingsApplyFailed" xml:space="preserve"><value>无法保存服务器设置：{error}</value></data>
   <data name="SettingsNetwork" xml:space="preserve"><value>名称与网络</value></data>
   <data name="SettingsNetworkInterfaces" xml:space="preserve"><value>网络接口</value></data>
   <data name="SettingsNetworkInterfacesAll" xml:space="preserve"><value>全部</value></data>
   <data name="SettingsNetworkInterfacesBlacklist" xml:space="preserve"><value>黑名单</value></data>
-  <data name="SettingsNetworkInterfacesEmpty" xml:space="preserve"><value>没有找到 IPv4 网络接口。</value></data>
-  <data name="SettingsNetworkInterfacesExample" xml:space="preserve"><value>示例:</value></data>
-  <data name="SettingsNetworkInterfacesInfo" xml:space="preserve"><value>默认情况下，Tonarink 使用所有可用的网络接口。您可以在此处排除不需要的网络。您需要重新启动服务器以应用更改。</value></data>
+  <data name="SettingsNetworkInterfacesEmpty" xml:space="preserve"><value>未找到可用的 IPv4 网络接口</value></data>
+  <data name="SettingsNetworkInterfacesExample" xml:space="preserve"><value>地址规则示例：</value></data>
+  <data name="SettingsNetworkInterfacesInfo" xml:space="preserve"><value>默认使用所有可用网络接口，可通过白名单或黑名单筛选；重启服务器后生效</value></data>
   <data name="SettingsNetworkInterfacesPattern" xml:space="preserve"><value>规则 {index}</value></data>
-  <data name="SettingsNetworkInterfacesPreview" xml:space="preserve"><value>预览</value></data>
+  <data name="SettingsNetworkInterfacesPreview" xml:space="preserve"><value>网络接口预览</value></data>
   <data name="SettingsNetworkInterfacesRemovePattern" xml:space="preserve"><value>删除规则</value></data>
   <data name="SettingsNetworkInterfacesWhitelist" xml:space="preserve"><value>白名单</value></data>
   <data name="SettingsPort" xml:space="preserve"><value>端口</value></data>
-  <data name="SettingsPortDescription" xml:space="preserve"><value>Tonarink 的 LocalSend 兼容服务使用的 TCP 和 UDP 端口。</value></data>
-  <data name="SettingsPortWarning" xml:space="preserve"><value>正在使用自定义端口。其他设备默认仍会查找 {port}，除非也改成相同值。</value></data>
-  <data name="SettingsMulticast" xml:space="preserve"><value>多播</value></data>
-  <data name="SettingsMulticastDescription" xml:space="preserve"><value>用于宣告本机的 IPv4 多播组。</value></data>
-  <data name="SettingsMulticastWarning" xml:space="preserve"><value>正在使用自定义多播组。其他兼容 LocalSend 的设备默认使用 {group}，除非也改成相同值。</value></data>
-  <data name="SettingsMinimizeToTray" xml:space="preserve"><value>关闭时最小化到系统托盘</value></data>
-  <data name="SettingsMinimizeToTrayDescription" xml:space="preserve"><value>关闭主窗口时继续在后台接收。</value></data>
-  <data name="SettingsTrayClickOpensFlyout" xml:space="preserve"><value>单击托盘图标时打开托盘面板</value></data>
-  <data name="SettingsTrayClickOpensFlyoutDescription" xml:space="preserve"><value>关闭后，单击将打开应用主窗口。</value></data>
+  <data name="SettingsPortDescription" xml:space="preserve"><value>设备发现与文件传输使用的 UDP 和 TCP 端口</value></data>
+  <data name="SettingsPortWarning" xml:space="preserve"><value>自定义端口需与其他设备一致，默认端口为 {port}</value></data>
+  <data name="SettingsMulticast" xml:space="preserve"><value>多播地址</value></data>
+  <data name="SettingsMulticastDescription" xml:space="preserve"><value>用于发现附近设备的 IPv4 多播组地址</value></data>
+  <data name="SettingsMulticastWarning" xml:space="preserve"><value>自定义多播地址需与其他设备一致，默认地址为 {group}</value></data>
+  <data name="SettingsMinimizeToTray" xml:space="preserve"><value>关闭时最小化到托盘</value></data>
+  <data name="SettingsMinimizeToTrayDescription" xml:space="preserve"><value>隐藏主窗口并继续在后台运行</value></data>
+  <data name="SettingsTrayClickOpensFlyout" xml:space="preserve"><value>单击打开托盘面板</value></data>
+  <data name="SettingsTrayClickOpensFlyoutDescription" xml:space="preserve"><value>关闭此选项后，单击托盘图标打开主窗口</value></data>
   <data name="SettingsReceive" xml:space="preserve"><value>接收</value></data>
   <data name="SettingsSend" xml:space="preserve"><value>发送</value></data>
   <data name="SettingsExpandDragDrop" xml:space="preserve"><value>扩展拖放范围</value></data>
-  <data name="SettingsExpandDragDropDescription" xml:space="preserve"><value>允许将文件或文件夹拖放到应用内任意位置并添加到待发送列表。</value></data>
-  <data name="SettingsVerifyChecksumsOnReceive" xml:space="preserve"><value>接收文件时验证校验和</value></data>
-  <data name="SettingsVerifyChecksumsOnReceiveDescription" xml:space="preserve"><value>使用发送方提供的 SHA-256 校验和验证文件完整性。</value></data>
-  <data name="SettingsVerifyChecksumsOnSend" xml:space="preserve"><value>发送文件时验证校验和</value></data>
-  <data name="SettingsVerifyChecksumsOnSendDescription" xml:space="preserve"><value>发送前计算 SHA-256 校验和，供接收设备验证文件完整性。</value></data>
+  <data name="SettingsExpandDragDropDescription" xml:space="preserve"><value>将文件或文件夹拖放到应用内任意位置，添加到待发送列表</value></data>
+  <data name="SettingsVerifyChecksumsOnReceive" xml:space="preserve"><value>验证文件校验和</value></data>
+  <data name="SettingsVerifyChecksumsOnReceiveDescription" xml:space="preserve"><value>使用发送方提供的 SHA-256 校验和检查文件完整性</value></data>
+  <data name="SettingsVerifyChecksumsOnSend" xml:space="preserve"><value>计算文件校验和</value></data>
+  <data name="SettingsVerifyChecksumsOnSendDescription" xml:space="preserve"><value>发送前计算 SHA-256 校验和，供接收方检查文件完整性</value></data>
   <data name="SettingsReceivePin" xml:space="preserve"><value>接收 PIN</value></data>
-  <data name="SettingsReceivePinDescription" xml:space="preserve"><value>其他设备向本机发送内容时需要输入此 PIN；更改后需要重启服务器。</value></data>
-  <data name="SettingsReceivePinEnabled" xml:space="preserve"><value>启用 PIN 密码</value></data>
-  <data name="SettingsReceivePinEnabledDescription" xml:space="preserve"><value>要求发送方通过 PIN 验证。</value></data>
-  <data name="SettingsReceivePinProtection" xml:space="preserve"><value>PIN 密码</value></data>
-  <data name="SettingsReceivePinProtectionDescription" xml:space="preserve"><value>保护来自其他设备的接收请求。</value></data>
-  <data name="SettingsSaveReceiveHistory" xml:space="preserve"><value>保存到历史记录</value></data>
-  <data name="SettingsSaveReceiveHistoryDescription" xml:space="preserve"><value>接收完成后在本机历史记录中保留条目。</value></data>
+  <data name="SettingsReceivePinDescription" xml:space="preserve"><value>最多 32 个字符，保存并启动或重启服务器后生效</value></data>
+  <data name="SettingsReceivePinEnabled" xml:space="preserve"><value>启用 PIN 保护</value></data>
+  <data name="SettingsReceivePinEnabledDescription" xml:space="preserve"><value>要求发送方输入 PIN</value></data>
+  <data name="SettingsReceivePinProtection" xml:space="preserve"><value>PIN 保护</value></data>
+  <data name="SettingsReceivePinProtectionDescription" xml:space="preserve"><value>要求发送方输入 PIN 后才能传输内容</value></data>
+  <data name="SettingsSaveReceiveHistory" xml:space="preserve"><value>记录接收历史</value></data>
+  <data name="SettingsSaveReceiveHistoryDescription" xml:space="preserve"><value>记录已接收的文件，方便查看和打开</value></data>
   <data name="SettingsRestartServer" xml:space="preserve"><value>重启服务器</value></data>
   <data name="SettingsSaveLocation" xml:space="preserve"><value>保存位置</value></data>
-  <data name="SettingsServerOffline" xml:space="preserve"><value>服务器（已停止）</value></data>
-  <data name="SettingsServerRunning" xml:space="preserve"><value>接收服务正在运行。</value></data>
-  <data name="SettingsServerStopped" xml:space="preserve"><value>接收服务已停止。</value></data>
+  <data name="SettingsServerOffline" xml:space="preserve"><value>服务器</value></data>
+  <data name="SettingsServerRunning" xml:space="preserve"><value>服务器正在运行</value></data>
+  <data name="SettingsServerStopped" xml:space="preserve"><value>服务器已停止</value></data>
   <data name="SettingsStartServer" xml:space="preserve"><value>启动服务器</value></data>
   <data name="SettingsStopServer" xml:space="preserve"><value>停止服务器</value></data>
-  <data name="SettingsStartWithWindows" xml:space="preserve"><value>登录系统后自动启动</value></data>
-  <data name="SettingsStartWithWindowsDescription" xml:space="preserve"><value>登录 Windows 后自动运行 Tonarink。</value></data>
+  <data name="SettingsStartWithWindows" xml:space="preserve"><value>自动启动</value></data>
+  <data name="SettingsStartWithWindowsDescription" xml:space="preserve"><value>登录 Windows 时启动 Tonarink</value></data>
   <data name="SettingsWindowsShareSuggestions" xml:space="preserve"><value>在 Windows 分享中显示收藏设备</value></data>
-  <data name="SettingsWindowsShareSuggestionsDescription" xml:space="preserve"><value>将收藏设备添加到 Windows 分享面板的建议联系人中；安装打包版本后生效。</value></data>
+  <data name="SettingsWindowsShareSuggestionsDescription" xml:space="preserve"><value>将收藏设备显示为建议联系人，仅限 MSIX 安装版</value></data>
   <data name="SettingsNotifications" xml:space="preserve"><value>系统通知</value></data>
-  <data name="SettingsNotificationsDescription" xml:space="preserve"><value>在收到传输请求以及发送或接收完成时显示 Windows 通知。</value></data>
+  <data name="SettingsNotificationsDescription" xml:space="preserve"><value>收到传输请求或传输完成时显示 Windows 通知</value></data>
   <data name="SettingsNotificationsEnabled" xml:space="preserve"><value>启用通知</value></data>
-  <data name="SettingsNotificationsEnabledDescription" xml:space="preserve"><value>允许 Tonarink 发送 Windows 系统通知。</value></data>
+  <data name="SettingsNotificationsEnabledDescription" xml:space="preserve"><value>允许 Tonarink 显示 Windows 通知</value></data>
   <data name="SettingsNotificationsDefaultAction" xml:space="preserve"><value>点击完成通知时</value></data>
-  <data name="SettingsNotificationsDefaultActionDescription" xml:space="preserve"><value>选择点击传输完成通知本身时执行的默认操作。</value></data>
+  <data name="SettingsNotificationsDefaultActionDescription" xml:space="preserve"><value>打开文件或文件所在位置</value></data>
   <data name="SettingsNotificationsDefaultOpenFile" xml:space="preserve"><value>打开文件</value></data>
   <data name="SettingsNotificationsDefaultShowInFolder" xml:space="preserve"><value>打开文件所在位置</value></data>
   <data name="SettingsNotificationsTest" xml:space="preserve"><value>测试通知</value></data>
-  <data name="SettingsNotificationsTestDescription" xml:space="preserve"><value>发送一条系统通知，检查当前 Windows 通知配置。</value></data>
+  <data name="SettingsNotificationsTestDescription" xml:space="preserve"><value>检查 Windows 是否允许显示通知</value></data>
   <data name="SettingsNotificationsSendTest" xml:space="preserve"><value>发送测试通知</value></data>
   <data name="SettingsNotificationsTestTitle" xml:space="preserve"><value>Tonarink 测试通知</value></data>
-  <data name="SettingsNotificationsTestMessage" xml:space="preserve"><value>系统通知已经可以正常显示。</value></data>
-  <data name="SettingsNotificationsTestFailed" xml:space="preserve"><value>测试通知发送失败，请检查 notifications.log 或 Windows 通知设置。</value></data>
+  <data name="SettingsNotificationsTestMessage" xml:space="preserve"><value>系统通知可以正常显示</value></data>
+  <data name="SettingsNotificationsTestFailed" xml:space="preserve"><value>无法发送测试通知，请检查 Windows 通知设置或 notifications.log</value></data>
   <data name="ExplorerCommandTitle" xml:space="preserve"><value>使用 Tonarink 发送</value></data>
-  <data name="SettingsExplorerContextMenu" xml:space="preserve"><value>在文件资源管理器中显示</value></data>
-  <data name="SettingsExplorerContextMenuDescription" xml:space="preserve"><value>在 Windows 11 右键菜单中加入“使用 Tonarink 发送”。安装打包版本后生效。</value></data>
-  <data name="StartupDisabledByPolicy" xml:space="preserve"><value>当前 Windows 策略禁止 Tonarink 在登录后自动启动。</value></data>
-  <data name="StartupDisabledByUser" xml:space="preserve"><value>已在 Windows 设置中关闭开机启动。请先在系统设置里启用 Tonarink，然后再试。</value></data>
-  <data name="StartupFailed" xml:space="preserve"><value>无法更新登录后自动启动：{error}</value></data>
+  <data name="SettingsExplorerContextMenu" xml:space="preserve"><value>文件资源管理器右键菜单</value></data>
+  <data name="SettingsExplorerContextMenuDescription" xml:space="preserve"><value>添加“使用 Tonarink 发送”菜单项，仅限 Windows 11 的 MSIX 安装版</value></data>
+  <data name="StartupDisabledByPolicy" xml:space="preserve"><value>Windows 策略禁止 Tonarink 在登录时自动启动</value></data>
+  <data name="StartupDisabledByUser" xml:space="preserve"><value>请先在 Windows 设置中启用 Tonarink 的启动项，再重试</value></data>
+  <data name="StartupFailed" xml:space="preserve"><value>无法更改自动启动设置：{error}</value></data>
   <data name="TrayExit" xml:space="preserve"><value>退出</value></data>
   <data name="TrayFromPeer" xml:space="preserve"><value>来自 {peer}</value></data>
   <data name="TrayHistoryTab" xml:space="preserve"><value>历史</value></data>
@@ -392,34 +392,34 @@
   <data name="WidgetAppClosedStatus" xml:space="preserve"><value>未开启</value></data>
   <data name="WidgetAppOpen" xml:space="preserve"><value>已开启</value></data>
   <data name="WidgetFileCount" xml:space="preserve"><value>{count} 个文件</value></data>
-  <data name="WidgetHintAppClosed" xml:space="preserve"><value>打开应用后才能发现设备和接收文件。</value></data>
-  <data name="WidgetHintServerOff" xml:space="preserve"><value>点击开启接收。</value></data>
-  <data name="WidgetHintServerOn" xml:space="preserve"><value>附近设备可以发送文件。</value></data>
+  <data name="WidgetHintAppClosed" xml:space="preserve"><value>打开应用以发现设备和接收文件</value></data>
+  <data name="WidgetHintServerOff" xml:space="preserve"><value>点击启动接收服务</value></data>
+  <data name="WidgetHintServerOn" xml:space="preserve"><value>接收服务已启动，等待传输</value></data>
   <data name="WidgetHistoryCount" xml:space="preserve"><value>历史 {count} 条</value></data>
   <data name="WidgetNearbyCount" xml:space="preserve"><value>附近 {count} 台</value></data>
   <data name="WidgetReceivingOff" xml:space="preserve"><value>接收已停止</value></data>
   <data name="WidgetServerOff" xml:space="preserve"><value>关</value></data>
   <data name="WidgetServerOn" xml:space="preserve"><value>开</value></data>
   <data name="SettingsTheme" xml:space="preserve"><value>主题</value></data>
-  <data name="SettingsThemeDescription" xml:space="preserve"><value>选择应用的明暗外观。</value></data>
+  <data name="SettingsThemeDescription" xml:space="preserve"><value>选择浅色、深色或跟随系统</value></data>
   <data name="SettingsTitle" xml:space="preserve"><value>设置</value></data>
-  <data name="ShareTargetEmpty" xml:space="preserve"><value>分享内容中没有可访问的文件或文本。</value></data>
+  <data name="ShareTargetEmpty" xml:space="preserve"><value>分享内容中没有可访问的文件或文本</value></data>
   <data name="ShareTargetFailed" xml:space="preserve"><value>无法添加分享内容：{error}</value></data>
   <data name="ShareSuggestedDeviceOffline" xml:space="preserve"><value>{device} 当前不在线。分享内容已保留在待发送列表中，可以重试或选择其他设备。</value></data>
   <data name="ShareSuggestedDeviceUnavailable" xml:space="preserve"><value>这个 Windows 分享联系人已不在收藏夹中，分享内容已保留在待发送列表中。</value></data>
   <data name="TargetDevice" xml:space="preserve"><value>目标设备</value></data>
-  <data name="TargetRequiresPin" xml:space="preserve"><value>目标设备要求 PIN。</value></data>
+  <data name="TargetRequiresPin" xml:space="preserve"><value>接收设备要求输入 PIN</value></data>
   <data name="Text" xml:space="preserve"><value>文本</value></data>
-  <data name="TextAvailableAfterAccept" xml:space="preserve"><value>接受后将显示完整文本。</value></data>
+  <data name="TextAvailableAfterAccept" xml:space="preserve"><value>接受后显示完整文本</value></data>
   <data name="TextContent" xml:space="preserve"><value>文本内容</value></data>
   <data name="TextMessage" xml:space="preserve"><value>文本消息</value></data>
-  <data name="TextReceived" xml:space="preserve"><value>文本接收完成。</value></data>
+  <data name="TextReceived" xml:space="preserve"><value>文本接收完成</value></data>
   <data name="ThemeDark" xml:space="preserve"><value>深色</value></data>
   <data name="ThemeLight" xml:space="preserve"><value>浅色</value></data>
   <data name="ThisDevice" xml:space="preserve"><value>本机</value></data>
   <data name="TransferCancelled" xml:space="preserve"><value>传输已取消</value></data>
-  <data name="TransferComplete" xml:space="preserve"><value>发送完成</value></data>
-  <data name="TransferFailed" xml:space="preserve"><value>传输失败。</value></data>
+  <data name="TransferComplete" xml:space="preserve"><value>传输完成</value></data>
+  <data name="TransferFailed" xml:space="preserve"><value>传输失败</value></data>
   <data name="TransferPreparing" xml:space="preserve"><value>正在准备</value></data>
   <data name="TransferTransferring" xml:space="preserve"><value>正在传输</value></data>
   <data name="TransferWaiting" xml:space="preserve"><value>等待接受</value></data>
@@ -428,11 +428,11 @@
   <data name="WebShareAutoAccept" xml:space="preserve"><value>自动接受请求</value></data>
   <data name="WebShareCopy" xml:space="preserve"><value>复制链接</value></data>
   <data name="WebShareEncryption" xml:space="preserve"><value>加密</value></data>
-  <data name="WebShareEncryptionHint" xml:space="preserve"><value>HTTPS 使用此设备的证书。浏览器会提示该证书不受信任。</value></data>
-  <data name="WebShareNoRequests" xml:space="preserve"><value>尚无请求。</value></data>
-  <data name="WebShareNoLinkAvailable" xml:space="preserve"><value>当前没有可分享的链接。</value></data>
+  <data name="WebShareEncryptionHint" xml:space="preserve"><value>HTTPS 使用本机证书，浏览器可能提示证书不受信任</value></data>
+  <data name="WebShareNoRequests" xml:space="preserve"><value>暂无请求</value></data>
+  <data name="WebShareNoLinkAvailable" xml:space="preserve"><value>暂无可分享的链接</value></data>
   <data name="WebShareOpenLink" xml:space="preserve"><value>在浏览器中打开链接：</value></data>
-  <data name="WebSharePinHint" xml:space="preserve"><value>PIN 为 “{pin}”</value></data>
+  <data name="WebSharePinHint" xml:space="preserve"><value>PIN：{pin}</value></data>
   <data name="WebSharePinTitle" xml:space="preserve"><value>PIN</value></data>
   <data name="WebShareQr" xml:space="preserve"><value>二维码</value></data>
   <data name="WebShareQrTitle" xml:space="preserve"><value>二维码</value></data>
@@ -444,5 +444,5 @@
   <data name="WebShareZoom" xml:space="preserve"><value>放大显示链接</value></data>
   <data name="WebShareZoomTitle" xml:space="preserve"><value>链接</value></data>
   <data name="WantsToSendMessage" xml:space="preserve"><value>想要发送给你一条消息：</value></data>
-  <data name="WindowUnavailable" xml:space="preserve"><value>当前 Reactor 窗口不可用。</value></data>
+  <data name="WindowUnavailable" xml:space="preserve"><value>当前窗口不可用</value></data>
 </root>
