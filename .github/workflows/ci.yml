@@ -24,26 +24,47 @@ jobs:
       - run: dotnet build samples/LocalSendDotNet.Sample/LocalSendDotNet.Sample.csproj --no-restore --configuration Release
 
   cli-tool:
-    runs-on: windows-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { rid: win-x64, os: windows-latest }
+          - { rid: win-arm64, os: windows-latest }
+          - { rid: linux-x64, os: ubuntu-22.04 }
+          - { rid: linux-arm64, os: ubuntu-22.04-arm }
+          - { rid: osx-x64, os: macos-15-intel }
+          - { rid: osx-arm64, os: macos-15 }
+    defaults:
+      run:
+        shell: pwsh
     steps:
       - uses: actions/checkout@v4
+      - name: Install Linux Native AOT prerequisites
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang zlib1g-dev
       - uses: actions/setup-dotnet@v5
         with:
           dotnet-version: 11.0.100-rc.1.26425.128
-      - name: Pack and install standalone AOT tool
-        shell: pwsh
+      - name: Pack standalone AOT tool and portable archive
         run: |
           dotnet pack src/Tonarink.Cli/Tonarink.Cli.csproj -c Release -o artifacts/cli/nuget -p:CreateRidSpecificToolPackages=false
           if ($LASTEXITCODE -ne 0) { throw 'CLI packing failed.' }
           $version = ([xml](Get-Content src/Tonarink.Cli/Tonarink.Cli.csproj -Raw)).Project.PropertyGroup.Version
-          ./tools/Build-CliPortable.ps1 -RuntimeIdentifier win-x64 -Version $version -OutputDirectory artifacts/cli/nuget -PackTool
-          $config = Join-Path $env:RUNNER_TEMP 'cli-tool.nuget.config'
-          $feed = [Security.SecurityElement]::Escape((Join-Path $PWD.Path 'artifacts/cli/nuget'))
-          "<configuration><packageSources><clear/><add key=`"cli-build`" value=`"$feed`" /></packageSources></configuration>" | Set-Content $config
-          dotnet tool install tonarink-cli --tool-path "$env:RUNNER_TEMP/cli-tool" --version $version --configfile $config --no-cache
-          if ($LASTEXITCODE -ne 0) { throw 'CLI tool installation failed.' }
-          & "$env:RUNNER_TEMP/cli-tool/tonarink-cli" --language en-US --help
-          if ($LASTEXITCODE -ne 0) { throw 'Installed CLI tool failed to start.' }
+          ./tools/Build-CliPortable.ps1 -RuntimeIdentifier '${{ matrix.rid }}' -Version $version -OutputDirectory artifacts/cli/nuget -PackTool
+      - uses: actions/setup-dotnet@v5
+        if: matrix.rid != 'win-arm64'
+        id: installer-sdk
+        with:
+          dotnet-version: 10.0.x
+      - name: Install and run AOT tool on its native platform
+        if: matrix.rid != 'win-arm64'
+        run: |
+          $version = ([xml](Get-Content src/Tonarink.Cli/Tonarink.Cli.csproj -Raw)).Project.PropertyGroup.Version
+          ./tools/Verify-CliTool.ps1 -AssetDirectory artifacts/cli/nuget -Version $version -InstallerSdkVersion '${{ steps.installer-sdk.outputs.dotnet-version }}'
 
   ui:
     runs-on: windows-latest

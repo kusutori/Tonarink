@@ -14,7 +14,14 @@ param(
 $ErrorActionPreference = 'Stop'
 $tag = "cli-v$Version"
 $assets = @(Get-ChildItem -LiteralPath $AssetDirectory -File)
-foreach ($required in @("tonarink-cli.$Version.nupkg", "tonarink-cli.win-x64.$Version.nupkg", "tonarink-cli.win-arm64.$Version.nupkg", "tonarink-cli-$Version-win-x64.zip", "tonarink-cli-$Version-win-arm64.zip", 'SHA256SUMS.txt')) {
+$project = Join-Path $PSScriptRoot '../src/Tonarink.Cli/Tonarink.Cli.csproj'
+$rids = ([xml](Get-Content -LiteralPath $project -Raw)).Project.PropertyGroup.ToolPackageRuntimeIdentifiers.Split(';')
+$requiredAssets = @("tonarink-cli.$Version.nupkg", 'SHA256SUMS.txt')
+foreach ($rid in $rids) {
+    $extension = if ($rid.StartsWith('win-')) { 'zip' } else { 'tar.gz' }
+    $requiredAssets += "tonarink-cli.$rid.$Version.nupkg", "tonarink-cli-$Version-$rid.$extension"
+}
+foreach ($required in $requiredAssets) {
     if ($required -notin $assets.Name) { throw "Missing release asset: $required." }
 }
 $response = gh api "repos/$Repository/releases/tags/$tag" 2>&1
@@ -41,11 +48,11 @@ else {
     $arguments = @('release', 'create', $tag, '--repo', $Repository, '--verify-tag', '--draft', '--latest=false', '--title', "tonarink-cli $Version", '--notes', @"
 Standalone CLI, separate from the Tonarink desktop app.
 
-- Native AOT / NuGet: ``dotnet tool install --global tonarink-cli --version $Version`` (.NET SDK 10+ selects the Windows x64 or ARM64 package; no .NET 11 runtime required)
-- Native AOT / Windows: download the matching x64 or ARM64 portable ZIP; no .NET or WinUI runtime required
+- Native AOT / NuGet: ``dotnet tool install --global tonarink-cli --version $Version`` (.NET SDK 10+ selects the Windows, Linux or macOS x64/ARM64 package; no .NET 11 runtime required)
+- Native AOT / portable: download the matching Windows ZIP or Linux/macOS tar.gz; no .NET or WinUI runtime required (Linux glibc 2.35+; macOS built/checked on 15, not Developer ID signed/notarized)
 - WinGet: ``winget install --id kusutori.tonarink-cli --exact`` after the community manifest is merged (stable versions only)
 
-Quit any running standalone host with ``tonarink-cli app quit --yes`` before upgrading. See README.md inside each ZIP and https://github.com/$Repository/blob/main/docs/cli.md for commands.
+Quit any running standalone host with ``tonarink-cli app quit --yes`` before upgrading. See README.md inside each archive and https://github.com/$Repository/blob/main/docs/cli.md for commands.
 "@)
     if ($Prerelease) { $arguments += '--prerelease' }
     gh @arguments

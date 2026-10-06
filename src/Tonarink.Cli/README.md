@@ -8,10 +8,13 @@ Choose one distribution; both expose the same `tonarink-cli` command.
 
 - **NuGet / .NET tool (Native AOT):** `dotnet tool install --global tonarink-cli`
 - **Windows portable (Native AOT):** `winget install --id kusutori.tonarink-cli --exact --source winget`
+- **Linux / macOS portable (Native AOT):** download the matching `.tar.gz` from [CLI releases](https://github.com/kusutori/Tonarink/releases?q=cli-v&expanded=true), extract and run `./tonarink-cli`
 
-Both distributions contain **Native AOT** executables for **Windows x64 / ARM64**, with no JIT fallback. The .NET tool requires **.NET SDK 10 or newer to install**; the SDK automatically selects the matching RID package. The installed tool does not need .NET 11 or ASP.NET Core shared runtimes. .NET 11 RC is a build-time requirement only.
+NuGet and portable archives contain **Native AOT** executables for **Windows, Linux and macOS, each in x64 / ARM64**, with no JIT fallback. The .NET tool requires **.NET SDK 10 or newer to install**; the SDK automatically selects the matching RID package. The installed tool does not need .NET 11 or ASP.NET Core shared runtimes. .NET 11 RC is a build-time requirement only.
 
 The Windows x64 / ARM64 portable packages need neither .NET nor WinUI. WinGet registers the portable command in PATH. Alternatively, extract the matching ZIP from [CLI releases](https://github.com/kusutori/Tonarink/releases?q=cli-v&expanded=true) and run `tonarink-cli.exe` directly; manual extraction does not register PATH. Open a new terminal if a newly installed command is not found.
+
+Linux binaries target glibc distributions (Ubuntu 22.04 / glibc 2.35 or newer), not Alpine/musl, and require the system's ICU, OpenSSL and zlib libraries. macOS binaries are built and checked on macOS 15; older releases are not verified. Unix `.tar.gz` archives preserve executable permissions and do not register PATH. macOS packages are not Developer ID signed/notarized; downloaded archives may be subject to Gatekeeper policy. No Homebrew or Linux package-manager publication is configured.
 
 ## Use
 

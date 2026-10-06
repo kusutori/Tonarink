@@ -19,9 +19,11 @@ dotnet tool install --global tonarink-cli
 winget install --id kusutori.tonarink-cli --exact --source winget
 ```
 
-两条路线统一使用 Windows x64 / ARM64 的 Native AOT 版本，不提供 `any` / JIT 回退包。.NET tool 安装需要支持 RID 工具的 .NET SDK 10 或更高版本，自动选择匹配架构的原生包；安装后运行不需要 .NET 11、ASP.NET Core 或 WinUI 运行时。.NET 11 RC 只是构建要求。winget 清单要求 Windows 10 2004 或更高版本，会注册 portable 命令路径，不需要 .NET SDK；首次安装后必要时重新打开终端。
+NuGet 和便携包统一使用 Windows、Linux、macOS 的 x64 / ARM64 Native AOT 版本，不提供 `any` / JIT 回退包。.NET tool 安装需要支持 RID 工具的 .NET SDK 10 或更高版本，自动选择匹配架构的原生包；安装后运行不需要 .NET 11、ASP.NET Core 或 WinUI 运行时。.NET 11 RC 只是构建要求。winget 仍只分发 Windows 包，清单要求 Windows 10 2004 或更高版本，会注册 portable 命令路径，不需要 .NET SDK；首次安装后必要时重新打开终端。
 
-也可以从 `cli-v...` 的 [GitHub Release](https://github.com/kusutori/Tonarink/releases?q=cli-v&expanded=true) 下载对应架构的 ZIP，解压后直接运行 `tonarink-cli.exe`，手动解压不会注册 PATH。winget 条目需要社区清单 PR 合并后才可安装，不会在 GitHub 发布瞬间立即可用。
+也可以从 `cli-v...` 的 [GitHub Release](https://github.com/kusutori/Tonarink/releases?q=cli-v&expanded=true) 下载对应平台和架构的便携包：Windows 使用 ZIP，解压后运行 `tonarink-cli.exe`；Linux / macOS 使用保留执行权限的 `.tar.gz`，解压后运行 `./tonarink-cli`。手动解压不会注册 PATH。winget 条目需要社区清单 PR 合并后才可安装，不会在 GitHub 发布瞬间立即可用。
+
+Linux 使用 Ubuntu 22.04 / glibc 2.35 构建基线，需要系统的 ICU、OpenSSL 和 zlib，不支持 Alpine/musl；macOS 使用 macOS 15 构建和检查，未验证更早版本。macOS 便携包未做 Developer ID 签名或公证，下载后可能受到 Gatekeeper 限制。当前不配置 Homebrew 或 Linux 包管理器发布。
 
 升级或卸载前运行 `tonarink-cli app quit --yes`，释放后台宿主对程序文件的占用；使用过自定义 `--profile` 时，也要退出对应宿主。分发流程及凭据配置见 [CLI 发布说明](cli-release-ci.md)。
 
