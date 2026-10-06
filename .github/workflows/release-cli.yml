@@ -123,7 +123,7 @@ jobs:
         run: |
           Copy-Item artifacts/cli/native/*.nupkg artifacts/cli/verify
           Copy-Item artifacts/cli/native/tonarink-cli-* artifacts/cli/verify
-          ./tools/Verify-CliTool.ps1 -AssetDirectory artifacts/cli/verify -Version '${{ needs.version.outputs.version }}' -InstallerSdkVersion '${{ steps.installer-sdk.outputs.dotnet-version }}'
+          ./tools/Verify-CliTool.ps1 -AssetDirectory artifacts/cli/verify -Version '${{ needs.version.outputs.version }}' -InstallerSdkVersion '${{ steps.installer-sdk.outputs.dotnet-version }}' -RuntimeIdentifier '${{ matrix.rid }}'
       - uses: actions/upload-artifact@v4
         with:
           name: cli-native-${{ matrix.rid }}

@@ -64,7 +64,7 @@ jobs:
         if: matrix.rid != 'win-arm64'
         run: |
           $version = ([xml](Get-Content src/Tonarink.Cli/Tonarink.Cli.csproj -Raw)).Project.PropertyGroup.Version
-          ./tools/Verify-CliTool.ps1 -AssetDirectory artifacts/cli/nuget -Version $version -InstallerSdkVersion '${{ steps.installer-sdk.outputs.dotnet-version }}'
+          ./tools/Verify-CliTool.ps1 -AssetDirectory artifacts/cli/nuget -Version $version -InstallerSdkVersion '${{ steps.installer-sdk.outputs.dotnet-version }}' -RuntimeIdentifier '${{ matrix.rid }}'
 
   ui:
     runs-on: windows-latest
