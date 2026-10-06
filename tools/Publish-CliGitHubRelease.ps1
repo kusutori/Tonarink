@@ -45,12 +45,19 @@ if ($LASTEXITCODE -eq 0) {
 }
 else {
     if (($response -join "`n") -notmatch 'HTTP 404') { throw "Could not inspect release: $response" }
-    $arguments = @('release', 'create', $tag, '--repo', $Repository, '--verify-tag', '--draft', '--latest=false', '--title', "tonarink-cli $Version", '--notes', @"
-Standalone CLI, separate from the Tonarink desktop app.
+    $wingetNote = if ($Prerelease) {
+        'This is a preview release and is not published to WinGet. Install the exact NuGet preview version or download a portable archive.'
+    } else {
+        'WinGet: `winget install --id kusutori.tonarink-cli --exact` after the community manifest is merged.'
+    }
+    $arguments = @('release', 'create', $tag, '--repo', $Repository, '--verify-tag', '--draft', '--latest=false', '--title', "tonarink-cli $Version (CLI only)", '--notes', @"
+> **CLI only — no graphical user interface (GUI) is included.** This is a standalone command-line application, separate from the Tonarink Windows desktop app. For the GUI, download an ``app-v...`` release instead.
+
+> **纯命令行版本，不包含图形界面（GUI）。** 此版本是独立 CLI，不是 Tonarink Windows 桌面应用；需要图形界面请下载 ``app-v...`` 版本。
 
 - Native AOT / NuGet: ``dotnet tool install --global tonarink-cli --version $Version`` (.NET SDK 10+ selects the Windows, Linux or macOS x64/ARM64 package; no .NET 11 runtime required)
 - Native AOT / portable: download the matching Windows ZIP or Linux/macOS tar.gz; no .NET or WinUI runtime required (Linux glibc 2.35+; macOS built/checked on 15, not Developer ID signed/notarized)
-- WinGet: ``winget install --id kusutori.tonarink-cli --exact`` after the community manifest is merged (stable versions only)
+- $wingetNote
 
 Quit any running standalone host with ``tonarink-cli app quit --yes`` before upgrading. See README.md inside each archive and https://github.com/$Repository/blob/main/docs/cli.md for commands.
 "@)

@@ -2,12 +2,14 @@
 
 Standalone [Tonarink](https://github.com/kusutori/Tonarink) command-line client for the LocalSend protocol. Discover devices, send files and text, receive transfers, and manage a background server without the desktop app.
 
+**CLI only — no graphical user interface (GUI) is included.** For the Windows desktop application, download the separate `app-v...` release. This is the first CLI preview; commands and behavior may change before the stable release.
+
 ## Install
 
 Choose one distribution; both expose the same `tonarink-cli` command.
 
-- **NuGet / .NET tool (Native AOT):** `dotnet tool install --global tonarink-cli`
-- **Windows portable (Native AOT):** `winget install --id kusutori.tonarink-cli --exact --source winget`
+- **NuGet / .NET tool (Native AOT preview):** `dotnet tool install --global tonarink-cli --version 1.1.0-preview.1`
+- **Windows portable (Native AOT):** download the matching ZIP from the CLI release; WinGet publication starts with a stable version, not this preview
 - **Linux / macOS portable (Native AOT):** download the matching `.tar.gz` from [CLI releases](https://github.com/kusutori/Tonarink/releases?q=cli-v&expanded=true), extract and run `./tonarink-cli`
 
 NuGet and portable archives contain **Native AOT** executables for **Windows, Linux and macOS, each in x64 / ARM64**, with no JIT fallback. The .NET tool requires **.NET SDK 10 or newer to install**; the SDK automatically selects the matching RID package. The installed tool does not need .NET 11 or ASP.NET Core shared runtimes. .NET 11 RC is a build-time requirement only.
