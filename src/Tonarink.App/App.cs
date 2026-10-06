@@ -38,6 +38,8 @@ try
         {
             Application.Current.HighContrastAdjustment = ApplicationHighContrastAdjustment.None;
             ReactorApp.ShutdownPolicy = ShutdownPolicy.OnLastSurfaceClosed;
+            Application.Current.UnhandledException += (_, exception) =>
+                AppDiagnostics.Report($"Unhandled XAML exception: {exception.Message}", exception.Exception);
             AppWindows.OpenMain(
                 startHidden: AppPlatform.CliBackground || (AppPlatform.StartHidden && startupSettings.MinimizeToTray)
                     || AppNotificationService.HasPendingBackgroundAction);

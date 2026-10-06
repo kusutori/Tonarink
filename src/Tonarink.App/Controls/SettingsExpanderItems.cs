@@ -5,6 +5,11 @@ using Microsoft.UI.Reactor.Core;
 using Microsoft.UI.Reactor.Core.V1Protocol;
 using Microsoft.UI.Xaml;
 
+// SettingsExpander forwards Items to a native ItemsRepeater inside Toolkit code.
+// That indirect boundary is invisible to CsWinRT's automatic call-site detection;
+// explicitly generate the vector/collection-notification ABI for Native AOT.
+[assembly: WinRT.GeneratedWinRTExposedExternalType(typeof(ObservableCollection<object>))]
+
 namespace Tonarink.Controls;
 
 public partial record SettingsExpanderElement
