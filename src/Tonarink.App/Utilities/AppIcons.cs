@@ -19,6 +19,7 @@ static class AppIcons
     public const string DragDrop = "\uF413";
     public const string Edit = "\uE70F";
     public const string Error = "\uE783";
+    public const string ExecutionAlias = "\uE8A4";
     public const string Expand = "\uE740";
     public const string Favorite = "\uEB52";
     public const string FavoriteList = "\uE728";

@@ -372,6 +372,9 @@
   <data name="ExplorerCommandTitle" xml:space="preserve"><value>使用 Tonarink 发送</value></data>
   <data name="SettingsExplorerContextMenu" xml:space="preserve"><value>文件资源管理器右键菜单</value></data>
   <data name="SettingsExplorerContextMenuDescription" xml:space="preserve"><value>添加“使用 Tonarink 发送”菜单项，仅限 Windows 11 的 MSIX 安装版</value></data>
+  <data name="SettingsAppExecutionAliases" xml:space="preserve"><value>应用执行别名</value></data>
+  <data name="SettingsAppExecutionAliasesDescription" xml:space="preserve"><value>管理 tonarink 命令的执行别名，打开后进入“高级应用设置” → “应用执行别名”，仅限 MSIX 安装版</value></data>
+  <data name="SettingsAppExecutionAliasesOpenFailed" xml:space="preserve"><value>无法打开 Windows 应用设置，请手动进入“设置” → “应用” → “高级应用设置” → “应用执行别名”</value></data>
   <data name="StartupDisabledByPolicy" xml:space="preserve"><value>Windows 策略禁止 Tonarink 在登录时自动启动</value></data>
   <data name="StartupDisabledByUser" xml:space="preserve"><value>请先在 Windows 设置中启用 Tonarink 的启动项，再重试</value></data>
   <data name="StartupFailed" xml:space="preserve"><value>无法更改自动启动设置：{error}</value></data>

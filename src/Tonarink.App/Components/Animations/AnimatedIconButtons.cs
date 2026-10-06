@@ -67,6 +67,12 @@ public static class AnimatedButtons
             $"Language{Math.Abs(animationVersion % 3)}",
             iconSize);
 
+    public static Element SettingsExecutionAliasIcon(int animationVersion, double iconSize = 24) =>
+        AnimatedSettingsToggleIcon.Create(
+            SettingsToggleIconKind.ExecutionAlias,
+            $"Alias{Math.Abs(animationVersion % 3)}",
+            iconSize);
+
     public static Element Add(
         string automationName,
         Action onClick,

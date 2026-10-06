@@ -372,6 +372,9 @@
   <data name="ExplorerCommandTitle" xml:space="preserve"><value>Send with Tonarink</value></data>
   <data name="SettingsExplorerContextMenu" xml:space="preserve"><value>File Explorer context menu</value></data>
   <data name="SettingsExplorerContextMenuDescription" xml:space="preserve"><value>Add “Send with Tonarink” to the context menu; requires the MSIX app on Windows 11</value></data>
+  <data name="SettingsAppExecutionAliases" xml:space="preserve"><value>App execution aliases</value></data>
+  <data name="SettingsAppExecutionAliasesDescription" xml:space="preserve"><value>Manage the tonarink command alias; after opening Settings, go to Advanced app settings → App execution aliases; requires the MSIX app</value></data>
+  <data name="SettingsAppExecutionAliasesOpenFailed" xml:space="preserve"><value>Could not open Windows app settings; go to Settings → Apps → Advanced app settings → App execution aliases</value></data>
   <data name="StartupDisabledByPolicy" xml:space="preserve"><value>Windows policy prevents Tonarink from starting at sign-in</value></data>
   <data name="StartupDisabledByUser" xml:space="preserve"><value>Enable Tonarink in Windows startup settings, then try again</value></data>
   <data name="StartupFailed" xml:space="preserve"><value>Could not change startup settings: {error}</value></data>

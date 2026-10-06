@@ -76,6 +76,8 @@ sealed class SettingsPage : Component<SettingsPageProps>
             Props.Runtime.DiscoveryWarning);
         var (encryptionNoticeOpen, setEncryptionNoticeOpen) = UseState(false);
         var (languageAnimationVersion, setLanguageAnimationVersion) = UseState(0);
+        var (aliasAnimationVersion, setAliasAnimationVersion) = UseState(0);
+        var reduceMotion = UseReducedMotion();
         var (deviceNameFocused, setDeviceNameFocused) = UseState(false);
         var savedInputs = SettingsInputDraft.FromSettings(Props.Settings);
         var (draft, setDraft) = UseState(savedInputs);
@@ -561,6 +563,19 @@ sealed class SettingsPage : Component<SettingsPageProps>
         var experimentalCards = SettingsGroup(
             t.Message(new("App", "SettingsExperimental")),
             SettingsCard(
+                header: t.Message(new("App", "SettingsAppExecutionAliases")),
+                description: t.Message(new("App", "SettingsAppExecutionAliasesDescription")),
+                headerIcon: AnimatedButtons.SettingsExecutionAliasIcon(aliasAnimationVersion)
+                    .WithKey("settings-execution-alias-icon"),
+                isClickEnabled: true,
+                isActionIconVisible: true,
+                onClick: () => _ = OpenExecutionAliasSettingsAsync())
+                .AutomationName(t.Message(new("App", "SettingsAppExecutionAliases")))
+                .HelpText(t.Message(new("App", "SettingsAppExecutionAliasesDescription")))
+                .IsEnabled(AppPlatform.HasPackageIdentity())
+                .OnPointerEntered((_, _) => PlayAliasAnimation())
+                .OnGotFocus((_, _) => PlayAliasAnimation()),
+            SettingsCard(
                 header: t.Message(new("App", "SettingsWindowsShareSuggestions")),
                 description: t.Message(new("App", "SettingsWindowsShareSuggestionsDescription")),
                 headerIcon: AnimatedButtons.SettingsContactIcon(Props.Settings.ShowFavoriteDevicesInWindowsShare)
@@ -742,6 +757,31 @@ sealed class SettingsPage : Component<SettingsPageProps>
             {
                 AppDiagnostics.Report("Could not apply server settings", exception);
                 setStatusMessage(t.Message(new("App", "SettingsApplyFailed"), ("error", exception.Message)));
+            }
+        }
+
+        void PlayAliasAnimation()
+        {
+            if (AppPlatform.HasPackageIdentity() && !reduceMotion)
+                setAliasAnimationVersion(aliasAnimationVersion + 1);
+        }
+
+        async Task OpenExecutionAliasSettingsAsync()
+        {
+            if (!AppPlatform.HasPackageIdentity())
+                return;
+
+            try
+            {
+                var opened = await Windows.System.Launcher.LaunchUriAsync(new Uri("ms-settings:appsfeatures"));
+                setStatusMessage(opened
+                    ? null
+                    : t.Message(new("App", "SettingsAppExecutionAliasesOpenFailed")));
+            }
+            catch (Exception exception)
+            {
+                AppDiagnostics.Report("Could not open Windows app execution alias settings", exception);
+                setStatusMessage(t.Message(new("App", "SettingsAppExecutionAliasesOpenFailed")));
             }
         }
 
