@@ -23,6 +23,8 @@ NuGet 和便携包统一使用 Windows、Linux、macOS 的 x64 / ARM64 Native AO
 
 也可以从 `cli-v...` 的 [GitHub Release](https://github.com/kusutori/Tonarink/releases?q=cli-v&expanded=true) 下载对应平台和架构的便携包：Windows 使用 ZIP，解压后运行 `tonarink-cli.exe`；Linux / macOS 使用保留执行权限的 `.tar.gz`，解压后运行 `./tonarink-cli`。手动解压不会注册 PATH。winget 条目需要社区清单 PR 合并后才可安装，不会在 GitHub 发布瞬间立即可用。
 
+正式版发布后会自动提交 winget 清单；预览版需要手动运行 `submit-cli-winget.yml` 并填写已发布的版本号。此流程直接校验并复用公开 Release 的 Windows ZIP，不重新构建或覆盖发布资产，也可用于单独重试 winget 提交。
+
 Linux 使用 Ubuntu 22.04 / glibc 2.35 构建基线，需要系统的 ICU、OpenSSL 和 zlib，不支持 Alpine/musl；macOS 使用 macOS 15 构建和检查，未验证更早版本。macOS 便携包未做 Developer ID 签名或公证，下载后可能受到 Gatekeeper 限制。当前不配置 Homebrew 或 Linux 包管理器发布。
 
 升级或卸载前运行 `tonarink-cli app quit --yes`，释放后台宿主对程序文件的占用；使用过自定义 `--profile` 时，也要退出对应宿主。分发流程及凭据配置见 [CLI 发布说明](cli-release-ci.md)。

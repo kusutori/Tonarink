@@ -1,0 +1,79 @@
+name: Submit published CLI to WinGet
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Published CLI version (including an explicitly opted-in preview)
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cli-winget-${{ inputs.version }}
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: pwsh
+
+jobs:
+  submit:
+    runs-on: windows-latest
+    environment: release
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v5
+        with:
+          # Only WingetCreate needs this runtime; tonarink-cli is Native AOT.
+          dotnet-version: 9.0.x
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Download and verify existing public Windows assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CLI_VERSION: ${{ inputs.version }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $version = $env:CLI_VERSION
+          if ($version -notmatch '^\d+\.\d+\.\d+(?:-[0-9A-Za-z]+(?:[.-][0-9A-Za-z]+)*)?$') { throw 'Invalid CLI version.' }
+          $tag = "cli-v$version"
+          $release = gh api "repos/$env:GITHUB_REPOSITORY/releases/tags/$tag" | ConvertFrom-Json
+          if ($LASTEXITCODE -ne 0 -or $release.draft -or $release.tag_name -ne $tag) { throw 'A matching public CLI release is required.' }
+          foreach ($architecture in 'x64', 'arm64') {
+            $name = "tonarink-cli-$version-win-$architecture.zip"
+            $asset = @($release.assets | Where-Object name -EQ $name)
+            if ($asset.Count -ne 1 -or $asset[0].state -ne 'uploaded' -or $asset[0].digest -notmatch '^sha256:[0-9a-f]{64}$') { throw "Missing verified asset: $name" }
+            for ($attempt = 1; $attempt -le 3; $attempt++) {
+              gh release download $tag --repo $env:GITHUB_REPOSITORY --pattern $name --dir artifacts/cli/published --clobber
+              if ($LASTEXITCODE -eq 0) { break }
+              if ($attempt -eq 3) { throw "Could not download $name after three attempts." }
+              Start-Sleep -Seconds 5
+            }
+            $hash = (Get-FileHash "artifacts/cli/published/$name" -Algorithm SHA256).Hash.ToLowerInvariant()
+            if ("sha256:$hash" -ne $asset[0].digest) { throw "Published asset hash mismatch: $name" }
+          }
+          ./tools/New-CliWingetManifest.ps1 -Version $version -AssetDirectory artifacts/cli/published -OutputDirectory artifacts/cli/winget -Repository $env:GITHUB_REPOSITORY
+      - name: Install isolated schema validator
+        run: npm install --prefix "$env:RUNNER_TEMP/winget-validator" --no-audit --no-fund ajv@8.17.1 ajv-formats@3.0.1 yaml@2.8.1
+      - name: Validate manifests against Microsoft schemas
+        env:
+          CLI_VERSION: ${{ inputs.version }}
+        run: |
+          node tools/Validate-CliWingetManifest.cjs "artifacts/cli/winget/manifests/k/kusutori/tonarink-cli/$env:CLI_VERSION" "$env:RUNNER_TEMP/winget-validator"
+          if ($LASTEXITCODE -ne 0) { throw 'WinGet manifest validation failed.' }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cli-winget-${{ inputs.version }}
+          path: artifacts/cli/winget/manifests
+          if-no-files-found: error
+      - name: Install pinned WingetCreate
+        run: ./tools/Install-WingetCreate.ps1 -Destination "$env:RUNNER_TEMP/wingetcreate"
+      - name: Submit portable manifests without rebuilding the CLI
+        env:
+          WINGET_CREATE_GITHUB_TOKEN: ${{ secrets.WINGET_TOKEN }}
+          CLI_VERSION: ${{ inputs.version }}
+        run: ./tools/Submit-CliWingetManifest.ps1 -Version $env:CLI_VERSION -ManifestDirectory "artifacts/cli/winget/manifests/k/kusutori/tonarink-cli/$env:CLI_VERSION"

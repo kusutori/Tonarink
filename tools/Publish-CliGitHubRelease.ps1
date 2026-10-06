@@ -46,7 +46,7 @@ if ($LASTEXITCODE -eq 0) {
 else {
     if (($response -join "`n") -notmatch 'HTTP 404') { throw "Could not inspect release: $response" }
     $wingetNote = if ($Prerelease) {
-        'This is a preview release and is not published to WinGet. Install the exact NuGet preview version or download a portable archive.'
+        'This is a preview release. WinGet submission is opt-in via the submit-cli-winget workflow and becomes available after community approval. Until then, install the exact NuGet preview version or download a portable archive.'
     } else {
         'WinGet: `winget install --id kusutori.tonarink-cli --exact` after the community manifest is merged.'
     }

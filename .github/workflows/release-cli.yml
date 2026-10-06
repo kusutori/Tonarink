@@ -256,29 +256,6 @@ jobs:
       - name: Submit stable portable manifests
         env:
           WINGET_CREATE_GITHUB_TOKEN: ${{ secrets.WINGET_TOKEN }}
-        run: |
-          $ErrorActionPreference = 'Stop'
-          if (-not $env:WINGET_CREATE_GITHUB_TOKEN) { throw 'Configure WINGET_TOKEN (classic PAT with public_repo).' }
-          # Use the environment variable instead of --token so the PAT is not logged as an argument.
-          $env:GH_TOKEN = $env:WINGET_CREATE_GITHUB_TOKEN
-          $version = '${{ needs.version.outputs.version }}'
-          $path = "manifests/k/kusutori/tonarink-cli/$version"
-          $merged = gh api "repos/microsoft/winget-pkgs/contents/$path" 2>&1
-          if ($LASTEXITCODE -eq 0) {
-            Write-Host "Version $version is already present in winget-pkgs; skipping submission."
-            exit 0
-          }
-          if (($merged -join "`n") -notmatch 'HTTP 404') { throw "Could not check merged WinGet versions: $merged" }
-          $package = gh api 'repos/microsoft/winget-pkgs/contents/manifests/k/kusutori/tonarink-cli' 2>&1
-          if ($LASTEXITCODE -eq 0) { $prefix = 'New version' }
-          elseif (($package -join "`n") -match 'HTTP 404') { $prefix = 'New package' }
-          else { throw "Could not check WinGet package: $package" }
-          $title = "${prefix}: kusutori.tonarink-cli version $version"
-          $existing = gh pr list --repo microsoft/winget-pkgs --author '@me' --state open --search "in:title kusutori.tonarink-cli $version" --json title,url | ConvertFrom-Json
-          if ($LASTEXITCODE -ne 0) { throw 'Could not check existing WinGet pull requests.' }
-          if ($existing | Where-Object title -EQ $title) {
-            Write-Host 'An open pull request already exists; skipping duplicate submission.'
-            exit 0
-          }
-          wingetcreate submit "artifacts/cli/winget/k/kusutori/tonarink-cli/$version" --prtitle $title --no-open
-          if ($LASTEXITCODE -ne 0) { throw 'WinGet submission failed. The GitHub release is still available; rerun this job after fixing the token or manifests.' }
+        run: >-
+          ./tools/Submit-CliWingetManifest.ps1 -Version '${{ needs.version.outputs.version }}'
+          -ManifestDirectory 'artifacts/cli/winget/k/kusutori/tonarink-cli/${{ needs.version.outputs.version }}'
