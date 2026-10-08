@@ -4,7 +4,7 @@ layout: home
 hero:
   name: Tonarink
   text: 让附近的设备，自然连起来。
-  tagline: 安全、快速、无需互联网的局域网文件与文本传输工具。
+  tagline: Fast, private file and text sharing over your local network—no internet required.
   image:
     src: /logo.svg
     alt: Tonarink
@@ -24,7 +24,7 @@ features:
     title: 快速直连
     details: 设备在局域网中直接传输，无需上传云端，速度取决于你的本地网络。
   - icon: 🔒
-    title: 私密可靠
+    title: Private by design
     details: 支持 HTTPS、PIN 与设备验证，让每一次传输都由你确认。
   - icon: 🪟
     title: 为 Windows 11 而生
