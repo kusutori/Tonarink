@@ -16,7 +16,8 @@ public sealed class LocalSendRuntime : ITonarinkRuntime
     private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger<LocalSendRuntime> _logger;
     private readonly SemaphoreSlim _lifecycle = new(1, 1);
-    private readonly ConcurrentDictionary<string, LocalSendDevice> _devices = new(StringComparer.Ordinal);
+    private readonly object _devicePublication = new();
+    private IReadOnlyDictionary<string, LocalSendDevice> _devices = new Dictionary<string, LocalSendDevice>(StringComparer.Ordinal);
     private readonly ConcurrentDictionary<string, IncomingTransferRequest> _offers = new(StringComparer.Ordinal);
     private CancellationTokenSource? _lifetime;
     private LocalSendNode? _node;
@@ -114,9 +115,8 @@ public sealed class LocalSendRuntime : ITonarinkRuntime
             await node.DisposeAsync().ConfigureAwait(false);
             lifetime?.Dispose();
             _watchers = [];
-            _devices.Clear();
+            ReplaceDevices([]);
             _offers.Clear();
-            _state.ReplaceDevices([]);
             _state.ReplaceIncomingOffers([]);
         }
         finally
@@ -129,8 +129,13 @@ public sealed class LocalSendRuntime : ITonarinkRuntime
 
     public async Task<RuntimeSendResult> SendAsync(NearbyDevice device, IReadOnlyList<ShareItem> items, string? pin = null, IProgress<TransferActivity>? progress = null, CancellationToken cancellationToken = default)
     {
-        if (!_devices.TryGetValue(device.Id, out var target))
+        if (!Volatile.Read(ref _devices).TryGetValue(device.Id, out var target))
             throw new InvalidOperationException("目标设备已离线，请刷新后重试。");
+        return await SendToDeviceAsync(target, items, pin, progress, cancellationToken).ConfigureAwait(false);
+    }
+
+    private async Task<RuntimeSendResult> SendToDeviceAsync(LocalSendDevice target, IReadOnlyList<ShareItem> items, string? pin, IProgress<TransferActivity>? progress, CancellationToken cancellationToken)
+    {
         var coreItems = items.Select(ToCoreItem).ToArray();
         var reporter = new Progress<TransferProgress>(value =>
         {
@@ -206,11 +211,10 @@ public sealed class LocalSendRuntime : ITonarinkRuntime
                 var endpoint = new DeviceEndpoint(ip, port, protocol);
                 var probe = await RequiredNode().ProbeDeviceAsync(endpoint, cancellationToken).ConfigureAwait(false);
                 var device = await RequiredNode().AddKnownDeviceAsync(endpoint, probe.Device.Fingerprint, cancellationToken).ConfigureAwait(false);
-                _devices[device.Fingerprint] = device;
                 ReplaceDevices(RequiredNode().GetDevices());
-                var nearby = new NearbyDevice(device.Fingerprint, device.Alias, device.DeviceModel ?? device.DeviceType.ToString(),
-                    device.DeviceType.ToString(), endpoint.Address.ToString(), endpoint.Port, device.LastSeen);
-                return await SendAsync(nearby, items, pin, progress, cancellationToken).ConfigureAwait(false);
+                // The probe already resolved this target. A concurrent device
+                // refresh must not make an address send re-resolve its cache.
+                return await SendToDeviceAsync(device, items, pin, progress, cancellationToken).ConfigureAwait(false);
             }
             catch (OperationCanceledException)
             {
@@ -218,6 +222,7 @@ public sealed class LocalSendRuntime : ITonarinkRuntime
             }
             catch (Exception exception)
             {
+                _logger.LogDebug(exception, "Address send attempt using {Protocol} failed", protocol);
                 lastError = exception;
             }
         }
@@ -353,17 +358,25 @@ public sealed class LocalSendRuntime : ITonarinkRuntime
         }
     }
 
-    private void ReplaceDevices(IReadOnlyList<LocalSendDevice> devices)
+    internal void ReplaceDevices(IReadOnlyList<LocalSendDevice> devices)
     {
-        _devices.Clear();
+        var snapshot = new Dictionary<string, LocalSendDevice>(StringComparer.Ordinal);
+        var nearby = new List<NearbyDevice>(devices.Count);
         foreach (var device in devices)
-            _devices[device.Fingerprint] = device;
-        _state.ReplaceDevices(devices.Select(static device =>
         {
+            snapshot[device.Fingerprint] = device;
             var endpoint = device.PreferredEndpoint;
-            return new NearbyDevice(device.Fingerprint, device.Alias, device.DeviceModel ?? device.DeviceType.ToString(),
-                device.DeviceType.ToString(), endpoint?.Address.ToString() ?? "?", endpoint?.Port ?? 0, device.LastSeen);
-        }));
+            nearby.Add(new NearbyDevice(device.Fingerprint, device.Alias, device.DeviceModel ?? device.DeviceType.ToString(),
+                device.DeviceType.ToString(), endpoint?.Address.ToString() ?? "?", endpoint?.Port ?? 0, device.LastSeen));
+        }
+
+        // Never mutate a published dictionary. Readers retain the previous
+        // complete snapshot while its replacement is being materialized.
+        lock (_devicePublication)
+        {
+            Volatile.Write(ref _devices, snapshot);
+            _state.ReplaceDevices(nearby);
+        }
     }
 
     private void PublishOffers() => _state.ReplaceIncomingOffers(_offers.Values.Select(ToOffer));

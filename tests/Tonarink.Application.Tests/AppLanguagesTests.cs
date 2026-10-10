@@ -2,22 +2,23 @@ using Tonarink.Application;
 
 namespace Tonarink.Application.Tests;
 
+[TestClass]
 public sealed class AppLanguagesTests
 {
-    [Theory]
-    [InlineData(0, "en-US", "en-US")]
-    [InlineData(0, "zh-CN", "zh-CN")]
-    [InlineData(0, "zh-Hans-CN", "zh-CN")]
-    [InlineData(1, "en-US", "zh-CN")]
-    [InlineData(2, "zh-CN", "en-US")]
+    [TestMethod]
+    [DataRow(0, "en-US", "en-US")]
+    [DataRow(0, "zh-CN", "zh-CN")]
+    [DataRow(0, "zh-Hans-CN", "zh-CN")]
+    [DataRow(1, "en-US", "zh-CN")]
+    [DataRow(2, "zh-CN", "en-US")]
     public void ResolveMapsIndexAndSystemCulture(int index, string system, string expected) =>
-        Assert.Equal(expected, AppLanguages.Resolve(index, system));
+        Assert.AreEqual(expected, AppLanguages.Resolve(index, system));
 
-    [Fact]
+    [TestMethod]
     public void MatchFallsBackToEnglish() =>
-        Assert.Equal(AppLanguages.English, AppLanguages.Match("ja-JP"));
+        Assert.AreEqual(AppLanguages.English, AppLanguages.Match("ja-JP"));
 
-    [Fact]
+    [TestMethod]
     public void FormatReplacesNamedPlaceholders() =>
-        Assert.Equal("3 nearby", AppLanguages.Format("{count} nearby", ("count", 3)));
+        Assert.AreEqual("3 nearby", AppLanguages.Format("{count} nearby", ("count", 3)));
 }

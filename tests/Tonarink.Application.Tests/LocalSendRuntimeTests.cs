@@ -1,16 +1,18 @@
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
-using Microsoft.Extensions.Logging.Abstractions;
+using System.Collections.Concurrent;
+using Microsoft.Extensions.Logging;
 using Tonarink.Application;
 using Tonarink.LocalSend;
 
-namespace Tonarink.LocalSend.Tests;
+namespace Tonarink.Application.Tests;
 
-[Collection(nameof(LocalSendRuntimeCollection))]
+[TestClass]
 public sealed class LocalSendRuntimeTests
 {
-    [Fact(Timeout = 30_000)]
+    [TestMethod]
+    [Timeout(30_000)]
     public async Task TextAndFileTransferWriteExpectedBytes()
     {
         await using var pair = await RuntimePair.StartAsync();
@@ -25,18 +27,19 @@ public sealed class LocalSendRuntimeTests
             new ShareItem(Guid.NewGuid(), "payload.bin", payload.Length, "application/octet-stream", filePath,
                 OpenRead: _ => ValueTask.FromResult<Stream>(File.OpenRead(filePath))),
         ]);
-        var offer = await pair.WaitForOfferAsync();
-        Assert.Contains(offer.Items, item => item.Name == "message.txt");
+        var offer = await pair.WaitForOfferAsync(sendTask);
+        Assert.Contains(item => item.Name == "message.txt", offer.Items);
         await pair.Receiver.AcceptAsync(offer, offer.Items.Select(static item => item.Id).ToHashSet());
         await sendTask;
 
-        Assert.Equal(text, await File.ReadAllTextAsync(Path.Combine(pair.ReceiverPlatform.DownloadDirectory, "message.txt")));
-        Assert.Equal(payload, await File.ReadAllBytesAsync(Path.Combine(pair.ReceiverPlatform.DownloadDirectory, "payload.bin")));
-        Assert.Equal(TransferStatus.Completed, pair.ReceiverState.Transfers[0].Status);
-        Assert.Equal(TransferStatus.Completed, pair.SenderState.Transfers[0].Status);
+        Assert.AreEqual(text, await File.ReadAllTextAsync(Path.Combine(pair.ReceiverPlatform.DownloadDirectory, "message.txt")));
+        Assert.AreSequenceEqual(payload, await File.ReadAllBytesAsync(Path.Combine(pair.ReceiverPlatform.DownloadDirectory, "payload.bin")));
+        Assert.AreEqual(TransferStatus.Completed, pair.ReceiverState.Transfers[0].Status);
+        Assert.AreEqual(TransferStatus.Completed, pair.SenderState.Transfers[0].Status);
     }
 
-    [Fact(Timeout = 30_000)]
+    [TestMethod]
+    [Timeout(30_000)]
     public async Task SendWithoutRequiredPinReturnsOutcomeAndSucceedsWithPin()
     {
         await using var pair = await RuntimePair.StartAsync(receiver => receiver with { ReceivePin = "2468" });
@@ -45,16 +48,17 @@ public sealed class LocalSendRuntimeTests
         var missingPin = await pair.Sender.SendToAddressAsync(
             $"127.0.0.1:{pair.ReceiverPort}",
             [item]);
-        Assert.False(RequirePinRequired(missingPin).InvalidPin);
+        Assert.IsFalse(RequirePinRequired(missingPin).InvalidPin);
 
         var sendTask = pair.Sender.SendToAddressAsync($"127.0.0.1:{pair.ReceiverPort}", [item], pin: "2468");
-        var offer = await pair.WaitForOfferAsync();
+        var offer = await pair.WaitForOfferAsync(sendTask);
         await pair.Receiver.AcceptAsync(offer, offer.Items.Select(static item => item.Id).ToHashSet());
         await sendTask;
-        Assert.Equal(TransferStatus.Completed, pair.SenderState.Transfers[0].Status);
+        Assert.AreEqual(TransferStatus.Completed, pair.SenderState.Transfers[0].Status);
     }
 
-    [Fact(Timeout = 30_000)]
+    [TestMethod]
+    [Timeout(30_000)]
     public async Task PartialAcceptSavesOnlySelectedItems()
     {
         await using var pair = await RuntimePair.StartAsync();
@@ -63,16 +67,17 @@ public sealed class LocalSendRuntimeTests
             new ShareItem(Guid.NewGuid(), "keep.txt", 4, "text/plain", TextContent: "keep"),
             new ShareItem(Guid.NewGuid(), "skip.txt", 4, "text/plain", TextContent: "skip"),
         ]);
-        var offer = await pair.WaitForOfferAsync();
-        var keep = Assert.Single(offer.Items, item => item.Name == "keep.txt");
+        var offer = await pair.WaitForOfferAsync(sendTask);
+        var keep = Assert.ContainsSingle(offer.Items.Where(item => item.Name == "keep.txt"));
         await pair.Receiver.AcceptAsync(offer, new HashSet<Guid> { keep.Id });
         await sendTask;
 
-        Assert.Equal("keep", await File.ReadAllTextAsync(Path.Combine(pair.ReceiverPlatform.DownloadDirectory, "keep.txt")));
-        Assert.False(File.Exists(Path.Combine(pair.ReceiverPlatform.DownloadDirectory, "skip.txt")));
+        Assert.AreEqual("keep", await File.ReadAllTextAsync(Path.Combine(pair.ReceiverPlatform.DownloadDirectory, "keep.txt")));
+        Assert.IsFalse(File.Exists(Path.Combine(pair.ReceiverPlatform.DownloadDirectory, "skip.txt")));
     }
 
-    [Fact(Timeout = 30_000)]
+    [TestMethod]
+    [Timeout(30_000)]
     public async Task AutoAcceptSavesWithoutUiDecision()
     {
         await using var pair = await RuntimePair.StartAsync(receiver => receiver with { AutoAccept = true });
@@ -87,11 +92,12 @@ public sealed class LocalSendRuntimeTests
         ]);
 
         await WaitUntilAsync(() => File.Exists(Path.Combine(pair.ReceiverPlatform.DownloadDirectory, "auto.bin")), TimeSpan.FromSeconds(15));
-        Assert.Equal(payload, await File.ReadAllBytesAsync(Path.Combine(pair.ReceiverPlatform.DownloadDirectory, "auto.bin")));
-        Assert.Empty(pair.ReceiverState.IncomingOffers);
+        Assert.AreSequenceEqual(payload, await File.ReadAllBytesAsync(Path.Combine(pair.ReceiverPlatform.DownloadDirectory, "auto.bin")));
+        Assert.IsEmpty(pair.ReceiverState.IncomingOffers);
     }
 
-    [Fact(Timeout = 30_000)]
+    [TestMethod]
+    [Timeout(30_000)]
     public async Task AliasAndReceivePinChangesApplyAfterRestart()
     {
         await using var pair = await RuntimePair.StartAsync(receiver => receiver with { Alias = "Original", ReceivePin = null });
@@ -102,13 +108,13 @@ public sealed class LocalSendRuntimeTests
         var missingPin = await pair.Sender.SendToAddressAsync(
             $"127.0.0.1:{pair.ReceiverPort}",
             [new ShareItem(Guid.NewGuid(), "ping.txt", 4, "text/plain", TextContent: "ping")]);
-        Assert.False(RequirePinRequired(missingPin).InvalidPin);
+        Assert.IsFalse(RequirePinRequired(missingPin).InvalidPin);
 
         var sendTask = pair.Sender.SendToAddressAsync($"127.0.0.1:{pair.ReceiverPort}",
             [new ShareItem(Guid.NewGuid(), "ping.txt", 4, "text/plain", TextContent: "ping")], pin: "9999");
-        var offer = await pair.WaitForOfferAsync();
-        Assert.Equal("Sender", offer.SenderAlias);
-        Assert.Contains(pair.SenderState.Devices, device => device.Alias == "Renamed");
+        var offer = await pair.WaitForOfferAsync(sendTask);
+        Assert.AreEqual("Sender", offer.SenderAlias);
+        Assert.Contains(device => device.Alias == "Renamed", pair.SenderState.Devices);
         await pair.Receiver.AcceptAsync(offer, offer.Items.Select(static item => item.Id).ToHashSet());
         await sendTask;
     }
@@ -128,12 +134,10 @@ public sealed class LocalSendRuntimeTests
     private static RuntimeSendResult.PinRequired RequirePinRequired(RuntimeSendResult result) => result switch
     {
         RuntimeSendResult.PinRequired required => required,
-        _ => throw new Xunit.Sdk.XunitException("Expected PIN-required result."),
+        _ => throw new AssertFailedException("Expected PIN-required result."),
     };
 }
 
-[CollectionDefinition(nameof(LocalSendRuntimeCollection), DisableParallelization = true)]
-public sealed class LocalSendRuntimeCollection;
 
 internal sealed class RuntimePair : IAsyncDisposable
 {
@@ -145,7 +149,8 @@ internal sealed class RuntimePair : IAsyncDisposable
         TonarinkAppState receiverState,
         LocalSendRuntime sender,
         LocalSendRuntime receiver,
-        int receiverPort)
+        int receiverPort,
+        RuntimeLog log)
     {
         Root = root;
         SenderPlatform = senderPlatform;
@@ -155,6 +160,7 @@ internal sealed class RuntimePair : IAsyncDisposable
         Sender = sender;
         Receiver = receiver;
         ReceiverPort = receiverPort;
+        _log = log;
     }
 
     public string Root { get; }
@@ -165,6 +171,7 @@ internal sealed class RuntimePair : IAsyncDisposable
     public LocalSendRuntime Sender { get; }
     public LocalSendRuntime Receiver { get; }
     public int ReceiverPort { get; }
+    private readonly RuntimeLog _log;
 
     public static async Task<RuntimePair> StartAsync(Func<TonarinkSettings, TonarinkSettings>? configureReceiver = null)
     {
@@ -184,9 +191,10 @@ internal sealed class RuntimePair : IAsyncDisposable
             var updated = settings with { Alias = "Receiver", Port = receiverPort };
             return configureReceiver is null ? updated : configureReceiver(updated);
         });
-        var sender = new LocalSendRuntime(senderState, senderPlatform, NullLoggerFactory.Instance);
-        var receiver = new LocalSendRuntime(receiverState, receiverPlatform, NullLoggerFactory.Instance);
-        var pair = new RuntimePair(root, senderPlatform, receiverPlatform, senderState, receiverState, sender, receiver, receiverPort);
+        var log = new RuntimeLog();
+        var sender = new LocalSendRuntime(senderState, senderPlatform, log);
+        var receiver = new LocalSendRuntime(receiverState, receiverPlatform, log);
+        var pair = new RuntimePair(root, senderPlatform, receiverPlatform, senderState, receiverState, sender, receiver, receiverPort, log);
         try
         {
             await Task.WhenAll(receiver.StartAsync(), sender.StartAsync());
@@ -199,7 +207,7 @@ internal sealed class RuntimePair : IAsyncDisposable
         }
     }
 
-    public async Task<IncomingOffer> WaitForOfferAsync(TimeSpan? timeout = null)
+    public async Task<IncomingOffer> WaitForOfferAsync(Task<RuntimeSendResult> sender, TimeSpan? timeout = null)
     {
         var tcs = new TaskCompletionSource<IncomingOffer>(TaskCreationOptions.RunContinuationsAsynchronously);
         void Handler()
@@ -211,8 +219,15 @@ internal sealed class RuntimePair : IAsyncDisposable
         try
         {
             Handler();
-            using var cts = new CancellationTokenSource(timeout ?? TimeSpan.FromSeconds(20));
-            await using var registration = cts.Token.Register(() => tcs.TrySetCanceled(cts.Token));
+            // A failed sender cannot ever publish an offer. Observe it rather
+            // than replacing its useful error with a receiver-wait timeout.
+            var completed = await Task.WhenAny(tcs.Task, sender)
+                .WaitAsync(timeout ?? TimeSpan.FromSeconds(20));
+            if (completed == sender && !tcs.Task.IsCompleted)
+            {
+                var result = await sender.ConfigureAwait(false);
+                Assert.Fail($"Sender finished before an incoming offer: {result}; receiver port={ReceiverPort}, running={Receiver.IsRunning}.");
+            }
             return await tcs.Task.ConfigureAwait(false);
         }
         finally
@@ -225,6 +240,7 @@ internal sealed class RuntimePair : IAsyncDisposable
     {
         await Sender.DisposeAsync();
         await Receiver.DisposeAsync();
+        _log.Dispose();
         try
         {
             if (Directory.Exists(Root))
@@ -242,6 +258,31 @@ internal sealed class RuntimePair : IAsyncDisposable
         var port = ((IPEndPoint)listener.LocalEndpoint).Port;
         listener.Stop();
         return port;
+    }
+}
+
+// Bounded, test-owned diagnostics are captured in TRX stdout. Never discard the
+// HTTPS failure just because the production address fallback later fails HTTP.
+internal sealed class RuntimeLog : ILoggerFactory
+{
+    private readonly ConcurrentQueue<string> _lines = new();
+    public ILogger CreateLogger(string categoryName) => new CapturedLogger(categoryName, _lines);
+    public void AddProvider(ILoggerProvider provider) => throw new NotSupportedException();
+    public void Dispose() => Console.WriteLine(string.Join(Environment.NewLine, _lines));
+
+    private sealed class CapturedLogger(string category, ConcurrentQueue<string> lines) : ILogger
+    {
+        public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+        public bool IsEnabled(LogLevel logLevel) => logLevel >= LogLevel.Debug;
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception,
+            Func<TState, Exception?, string> formatter)
+        {
+            if (!IsEnabled(logLevel))
+                return;
+            lines.Enqueue($"{DateTimeOffset.UtcNow:O} {logLevel} {category}: {formatter(state, exception)} {exception}");
+            while (lines.Count > 200)
+                lines.TryDequeue(out _);
+        }
     }
 }
 
