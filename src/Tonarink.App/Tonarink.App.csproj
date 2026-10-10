@@ -279,7 +279,16 @@
         <Content Include="Assets\MaterialIcons-Regular.ttf"
                  CopyToOutputDirectory="PreserveNewest"
                  CopyToPublishDirectory="PreserveNewest" />
-        <Content Include="Assets\AppIcon.ico" CopyToOutputDirectory="PreserveNewest" />
+        <!-- Replace SDK-default entries so each asset has explicit publish metadata. -->
+        <Content Remove="Assets\AppIcon.ico;Assets\**\*.png" />
+        <Content Include="Assets\AppIcon.ico"
+                 CopyToOutputDirectory="PreserveNewest"
+                 CopyToPublishDirectory="PreserveNewest" />
+        <!-- AOT MSIX is packed from an unpackaged publish layout. Include PNGs
+             independently of TonarinkPackaged, preserving folders such as JumpList. -->
+        <Content Include="Assets\**\*.png"
+                 CopyToOutputDirectory="PreserveNewest"
+                 CopyToPublishDirectory="PreserveNewest" />
     </ItemGroup>
 
     <PropertyGroup>
@@ -333,7 +342,6 @@
         <AppxManifest Include="Package.appxmanifest">
             <SubType>Designer</SubType>
         </AppxManifest>
-        <Content Include="Assets\**\*.png" CopyToOutputDirectory="PreserveNewest" />
         <PRIResource Include="Assets\**\*.png" />
     </ItemGroup>
 

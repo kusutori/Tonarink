@@ -71,13 +71,14 @@ $defaultQualifiers = @"
     </default>
 "@
 
-$assetFiles = Get-ChildItem -LiteralPath $assets -File |
-    Where-Object { $_.Extension -in ".png", ".ico", ".json", ".svg" }
+$assetFiles = @(Get-ChildItem -LiteralPath $assets -Recurse -File |
+    Where-Object { $_.Extension -in ".png", ".ico", ".json", ".svg" })
 if ($assetFiles.Count -lt 1) {
     throw "No visual assets were found in '$assets'."
 }
 $layoutResfiles = Join-Path $work "layout.resfiles"
-$assetFiles | ForEach-Object { "Assets\$($_.Name)" } |
+# Shell URIs include subfolders (Assets/JumpList/...). Do not flatten the paths.
+$assetFiles | ForEach-Object { [System.IO.Path]::GetRelativePath($layout, $_.FullName) } |
     Set-Content -LiteralPath $layoutResfiles -Encoding utf8
 
 $resourceResfiles = Join-Path $work "resources.resfiles"

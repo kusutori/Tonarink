@@ -422,10 +422,7 @@ jobs:
           Get-ChildItem -LiteralPath $layout -Filter '*.pdb' -File |
             Remove-Item -Force -ErrorAction SilentlyContinue
 
-          $assets = Join-Path $layout 'Assets'
-          New-Item -ItemType Directory -Path $assets -Force | Out-Null
-          Copy-Item 'src/Tonarink.App/Assets/*.png' -Destination $assets
-          Copy-Item 'src/Tonarink.App/Assets/*.ico' -Destination $assets
+          # The project publishes visual assets with their directory structure.
           $manifestPath = Join-Path $layout 'AppxManifest.xml'
           if ($widgets -eq 'true') {
             ./tools/Add-WidgetManifestExtensions.ps1 `
