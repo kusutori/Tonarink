@@ -1,0 +1,6 @@
+<Project Sdk="MSTest.Sdk">
+  <ItemGroup>
+    <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
+    <ProjectReference Include="../Tonarink.TestSupport/Tonarink.TestSupport.csproj" />
+  </ItemGroup>
+</Project>

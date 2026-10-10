@@ -21,6 +21,7 @@
     <PackageTags>localsend;cli;file-transfer;tonarink</PackageTags>
   </PropertyGroup>
   <ItemGroup>
+    <InternalsVisibleTo Include="Tonarink.CommandLine.Tests" />
     <ProjectReference Include="../Tonarink.CommandLine/Tonarink.CommandLine.csproj" />
     <None Include="README.md" Pack="true" PackagePath="/" />
     <None Include="../../LICENSE" Pack="true" PackagePath="/" />

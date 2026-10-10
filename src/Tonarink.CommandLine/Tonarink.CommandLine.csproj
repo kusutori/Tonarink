@@ -19,5 +19,6 @@
     <ProjectReference Include="../Tonarink.Application/Tonarink.Application.csproj" />
     <InternalsVisibleTo Include="Tonarink" />
     <InternalsVisibleTo Include="Tonarink.Cli" />
+    <InternalsVisibleTo Include="Tonarink.CommandLine.Tests" />
   </ItemGroup>
 </Project>

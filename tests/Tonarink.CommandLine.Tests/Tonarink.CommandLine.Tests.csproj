@@ -1,0 +1,31 @@
+<Project Sdk="MSTest.Sdk">
+  <ItemGroup>
+    <None Include="../../tools/testing/Invoke-TestProcess.ps1" Link="TestTools/Invoke-TestProcess.ps1" CopyToOutputDirectory="PreserveNewest" />
+    <ProjectReference Include="../../src/Tonarink.CommandLine/Tonarink.CommandLine.csproj" />
+    <ProjectReference Include="../../src/Tonarink.Cli/Tonarink.Cli.csproj" />
+    <ProjectReference Include="../Tonarink.TestSupport/Tonarink.TestSupport.csproj" />
+    <ProjectReference Include="../Tonarink.TestSupport.ProcessProbe/Tonarink.TestSupport.ProcessProbe.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="../../tools/testing/Tonarink.MtpProbe/Tonarink.MtpProbe.csproj" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+  <Target Name="CopyProcessProbe" AfterTargets="Build">
+    <MSBuild Projects="$(MSBuildThisFileDirectory)../Tonarink.TestSupport.ProcessProbe/Tonarink.TestSupport.ProcessProbe.csproj"
+             Targets="GetTargetPath" Properties="Configuration=$(Configuration);TargetFramework=$(TargetFramework)">
+      <Output TaskParameter="TargetOutputs" PropertyName="ProcessProbeTargetPath" />
+    </MSBuild>
+    <ItemGroup>
+      <ProcessProbeFiles Include="$([System.IO.Path]::GetDirectoryName('$(ProcessProbeTargetPath)'))/Tonarink.TestSupport.ProcessProbe.*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(ProcessProbeFiles)" DestinationFolder="$(OutDir)ProcessProbe" />
+  </Target>
+  <Target Name="CopyMtpProbe" AfterTargets="Build">
+    <MSBuild Projects="$(MSBuildThisFileDirectory)../../tools/testing/Tonarink.MtpProbe/Tonarink.MtpProbe.csproj"
+             Targets="GetTargetPath" Properties="Configuration=$(Configuration);TargetFramework=$(TargetFramework)">
+      <Output TaskParameter="TargetOutputs" PropertyName="MtpProbeTargetPath" />
+    </MSBuild>
+    <ItemGroup>
+      <MtpProbeFiles Include="$([System.IO.Path]::GetDirectoryName('$(MtpProbeTargetPath)'))/**/*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(MtpProbeFiles)"
+          DestinationFiles="@(MtpProbeFiles->'$(OutDir)MtpProbe/%(RecursiveDir)%(Filename)%(Extension)')" />
+  </Target>
+</Project>

@@ -2,8 +2,11 @@
 
   <PropertyGroup>
     <TargetFramework />
-    <TargetFrameworks>net11.0;net11.0-android</TargetFrameworks>
-    <TargetFrameworks Condition="!$([MSBuild]::IsOSPlatform('linux'))">$(TargetFrameworks);net11.0-ios;net11.0-maccatalyst</TargetFrameworks>
+    <TargetFrameworks>net11.0</TargetFrameworks>
+    <!-- The portable transport suite needs no Android/iOS workload. Mobile app
+         builds retain the full target list unless explicitly opting out. -->
+    <TargetFrameworks Condition="'$(PortableTransportOnly)' != 'true'">$(TargetFrameworks);net11.0-android</TargetFrameworks>
+    <TargetFrameworks Condition="'$(PortableTransportOnly)' != 'true' And !$([MSBuild]::IsOSPlatform('linux'))">$(TargetFrameworks);net11.0-ios;net11.0-maccatalyst</TargetFrameworks>
     <Features>$(Features);runtime-async=on</Features>
     <UseMonoRuntime>false</UseMonoRuntime>
     <AssemblyName>LocalSendDotNet.Core</AssemblyName>

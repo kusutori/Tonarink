@@ -288,6 +288,7 @@
 
     <ItemGroup>
         <LottieAnimation Include="Assets\Lottie\*.json" />
+        <InternalsVisibleTo Include="Tonarink.App.WinUI.Tests" />
     </ItemGroup>
 
     <Target Name="_GenerateLottieSources"
