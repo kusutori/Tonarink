@@ -16,7 +16,8 @@ static class SendDeviceResolver
         IPAddress address,
         int port,
         LocalSendProtocol preferredProtocol,
-        string? expectedFingerprint)
+        string? expectedFingerprint,
+        CancellationToken cancellationToken = default)
     {
         Exception? lastError = null;
         LocalSendProtocol[] protocols =
@@ -28,10 +29,11 @@ static class SendDeviceResolver
         ];
         foreach (var protocol in protocols)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             try
             {
                 var endpoint = new DeviceEndpoint(address, port, protocol);
-                var probe = await node.ProbeDeviceAsync(endpoint).ConfigureAwait(true);
+                var probe = await node.ProbeDeviceAsync(endpoint, cancellationToken).ConfigureAwait(true);
                 if (expectedFingerprint is not null
                     && !string.Equals(
                         probe.Device.Fingerprint,
@@ -44,8 +46,16 @@ static class SendDeviceResolver
 
                 var device = await node.AddKnownDeviceAsync(
                     endpoint,
-                    probe.Device.Fingerprint).ConfigureAwait(true);
+                    probe.Device.Fingerprint,
+                    cancellationToken).ConfigureAwait(true);
                 return new ResolvedDevice(device);
+            }
+            catch (OperationCanceledException exception)
+                when (!cancellationToken.IsCancellationRequested && exception.InnerException is TimeoutException)
+            {
+                // HttpClient's request deadline is a failed probe, not a user
+                // cancellation. The other protocol may still reach the peer.
+                lastError = exception;
             }
             catch (OperationCanceledException)
             {
@@ -65,14 +75,17 @@ static class SendDeviceResolver
     {
         var input = value.Trim();
         port = LocalSendOptions.DefaultPort;
-        if (IPAddress.TryParse(input, out address!))
+        // IPAddress.TryParse accepts bracketed IPv6 endpoints but discards
+        // their port. Only let it handle a bare address (brackets optional).
+        if ((!input.StartsWith('[') || input.EndsWith(']'))
+            && IPAddress.TryParse(input, out address!))
             return true;
 
-        if (Uri.TryCreate($"tcp://{input}", UriKind.Absolute, out var uri)
-            && IPAddress.TryParse(uri.Host, out address!)
-            && uri.Port is >= 1 and <= ushort.MaxValue)
+        if (IPEndPoint.TryParse(input, out var endpoint)
+            && endpoint.Port is >= 1 and <= ushort.MaxValue)
         {
-            port = uri.Port;
+            address = endpoint.Address;
+            port = endpoint.Port;
             return true;
         }
 

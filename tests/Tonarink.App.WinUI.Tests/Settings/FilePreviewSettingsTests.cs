@@ -1,13 +1,15 @@
 using System.Text.Json;
 using Tonarink.Services.Settings;
 
-namespace Tonarink.App.Settings.Tests;
+namespace Tonarink.App.WinUI.Tests;
 
+[TestClass]
+[TestCategory("Unit")]
 public sealed class FilePreviewSettingsTests
 {
     private static AppSettings Empty => AppSettings.Default with { PreviewProviders = Array.Empty<FilePreviewProvider>() };
 
-    [Fact]
+    [TestMethod]
     public void AddingSameToolTwiceKeepsOneCardAndOriginalPath()
     {
         var added = FilePreviewSettings.SetExecutablePath(
@@ -15,23 +17,23 @@ public sealed class FilePreviewSettingsTests
             FilePreviewProvider.QuickLook, "QuickLook.exe");
         var duplicate = FilePreviewSettings.Add(added, FilePreviewProvider.QuickLook);
 
-        Assert.Same(added, duplicate);
-        Assert.Single(FilePreviewSettings.Providers(duplicate));
-        Assert.Equal("QuickLook.exe", duplicate.QuickLookExecutablePath);
+        Assert.AreSame(added, duplicate);
+        Assert.ContainsSingle(FilePreviewSettings.Providers(duplicate));
+        Assert.AreEqual("QuickLook.exe", duplicate.QuickLookExecutablePath);
     }
 
-    [Fact]
+    [TestMethod]
     public void EmptyPathCardSurvivesSerializationAndRestart()
     {
         var added = FilePreviewSettings.Add(Empty, FilePreviewProvider.QuickLook);
         var restored = RoundTrip(added);
 
-        Assert.Single(FilePreviewSettings.Providers(restored));
+        Assert.ContainsSingle(FilePreviewSettings.Providers(restored));
         Assert.Contains(FilePreviewProvider.QuickLook, FilePreviewSettings.Providers(restored));
-        Assert.Equal("", restored.QuickLookExecutablePath);
+        Assert.AreEqual("", restored.QuickLookExecutablePath);
     }
 
-    [Fact]
+    [TestMethod]
     public void DeletedToolsAreNotAutomaticallyReAddedAfterRestart()
     {
         var added = FilePreviewSettings.Add(Empty, FilePreviewProvider.PowerToysPeek);
@@ -39,14 +41,14 @@ public sealed class FilePreviewSettingsTests
         var restored = RoundTrip(deleted);
         var migrated = FilePreviewSettings.MigrateDetectedTools(restored, "installed-peek.exe", "installed-quicklook.exe");
 
-        Assert.Same(restored, migrated);
-        Assert.Empty(FilePreviewSettings.Providers(migrated));
-        Assert.Equal("", migrated.PowerToysPeekExecutablePath);
-        Assert.Equal("", migrated.QuickLookExecutablePath);
+        Assert.AreSame(restored, migrated);
+        Assert.IsEmpty(FilePreviewSettings.Providers(migrated));
+        Assert.AreEqual("", migrated.PowerToysPeekExecutablePath);
+        Assert.AreEqual("", migrated.QuickLookExecutablePath);
     }
 
-    [Fact]
-    public void RemovingActiveToolSelectsRemainingToolWithoutChangingOtherSettings()
+    [TestMethod]
+    public void RemovingOverrideKeepsSelectedToolAndOtherSettings()
     {
         var both = FilePreviewSettings.Add(
             FilePreviewSettings.Add(Empty, FilePreviewProvider.PowerToysPeek),
@@ -58,35 +60,35 @@ public sealed class FilePreviewSettingsTests
         both = FilePreviewSettings.SetExecutablePath(both, FilePreviewProvider.QuickLook, "quicklook.exe");
         var removed = FilePreviewSettings.Remove(both, FilePreviewProvider.QuickLook);
 
-        Assert.Equal(FilePreviewProvider.PowerToysPeek, removed.PreviewProvider);
-        Assert.Equal("peek.exe", removed.PowerToysPeekExecutablePath);
-        Assert.Equal("", removed.QuickLookExecutablePath);
-        Assert.False(removed.NotificationsEnabled);
+        Assert.AreEqual(FilePreviewProvider.QuickLook, removed.PreviewProvider);
+        Assert.AreEqual("peek.exe", removed.PowerToysPeekExecutablePath);
+        Assert.AreEqual("", removed.QuickLookExecutablePath);
+        Assert.IsFalse(removed.NotificationsEnabled);
     }
 
-    [Fact]
+    [TestMethod]
     public void StaleSaveCannotRestoreDeletedPath()
     {
         var added = FilePreviewSettings.Add(Empty, FilePreviewProvider.QuickLook);
         var removed = FilePreviewSettings.Remove(added, FilePreviewProvider.QuickLook);
         var lateSave = FilePreviewSettings.SetExecutablePath(removed, FilePreviewProvider.QuickLook, "old.exe");
 
-        Assert.Same(removed, lateSave);
-        Assert.Empty(FilePreviewSettings.Providers(lateSave));
+        Assert.AreSame(removed, lateSave);
+        Assert.IsEmpty(FilePreviewSettings.Providers(lateSave));
     }
 
-    [Fact]
+    [TestMethod]
     public void SavingPathUsesCardTypeNotFileNameAndPreservesSelectedTool()
     {
         var added = FilePreviewSettings.Add(Empty, FilePreviewProvider.QuickLook);
         var saved = FilePreviewSettings.SetExecutablePath(added, FilePreviewProvider.QuickLook, " \"custom-name.exe\" ");
 
-        Assert.Equal("custom-name.exe", saved.QuickLookExecutablePath);
-        Assert.Equal(added.PreviewProvider, saved.PreviewProvider);
-        Assert.Equal("", saved.PowerToysPeekExecutablePath);
+        Assert.AreEqual("custom-name.exe", saved.QuickLookExecutablePath);
+        Assert.AreEqual(added.PreviewProvider, saved.PreviewProvider);
+        Assert.AreEqual("", saved.PowerToysPeekExecutablePath);
     }
 
-    [Fact]
+    [TestMethod]
     public void ValidationOnlyChecksFileExistenceAndDoesNotMutateSettings()
     {
         var file = Path.GetTempFileName(); // A .tmp file, deliberately not a named preview executable.
@@ -95,11 +97,11 @@ public sealed class FilePreviewSettingsTests
             var added = FilePreviewSettings.SetExecutablePath(
                 FilePreviewSettings.Add(Empty, FilePreviewProvider.QuickLook),
                 FilePreviewProvider.QuickLook, file);
-            Assert.True(FilePreviewSettings.PathExists($" \"{file}\" "));
-            Assert.False(FilePreviewSettings.PathExists(file + ".missing"));
-            Assert.False(FilePreviewSettings.PathExists(Path.GetDirectoryName(file)!));
-            Assert.False(FilePreviewSettings.PathExists(""));
-            Assert.Equal(file, added.QuickLookExecutablePath);
+            Assert.IsTrue(FilePreviewSettings.PathExists($" \"{file}\" "));
+            Assert.IsFalse(FilePreviewSettings.PathExists(file + ".missing"));
+            Assert.IsFalse(FilePreviewSettings.PathExists(Path.GetDirectoryName(file)!));
+            Assert.IsFalse(FilePreviewSettings.PathExists(""));
+            Assert.AreEqual(file, added.QuickLookExecutablePath);
         }
         finally
         {
@@ -107,8 +109,8 @@ public sealed class FilePreviewSettingsTests
         }
     }
 
-    [Fact]
-    public void LegacyPathsAndSelectedRunningQuickLookBecomeCards()
+    [TestMethod]
+    public void MigrationAddsOnlyCustomOverridesNotSelectedTool()
     {
         var legacy = AppSettings.Default with
         {
@@ -117,23 +119,25 @@ public sealed class FilePreviewSettingsTests
         };
         var migrated = FilePreviewSettings.MigrateDetectedTools(legacy, "", "");
 
-        Assert.Equal(2, FilePreviewSettings.Providers(migrated).Count);
-        Assert.Equal("custom-peek.exe", migrated.PowerToysPeekExecutablePath);
-        Assert.Contains(FilePreviewProvider.QuickLook, FilePreviewSettings.Providers(migrated));
+        Assert.ContainsSingle(FilePreviewSettings.Providers(migrated));
+        Assert.AreEqual("custom-peek.exe", migrated.PowerToysPeekExecutablePath);
+        Assert.Contains(FilePreviewProvider.PowerToysPeek, FilePreviewSettings.Providers(migrated));
+        Assert.DoesNotContain(FilePreviewProvider.QuickLook, FilePreviewSettings.Providers(migrated));
     }
 
-    [Fact]
-    public void LegacySettingsWithNoToolsCanStillDiscoverInstalledOnes()
+    [TestMethod]
+    public void DetectedToolsDoNotCreateUnnecessaryOverrideCards()
     {
         var restored = new AppSettingsFile().ToSettings();
-        Assert.Null(restored.PreviewProviders);
+        Assert.IsNull(restored.PreviewProviders);
         var migrated = FilePreviewSettings.MigrateDetectedTools(restored, "peek.exe", "");
 
-        Assert.Equal(new[] { FilePreviewProvider.PowerToysPeek }, FilePreviewSettings.Providers(migrated));
-        Assert.Equal("", migrated.PowerToysPeekExecutablePath);
+        Assert.IsEmpty(FilePreviewSettings.Providers(migrated));
+        Assert.AreEqual(restored.PreviewProvider, migrated.PreviewProvider);
+        Assert.AreEqual("", migrated.PowerToysPeekExecutablePath);
     }
 
-    [Fact]
+    [TestMethod]
     public void MigrationClearsDetectedPathsButPreservesCustomOverrides()
     {
         var legacy = AppSettings.Default with
@@ -143,12 +147,12 @@ public sealed class FilePreviewSettingsTests
         };
         var migrated = FilePreviewSettings.MigrateDetectedTools(legacy, "installed-peek.exe", "installed-quicklook.exe");
 
-        Assert.Equal("", migrated.PowerToysPeekExecutablePath);
-        Assert.Equal("custom-quicklook.exe", migrated.QuickLookExecutablePath);
-        Assert.Equal(2, FilePreviewSettings.Providers(migrated).Count);
+        Assert.AreEqual("", migrated.PowerToysPeekExecutablePath);
+        Assert.AreEqual("custom-quicklook.exe", migrated.QuickLookExecutablePath);
+        Assert.AreSequenceEqual(new[] { FilePreviewProvider.QuickLook }, FilePreviewSettings.Providers(migrated));
     }
 
-    [Fact]
+    [TestMethod]
     public void ExplicitOverridesMatchingDetectedPathsArePreserved()
     {
         var settings = FilePreviewSettings.SetExecutablePath(
@@ -156,33 +160,33 @@ public sealed class FilePreviewSettingsTests
             FilePreviewProvider.QuickLook, "installed.exe");
         var migrated = FilePreviewSettings.MigrateDetectedTools(settings, "", "installed.exe", clearDetectedPaths: false);
 
-        Assert.Same(settings, migrated);
-        Assert.True(AppSettingsFile.FromSettings(settings).FilePreviewPathsAreOverrides);
+        Assert.AreSame(settings, migrated);
+        Assert.IsTrue(AppSettingsFile.FromSettings(settings).FilePreviewPathsAreOverrides);
     }
 
-    [Fact]
+    [TestMethod]
     public void BlankOverrideIsValidAndRestoresAutomaticDetection()
     {
-        Assert.True(FilePreviewSettings.TryValidateOverride(" \"\" ", out var normalized));
-        Assert.Equal("", normalized);
+        Assert.IsTrue(FilePreviewSettings.TryValidateOverride(" \"\" ", out var normalized));
+        Assert.AreEqual("", normalized);
         var detected = false;
-        Assert.Equal("detected.exe", FilePreviewSettings.ResolveExecutablePath(normalized, () =>
+        Assert.AreEqual("detected.exe", FilePreviewSettings.ResolveExecutablePath(normalized, () =>
         {
             detected = true;
             return "detected.exe";
         }));
-        Assert.True(detected);
+        Assert.IsTrue(detected);
     }
 
-    [Fact]
+    [TestMethod]
     public void ValidOverrideIsNormalizedAndTakesPrecedenceOverDetection()
     {
         var file = Path.GetTempFileName();
         try
         {
-            Assert.True(FilePreviewSettings.TryValidateOverride($" \"{file}\" ", out var normalized));
-            Assert.Equal(file, normalized);
-            Assert.Equal(file, FilePreviewSettings.ResolveExecutablePath(normalized,
+            Assert.IsTrue(FilePreviewSettings.TryValidateOverride($" \"{file}\" ", out var normalized));
+            Assert.AreEqual(file, normalized);
+            Assert.AreEqual(file, FilePreviewSettings.ResolveExecutablePath(normalized,
                 () => throw new InvalidOperationException("An override must not invoke detection.")));
         }
         finally
@@ -191,17 +195,17 @@ public sealed class FilePreviewSettingsTests
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void MissingOverrideCannotBeSavedOrSilentlyReplacedByDetection()
     {
         var missing = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".missing");
-        Assert.False(FilePreviewSettings.TryValidateOverride(missing, out var normalized));
-        Assert.Equal(missing, normalized);
-        Assert.Null(FilePreviewSettings.ResolveExecutablePath(missing,
+        Assert.IsFalse(FilePreviewSettings.TryValidateOverride(missing, out var normalized));
+        Assert.AreEqual(missing, normalized);
+        Assert.IsNull(FilePreviewSettings.ResolveExecutablePath(missing,
             () => throw new InvalidOperationException("An override must not invoke detection.")));
     }
 
-    [Fact]
+    [TestMethod]
     public void StoredProviderListFiltersUnknownTypesAndDuplicates()
     {
         var restored = new AppSettingsFile
@@ -209,7 +213,7 @@ public sealed class FilePreviewSettingsTests
             FilePreviewProviders = ["QuickLook", "quicklook", "Unknown", "99", "PowerToysPeek"],
         }.ToSettings();
 
-        Assert.Equal(new[] { FilePreviewProvider.QuickLook, FilePreviewProvider.PowerToysPeek },
+        Assert.AreSequenceEqual(new[] { FilePreviewProvider.QuickLook, FilePreviewProvider.PowerToysPeek },
             FilePreviewSettings.Providers(restored));
     }
 

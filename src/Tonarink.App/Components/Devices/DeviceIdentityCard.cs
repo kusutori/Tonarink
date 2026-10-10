@@ -39,6 +39,9 @@ sealed class DeviceIdentityCard : Component<DeviceIdentityCardProps>
     {
         var t = UseIntl();
         var cardRef = UseRef<FrameworkElement?>();
+        // Terminal host disposal runs component effect cleanup, but it need
+        // not reconcile every native OnUnmount modifier. Release either way.
+        UseEffect(() => () => ReleaseCard(cardRef.Current));
         var identity = Grid(
             columns: [GridSize.Auto, GridSize.Star()],
             rows: [GridSize.Auto],
@@ -113,16 +116,7 @@ sealed class DeviceIdentityCard : Component<DeviceIdentityCardProps>
                         throw new ArgumentOutOfRangeException();
                 }
             })
-            .OnUnmountAdd(element =>
-            {
-                if (Props is { ConnectedAnimationKey: { } key, AnimationRole: DeviceIdentityCardAnimationRole.Source })
-                {
-                    DeviceConnectedAnimation.UnregisterSource(key, element);
-                }
-
-                Props.ElementChanged?.Invoke(null);
-                cardRef.Current = null;
-            });
+            .OnUnmountAdd(element => ReleaseCard(element as FrameworkElement));
 
         if (Props.OnSecondaryClick is null || Props.SecondaryGlyph is null)
             return card;
@@ -142,5 +136,16 @@ sealed class DeviceIdentityCard : Component<DeviceIdentityCardProps>
                     .Margin(right: 16))
             .MinHeight(104)
             .HAlign(HorizontalAlignment.Stretch);
+
+        void ReleaseCard(FrameworkElement? element)
+        {
+            if (element is null || !ReferenceEquals(cardRef.Current, element))
+                return;
+
+            cardRef.Current = null;
+            if (Props is { ConnectedAnimationKey: { } key, AnimationRole: DeviceIdentityCardAnimationRole.Source })
+                DeviceConnectedAnimation.UnregisterSource(key, element);
+            Props.ElementChanged?.Invoke(null);
+        }
     }
 }
