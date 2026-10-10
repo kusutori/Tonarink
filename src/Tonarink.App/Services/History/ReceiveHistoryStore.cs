@@ -11,6 +11,8 @@ static class ReceiveHistoryStore
     private static readonly Lock Gate = new();
     private static IReadOnlyList<ReceiveHistoryEntry>? _entries;
 
+    public static IReceiveHistoryStore Source { get; } = new PersistentSource();
+
     public static event Action? Changed;
 
     public static IReadOnlyList<ReceiveHistoryEntry> Entries
@@ -92,6 +94,18 @@ static class ReceiveHistoryStore
             ReceiveHistoryFile.FromEntries(entries),
             ReceiveHistoryJsonContext.Default.ReceiveHistoryFile);
         File.WriteAllText(FilePath, json);
+    }
+
+    private sealed class PersistentSource : IReceiveHistoryStore
+    {
+        public IReadOnlyList<ReceiveHistoryEntry> Entries => ReceiveHistoryStore.Entries;
+        public event Action? Changed
+        {
+            add => ReceiveHistoryStore.Changed += value;
+            remove => ReceiveHistoryStore.Changed -= value;
+        }
+        public void Remove(Guid id) => ReceiveHistoryStore.Remove(id);
+        public void Clear() => ReceiveHistoryStore.Clear();
     }
 }
 

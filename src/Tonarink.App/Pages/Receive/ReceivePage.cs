@@ -28,19 +28,16 @@ sealed class ReceivePage : Component<ReceivePageProps>
             new SegmentedItem { Content = t.Message(new("App", "AutoSaveOn")) },
         }, t.Locale);
         var identity = Props.Runtime.Identity;
-        var stored = AppSettingsStore.Load();
-        var (alias, setAlias) = UseState(stored.ResolvedAlias);
+        var alias = Props.Settings.ResolvedAlias;
         var idleLogoPlayerRef = UseRef<AnimatedVisualPlayer?>();
         var headerRight = UseContext(PageHeader.RightSlot);
         headerRight.Owner = AppRoute.Receive;
         headerRight.Build = () => HeaderActions(t, navigation, alias, Props.Settings, identity);
         UseNavigationLifecycle(onNavigatedTo: _ =>
         {
-            var current = AppSettingsStore.Load();
-            setAlias(current.ResolvedAlias);
             PlayIdleLogoAnimation(idleLogoPlayerRef.Current, play: !reduceMotion);
         });
-        UseEffect(() => headerRight.Invalidate(), 0);
+        UseEffect(() => headerRight.Invalidate(), alias, Props.Settings, identity);
         var fingerprint = identity?.Fingerprint;
         var fingerprintPreview = fingerprint?[..12];
         var shortId = fingerprint is null

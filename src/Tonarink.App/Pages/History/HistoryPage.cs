@@ -25,13 +25,14 @@ sealed class HistoryPage : Component<HistoryPageProps>
     public override Element Render()
     {
         var t = UseIntl();
+        var history = Props.HistoryStore ?? ReceiveHistoryStore.Source;
         var entries = UseExternalStore(
             listener =>
             {
-                ReceiveHistoryStore.Changed += listener;
-                return () => ReceiveHistoryStore.Changed -= listener;
+                history.Changed += listener;
+                return () => history.Changed -= listener;
             },
-            static () => ReceiveHistoryStore.Entries);
+            () => history.Entries);
         var (infoEntry, setInfoEntry) = UseState<ReceiveHistoryEntry?>(null);
         var (confirmClear, setConfirmClear) = UseState(false);
         var (deleteShakeVersion, setDeleteShakeVersion) = UseState(0);
@@ -71,9 +72,9 @@ sealed class HistoryPage : Component<HistoryPageProps>
                     Label = t.Message(new("App", "HistoryDeleteItem")),
                     Icon = new FontIconData(AppIcons.Delete),
                     Accelerator = Accelerator(VirtualKey.Delete),
-                    Execute = entry => ReceiveHistoryStore.Remove(entry.Id),
+                    Execute = entry => history.Remove(entry.Id),
                 },
-                t.Locale)));
+                t.Locale, history)));
 
         var previousJumpListHistory = UseRef<Guid?>(null);
         UseEffect(() =>
@@ -149,7 +150,7 @@ sealed class HistoryPage : Component<HistoryPageProps>
                             {
                                 if (result == ContentDialogResult.Primary)
                                 {
-                                    ReceiveHistoryStore.Clear();
+                                    history.Clear();
                                     setDeleteShakeVersion(deleteShakeVersion + 1);
                                 }
                                 setConfirmClear(false);
