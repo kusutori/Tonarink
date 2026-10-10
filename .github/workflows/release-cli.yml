@@ -82,6 +82,7 @@ jobs:
 
   native:
     needs: [version, nuget-pointer]
+    timeout-minutes: 30
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -124,6 +125,12 @@ jobs:
           Copy-Item artifacts/cli/native/*.nupkg artifacts/cli/verify
           Copy-Item artifacts/cli/native/tonarink-cli-* artifacts/cli/verify
           ./tools/Verify-CliTool.ps1 -AssetDirectory artifacts/cli/verify -Version '${{ needs.version.outputs.version }}' -InstallerSdkVersion '${{ steps.installer-sdk.outputs.dotnet-version }}' -RuntimeIdentifier '${{ matrix.rid }}'
+      - uses: actions/upload-artifact@v4
+        if: always() && matrix.rid != 'win-arm64'
+        with:
+          name: cli-distribution-results-${{ matrix.rid }}
+          path: artifacts/test-results/cli-distribution/
+          if-no-files-found: error
       - uses: actions/upload-artifact@v4
         with:
           name: cli-native-${{ matrix.rid }}

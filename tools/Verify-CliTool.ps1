@@ -9,14 +9,17 @@ param(
     [string]$InstallerSdkVersion,
     [Parameter(Mandatory)]
     [ValidateSet('win-x64', 'win-arm64', 'linux-x64', 'linux-arm64', 'osx-x64', 'osx-arm64')]
-    [string]$RuntimeIdentifier
+    [string]$RuntimeIdentifier,
+    [string]$ResultsDirectory = 'artifacts/test-results/cli-distribution',
+    # Only for a caller that already built the current test controller. Avoid
+    # touching its binaries when independently isolated suites run concurrently.
+    [switch]$NoBuild
 )
 
 $ErrorActionPreference = 'Stop'
 $work = Join-Path ([IO.Path]::GetTempPath()) "tonarink-cli-verify-$([guid]::NewGuid().ToString('N'))"
 $null = New-Item -ItemType Directory -Path $work
 $toolDirectory = Join-Path $work 'tool'
-$profile = Join-Path $work 'profile'
 $config = Join-Path $work 'NuGet.Config'
 $assetRoot = (Resolve-Path -LiteralPath $AssetDirectory).Path
 $feed = [Security.SecurityElement]::Escape($assetRoot)
@@ -53,8 +56,6 @@ if ($LASTEXITCODE -ne 0) { throw 'AOT tool installation failed.' }
 $cli = Join-Path $toolDirectory 'tonarink-cli'
 & $cli --language en-US --help
 if ($LASTEXITCODE -ne 0) { throw 'Tool help failed.' }
-& $cli --language zh-CN --help
-if ($LASTEXITCODE -ne 0) { throw 'Localized tool help failed.' }
 # Check the distributed archive, not only the staging binary. On Unix this also
 # catches a lost executable bit: deliberately do not chmod after extraction.
 $archiveExtension = if ($IsWindows) { 'zip' } else { 'tar.gz' }
@@ -70,36 +71,30 @@ else {
     if ($LASTEXITCODE -ne 0) { throw 'Could not extract the portable archive.' }
     $portable = Join-Path $portableDirectory 'tonarink-cli'
 }
-& $portable --language en-US --help
-if ($LASTEXITCODE -ne 0) { throw 'The extracted portable executable failed to start.' }
+# Locate the native payload installed by dotnet tool, not a global/cached tool.
+# The .cmd/executable launcher above is checked independently; all functional
+# contracts run against its installed payload and the extracted portable binary.
+$entryPoint = if ($IsWindows) { 'Tonarink.Cli.exe' } else { 'Tonarink.Cli' }
+# Unix tool payloads live under hidden .store; without -Force the scan reports
+# no payload even when the installed native launcher above ran successfully.
+$installed = @(Get-ChildItem -LiteralPath $toolDirectory -Recurse -Force -File -Filter $entryPoint)
+if ($installed.Count -ne 1) { throw "Expected exactly one installed native tool payload, found $($installed.Count)." }
+$package = Join-Path $assetRoot "tonarink-cli.$RuntimeIdentifier.$Version.nupkg"
+$zip = [IO.Compression.ZipFile]::OpenRead($package)
 try {
-    & $cli --profile $profile --timeout 60 settings set alias ci-cli --json
-    if ($LASTEXITCODE -ne 0) { throw 'Could not start the standalone host.' }
-    $settings = & $cli --profile $profile settings get alias --json
-    if ($LASTEXITCODE -ne 0) { throw 'Could not query the standalone host.' }
-    $response = $settings | ConvertFrom-Json
-    if (@($response.data | Where-Object { $_.key -eq 'alias' -and $_.value -eq 'ci-cli' }).Count -ne 1) {
-        throw 'Standalone settings did not round-trip.'
-    }
-    # Use an ephemeral port rather than touching another local instance's default port.
-    $probe = [Net.Sockets.TcpListener]::new([Net.IPAddress]::Any, 0)
-    $probe.Start()
-    try { $port = $probe.LocalEndpoint.Port } finally { $probe.Stop() }
-    & $cli --profile $profile settings set port $port --json
-    if ($LASTEXITCODE -ne 0) { throw 'Could not configure the isolated server.' }
-    & $cli --profile $profile --timeout 60 server start --json
-    if ($LASTEXITCODE -ne 0) { throw 'Could not start the HTTPS server.' }
-    $status = & $cli --profile $profile status --json
-    if ($LASTEXITCODE -ne 0) { throw 'Could not query the running server.' }
-    $response = $status | ConvertFrom-Json
-    if ($response.data.state -ne 'Running' -or -not $response.data.fingerprint) {
-        throw 'The server did not load an identity and enter Running state.'
-    }
-    & $cli --profile $profile server stop --json
-    if ($LASTEXITCODE -ne 0) { throw 'Could not stop the isolated server.' }
+    $stream = $zip.GetEntry("tools/any/$RuntimeIdentifier/$entryPoint").Open()
+    try { $nativeHash = [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData($stream)) }
+    finally { $stream.Dispose() }
 }
-finally {
-    & $cli --profile $profile app quit --yes --json
-    if ($LASTEXITCODE -ne 0) { throw 'Could not stop the isolated standalone host.' }
-    Write-Host "Verification profile: $profile"
+finally { $zip.Dispose() }
+$repoRoot = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..')).Path
+$resultsRoot = if ([IO.Path]::IsPathRooted($ResultsDirectory)) { [IO.Path]::GetFullPath($ResultsDirectory) }
+else { [IO.Path]::GetFullPath((Join-Path $repoRoot $ResultsDirectory)) }
+$runTests = Join-Path $PSScriptRoot 'Invoke-Tests.ps1'
+foreach ($artifact in @(@('tool', $installed[0].FullName), @('portable', $portable))) {
+    $kind, $executable = $artifact
+    & $runTests -Suite Cli -Configuration Release -CliExecutable $executable -NativeRid $RuntimeIdentifier `
+        -CliVersion $Version -ExpectedSha256 $nativeHash `
+        -ResultsDirectory (Join-Path $resultsRoot "$RuntimeIdentifier/$kind") -NoBuild:$NoBuild
 }
+Write-Host "Installed tool and portable tested from: $work"

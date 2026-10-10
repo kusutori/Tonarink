@@ -6,6 +6,10 @@ on:
 
 jobs:
   test:
+    timeout-minutes: 20
+    env:
+      # Also applies to format's MSBuild workspace; no mobile workload is needed.
+      PortableTransportOnly: 'true'
     strategy:
       matrix:
         os: [windows-latest, ubuntu-latest, macos-latest]
@@ -15,15 +19,38 @@ jobs:
       - uses: actions/setup-dotnet@v5
         with:
           dotnet-version: 11.0.100-rc.1.26425.128
-      - run: dotnet restore LocalSendDotNet.Core.slnx
+      - run: dotnet restore LocalSendDotNet.Core.slnx -p:PortableTransportOnly=true
       - run: dotnet format LocalSendDotNet.Core.slnx --no-restore --verify-no-changes
-      - run: dotnet build LocalSendDotNet.Core.slnx --no-restore --configuration Release
-      - run: dotnet test LocalSendDotNet.Core.slnx --no-build --configuration Release --filter "Skip!=Manual"
+      - run: dotnet build LocalSendDotNet.Core.slnx --no-restore --configuration Release -p:PortableTransportOnly=true
+      - name: Core protocol and transport tests
+        shell: pwsh
+        run: ./tools/Invoke-Tests.ps1 -Suite Core -NoBuild -ResultsDirectory artifacts/test-results/ci
+      - name: Shared application and runtime tests
+        shell: pwsh
+        run: ./tools/Invoke-Tests.ps1 -Suite Application -NoBuild -ResultsDirectory artifacts/test-results/ci
+      - name: CLI command and IPC contracts
+        shell: pwsh
+        run: ./tools/Invoke-Tests.ps1 -Suite CommandLine -NoBuild -ResultsDirectory artifacts/test-results/ci
+      - name: Portable transport tests (not mobile-device UI)
+        shell: pwsh
+        run: ./tools/Invoke-Tests.ps1 -Suite Mobile -NoBuild -ResultsDirectory artifacts/test-results/ci
+      - name: Standalone CLI process lifecycle
+        shell: pwsh
+        run: |
+          $cliExecutable = Join-Path $PWD ('src/Tonarink.Cli/bin/Release/net11.0/Tonarink.Cli' + $(if ($IsWindows) { '.exe' } else { '' }))
+          ./tools/Invoke-Tests.ps1 -Suite Cli -CliExecutable $cliExecutable -NoBuild -ResultsDirectory artifacts/test-results/ci
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results-${{ matrix.os }}
+          path: artifacts/test-results/ci/
+          if-no-files-found: error
       - run: dotnet pack src/LocalSendDotNet.Core/LocalSendDotNet.Core.csproj --no-build --configuration Release --output artifacts
       - run: dotnet restore samples/LocalSendDotNet.Sample/LocalSendDotNet.Sample.csproj --source "${{ github.workspace }}/artifacts"
       - run: dotnet build samples/LocalSendDotNet.Sample/LocalSendDotNet.Sample.csproj --no-restore --configuration Release
 
   cli-tool:
+    timeout-minutes: 30
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -65,9 +92,16 @@ jobs:
         run: |
           $version = ([xml](Get-Content src/Tonarink.Cli/Tonarink.Cli.csproj -Raw)).Project.PropertyGroup.Version
           ./tools/Verify-CliTool.ps1 -AssetDirectory artifacts/cli/nuget -Version $version -InstallerSdkVersion '${{ steps.installer-sdk.outputs.dotnet-version }}' -RuntimeIdentifier '${{ matrix.rid }}'
+      - uses: actions/upload-artifact@v4
+        if: always() && matrix.rid != 'win-arm64'
+        with:
+          name: test-results-cli-distribution-${{ matrix.rid }}
+          path: artifacts/test-results/cli-distribution/
+          if-no-files-found: error
 
   ui:
     runs-on: windows-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v5
@@ -80,6 +114,15 @@ jobs:
       - run: dotnet format src/Tonarink.ExplorerCommand/Tonarink.ExplorerCommand.csproj --no-restore --verify-no-changes
       - run: dotnet format src/Tonarink.WidgetProvider/Tonarink.WidgetProvider.csproj --no-restore --verify-no-changes
       - run: dotnet build src/Tonarink.App/Tonarink.App.csproj --no-restore --configuration Release -p:Platform=x64
+      - name: Real WinUI controls and settings behavior
+        shell: pwsh
+        run: ./tools/Invoke-Tests.ps1 -Suite WinUI -ResultsDirectory artifacts/test-results/ci
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results-winui
+          path: artifacts/test-results/ci/winui/
+          if-no-files-found: error
       - run: >-
           dotnet publish src/Tonarink.ExplorerCommand/Tonarink.ExplorerCommand.csproj
           --no-restore --configuration Release -r win-x64 -p:Platform=x64
@@ -99,7 +142,15 @@ jobs:
       - run: dotnet format src/Tonarink.Web/Tonarink.Web.csproj --no-restore --verify-no-changes
       - run: dotnet format tests/Tonarink.Application.Tests/Tonarink.Application.Tests.csproj --no-restore --verify-no-changes
       - run: dotnet build src/Tonarink.Web/Tonarink.Web.csproj --no-restore --configuration Release
-      - run: dotnet test tests/Tonarink.Application.Tests/Tonarink.Application.Tests.csproj --no-restore --configuration Release
+      - name: Render production Blazor components
+        shell: pwsh
+        run: ./tools/Invoke-Tests.ps1 -Suite Blazor -ResultsDirectory artifacts/test-results/ci
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results-blazor
+          path: artifacts/test-results/ci/blazor/
+          if-no-files-found: error
       - name: Smoke-test authenticated Web host
         env:
           TONARINK_WEB_PASSWORD: ci-secret
@@ -131,7 +182,7 @@ jobs:
           dotnet publish src/Tonarink.Hybrid/Tonarink.Hybrid.csproj
           --no-restore --configuration Release --framework net11.0-android
           -p:AndroidPackageFormats=apk
-      - run: dotnet test tests/LocalSendDotNet.Core.Mobile.Tests/LocalSendDotNet.Core.Mobile.Tests.csproj --no-restore --configuration Debug
+      - run: dotnet test --project tests/LocalSendDotNet.Core.Mobile.Tests --no-restore --configuration Debug --minimum-expected-tests 4 --zero-tests-policy strict --timeout 3m
 
   hybrid-ios:
     # The iOS Share Extension requires an Apple signing identity and provisioning

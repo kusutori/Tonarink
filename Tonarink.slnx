@@ -16,13 +16,16 @@
     <Project Path="src/LocalSendDotNet.Core.Mobile/LocalSendDotNet.Core.Mobile.csproj" />
   </Folder>
   <Folder Name="/tests/">
-    <Project Path="tests/Tonarink.App.Settings.Tests/Tonarink.App.Settings.Tests.csproj" />
+    <Project Path="tests/Tonarink.App.E2E.Tests/Tonarink.App.E2E.Tests.csproj" />
+    <Project Path="tests/Tonarink.CommandLine.Tests/Tonarink.CommandLine.Tests.csproj" />
+    <Project Path="tests/Tonarink.App.WinUI.Tests/Tonarink.App.WinUI.Tests.csproj" />
+    <Project Path="tests/Tonarink.Cli.E2E.Tests/Tonarink.Cli.E2E.Tests.csproj" />
+    <Project Path="tests/Tonarink.TestSupport/Tonarink.TestSupport.csproj" />
+    <Project Path="tests/Tonarink.TestSupport.ProcessProbe/Tonarink.TestSupport.ProcessProbe.csproj" />
     <Project Path="tests/Tonarink.Application.Tests/Tonarink.Application.Tests.csproj" />
     <Project Path="tests/Tonarink.Blazor.Shared.Tests/Tonarink.Blazor.Shared.Tests.csproj" />
-    <Project Path="tests/Tonarink.LocalSend.Tests/Tonarink.LocalSend.Tests.csproj" />
     <Project Path="tests/LocalSendDotNet.Core.Mobile.Tests/LocalSendDotNet.Core.Mobile.Tests.csproj" />
     <Project Path="tests/LocalSendDotNet.Core.Tests/LocalSendDotNet.Core.Tests.csproj" />
-    <Project Path="tests/LocalSendDotNet.InteropTests/LocalSendDotNet.InteropTests.csproj" />
   </Folder>
   <Folder Name="/tools/">
     <Project Path="tools/LocalSendDotNet.ApiSurface/LocalSendDotNet.ApiSurface.csproj" />
