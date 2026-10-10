@@ -10,7 +10,7 @@ static class SendTransferPresentation
     {
         1 when items[0] is SendTextItem => t.Message(new("App", "ContentOneTextMessage")),
         1 => t.Message(new("App", "ContentOneFile"), ("file", items[0].FileName)),
-        _ => t.Message(new("App", "ContentManyItems"), ("count", items.Count)),
+        _ => t.Message(new("App", "ContentItems"), ("count", items.Count)),
     };
 
     public static string TransferProgressText(long bytesTransferred, long totalBytes) => totalBytes > 0

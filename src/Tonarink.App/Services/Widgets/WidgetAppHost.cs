@@ -232,7 +232,7 @@ static class WidgetAppHost
 
         var title = request.Items.Count == 1
             ? request.Items[0].FileName
-            : t.Message(new("App", "WidgetFileCount"), ("count", request.Items.Count));
+            : t.Message(new("App", "ContentItems"), ("count", request.Items.Count));
         return new WidgetTransferFile
         {
             Incoming = true,

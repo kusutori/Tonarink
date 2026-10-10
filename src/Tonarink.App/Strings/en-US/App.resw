@@ -37,7 +37,7 @@
   <data name="ClipboardText" xml:space="preserve"><value>Clipboard text</value></data>
   <data name="Close" xml:space="preserve"><value>Close</value></data>
   <data name="Confirm" xml:space="preserve"><value>OK</value></data>
-  <data name="ContentManyItems" xml:space="preserve"><value>{count} items</value></data>
+  <data name="ContentItems" xml:space="preserve"><value>{count, plural, one {# item} other {# items}}</value></data>
   <data name="ContentOneFile" xml:space="preserve"><value>File {file}</value></data>
   <data name="ContentOneTextMessage" xml:space="preserve"><value>A text message</value></data>
   <data name="ContentSaved" xml:space="preserve"><value>Content saved</value></data>
@@ -124,17 +124,17 @@
   <data name="IdentityLoading" xml:space="preserve"><value>Loading identity…</value></data>
   <data name="IncomingFileSummary" xml:space="preserve"><value>Wants to send you the file {file}.</value></data>
   <data name="IncomingFiles" xml:space="preserve"><value>Files</value></data>
-  <data name="IncomingItemsSummary" xml:space="preserve"><value>Wants to send you {count} items.</value></data>
+  <data name="IncomingItemsSummary" xml:space="preserve"><value>Wants to send you {count, plural, one {# item} other {# items}}.</value></data>
   <data name="IncomingTextSummary" xml:space="preserve"><value>Wants to send you a text message.</value></data>
   <data name="InvalidIpAddress" xml:space="preserve"><value>Enter a valid IP address</value></data>
   <data name="InvalidPort" xml:space="preserve"><value>Port must be an integer between 1 and 65535</value></data>
   <data name="IpAddress" xml:space="preserve"><value>IP address</value></data>
   <data name="ItemKindAndSize" xml:space="preserve"><value>{kind} · {size}</value></data>
-  <data name="ItemsAdded" xml:space="preserve"><value>Added {count} items</value></data>
+  <data name="ItemsAdded" xml:space="preserve"><value>Added {count, plural, one {# item} other {# items}}</value></data>
   <data name="LanguageChinese" xml:space="preserve"><value>简体中文</value></data>
   <data name="LanguageEnglish" xml:space="preserve"><value>English</value></data>
   <data name="LanguageSystem" xml:space="preserve"><value>Use system settings</value></data>
-  <data name="MoreItems" xml:space="preserve"><value>{count} more…</value></data>
+  <data name="MoreItems" xml:space="preserve"><value>{count, number} more…</value></data>
   <data name="Name" xml:space="preserve"><value>Name</value></data>
   <data name="NavReceive" xml:space="preserve"><value>Receive</value></data>
   <data name="NavSend" xml:space="preserve"><value>Send</value></data>
@@ -143,12 +143,10 @@
   <data name="NotificationIncomingTitle" xml:space="preserve"><value>Incoming transfer from {device}</value></data>
   <data name="NotificationReceiveProgressTitle" xml:space="preserve"><value>Receiving from {device}</value></data>
   <data name="NotificationReceiveCompleteTitle" xml:space="preserve"><value>Receive complete</value></data>
-  <data name="NotificationReceiveCompleteOne" xml:space="preserve"><value>Received an item from {device}.</value></data>
-  <data name="NotificationReceiveCompleteMany" xml:space="preserve"><value>Received {count} items from {device}.</value></data>
+  <data name="NotificationReceiveComplete" xml:space="preserve"><value>Received {count, plural, one {an item} other {# items}} from {device}.</value></data>
   <data name="NotificationSendCompleteTitle" xml:space="preserve"><value>Send complete</value></data>
   <data name="NotificationSendProgressTitle" xml:space="preserve"><value>Sending to {device}</value></data>
-  <data name="NotificationSendCompleteOne" xml:space="preserve"><value>Sent an item to {device}.</value></data>
-  <data name="NotificationSendCompleteMany" xml:space="preserve"><value>Sent {count} items to {device}.</value></data>
+  <data name="NotificationSendComplete" xml:space="preserve"><value>Sent {count, plural, one {an item} other {# items}} to {device}.</value></data>
   <data name="NotificationOpenFile" xml:space="preserve"><value>Open file</value></data>
   <data name="NotificationShowInFolder" xml:space="preserve"><value>Show in folder</value></data>
   <data name="NearbyDevices" xml:space="preserve"><value>Nearby devices</value></data>
@@ -174,7 +172,7 @@
   <data name="NothingSelected" xml:space="preserve"><value>Nothing selected</value></data>
   <data name="OptionSystem" xml:space="preserve"><value>Use system settings</value></data>
   <data name="PageNotFound" xml:space="preserve"><value>Page not found</value></data>
-  <data name="PendingRequests" xml:space="preserve"><value>{count} pending requests</value></data>
+  <data name="PendingRequests" xml:space="preserve"><value>{count, plural, one {# pending request} other {# pending requests}}</value></data>
   <data name="PickFileFailed" xml:space="preserve"><value>Could not select file: {error}</value></data>
   <data name="PickFolderFailed" xml:space="preserve"><value>Could not select folder: {error}</value></data>
   <data name="PinIncorrect" xml:space="preserve"><value>Incorrect PIN; try again</value></data>
@@ -244,8 +242,8 @@
   <data name="Save" xml:space="preserve"><value>Save</value></data>
   <data name="SearchingDevices" xml:space="preserve"><value>Looking for nearby devices</value></data>
   <data name="SelectContentFirst" xml:space="preserve"><value>Select content to send first</value></data>
-  <data name="SelectedItems" xml:space="preserve"><value>{count} items selected · {size}</value></data>
-  <data name="SelectedIncomingFiles" xml:space="preserve"><value>{selected} of {count} files selected</value></data>
+  <data name="SelectedItems" xml:space="preserve"><value>{count, plural, one {# item} other {# items}} selected · {size}</value></data>
+  <data name="SelectedIncomingFiles" xml:space="preserve"><value>{selected, number} of {count, plural, one {# file} other {# files}} selected</value></data>
   <data name="SelectIncomingFile" xml:space="preserve"><value>Select {file}</value></data>
   <data name="SelectAllIncomingFiles" xml:space="preserve"><value>Select all</value></data>
   <data name="DeselectIncomingFile" xml:space="preserve"><value>Deselect {file}</value></data>
@@ -396,7 +394,6 @@
   <data name="WidgetAppClosed" xml:space="preserve"><value>App is closed</value></data>
   <data name="WidgetAppClosedStatus" xml:space="preserve"><value>Closed</value></data>
   <data name="WidgetAppOpen" xml:space="preserve"><value>Running</value></data>
-  <data name="WidgetFileCount" xml:space="preserve"><value>{count} files</value></data>
   <data name="WidgetHintAppClosed" xml:space="preserve"><value>Open the app to discover devices and receive files</value></data>
   <data name="WidgetHintServerOff" xml:space="preserve"><value>Click to start receiving</value></data>
   <data name="WidgetHintServerOn" xml:space="preserve"><value>Ready to receive content</value></data>

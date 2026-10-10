@@ -133,12 +133,10 @@ sealed class IncomingTransferCoordinator(
                 ReceiveHistoryStore.Record(request.Sender.Alias, completed);
             AppNotificationService.ShowTransferComplete(
                 t.Message(new("App", "NotificationReceiveCompleteTitle")),
-                request.Items.Count == 1
-                    ? t.Message(new("App", "NotificationReceiveCompleteOne"), ("device", request.Sender.Alias))
-                    : t.Message(
-                        new("App", "NotificationReceiveCompleteMany"),
-                        ("count", request.Items.Count),
-                        ("device", request.Sender.Alias)),
+                t.Message(
+                    new("App", "NotificationReceiveComplete"),
+                    ("count", completed.Items.Count),
+                    ("device", request.Sender.Alias)),
                 "receive-complete",
                 completed.Items.Select(static item => item.SavedPath ?? string.Empty),
                 AppSettingsStore.Load().NotificationDefaultAction,

@@ -143,14 +143,10 @@ static class TraySendCoordinator
             {
                 AppNotificationService.ShowTransferComplete(
                     t.Message(new("App", "NotificationSendCompleteTitle")),
-                    request.Items.Count == 1
-                        ? t.Message(
-                            new("App", "NotificationSendCompleteOne"),
-                            ("device", request.Device.Alias))
-                        : t.Message(
-                            new("App", "NotificationSendCompleteMany"),
-                            ("count", request.Items.Count),
-                            ("device", request.Device.Alias)),
+                    t.Message(
+                        new("App", "NotificationSendComplete"),
+                        ("count", request.Items.Count),
+                        ("device", request.Device.Alias)),
                     "tray-send-complete",
                     request.Items.OfType<SendFileItem>().Select(static item => item.Path),
                     settings.NotificationDefaultAction,
@@ -184,7 +180,7 @@ static class TraySendCoordinator
     {
         1 when items[0] is SendTextItem => t.Message(new("App", "ContentOneTextMessage")),
         1 => t.Message(new("App", "ContentOneFile"), ("file", items[0].FileName)),
-        _ => t.Message(new("App", "ContentManyItems"), ("count", items.Count)),
+        _ => t.Message(new("App", "ContentItems"), ("count", items.Count)),
     };
 
     private static string ProgressMessage(IntlAccessor t, TransferState state, string deviceAlias) => state switch

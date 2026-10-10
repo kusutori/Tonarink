@@ -367,7 +367,7 @@ sealed class TrayFlyoutPanel : Component<TrayFlyoutPanelProps>
         {
             var title = offer.Items.Count == 1
                 ? offer.Items[0].FileName
-                : t.Message(new("App", "PendingRequests"), ("count", offer.Items.Count));
+                : t.Message(new("App", "ContentItems"), ("count", offer.Items.Count));
             return new(
                 title,
                 t.Message(new("App", "TrayFromPeer"), ("peer", offer.Sender.Alias)),

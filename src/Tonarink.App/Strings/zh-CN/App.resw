@@ -37,7 +37,7 @@
   <data name="ClipboardText" xml:space="preserve"><value>剪贴板文本</value></data>
   <data name="Close" xml:space="preserve"><value>关闭</value></data>
   <data name="Confirm" xml:space="preserve"><value>确定</value></data>
-  <data name="ContentManyItems" xml:space="preserve"><value>{count} 个项目</value></data>
+  <data name="ContentItems" xml:space="preserve"><value>{count, plural, other {# 个项目}}</value></data>
   <data name="ContentOneFile" xml:space="preserve"><value>文件 {file}</value></data>
   <data name="ContentOneTextMessage" xml:space="preserve"><value>一条文本消息</value></data>
   <data name="ContentSaved" xml:space="preserve"><value>内容已保存</value></data>
@@ -124,17 +124,17 @@
   <data name="IdentityLoading" xml:space="preserve"><value>正在载入身份…</value></data>
   <data name="IncomingFileSummary" xml:space="preserve"><value>想要发送给你文件 {file}。</value></data>
   <data name="IncomingFiles" xml:space="preserve"><value>文件</value></data>
-  <data name="IncomingItemsSummary" xml:space="preserve"><value>想要发送给你 {count} 个项目。</value></data>
+  <data name="IncomingItemsSummary" xml:space="preserve"><value>想要发送给你 {count, plural, other {# 个项目}}。</value></data>
   <data name="IncomingTextSummary" xml:space="preserve"><value>想要发送给你一条文本消息。</value></data>
   <data name="InvalidIpAddress" xml:space="preserve"><value>请输入有效的 IP 地址</value></data>
   <data name="InvalidPort" xml:space="preserve"><value>端口必须为 1 到 65535 之间的整数</value></data>
   <data name="IpAddress" xml:space="preserve"><value>IP 地址</value></data>
   <data name="ItemKindAndSize" xml:space="preserve"><value>{kind} · {size}</value></data>
-  <data name="ItemsAdded" xml:space="preserve"><value>已添加 {count} 项</value></data>
+  <data name="ItemsAdded" xml:space="preserve"><value>已添加 {count, plural, other {# 项}}</value></data>
   <data name="LanguageChinese" xml:space="preserve"><value>简体中文</value></data>
   <data name="LanguageEnglish" xml:space="preserve"><value>English</value></data>
   <data name="LanguageSystem" xml:space="preserve"><value>跟随系统</value></data>
-  <data name="MoreItems" xml:space="preserve"><value>另外 {count} 项…</value></data>
+  <data name="MoreItems" xml:space="preserve"><value>另外 {count, number} 项…</value></data>
   <data name="Name" xml:space="preserve"><value>名称</value></data>
   <data name="NavReceive" xml:space="preserve"><value>接收</value></data>
   <data name="NavSend" xml:space="preserve"><value>发送</value></data>
@@ -143,12 +143,10 @@
   <data name="NotificationIncomingTitle" xml:space="preserve"><value>来自 {device} 的传输请求</value></data>
   <data name="NotificationReceiveProgressTitle" xml:space="preserve"><value>正在接收来自 {device} 的内容</value></data>
   <data name="NotificationReceiveCompleteTitle" xml:space="preserve"><value>接收完成</value></data>
-  <data name="NotificationReceiveCompleteOne" xml:space="preserve"><value>已接收来自 {device} 的 1 个项目。</value></data>
-  <data name="NotificationReceiveCompleteMany" xml:space="preserve"><value>已接收来自 {device} 的 {count} 个项目。</value></data>
+  <data name="NotificationReceiveComplete" xml:space="preserve"><value>已接收来自 {device} 的 {count, plural, other {# 个项目}}。</value></data>
   <data name="NotificationSendCompleteTitle" xml:space="preserve"><value>发送完成</value></data>
   <data name="NotificationSendProgressTitle" xml:space="preserve"><value>正在发送给 {device}</value></data>
-  <data name="NotificationSendCompleteOne" xml:space="preserve"><value>已向 {device} 发送 1 个项目。</value></data>
-  <data name="NotificationSendCompleteMany" xml:space="preserve"><value>已向 {device} 发送 {count} 个项目。</value></data>
+  <data name="NotificationSendComplete" xml:space="preserve"><value>已向 {device} 发送 {count, plural, other {# 个项目}}。</value></data>
   <data name="NotificationOpenFile" xml:space="preserve"><value>打开文件</value></data>
   <data name="NotificationShowInFolder" xml:space="preserve"><value>打开文件所在位置</value></data>
   <data name="NearbyDevices" xml:space="preserve"><value>附近的设备</value></data>
@@ -174,7 +172,7 @@
   <data name="NothingSelected" xml:space="preserve"><value>尚未选择内容</value></data>
   <data name="OptionSystem" xml:space="preserve"><value>跟随系统</value></data>
   <data name="PageNotFound" xml:space="preserve"><value>找不到此页面</value></data>
-  <data name="PendingRequests" xml:space="preserve"><value>{count} 个待处理请求</value></data>
+  <data name="PendingRequests" xml:space="preserve"><value>{count, plural, other {# 个待处理请求}}</value></data>
   <data name="PickFileFailed" xml:space="preserve"><value>无法选择文件：{error}</value></data>
   <data name="PickFolderFailed" xml:space="preserve"><value>无法选择文件夹：{error}</value></data>
   <data name="PinIncorrect" xml:space="preserve"><value>PIN 不正确，请重试</value></data>
@@ -244,8 +242,8 @@
   <data name="Save" xml:space="preserve"><value>保存</value></data>
   <data name="SearchingDevices" xml:space="preserve"><value>正在寻找附近设备</value></data>
   <data name="SelectContentFirst" xml:space="preserve"><value>请先选择待发送内容</value></data>
-  <data name="SelectedItems" xml:space="preserve"><value>已选择 {count} 项 · {size}</value></data>
-  <data name="SelectedIncomingFiles" xml:space="preserve"><value>已选择 {selected}/{count} 个文件</value></data>
+  <data name="SelectedItems" xml:space="preserve"><value>已选择 {count, plural, other {# 项}} · {size}</value></data>
+  <data name="SelectedIncomingFiles" xml:space="preserve"><value>已选择 {selected, number}/{count, plural, other {# 个文件}}</value></data>
   <data name="SelectIncomingFile" xml:space="preserve"><value>选择 {file}</value></data>
   <data name="SelectAllIncomingFiles" xml:space="preserve"><value>全选</value></data>
   <data name="DeselectIncomingFile" xml:space="preserve"><value>取消选择 {file}</value></data>
@@ -396,7 +394,6 @@
   <data name="WidgetAppClosed" xml:space="preserve"><value>应用未开启</value></data>
   <data name="WidgetAppClosedStatus" xml:space="preserve"><value>未开启</value></data>
   <data name="WidgetAppOpen" xml:space="preserve"><value>已开启</value></data>
-  <data name="WidgetFileCount" xml:space="preserve"><value>{count} 个文件</value></data>
   <data name="WidgetHintAppClosed" xml:space="preserve"><value>打开应用以发现设备和接收文件</value></data>
   <data name="WidgetHintServerOff" xml:space="preserve"><value>点击启动接收服务</value></data>
   <data name="WidgetHintServerOn" xml:space="preserve"><value>接收服务已启动，等待传输</value></data>
