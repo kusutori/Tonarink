@@ -1,4 +1,5 @@
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls.AnimatedVisuals;
 using Microsoft.UI.Xaml.Media;
 using Tonarink.Utilities;
@@ -41,6 +42,12 @@ static class NavigationAnimatedIcons
         // icon itself would create a local value and block the item's visual states,
         // leaving the Lottie source permanently parked on its Normal marker.
         item.Resources["NavigationViewItemOnLeftIconBoxHeight"] = 20d;
+        AutomationProperties.SetAutomationId(item, index switch
+        {
+            0 => "Navigation.Receive",
+            1 => "Navigation.Send",
+            _ => "Navigation.Settings",
+        });
         AnimatedIcon.SetState(item, "Normal");
         item.Icon = icon;
     }

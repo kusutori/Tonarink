@@ -13,7 +13,8 @@ sealed record AnimatedAddButtonProps(
     string? ToolTip = null,
     bool IsEnabled = true,
     double IconSize = 20,
-    double? ButtonSize = null);
+    double? ButtonSize = null,
+    string? AutomationId = null);
 
 sealed class AnimatedAddButton : Component<AnimatedAddButtonProps>
 {
@@ -73,6 +74,7 @@ sealed class AnimatedAddButton : Component<AnimatedAddButtonProps>
                     Props.OnClick();
                 })
             .AutomationName(Props.AutomationName)
+            .AutomationId(Props.AutomationId ?? "")
             .IsEnabled(Props.IsEnabled);
 
         // Component layout modifiers apply to its Border wrapper, not this Button.

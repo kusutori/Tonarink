@@ -55,6 +55,7 @@ sealed class FilePreviewProviderContent : Component<FilePreviewProviderContentPr
                             setPath(value);
                         }, placeholder)
                         .AutomationName(t.Message(new("App", "SettingsFilePreviewToolPath"), ("tool", name)))
+                        .AutomationId($"Settings.Preview.{Props.Provider}.Path")
                         .Width(300)
                         .VAlign(VerticalAlignment.Center)
                         .Grid(column: 0),
@@ -62,7 +63,8 @@ sealed class FilePreviewProviderContent : Component<FilePreviewProviderContentPr
                             feedback.Version == 0 ? null : t.Message(new("App", feedback.Succeeded
                                 ? "SettingsFilePreviewPathSaved" : "SettingsFilePreviewPathMissing")),
                             isEnabled: !string.IsNullOrWhiteSpace(FilePreviewSettings.NormalizePath(path)),
-                            succeeded: feedback.Succeeded)
+                            succeeded: feedback.Succeeded,
+                            automationId: $"Settings.Preview.{Props.Provider}.Verify")
                         .Size(40, 40)
                         .VAlign(VerticalAlignment.Center)
                         .Grid(column: 1),
@@ -71,7 +73,8 @@ sealed class FilePreviewProviderContent : Component<FilePreviewProviderContentPr
                     // Same hover-to-open lid as the send card. Removal is immediate,
                     // so this entry never requests the optional shake feedback.
                     AnimatedButtons.Delete(removeName, Props.Remove, subtle: true,
-                            shakeVersion: 0, iconSize: 24, buttonSize: 40)
+                            shakeVersion: 0, iconSize: 24, buttonSize: 40,
+                            automationId: $"Settings.Preview.{Props.Provider}.Delete")
                         .Size(40, 40)
                         .VAlign(VerticalAlignment.Center)
                         .Grid(column: 2)) with { ColumnSpacing = 8 })

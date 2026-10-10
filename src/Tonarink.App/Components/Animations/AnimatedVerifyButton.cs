@@ -14,7 +14,8 @@ sealed record AnimatedVerifyButtonProps(
     Action OnClick,
     string? SuccessAnnouncement = null,
     bool IsEnabled = true,
-    bool Succeeded = true);
+    bool Succeeded = true,
+    string? AutomationId = null);
 
 sealed class AnimatedVerifyButton : Component<AnimatedVerifyButtonProps>
 {
@@ -87,6 +88,7 @@ sealed class AnimatedVerifyButton : Component<AnimatedVerifyButtonProps>
             .HorizontalContentAlignment(HorizontalAlignment.Center)
             .VerticalContentAlignment(VerticalAlignment.Center)
             .AutomationName(Props.AutomationName)
+            .AutomationId(Props.AutomationId ?? "")
             .ToolTip(Props.AutomationName)
             .IsEnabled(Props.IsEnabled);
     }

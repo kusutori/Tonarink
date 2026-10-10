@@ -220,6 +220,7 @@ sealed class SettingsPage : Component<SettingsPageProps>
                                 .IsEnabled(Props.Settings.MinimizeToTray)
                                 .MinWidth(180)),
                     ])
+                .AutomationId("Settings.Tray.Expander")
                 .Set(expander =>
                 {
                     expander.Header = t.Message(new("App", "SettingsMinimizeToTray"));
@@ -247,6 +248,7 @@ sealed class SettingsPage : Component<SettingsPageProps>
                             AppNotificationService.SetEnabled(value);
                         })
                         .AutomationName(t.Message(new("App", "SettingsNotificationsEnabled")))
+                        .AutomationId("Settings.Notifications.Enabled")
                         .HelpText(t.Message(new("App", "SettingsNotificationsEnabledDescription"))),
                     headerIcon: AnimatedButtons.SettingsNotificationIcon(Props.Settings.NotificationsEnabled)
                         .WithKey("settings-notification-icon"),
@@ -272,6 +274,7 @@ sealed class SettingsPage : Component<SettingsPageProps>
                                         }
                                     })
                                 .AutomationName(t.Message(new("App", "SettingsNotificationsDefaultAction")))
+                                .AutomationId("Settings.Notifications.Action")
                                 .HelpText(t.Message(new("App", "SettingsNotificationsDefaultActionDescription")))
                                 .IsEnabled(Props.Settings.NotificationsEnabled)
                                 .MinWidth(180)),
@@ -292,8 +295,10 @@ sealed class SettingsPage : Component<SettingsPageProps>
                                         : t.Message(new("App", "SettingsNotificationsTestFailed")));
                                 })
                                 .AutomationName(t.Message(new("App", "SettingsNotificationsSendTest")))
+                                .AutomationId("Settings.Notifications.Test")
                                 .IsEnabled(Props.Settings.NotificationsEnabled)),
                     ])
+                .AutomationId("Settings.Notifications.Expander")
                 .Set(expander =>
                 {
                     expander.Header = t.Message(new("App", "SettingsNotifications"));
@@ -377,6 +382,7 @@ sealed class SettingsPage : Component<SettingsPageProps>
                                 .MinWidth(180)
                                 .IsEnabled(Props.Settings.ReceivePinEnabled)),
                     ])
+                .AutomationId("Settings.Pin.Expander")
                 .Set(expander =>
                 {
                     expander.Header = t.Message(new("App", "SettingsReceivePinProtection"));
@@ -457,6 +463,7 @@ sealed class SettingsPage : Component<SettingsPageProps>
                     .OnGotFocus((_, _) => setDeviceNameFocused(true))
                     .OnLostFocus((_, _) => setDeviceNameFocused(false))
                     .AutomationName(t.Message(new("App", "SettingsDeviceName")))
+                    .AutomationId("Settings.DeviceName")
                     .MinWidth(240)),
             SettingsExpander(
                     headerIcon: HeaderGlyph(AppIcons.Fingerprint),
@@ -554,6 +561,7 @@ sealed class SettingsPage : Component<SettingsPageProps>
                                 .AutomationName(t.Message(new("App", "SettingsMulticast")))
                                 .MinWidth(180)),
                     ])
+                .AutomationId("Settings.Advanced.Expander")
                 .Set(expander =>
                 {
                     expander.Header = t.Message(new("App", "SettingsAdvanced"));
@@ -596,6 +604,7 @@ sealed class SettingsPage : Component<SettingsPageProps>
                     ToggleSwitch(Props.Settings.FilePreviewEnabled, value =>
                             Props.UpdateSettings(settings => settings with { FilePreviewEnabled = value }))
                         .AutomationName(t.Message(new("App", "SettingsFilePreviewEnabled")))
+                        .AutomationId("Settings.Preview.Enabled")
                         .HelpText(t.Message(new("App", "SettingsFilePreviewEnabledDescription"))),
                     headerIcon: AnimatedButtons.SettingsPreviewIcon(Props.Settings.FilePreviewEnabled),
                     items:
@@ -612,7 +621,8 @@ sealed class SettingsPage : Component<SettingsPageProps>
                                             AddPreviewProvider,
                                             isEnabled: Props.Settings.FilePreviewEnabled
                                                        && !previewProviders.Contains(Props.Settings.PreviewProvider),
-                                            buttonSize: 32)
+                                            buttonSize: 32,
+                                            automationId: "Settings.Preview.Add")
                                         .Size(32, 32)
                                         .VAlign(VerticalAlignment.Center),
                                     ComboBox(filePreviewProviderOptions, (int)Props.Settings.PreviewProvider, index =>
@@ -626,6 +636,7 @@ sealed class SettingsPage : Component<SettingsPageProps>
                                         }
                                     })
                                         .AutomationName(t.Message(new("App", "SettingsFilePreviewProvider")))
+                                        .AutomationId("Settings.Preview.Provider")
                                         .HelpText(t.Message(new("App", "SettingsFilePreviewProviderDescription")))
                                         .MinWidth(180)
                                         .VAlign(VerticalAlignment.Center)
@@ -640,6 +651,7 @@ sealed class SettingsPage : Component<SettingsPageProps>
                                     () => Props.UpdateSettings(settings => FilePreviewSettings.Remove(settings, provider))))
                                 .WithKey($"preview-provider-{provider}")),
                     ])
+                .AutomationId("Settings.Preview.Expander")
                 .Set(expander =>
                 {
                     expander.Header = t.Message(new("App", "SettingsFilePreview"));
@@ -682,6 +694,7 @@ sealed class SettingsPage : Component<SettingsPageProps>
                                 content: aboutLinks)
                             .HAlign(HorizontalAlignment.Stretch),
                     ])
+                .AutomationId("Settings.About.Expander")
                 .Set(expander =>
                 {
                     expander.Header = "Tonarink";
@@ -729,6 +742,7 @@ sealed class SettingsPage : Component<SettingsPageProps>
                     .Padding(AppLayout.PagePadding))
             .HorizontalContentAlignment(HorizontalAlignment.Stretch)
             .AutomationName(t.Message(new("App", "SettingsTitle")))
+            .AutomationId("Settings.Page")
             .Landmark(AutomationLandmarkType.Main);
 
         void UpdateDraft(Func<SettingsInputDraft, SettingsInputDraft> update)

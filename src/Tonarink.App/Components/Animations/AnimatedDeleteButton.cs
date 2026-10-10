@@ -18,7 +18,8 @@ sealed record AnimatedDeleteButtonProps(
     bool Critical = false,
     int ShakeVersion = 0,
     double IconSize = 24,
-    double? ButtonSize = null);
+    double? ButtonSize = null,
+    string? AutomationId = null);
 
 sealed class AnimatedDeleteButton : Component<AnimatedDeleteButtonProps>
 {
@@ -57,6 +58,7 @@ sealed class AnimatedDeleteButton : Component<AnimatedDeleteButtonProps>
 
         var button = Button(content, Props.OnClick)
             .AutomationName(Props.AutomationName)
+            .AutomationId(Props.AutomationId ?? "")
             .ToolTip(Props.ToolTip ?? Props.AutomationName)
             .IsEnabled(Props.IsEnabled)
             // SubtleButton/ApplyStyle replaces OnMount; declarative pointer
