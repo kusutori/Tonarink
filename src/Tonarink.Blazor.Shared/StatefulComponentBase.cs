@@ -40,9 +40,28 @@ public abstract class StatefulComponentBase : ComponentBase, IDisposable
         return $"{display:0.#} {units[unit]}";
     }
 
-    protected string T(string key) => Loc[key];
+    protected string T(string key) => Localize(key, null);
 
-    protected string T(string key, params object[] args) => Loc[key, args];
+    protected string T(string key, params object[] args) => Localize(key, args);
+
+    private string Localize(string key, object[]? args)
+    {
+        // A queued render can inherit a different execution context from the
+        // state-change callback. Resolve in this component's selected culture,
+        // without changing process defaults or leaking it to another renderer.
+        var previousCulture = CultureInfo.CurrentCulture;
+        var previousUICulture = CultureInfo.CurrentUICulture;
+        try
+        {
+            ApplyCulture();
+            return args is null ? Loc[key] : Loc[key, args];
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = previousCulture;
+            CultureInfo.CurrentUICulture = previousUICulture;
+        }
+    }
 
     protected void ApplyCulture()
     {
