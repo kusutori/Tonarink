@@ -27,9 +27,15 @@ sealed record StandaloneSettings
 
     public LocalSendOptions NodeOptions(string profile) => new()
     {
-        Alias = Alias, DownloadDirectory = DownloadDirectory, DataDirectory = profile,
-        Port = Port, EnableHttps = Encryption, MulticastAddress = IPAddress.Parse(Multicast),
-        DiscoveryTimeout = TimeSpan.FromMilliseconds(DiscoveryTimeout), DeviceModel = DeviceModel, DeviceType = DeviceType,
+        Alias = Alias,
+        DownloadDirectory = DownloadDirectory,
+        DataDirectory = profile,
+        Port = Port,
+        EnableHttps = Encryption,
+        MulticastAddress = IPAddress.Parse(Multicast),
+        DiscoveryTimeout = TimeSpan.FromMilliseconds(DiscoveryTimeout),
+        DeviceModel = DeviceModel,
+        DeviceType = DeviceType,
         ReceivePin = PinEnabled ? ReceivePin : null,
         NetworkWhitelist = NetworkAllowlist,
         NetworkBlacklist = NetworkBlocklist,

@@ -150,8 +150,16 @@ static class CliClient
         {
             var start = new ProcessStartInfo(context.ExecutablePath)
             {
-                UseShellExecute = false, CreateNoWindow = true,
-                RedirectStandardInput = true, RedirectStandardOutput = true, RedirectStandardError = true,
+                // On Windows, a nested CreateProcess can inherit the caller's
+                // redirected pipe handles even with separate daemon stdio. A
+                // shell launch detaches the daemon so pipelines see EOF when
+                // the CLI client exits, not when its long-lived host exits.
+                UseShellExecute = OperatingSystem.IsWindows(),
+                WindowStyle = ProcessWindowStyle.Hidden,
+                CreateNoWindow = true,
+                RedirectStandardInput = !OperatingSystem.IsWindows(),
+                RedirectStandardOutput = !OperatingSystem.IsWindows(),
+                RedirectStandardError = !OperatingSystem.IsWindows(),
             };
             // dotnet run/framework-dependent DLL launches must restart this
             // assembly, not accidentally run the dotnet driver without a DLL.
@@ -173,6 +181,21 @@ static class CliClient
     {
         if (json) Console.Out.WriteLine(JsonSerializer.Serialize(response, CliJsonContext.Default.CliResponse));
         else if (response.Type == "progress" || response.ExitCode != 0) Console.Error.WriteLine(response.Message);
-        else Console.Out.WriteLine(response.Message);
+        else
+        {
+            Console.Out.WriteLine(response.Message);
+            // Carry content only once in IPC/NDJSON. Human formatting belongs
+            // here, not in a duplicated message that can exceed the frame limit.
+            if (response.Data is { ValueKind: JsonValueKind.Object } item) PrintText(item);
+            else if (response.Data is { ValueKind: JsonValueKind.Array } items)
+                foreach (var entry in items.EnumerateArray()) PrintText(entry);
+        }
+    }
+
+    private static void PrintText(JsonElement item)
+    {
+        if (item.ValueKind != JsonValueKind.Object || !item.TryGetProperty("text", out var text) || text.ValueKind != JsonValueKind.String) return;
+        Console.Out.WriteLine(CliText.Get("Text:"));
+        Console.Out.WriteLine(text.GetString());
     }
 }

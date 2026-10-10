@@ -175,4 +175,5 @@
   <data name="[options]" xml:space="preserve"><value>[options]</value></data>
   <data name="Expected a UUID for {0}." xml:space="preserve"><value>Expected a UUID for {0}.</value></data>
   <data name="Expected an integer for {0}." xml:space="preserve"><value>Expected an integer for {0}.</value></data>
+  <data name="Text:" xml:space="preserve"><value>Text:</value></data>
 </root>

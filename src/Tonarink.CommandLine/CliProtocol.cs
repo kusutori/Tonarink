@@ -13,9 +13,9 @@ sealed record CliResponse(string Type, int ExitCode, string? Message, JsonElemen
 sealed record CliDevice(string Name, string Fingerprint, string Type, string[] Addresses, string ProtocolVersion);
 sealed record CliStatus(bool AppRunning, string State, string? Name, string? Fingerprint, int? Port, string? Protocol, string? Error, string? DiscoveryWarning);
 sealed record CliSetting(string Key, string Value);
-sealed record CliIncoming(Guid Id, Guid TransferId, string Sender, string Fingerprint, string[] Files, long Bytes);
+sealed record CliIncoming(Guid Id, Guid TransferId, string Sender, string Fingerprint, string[] Files, long Bytes, string? Text = null);
 sealed record CliProgress(Guid TransferId, string Direction, string State, long BytesTransferred, long TotalBytes);
-sealed record CliTransfer(Guid TransferId, string State, string[] Files, string? Error = null);
+sealed record CliTransfer(Guid TransferId, string State, string[] Files, string? Error = null, string? Text = null);
 sealed record CliHistory(Guid Id, string FileName, string Path, long Size, string Sender, DateTimeOffset ReceivedAt);
 sealed record CliFavorite(string Fingerprint, string Name, string Address, int Port, string? DeviceType = null);
 sealed record CliWebShare(bool Active, string Mode, bool AutoAccept, bool PinRequired, string[] Files, string[] PendingRequests, string[] Links);
@@ -58,7 +58,11 @@ static class CliProtocol
         BinaryPrimitives.WriteInt32LittleEndian(header, bytes.Length);
         await stream.WriteAsync(header, token).ConfigureAwait(false);
         await stream.WriteAsync(bytes, token).ConfigureAwait(false);
-        await stream.FlushAsync(token).ConfigureAwait(false);
+        // PipeStream does not buffer writes: Flush only checks its state. A
+        // client can already have consumed the complete frame and closed when
+        // that redundant check runs, incorrectly turning delivery into failure.
+        // Other Stream implementations can still require a genuine flush.
+        if (stream is not PipeStream) await stream.FlushAsync(token).ConfigureAwait(false);
     }
 
     public static async Task<T> ReadAsync<T>(Stream stream, JsonTypeInfo<T> type, CancellationToken token)

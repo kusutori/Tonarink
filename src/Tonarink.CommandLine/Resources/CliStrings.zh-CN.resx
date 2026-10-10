@@ -175,4 +175,5 @@
   <data name="[options]" xml:space="preserve"><value>[选项]</value></data>
   <data name="Expected a UUID for {0}." xml:space="preserve"><value>{0} 需要有效的 UUID</value></data>
   <data name="Expected an integer for {0}." xml:space="preserve"><value>{0} 需要整数</value></data>
+  <data name="Text:" xml:space="preserve"><value>文本：</value></data>
 </root>

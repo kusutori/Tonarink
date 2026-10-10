@@ -62,9 +62,19 @@ sealed class StandaloneCliRuntime : ICliRuntime, IAsyncDisposable
     {
         token.ThrowIfCancellationRequested();
         lock (_gate)
+        {
+            // The arrival stream does not publish removals. Reconcile cached
+            // manual offers against Core, including aborted HTTP negotiations.
+            // Snapshot the cache first so an arrival after the Core snapshot
+            // cannot be incorrectly removed by this read.
+            var incoming = _pending.Values.ToArray();
+            var active = _node?.GetPendingIncomingTransfers().Select(request => request.RequestId).ToHashSet() ?? [];
+            foreach (var request in incoming)
+                if (!active.Contains(request.RequestId)) _pending.TryRemove(request.RequestId, out _);
             return Task.FromResult(new CliState(_node, _desired, _node?.State ?? _state, _node?.Identity,
-                _error, _node?.DiscoveryError, _pending.Values.ToArray(),
+                _error, _node?.DiscoveryError, incoming.Where(request => active.Contains(request.RequestId)).ToArray(),
                 new(_settings.DownloadDirectory, _settings.SendChecksums, _settings.ReceiveChecksums, _settings.ReceiveHistory, _settings.Language)));
+        }
     }
     public async Task<CliResponse> ServerAsync(CliServerAction action, CancellationToken token)
     {

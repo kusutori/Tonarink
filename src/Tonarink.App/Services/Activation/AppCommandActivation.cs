@@ -32,11 +32,12 @@ static class AppCommandActivation
         if (string.IsNullOrWhiteSpace(arguments)) return;
         var runtime = new AppCliRuntime(CliBridge.Get);
         var model = new CliCommandLine(integrated: true, runtime: runtime,
-            request: new([], Environment.CurrentDirectory, null), emit: response =>
+            request: new([], Environment.CurrentDirectory, null), emit: (response, _) =>
             {
                 if (response.ExitCode != 0)
                     AppDiagnostics.Report("Launch command failed", new CliException(response.Message ?? "Command failed", response.ExitCode));
-            });
+                return ValueTask.CompletedTask;
+            }, reportProgress: static _ => { });
         var legacy = NormalizeLegacyArguments([arguments]);
         var parsed = legacy.Length == 1 ? model.Root.Parse(arguments) : model.Root.Parse(legacy);
         // Internal startup flags and platform activation protocols are not CLI commands.

@@ -55,7 +55,8 @@ sealed partial class CliCommands
             }
             if (!probe.Device.Fingerprint.Equals(favorite.Fingerprint, StringComparison.OrdinalIgnoreCase))
                 throw new CliException(CliText.Get("The saved address belongs to a different device."), 1);
-            return await node.AddKnownDeviceAsync(endpoint, favorite.Fingerprint, token).ConfigureAwait(false);
+            var registered = await node.AddKnownDeviceAsync(endpoint, favorite.Fingerprint, token).ConfigureAwait(false);
+            return registered with { Endpoints = [endpoint] };
         }
         DeviceEndpoint? manual = null;
         if (Uri.TryCreate(target, UriKind.Absolute, out var uri) && uri.Scheme is "http" or "https"
@@ -73,7 +74,11 @@ sealed partial class CliCommands
         if (manual is not null)
         {
             var probe = await node.ProbeDeviceAsync(manual, token).ConfigureAwait(false);
-            return await node.AddKnownDeviceAsync(manual, probe.Device.Fingerprint, token).ConfigureAwait(false);
+            var registered = await node.AddKnownDeviceAsync(manual, probe.Device.Fingerprint, token).ConfigureAwait(false);
+            // Registration retains all known addresses for discovery. This send
+            // must use the explicitly requested (and just verified) endpoint,
+            // not the first address from an older merged device snapshot.
+            return registered with { Endpoints = [manual] };
         }
         var clock = Stopwatch.StartNew();
         while (clock.Elapsed < TimeSpan.FromSeconds(5))
@@ -112,7 +117,8 @@ sealed partial class CliCommands
     }
 
     public async Task<CliResponse> WatchAsync(CliRequest request, int? seconds, bool autoAccept,
-        string? directory, bool noChecksum, Action<CliResponse> emit, CancellationToken token)
+        string? directory, bool noChecksum, Func<CliResponse, CancellationToken, ValueTask> emit,
+        Action<CliResponse> reportProgress, CancellationToken token)
     {
         _ = await RunningNodeAsync(token).ConfigureAwait(false);
         using (runtime.BeginReceiveWatch())
@@ -126,13 +132,13 @@ sealed partial class CliCommands
                 {
                     if (!seen.Add(incoming.RequestId)) continue;
                     var value = Incoming(incoming);
-                    emit(CliProtocol.Result(CliText.Get("Incoming {0}", value.Id) + $"\t{value.Sender}\t{string.Join(", ", value.Files)}",
+                    await emit(CliProtocol.Result(CliText.Get("Incoming {0}", value.Id) + $"\t{value.Sender}\t{string.Join(", ", value.Files)}",
                         new[] { value }, CliJsonContext.Default.CliIncomingArray) with
-                    { Type = "incoming" });
+                    { Type = "incoming" }, token).ConfigureAwait(false);
                     if (autoAccept)
                     {
-                        var result = await AcceptAsync(request, incoming.RequestId, directory, noChecksum, emit, token).ConfigureAwait(false);
-                        emit(result with { Type = "transfer" });
+                        var result = await AcceptAsync(request, incoming.RequestId, directory, noChecksum, reportProgress, token).ConfigureAwait(false);
+                        await emit(result with { Type = "transfer" }, token).ConfigureAwait(false);
                     }
                 }
                 await Task.Delay(200, token).ConfigureAwait(false);
@@ -183,18 +189,25 @@ sealed partial class CliCommands
         }
         return result switch
         {
-            ReceiveOutcome.Completed complete => TransferResult(complete.TransferId, "Completed", complete.Items, 0),
+            ReceiveOutcome.Completed complete => TransferResult(complete.TransferId, "Completed", complete.Items, 0,
+                text: complete.Items.Count == 1 && complete.Items[0].SavedPath is null ? TextPreview(incoming) : null),
             ReceiveOutcome.Cancelled cancelled => TransferResult(cancelled.TransferId, "Cancelled", cancelled.Items, 130),
             ReceiveOutcome.Failed failed => TransferResult(failed.TransferId, "Failed", failed.Items, 1, failed.Failure.Message),
         };
     }
 
     private static CliIncoming Incoming(IncomingTransferRequest request) => new(request.RequestId, request.TransferId,
-        request.Sender.Alias, request.Sender.Fingerprint, request.Items.Select(i => i.FileName).ToArray(), request.Items.Sum(i => i.Size));
+        request.Sender.Alias, request.Sender.Fingerprint, request.Items.Select(i => i.FileName).ToArray(), request.Items.Sum(i => i.Size), TextPreview(request));
 
-    private static CliResponse TransferResult(Guid id, string state, IReadOnlyList<TransferredItemResult> items, int exitCode, string? error = null) =>
+    // Core completes a single text preview without creating a file. Expose that
+    // content to the CLI user, including empty text; never infer it from a name
+    // or MIME type alone, or claim it was saved to the destination directory.
+    private static string? TextPreview(IncomingTransferRequest request) => request.Items.Count == 1
+        && request.Items[0].ContentType.StartsWith("text/", StringComparison.OrdinalIgnoreCase) ? request.Items[0].Preview : null;
+
+    private static CliResponse TransferResult(Guid id, string state, IReadOnlyList<TransferredItemResult> items, int exitCode, string? error = null, string? text = null) =>
         CliProtocol.Result(CliText.Get("Transfer {0}: {1}", id, CliText.Get(state)) + "\n" + string.Join('\n', items.Select(i => i.SavedPath ?? i.FileName))
-            + (error is null ? "" : "\n" + error), new CliTransfer(id, state, items.Select(i => i.SavedPath ?? i.FileName).ToArray(), error),
+            + (error is null ? "" : "\n" + error), new CliTransfer(id, state, items.Select(i => i.SavedPath ?? i.FileName).ToArray(), error, text),
             CliJsonContext.Default.CliTransfer, exitCode);
 }
 

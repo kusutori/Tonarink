@@ -21,7 +21,8 @@ sealed class CliCommandLine
     private readonly List<Option<string>> _textInputs = [];
 
     public CliCommandLine(bool integrated, Func<ParseResult, CancellationToken, Task<int>>? forward = null,
-        ICliRuntime? runtime = null, CliRequest? request = null, Action<CliResponse>? emit = null)
+        ICliRuntime? runtime = null, CliRequest? request = null,
+        Func<CliResponse, CancellationToken, ValueTask>? emit = null, Action<CliResponse>? reportProgress = null)
     {
         Root = new(integrated ? CliText.Get("Tonarink CLI: reuse the desktop app's server and saved settings")
             : CliText.Get("Tonarink standalone CLI: manage an independent background LocalSend service"));
@@ -53,7 +54,7 @@ sealed class CliCommandLine
         var sendPin = Text(send, "pin", CliText.Get("Receiver PIN (may be visible in process listings)"));
         var sendChecksum = Flag(send, "no-checksum", CliText.Get("Disable checksums for this transfer"));
         Attach(Root, send, (p, ct) => commands!.SendAsync(request!, p.GetValue(sendPaths) ?? [], p.GetValue(sendText),
-            p.GetValue(target)!, p.GetValue(sendPin), p.GetValue(sendChecksum), emit!, ct));
+            p.GetValue(target)!, p.GetValue(sendPin), p.GetValue(sendChecksum), reportProgress!, ct));
         var cancel = new Command("cancel", CliText.Get("Cancel a pending or active transfer"));
         var transferId = Id(cancel, "transfer-id");
         Attach(Root, cancel, (p, ct) => commands!.CancelAsync(p.GetValue(transferId), ct));
@@ -63,7 +64,7 @@ sealed class CliCommandLine
         var accept = new Command("accept", CliText.Get("Accept all items in an incoming request"));
         var requestId = Id(accept, "request-id");
         var (acceptDirectory, acceptChecksum) = Destination(accept);
-        Attach(receive, accept, (p, ct) => commands!.AcceptAsync(request!, p.GetValue(requestId), p.GetValue(acceptDirectory), p.GetValue(acceptChecksum), emit!, ct));
+        Attach(receive, accept, (p, ct) => commands!.AcceptAsync(request!, p.GetValue(requestId), p.GetValue(acceptDirectory), p.GetValue(acceptChecksum), reportProgress!, ct));
         var decline = new Command("decline", CliText.Get("Decline an incoming request"));
         var declineId = Id(decline, "request-id");
         Attach(receive, decline, (p, ct) => commands!.DeclineAsync(p.GetValue(declineId), ct));
@@ -72,7 +73,7 @@ sealed class CliCommandLine
         var watchSeconds = Seconds(watch, "seconds", CliText.Get("Watch duration; omit to watch until Ctrl+C"));
         var (watchDirectory, watchChecksum) = Destination(watch);
         Attach(receive, watch, (p, ct) => commands!.WatchAsync(request!, p.GetValue(watchSeconds), p.GetValue(autoAccept),
-            p.GetValue(watchDirectory), p.GetValue(watchChecksum), emit!, ct));
+            p.GetValue(watchDirectory), p.GetValue(watchChecksum), emit!, reportProgress!, ct));
 
         var server = Group("server", CliText.Get("Control the LocalSend server"));
         Leaf(server, "start", CliText.Get("Start the server"), (_, ct) => runtime!.ServerAsync(CliServerAction.Start, ct));
@@ -152,7 +153,10 @@ sealed class CliCommandLine
                 catch (CliException exception) { response = CliProtocol.Error(exception.Message, exception.ExitCode); }
                 catch (OperationCanceledException) { response = CliProtocol.Error(CliText.Get("Command cancelled or timed out"), 130); }
                 catch (Exception exception) { response = CliProtocol.Error(exception.Message); }
-                emit?.Invoke(response); return response.ExitCode;
+                // Business timeout may already have cancelled ct. The final
+                // response uses only the connection's lifetime, preserving 130.
+                if (emit is not null) await emit(response, CancellationToken.None).ConfigureAwait(false);
+                return response.ExitCode;
             }));
         }
     }
@@ -171,7 +175,8 @@ sealed class CliCommandLine
     {
         var option = new Option<int?>("--" + name)
         {
-            Description = description, Recursive = recursive,
+            Description = description,
+            Recursive = recursive,
             CustomParser = p =>
             {
                 if (!int.TryParse(p.Tokens.SingleOrDefault()?.Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var value))
@@ -200,9 +205,12 @@ sealed class CliCommandLine
     {
         var paths = new Argument<string[]>("paths") { Description = CliText.Get("Files or folders; relative to the caller's working directory"), Arity = ArgumentArity.ZeroOrMore };
         var text = Text(c, "text", CliText.Get("Send literal text; use '-' for redirected stdin")); c.Arguments.Add(paths); _textInputs.Add(text);
-        c.Validators.Add(p => { var count = p.GetValue(paths)?.Length ?? 0;
+        c.Validators.Add(p =>
+        {
+            var count = p.GetValue(paths)?.Length ?? 0;
             if (count == 0 && p.GetValue(text) is null) p.AddError(CliText.Get("Provide paths or --text TEXT."));
-            if (count > 0 && p.GetValue(text) is not null) p.AddError(CliText.Get("Do not combine paths with --text.")); });
+            if (count > 0 && p.GetValue(text) is not null) p.AddError(CliText.Get("Do not combine paths with --text."));
+        });
         return (paths, text);
     }
     private static void Confirm(Command c)
