@@ -1,4 +1,3 @@
-using System.Collections.Concurrent;
 using System.Net;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
@@ -25,13 +24,14 @@ internal sealed class V2Server(
     DeviceIdentity identity,
     Func<DeviceInfoDto> localInfo,
     Func<DeviceInfoDto, IPAddress, string?, Task> onRegister,
-    Func<PrepareUploadRequestDto, IPAddress, string?, bool, CancellationToken, Task<PrepareOutcome>> onPrepare,
+    Func<PrepareUploadRequestDto, IPAddress, string?, bool, bool, CancellationToken, Task<PrepareOutcome>> onPrepare,
     Func<string, string, string, IPAddress, Stream, long?, CancellationToken, Task<HttpStatusCode>> onUpload,
     Func<string, IPAddress, CancellationToken, Task<bool>> onCancel,
     ILogger logger,
     WebShareService webShare) : IAsyncDisposable
 {
-    private readonly ConcurrentDictionary<IPAddress, (int Count, DateTimeOffset LockedUntil)> _pinAttempts = new();
+    private readonly object _pinGate = new();
+    private readonly Dictionary<IPAddress, (int Count, DateTimeOffset LockedUntil)> _pinAttempts = new();
     private WebApplication? _application;
 
     public async Task StartAsync(CancellationToken cancellationToken)
@@ -243,7 +243,7 @@ internal sealed class V2Server(
                 },
                 Files = payload.Files.ToDictionary(static file => file.Id, StringComparer.Ordinal)
             };
-            var outcome = await onPrepare(request, remote, fingerprint, autoAccept, context.RequestAborted).ConfigureAwait(false);
+            var outcome = await onPrepare(request, remote, fingerprint, autoAccept, false, context.RequestAborted).ConfigureAwait(false);
             context.Response.StatusCode = (int)outcome.StatusCode;
             if (outcome.Response is not null)
                 await context.Response.WriteAsJsonAsync(outcome.Response, V2JsonContext.Default.PrepareUploadResponseDto, contentType: null, context.RequestAborted).ConfigureAwait(false);
@@ -316,7 +316,7 @@ internal sealed class V2Server(
         if (!CheckPin(context, remote))
             return;
 
-        var outcome = await onPrepare(payload, remote, certFingerprint, false, context.RequestAborted).ConfigureAwait(false);
+        var outcome = await onPrepare(payload, remote, certFingerprint, false, true, context.RequestAborted).ConfigureAwait(false);
         context.Response.StatusCode = (int)outcome.StatusCode;
         if (outcome.Response is not null)
             await context.Response.WriteAsJsonAsync(outcome.Response, V2JsonContext.Default.PrepareUploadResponseDto, contentType: null, context.RequestAborted).ConfigureAwait(false);
@@ -352,28 +352,35 @@ internal sealed class V2Server(
     {
         if (options.ReceivePin is null)
             return true;
-        var now = DateTimeOffset.UtcNow;
-        var attempts = _pinAttempts.GetOrAdd(remote, static _ => (0, DateTimeOffset.MinValue));
-        if (attempts.Count >= 3 && attempts.LockedUntil > now)
+        // ConcurrentDictionary protects individual operations, not the
+        // read/check/increment or successful-reset sequence. Serialize this
+        // small in-memory decision so parallel wrong PINs cannot lose counts
+        // or overwrite the lock established by another request.
+        lock (_pinGate)
         {
-            context.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+            var now = DateTimeOffset.UtcNow;
+            _pinAttempts.TryGetValue(remote, out var attempts);
+            if (attempts.Count >= 3 && attempts.LockedUntil > now)
+            {
+                context.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+                return false;
+            }
+            if (attempts.Count >= 3)
+                attempts = (0, DateTimeOffset.MinValue);
+            var supplied = context.Request.Query["pin"].ToString();
+            if (StringComparer.Ordinal.Equals(supplied, options.ReceivePin))
+            {
+                _pinAttempts.Remove(remote);
+                return true;
+            }
+            if (supplied.Length > 0)
+            {
+                var count = attempts.Count + 1;
+                _pinAttempts[remote] = (count, count >= 3 ? now + options.PinLockoutDuration : DateTimeOffset.MinValue);
+            }
+            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
             return false;
         }
-        if (attempts.Count >= 3)
-            attempts = (0, DateTimeOffset.MinValue);
-        var supplied = context.Request.Query["pin"].ToString();
-        if (StringComparer.Ordinal.Equals(supplied, options.ReceivePin))
-        {
-            _pinAttempts.TryRemove(remote, out _);
-            return true;
-        }
-        if (supplied.Length > 0)
-        {
-            var count = attempts.Count + 1;
-            _pinAttempts[remote] = (count, count >= 3 ? now + options.PinLockoutDuration : DateTimeOffset.MinValue);
-        }
-        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-        return false;
     }
 
     private static bool ExceedsTransferLimit(IEnumerable<FileDto> files, long limit)

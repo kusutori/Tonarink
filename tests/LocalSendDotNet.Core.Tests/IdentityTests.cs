@@ -2,9 +2,10 @@ using System.Security.Cryptography.X509Certificates;
 
 namespace LocalSendDotNet.Core.Tests;
 
+[TestClass]
 public sealed class IdentityTests
 {
-    [Fact]
+    [TestMethod]
     public async Task IdentityIsStableAcrossReloads()
     {
         var directory = TestDirectory.Create();
@@ -14,40 +15,40 @@ public sealed class IdentityTests
             await using (var first = new AsyncDisposableIdentity(await DeviceIdentityStore.LoadOrCreateAsync(directory, default)))
                 firstFingerprint = first.Identity.Fingerprint;
             await using var second = new AsyncDisposableIdentity(await DeviceIdentityStore.LoadOrCreateAsync(directory, default));
-            Assert.Equal(firstFingerprint, second.Identity.Fingerprint);
-            Assert.Equal(64, second.Identity.Fingerprint.Length);
-            Assert.True(second.Identity.Certificate.HasPrivateKey);
+            Assert.AreEqual(firstFingerprint, second.Identity.Fingerprint);
+            Assert.AreEqual(64, second.Identity.Fingerprint.Length);
+            Assert.IsTrue(second.Identity.Certificate.HasPrivateKey);
         }
         finally { Directory.Delete(directory, recursive: true); }
     }
 
-    [Fact]
+    [TestMethod]
     public async Task PeerFingerprintMustMatch()
     {
         var directory = TestDirectory.Create();
         try
         {
             await using var wrapper = new AsyncDisposableIdentity(await DeviceIdentityStore.LoadOrCreateAsync(directory, default));
-            Assert.True(DeviceIdentityStore.ValidatePeerCertificate(wrapper.Identity.Certificate, wrapper.Identity.Fingerprint));
-            Assert.False(DeviceIdentityStore.ValidatePeerCertificate(wrapper.Identity.Certificate, new string('0', 64)));
+            Assert.IsTrue(DeviceIdentityStore.ValidatePeerCertificate(wrapper.Identity.Certificate, wrapper.Identity.Fingerprint));
+            Assert.IsFalse(DeviceIdentityStore.ValidatePeerCertificate(wrapper.Identity.Certificate, new string('0', 64)));
         }
         finally { Directory.Delete(directory, recursive: true); }
     }
 
-    [Fact]
+    [TestMethod]
     public async Task IncompleteIdentityProducesActionableException()
     {
         var directory = TestDirectory.Create();
         try
         {
             await File.WriteAllTextAsync(Path.Combine(directory, "identity-certificate.pem"), "incomplete");
-            var exception = await Assert.ThrowsAsync<IdentityLoadException>(() => DeviceIdentityStore.LoadOrCreateAsync(directory, default));
+            var exception = await Assert.ThrowsExactlyAsync<IdentityLoadException>(() => DeviceIdentityStore.LoadOrCreateAsync(directory, default));
             Assert.Contains("incomplete", exception.Message, StringComparison.OrdinalIgnoreCase);
         }
         finally { Directory.Delete(directory, recursive: true); }
     }
 
-    [Fact]
+    [TestMethod]
     public async Task CorruptIdentityProducesActionableException()
     {
         var directory = TestDirectory.Create();
@@ -55,12 +56,12 @@ public sealed class IdentityTests
         {
             await File.WriteAllTextAsync(Path.Combine(directory, "identity-certificate.pem"), "not a certificate");
             await File.WriteAllTextAsync(Path.Combine(directory, "identity-private-key.pem"), "not a key");
-            await Assert.ThrowsAsync<IdentityLoadException>(() => DeviceIdentityStore.LoadOrCreateAsync(directory, default));
+            await Assert.ThrowsExactlyAsync<IdentityLoadException>(() => DeviceIdentityStore.LoadOrCreateAsync(directory, default));
         }
         finally { Directory.Delete(directory, recursive: true); }
     }
 
-    [Fact]
+    [TestMethod]
     public async Task ConcurrentFirstLoadPublishesOneStableIdentity()
     {
         var directory = TestDirectory.Create();
@@ -68,9 +69,9 @@ public sealed class IdentityTests
         {
             var identities = await Task.WhenAll(Enumerable.Range(0, 8)
                 .Select(_ => DeviceIdentityStore.LoadOrCreateAsync(directory, default)));
-            try { Assert.Single(identities.Select(static identity => identity.Fingerprint).Distinct(StringComparer.Ordinal)); }
+            try { Assert.ContainsSingle(identities.Select(static identity => identity.Fingerprint).Distinct(StringComparer.Ordinal)); }
             finally { foreach (var identity in identities) identity.Dispose(); }
-            Assert.Empty(Directory.EnumerateFiles(directory, "*.tmp-*"));
+            Assert.IsEmpty(Directory.EnumerateFiles(directory, "*.tmp-*"));
         }
         finally { Directory.Delete(directory, recursive: true); }
     }

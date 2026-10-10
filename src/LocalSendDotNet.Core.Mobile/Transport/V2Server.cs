@@ -22,14 +22,15 @@ internal sealed class V2Server(
     DeviceIdentity identity,
     Func<DeviceInfoDto> localInfo,
     Func<DeviceInfoDto, IPAddress, string?, Task> onRegister,
-    Func<PrepareUploadRequestDto, IPAddress, string?, bool, CancellationToken, Task<PrepareOutcome>> onPrepare,
+    Func<PrepareUploadRequestDto, IPAddress, string?, bool, bool, CancellationToken, Task<PrepareOutcome>> onPrepare,
     Func<string, string, string, IPAddress, Stream, long?, CancellationToken, Task<HttpStatusCode>> onUpload,
     Func<string, IPAddress, CancellationToken, Task<bool>> onCancel,
     ILogger logger,
     WebShareService webShare) : IAsyncDisposable
 {
     private const int MaxHeaderBytes = 64 * 1024;
-    private readonly ConcurrentDictionary<IPAddress, (int Count, DateTimeOffset LockedUntil)> _pinAttempts = new();
+    private readonly object _pinGate = new();
+    private readonly Dictionary<IPAddress, (int Count, DateTimeOffset LockedUntil)> _pinAttempts = new();
     private readonly ConcurrentDictionary<long, Task> _connections = new();
     private CancellationTokenSource? _lifetime;
     private TcpListener? _listener;
@@ -221,7 +222,7 @@ internal sealed class V2Server(
             return;
         }
 
-        var outcome = await onPrepare(payload, request.RemoteAddress, fingerprint, false, request.CancellationToken).ConfigureAwait(false);
+        var outcome = await onPrepare(payload, request.RemoteAddress, fingerprint, false, true, request.CancellationToken).ConfigureAwait(false);
         if (outcome.Response is not null)
             await WriteJsonAsync(response, request, outcome.StatusCode, outcome.Response).ConfigureAwait(false);
         else if (outcome.Message is not null)
@@ -320,7 +321,7 @@ internal sealed class V2Server(
                 },
                 Files = payload.Files.ToDictionary(static file => file.Id, StringComparer.Ordinal)
             };
-            var outcome = await onPrepare(preparedRequest, request.RemoteAddress, fingerprint, autoAccept, request.CancellationToken).ConfigureAwait(false);
+            var outcome = await onPrepare(preparedRequest, request.RemoteAddress, fingerprint, autoAccept, false, request.CancellationToken).ConfigureAwait(false);
             if (outcome.Response is not null)
                 await WriteJsonAsync(response, request, outcome.StatusCode, outcome.Response).ConfigureAwait(false);
             else if (outcome.Message is not null)
@@ -368,24 +369,27 @@ internal sealed class V2Server(
     {
         if (options.ReceivePin is null)
             return null;
-        var now = DateTimeOffset.UtcNow;
-        var attempts = _pinAttempts.GetOrAdd(request.RemoteAddress, static _ => (0, DateTimeOffset.MinValue));
-        if (attempts.Count >= 3 && attempts.LockedUntil > now)
-            return HttpStatusCode.TooManyRequests;
-        if (attempts.Count >= 3)
-            attempts = (0, DateTimeOffset.MinValue);
-        var supplied = request.QueryValue("pin");
-        if (StringComparer.Ordinal.Equals(supplied, options.ReceivePin))
+        lock (_pinGate)
         {
-            _pinAttempts.TryRemove(request.RemoteAddress, out _);
-            return null;
+            var now = DateTimeOffset.UtcNow;
+            _pinAttempts.TryGetValue(request.RemoteAddress, out var attempts);
+            if (attempts.Count >= 3 && attempts.LockedUntil > now)
+                return HttpStatusCode.TooManyRequests;
+            if (attempts.Count >= 3)
+                attempts = (0, DateTimeOffset.MinValue);
+            var supplied = request.QueryValue("pin");
+            if (StringComparer.Ordinal.Equals(supplied, options.ReceivePin))
+            {
+                _pinAttempts.Remove(request.RemoteAddress);
+                return null;
+            }
+            if (supplied.Length > 0)
+            {
+                var count = attempts.Count + 1;
+                _pinAttempts[request.RemoteAddress] = (count, count >= 3 ? now + options.PinLockoutDuration : DateTimeOffset.MinValue);
+            }
+            return HttpStatusCode.Unauthorized;
         }
-        if (supplied.Length > 0)
-        {
-            var count = attempts.Count + 1;
-            _pinAttempts[request.RemoteAddress] = (count, count >= 3 ? now + options.PinLockoutDuration : DateTimeOffset.MinValue);
-        }
-        return HttpStatusCode.Unauthorized;
     }
 
     private static async Task<T?> ReadJsonAsync<T>(PortableRequest request, Stream response, long limit, JsonTypeInfo<T> typeInfo)

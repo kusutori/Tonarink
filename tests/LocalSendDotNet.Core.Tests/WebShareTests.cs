@@ -4,9 +4,71 @@ using System.Text.Json;
 
 namespace LocalSendDotNet.Core.Tests;
 
+[TestClass]
 public sealed class WebShareTests
 {
-    [Fact(Timeout = 20_000)]
+    [TestMethod, Timeout(20_000)]
+    [DataRow("decline")]
+    [DataRow("disconnect")]
+    [DataRow("stop")]
+    [DataRow("timeout")]
+    public async Task PendingSnapshotRemovesOffersAfterDecisionDisconnectOrShutdown(string ending)
+    {
+        var root = TestDirectory.Create();
+        var port = GetFreePort();
+        await using var node = CreateNode(root, port);
+        try
+        {
+            Assert.IsEmpty(node.GetPendingIncomingTransfers());
+            await node.StartAsync();
+            await node.StartWebReceiveAsync();
+            using var client = CreateClient();
+            using var cancellation = new CancellationTokenSource();
+            await using var incoming = node.WatchIncomingTransfersAsync().GetAsyncEnumerator();
+            var arriving = incoming.MoveNextAsync().AsTask();
+            var preparing = client.PostAsJsonAsync($"http://127.0.0.1:{port}/api/localsend/v2/prepare-web-upload",
+                new { files = new[] { new { id = "pending", fileName = "pending.txt", size = 1, fileType = "text/plain" } } }, cancellation.Token);
+            Assert.IsTrue(await arriving.WaitAsync(TimeSpan.FromSeconds(5)));
+            var request = incoming.Current;
+            Assert.AreEqual(request.RequestId, Assert.ContainsSingle(node.GetPendingIncomingTransfers()).RequestId);
+            if (ending == "decline")
+            {
+                await node.DeclineAsync(request.RequestId);
+                using var declined = await preparing;
+                Assert.AreEqual(HttpStatusCode.Forbidden, declined.StatusCode);
+            }
+            else if (ending == "disconnect")
+            {
+                await cancellation.CancelAsync();
+                await Assert.ThrowsAsync<OperationCanceledException>(async () =>
+                {
+                    using var response = await preparing;
+                });
+            }
+            else if (ending == "stop")
+            {
+                await node.StopAsync();
+                using var stopped = await preparing;
+                // Stop cancels the decision wait and also declines pending
+                // offers. Either terminal path can win, but not an accepted session.
+                Assert.IsTrue(stopped.StatusCode is HttpStatusCode.Forbidden or HttpStatusCode.RequestTimeout);
+            }
+            else
+            {
+                using var timedOut = await preparing;
+                Assert.AreEqual(HttpStatusCode.RequestTimeout, timedOut.StatusCode);
+            }
+            var deadline = DateTime.UtcNow.AddSeconds(5);
+            while (node.GetPendingIncomingTransfers().Count > 0 && DateTime.UtcNow < deadline)
+                await Task.Delay(20);
+            Assert.IsEmpty(node.GetPendingIncomingTransfers());
+            Assert.IsFalse(File.Exists(Path.Combine(root, "downloads", "pending.txt")));
+        }
+        finally { Directory.Delete(root, recursive: true); }
+    }
+
+    [TestMethod]
+    [Timeout(20_000)]
     public async Task RootIsNotFoundUntilWebShareStarts()
     {
         var root = TestDirectory.Create();
@@ -17,11 +79,11 @@ public sealed class WebShareTests
             await node.StartAsync();
             using var client = CreateClient();
             var missing = await client.GetAsync($"http://127.0.0.1:{port}/");
-            Assert.Equal(HttpStatusCode.NotFound, missing.StatusCode);
+            Assert.AreEqual(HttpStatusCode.NotFound, missing.StatusCode);
 
             await node.StartWebShareAsync([new SendTextItem("hello", "hello.txt")], new WebShareOptions { AutoAccept = true });
             var page = await client.GetAsync($"http://127.0.0.1:{port}/");
-            Assert.Equal(HttpStatusCode.OK, page.StatusCode);
+            Assert.AreEqual(HttpStatusCode.OK, page.StatusCode);
             var html = await page.Content.ReadAsStringAsync();
             Assert.Contains("Tonarink", html, StringComparison.Ordinal);
             Assert.Contains("prepare-download", html, StringComparison.Ordinal);
@@ -29,7 +91,8 @@ public sealed class WebShareTests
         finally { Directory.Delete(root, recursive: true); }
     }
 
-    [Fact(Timeout = 20_000)]
+    [TestMethod]
+    [Timeout(20_000)]
     public async Task AutoAcceptAllowsImmediateDownload()
     {
         var root = TestDirectory.Create();
@@ -46,22 +109,23 @@ public sealed class WebShareTests
             using var document = JsonDocument.Parse(await prepared.Content.ReadAsStringAsync());
             var sessionId = document.RootElement.GetProperty("sessionId").GetString();
             var fileId = document.RootElement.GetProperty("files")[0].GetProperty("id").GetString();
-            Assert.False(string.IsNullOrWhiteSpace(sessionId));
-            Assert.False(string.IsNullOrWhiteSpace(fileId));
+            Assert.IsFalse(string.IsNullOrWhiteSpace(sessionId));
+            Assert.IsFalse(string.IsNullOrWhiteSpace(fileId));
 
             var state = node.GetWebShare();
-            Assert.True(state.Active);
-            var request = Assert.Single(state.Requests);
-            Assert.False(request.Pending);
+            Assert.IsTrue(state.Active);
+            var request = Assert.ContainsSingle(state.Requests);
+            Assert.IsFalse(request.Pending);
             Assert.Contains("Firefox", request.DeviceInfo, StringComparison.Ordinal);
 
             var download = await client.GetStringAsync($"http://127.0.0.1:{port}/api/localsend/v2/download?sessionId={sessionId}&fileId={fileId}");
-            Assert.Equal("shared-body", download);
+            Assert.AreEqual("shared-body", download);
         }
         finally { Directory.Delete(root, recursive: true); }
     }
 
-    [Fact(Timeout = 20_000)]
+    [TestMethod]
+    [Timeout(20_000)]
     public async Task HostCanAcceptAPendingBrowser()
     {
         var root = TestDirectory.Create();
@@ -83,16 +147,17 @@ public sealed class WebShareTests
                 await Task.Delay(50);
             }
             while (DateTime.UtcNow < deadline);
-            Assert.NotNull(request);
-            Assert.True(request.Pending);
-            Assert.True(node.AcceptWebShareRequest(request.SessionId));
+            Assert.IsNotNull(request);
+            Assert.IsTrue(request.Pending);
+            Assert.IsTrue(node.AcceptWebShareRequest(request.SessionId));
             using var prepared = await prepareTask;
             prepared.EnsureSuccessStatusCode();
         }
         finally { Directory.Delete(root, recursive: true); }
     }
 
-    [Fact(Timeout = 20_000)]
+    [TestMethod]
+    [Timeout(20_000)]
     public async Task PinIsRequiredWhenConfigured()
     {
         var root = TestDirectory.Create();
@@ -106,14 +171,15 @@ public sealed class WebShareTests
                 new WebShareOptions { AutoAccept = true, Pin = "BtNqca" });
             using var client = CreateClient();
             using var denied = await client.PostAsync($"http://127.0.0.1:{port}/api/localsend/v2/prepare-download", content: null);
-            Assert.Equal(HttpStatusCode.Unauthorized, denied.StatusCode);
+            Assert.AreEqual(HttpStatusCode.Unauthorized, denied.StatusCode);
             using var allowed = await client.PostAsync($"http://127.0.0.1:{port}/api/localsend/v2/prepare-download?pin=BtNqca", content: null);
             allowed.EnsureSuccessStatusCode();
         }
         finally { Directory.Delete(root, recursive: true); }
     }
 
-    [Fact(Timeout = 20_000)]
+    [TestMethod]
+    [Timeout(20_000)]
     public async Task BrowserUploadUsesTheNormalIncomingTransferFlow()
     {
         var root = TestDirectory.Create();
@@ -142,10 +208,11 @@ public sealed class WebShareTests
                     }
                 });
 
-            Assert.True(await incomingMove);
+            Assert.IsTrue(await incomingMove);
             var request = incoming.Current;
-            Assert.Equal("Web browser", request.Sender.Alias);
+            Assert.AreEqual("Web browser", request.Sender.Alias);
             var acceptTask = node.AcceptAsync(request.RequestId);
+            Assert.IsEmpty(node.GetPendingIncomingTransfers());
 
             using var preparedResponse = await prepareTask;
             preparedResponse.EnsureSuccessStatusCode();
@@ -160,7 +227,7 @@ public sealed class WebShareTests
 
             var result = await acceptTask;
             _ = result.RequireCompleted();
-            Assert.Equal("browser-body", await File.ReadAllTextAsync(Path.Combine(root, "downloads", "from-browser.txt")));
+            Assert.AreEqual("browser-body", await File.ReadAllTextAsync(Path.Combine(root, "downloads", "from-browser.txt")));
         }
         finally { Directory.Delete(root, recursive: true); }
     }

@@ -20,7 +20,7 @@ public sealed class LocalSendNode : IAsyncDisposable
     private readonly BroadcastHub<LocalSendNodeStateChange> _stateChanges = new(32);
     private readonly ConcurrentDictionary<Guid, IncomingSession> _pending = new();
     private readonly ConcurrentDictionary<string, IncomingSession> _incomingSessions = new(StringComparer.Ordinal);
-    private readonly ConcurrentDictionary<string, (IPAddress Address, CancellationTokenSource Cancellation)> _outgoingSessions = new(StringComparer.Ordinal);
+    private readonly ConcurrentDictionary<string, OutgoingSession> _outgoingSessions = new(StringComparer.Ordinal);
     private readonly ConcurrentDictionary<Guid, CancellationTokenSource> _activeOutgoing = new();
     private readonly SemaphoreSlim _lifecycle = new(1, 1);
     private readonly object _stateGate = new();
@@ -139,16 +139,25 @@ public sealed class LocalSendNode : IAsyncDisposable
             if (!_started && _server is null)
                 return;
             SetState(LocalSendNodeState.Stopping);
+            // Notify peers while both HTTP endpoints are still usable. Aborting
+            // local request bodies first turns an intentional stop into a
+            // transport failure on the peer. Waiting for an outgoing upload's
+            // catch block is too late: DisposeAsync can release its TLS identity
+            // before that block creates the cancellation request.
+            // Browser uploads have no callback.
+            var incomingSessions = _incomingSessions.Values.ToArray();
+            var outgoingSessions = _outgoingSessions.ToArray();
+            await Task.WhenAll(incomingSessions.Select(NotifyIncomingSenderAsync)
+                .Concat(outgoingSessions.Select(session => TryCancelRemoteAsync(
+                    session.Value.Endpoint, session.Value.Fingerprint, session.Key)))).ConfigureAwait(false);
             await _lifetime.CancelAsync().ConfigureAwait(false);
             foreach (var session in _pending.Values)
                 session.Decision.TrySetResult(new(false, null));
-            foreach (var session in _incomingSessions.Values)
-            {
-                await session.Cancellation.CancelAsync().ConfigureAwait(false);
-                session.Cancel();
-            }
-            foreach (var outgoing in _outgoingSessions.Values)
-                await outgoing.Cancellation.CancelAsync().ConfigureAwait(false);
+            foreach (var session in incomingSessions)
+                await CancelIncomingSessionAsync(session).ConfigureAwait(false);
+            // Every outgoing token is linked to _lifetime. Do not cancel a
+            // snapshot of their CTS instances again; a finished send owns and
+            // disposes its CTS concurrently with shutdown.
             if (_maintenance is not null)
             {
                 try { await _maintenance.ConfigureAwait(false); }
@@ -217,6 +226,14 @@ public sealed class LocalSendNode : IAsyncDisposable
     /// <summary>Watches incoming offers that require an accept or decline decision.</summary>
     /// <param name="cancellationToken">Stops enumeration.</param>
     public IAsyncEnumerable<IncomingTransferRequest> WatchIncomingTransfersAsync(CancellationToken cancellationToken = default) => _incomingTransfers.Subscribe(cancellationToken);
+
+    /// <summary>Gets a snapshot of incoming offers still awaiting a decision.</summary>
+    /// <remarks>An offer leaves this snapshot on acceptance, rejection, timeout, disconnection, or shutdown.
+    /// The watch stream publishes arrivals only; hosts can use this snapshot to discard expired cached offers.</remarks>
+    public IReadOnlyList<IncomingTransferRequest> GetPendingIncomingTransfers() => _pending.Values
+        .Where(static session => !session.Decision.Task.IsCompleted)
+        .Select(static session => session.PublicRequest)
+        .ToArray();
 
     /// <summary>Gets a snapshot of the current browser share session, or an inactive state.</summary>
     public WebShareState GetWebShare() => _webShare?.Snapshot() ?? WebShareState.Inactive;
@@ -328,12 +345,15 @@ public sealed class LocalSendNode : IAsyncDisposable
             await outgoing.CancelAsync().ConfigureAwait(false);
             return true;
         }
-        var incoming = _pending.Values.Concat(_incomingSessions.Values).FirstOrDefault(session => session.TransferId == transferId);
+        var incoming = _incomingSessions.Values.FirstOrDefault(session => session.TransferId == transferId);
+        var accepted = incoming is not null;
+        incoming ??= _pending.Values.FirstOrDefault(session => session.TransferId == transferId);
         if (incoming is null)
             return false;
         incoming.Decision.TrySetResult(new(false, null));
-        await incoming.Cancellation.CancelAsync().ConfigureAwait(false);
-        incoming.Cancel();
+        if (accepted)
+            await NotifyIncomingSenderAsync(incoming).ConfigureAwait(false);
+        await CancelIncomingSessionAsync(incoming).ConfigureAwait(false);
         return true;
     }
 
@@ -360,10 +380,28 @@ public sealed class LocalSendNode : IAsyncDisposable
         var endpoint = device.Endpoints.OrderByDescending(static x => x.Protocol == LocalSendProtocol.Https).FirstOrDefault()
             ?? throw new LocalSendException("The device has no usable v2 endpoint.");
         var transferId = Guid.NewGuid();
-        using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _lifetime.Token);
+        cancellationToken.ThrowIfCancellationRequested();
+        using var linked = CancellationTokenSource.CreateLinkedTokenSource(_lifetime.Token);
+        using var finished = new CancellationTokenSource();
+        using var cancellationObservation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, finished.Token);
         _activeOutgoing[transferId] = linked;
         PrepareUploadResponseDto? prepared = null;
+        OutgoingSession? outgoingSession = null;
         var results = new List<TransferredItemResult>();
+        // Notify an accepted peer before aborting the HTTP body. Otherwise a
+        // truncated-upload failure can win before the later /cancel arrives.
+        var callerCancellation = ObserveCallerCancellationAsync();
+        async Task ObserveCallerCancellationAsync()
+        {
+            try { await Task.Delay(Timeout.InfiniteTimeSpan, cancellationObservation.Token).ConfigureAwait(false); }
+            catch (OperationCanceledException) when (cancellationObservation.IsCancellationRequested)
+            {
+                if (!cancellationToken.IsCancellationRequested) return;
+                if (prepared is not null && outgoingSession?.PeerCancelled != true)
+                    await TryCancelRemoteAsync(endpoint, device.Fingerprint, prepared.SessionId).ConfigureAwait(false);
+                await linked.CancelAsync().ConfigureAwait(false);
+            }
+        }
         try
         {
             var itemMap = items.Select(item => (Id: Guid.NewGuid().ToString("N"), Item: item, Length: item.Length)).ToArray();
@@ -386,7 +424,7 @@ public sealed class LocalSendNode : IAsyncDisposable
                     transferId,
                     itemMap.Select(static item => new TransferredItemResult(item.Id, item.Item.FileName, item.Length, null)).ToArray());
             }
-            _outgoingSessions[prepared.SessionId] = (endpoint.Address, linked);
+            _outgoingSessions[prepared.SessionId] = outgoingSession = new(endpoint, device.Fingerprint, linked);
             long completedBytes = 0;
             foreach (var (id, item, length) in itemMap)
             {
@@ -420,15 +458,17 @@ public sealed class LocalSendNode : IAsyncDisposable
         {
             return new SendOutcome.Declined(transferId);
         }
-        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        catch (Exception) when (cancellationToken.IsCancellationRequested)
         {
-            if (prepared is not null)
-                await TryCancelRemoteAsync(endpoint, device.Fingerprint, prepared.SessionId).ConfigureAwait(false);
-            throw;
+            await callerCancellation.ConfigureAwait(false);
+            // The peer can close the body while acknowledging /cancel. Preserve
+            // the caller's cancellation even if HTTP reports that as an error.
+            throw new OperationCanceledException(cancellationToken);
         }
-        catch (OperationCanceledException)
+        catch (Exception exception) when (exception is OperationCanceledException || linked.IsCancellationRequested
+            || outgoingSession?.PeerCancelled == true || State == LocalSendNodeState.Stopping)
         {
-            if (prepared is not null)
+            if (prepared is not null && outgoingSession?.PeerCancelled != true)
                 await TryCancelRemoteAsync(endpoint, device.Fingerprint, prepared.SessionId).ConfigureAwait(false);
             return new SendOutcome.Cancelled(transferId, results);
         }
@@ -446,6 +486,8 @@ public sealed class LocalSendNode : IAsyncDisposable
         }
         finally
         {
+            await finished.CancelAsync().ConfigureAwait(false);
+            await callerCancellation.ConfigureAwait(false);
             _activeOutgoing.TryRemove(transferId, out _);
             if (prepared is not null)
                 _outgoingSessions.TryRemove(prepared.SessionId, out _);
@@ -477,13 +519,8 @@ public sealed class LocalSendNode : IAsyncDisposable
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
-            await session.Cancellation.CancelAsync().ConfigureAwait(false);
-            session.Cancel();
-            var endpoint = session.PublicRequest.Sender.Endpoints.FirstOrDefault();
-            if (endpoint is not null)
-            {
-                await TryCancelRemoteAsync(endpoint, session.PublicRequest.Sender.Fingerprint, session.SessionId).ConfigureAwait(false);
-            }
+            await NotifyIncomingSenderAsync(session).ConfigureAwait(false);
+            await CancelIncomingSessionAsync(session).ConfigureAwait(false);
             throw;
         }
     }
@@ -630,6 +667,7 @@ public sealed class LocalSendNode : IAsyncDisposable
         IPAddress remote,
         string? certificateFingerprint,
         bool autoAccept,
+        bool canCancelSender,
         CancellationToken requestCancellation)
     {
         if (!await _transferSlots.WaitAsync(0, requestCancellation).ConfigureAwait(false))
@@ -650,6 +688,7 @@ public sealed class LocalSendNode : IAsyncDisposable
             RemoteAddress = remote,
             Request = request,
             PublicRequest = publicRequest,
+            CanCancelSender = canCancelSender,
             Decision = new(TaskCreationOptions.RunContinuationsAsynchronously),
             Completion = new(TaskCreationOptions.RunContinuationsAsynchronously)
         };
@@ -799,12 +838,14 @@ public sealed class LocalSendNode : IAsyncDisposable
     {
         if (_incomingSessions.TryGetValue(sessionId, out var incoming) && incoming.RemoteAddress.Equals(remote))
         {
+            incoming.RequestCancellation();
             await incoming.Cancellation.CancelAsync().ConfigureAwait(false);
             incoming.Cancel();
             return true;
         }
-        if (_outgoingSessions.TryGetValue(sessionId, out var outgoing) && outgoing.Address.Equals(remote))
+        if (_outgoingSessions.TryGetValue(sessionId, out var outgoing) && outgoing.Endpoint.Address.Equals(remote))
         {
+            outgoing.MarkPeerCancellation();
             await outgoing.Cancellation.CancelAsync().ConfigureAwait(false);
             return true;
         }
@@ -894,6 +935,25 @@ public sealed class LocalSendNode : IAsyncDisposable
         using var timeout = new CancellationTokenSource(_options.CancelRequestTimeout);
         try { await _client!.CancelAsync(endpoint, fingerprint, sessionId, timeout.Token).ConfigureAwait(false); }
         catch (Exception exception) { _logger.LogDebug(exception, "Could not cancel remote session {SessionId}", sessionId); }
+    }
+
+    private Task NotifyIncomingSenderAsync(IncomingSession session)
+    {
+        session.RequestCancellation();
+        var endpoint = session.PublicRequest.Sender.Endpoints.FirstOrDefault();
+        return session.CanCancelSender && endpoint is not null
+            ? TryCancelRemoteAsync(endpoint, session.PublicRequest.Sender.Fingerprint, session.SessionId)
+            : Task.CompletedTask;
+    }
+
+    private static async Task CancelIncomingSessionAsync(IncomingSession session)
+    {
+        session.RequestCancellation();
+        try { await session.Cancellation.CancelAsync().ConfigureAwait(false); }
+        // The peer can acknowledge cancellation by calling back before our
+        // notification returns. Completion then releases/disposes this session.
+        catch (ObjectDisposedException) when (session.Completion.Task.IsCompleted) { }
+        session.Cancel();
     }
 
     private async Task MaintainAsync(CancellationToken cancellationToken)

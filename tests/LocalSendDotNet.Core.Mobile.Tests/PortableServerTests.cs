@@ -4,9 +4,12 @@ using LocalSendDotNet;
 
 namespace LocalSendDotNet.Core.Mobile.Tests;
 
+[TestClass]
+[DoNotParallelize]
+[TestCategory("Integration")]
 public sealed class PortableServerTests
 {
-    [Fact(Timeout = 30_000)]
+    [TestMethod, Timeout(30_000)]
     public async Task TwoPortableNodesTransferTextOverMutualTls()
     {
         var root = CreateTemporaryDirectory();
@@ -26,9 +29,9 @@ public sealed class PortableServerTests
             var sent = await sender.SendAsync(device, [new SendTextItem("portable hello")]);
             _ = RequireCompleted(sent);
             var received = await receiveTask;
-            var item = Assert.Single(RequireCompleted(received).Items);
-            Assert.Equal("message.txt", item.FileName);
-            Assert.Null(item.SavedPath);
+            var item = Assert.ContainsSingle(RequireCompleted(received).Items);
+            Assert.AreEqual("message.txt", item.FileName);
+            Assert.IsNull(item.SavedPath);
         }
         finally
         {
@@ -36,7 +39,7 @@ public sealed class PortableServerTests
         }
     }
 
-    [Fact(Timeout = 15_000)]
+    [TestMethod, Timeout(15_000)]
     public async Task InfoEndpointAllowsBrowserWithoutClientCertificate()
     {
         var root = CreateTemporaryDirectory();
@@ -59,7 +62,7 @@ public sealed class PortableServerTests
         }
     }
 
-    [Fact(Timeout = 30_000)]
+    [TestMethod, Timeout(30_000)]
     public async Task PortableServerSupportsPinProtectedTransfer()
     {
         var root = CreateTemporaryDirectory();
@@ -71,7 +74,7 @@ public sealed class PortableServerTests
         {
             await Task.WhenAll(receiver.StartAsync(), sender.StartAsync());
             var device = DeviceFor(receiver, receiverPort);
-            Assert.True((await sender.SendAsync(device, [new SendTextItem("secret")])) is SendOutcome.PinRequired);
+            Assert.IsTrue((await sender.SendAsync(device, [new SendTextItem("secret")])) is SendOutcome.PinRequired);
             var receiveTask = AcceptNextAsync(receiver);
             var sent = await sender.SendAsync(device, [new SendTextItem("secret")], new SendOptions { Pin = "2468" });
             _ = RequireCompleted(sent);
@@ -83,7 +86,7 @@ public sealed class PortableServerTests
         }
     }
 
-    [Fact(Timeout = 30_000)]
+    [TestMethod, Timeout(30_000)]
     public async Task PortableServerSupportsPartialAcceptance()
     {
         var root = CreateTemporaryDirectory();
@@ -100,13 +103,54 @@ public sealed class PortableServerTests
                 [new SendTextItem("keep", "keep.txt"), new SendTextItem("skip", "skip.txt")]);
             _ = RequireCompleted(sent);
             _ = RequireCompleted(await receiveTask);
-            Assert.Equal("keep", await File.ReadAllTextAsync(Path.Combine(downloads, "keep.txt")));
-            Assert.False(File.Exists(Path.Combine(downloads, "skip.txt")));
+            Assert.AreEqual("keep", await File.ReadAllTextAsync(Path.Combine(downloads, "keep.txt")));
+            Assert.IsFalse(File.Exists(Path.Combine(downloads, "skip.txt")));
         }
         finally
         {
             Directory.Delete(root, recursive: true);
         }
+    }
+
+    [TestMethod, Timeout(90_000)]
+    public async Task ConcurrentIncorrectPinsLockPortableReceiverWithoutCreatingOffers()
+    {
+        var root = CreateTemporaryDirectory();
+        try
+        {
+            // Sixteen real receivers each perform the production discovery
+            // announcement (100 ms + 500 ms + 2 s) before serving requests.
+            // Preserve every round; the suite budget must include startup,
+            // not mistake its deterministic cost for a PIN timeout.
+            using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(75));
+            await using var sender = CreateNode("Concurrent sender", Path.Combine(root, "sender"), Path.Combine(root, "sender-downloads"), GetFreePort());
+            await sender.StartAsync(deadline.Token);
+            for (var round = 0; round < 16; round++)
+            {
+                var port = GetFreePort();
+                var downloads = Path.Combine(root, $"downloads-{round}");
+                await using var receiver = CreateNode("PIN receiver", Path.Combine(root, $"receiver-{round}"), downloads, port, "2468");
+                await receiver.StartAsync(deadline.Token);
+                var device = DeviceFor(receiver, port);
+                var ready = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+                var sending = Enumerable.Range(0, 8).Select(async _ =>
+                {
+                    await ready.Task.WaitAsync(deadline.Token);
+                    return await sender.SendAsync(device, [new SendTextItem("unauthorized")], new() { Pin = "0000" }, cancellationToken: deadline.Token);
+                }).ToArray();
+                ready.SetResult();
+                var outcomes = await Task.WhenAll(sending).WaitAsync(deadline.Token);
+                Assert.HasCount(3, outcomes.Where(outcome => outcome is SendOutcome.PinRequired { InvalidPin: true }), $"Portable round {round} lost PIN attempts.");
+                Assert.HasCount(5, outcomes.Where(outcome => outcome is SendOutcome.PinRateLimited));
+                Assert.IsTrue((await sender.SendAsync(device, [new SendTextItem("correct but locked")], new() { Pin = "2468" },
+                    cancellationToken: deadline.Token)) is SendOutcome.PinRateLimited);
+                Assert.IsEmpty(receiver.GetPendingIncomingTransfers());
+                Assert.IsEmpty(Directory.EnumerateFiles(downloads, "*", SearchOption.AllDirectories).ToArray());
+                Assert.AreEqual(LocalSendNodeState.Running, receiver.State);
+            }
+            Assert.AreEqual(LocalSendNodeState.Running, sender.State);
+        }
+        finally { Directory.Delete(root, recursive: true); }
     }
 
     private static LocalSendNode CreateNode(string alias, string data, string downloads, int port, string? pin = null) => new(new LocalSendOptions
@@ -134,7 +178,7 @@ public sealed class PortableServerTests
     {
         await foreach (var request in node.WatchIncomingTransfersAsync())
         {
-            var acceptedId = Assert.Single(request.Items, item => item.FileName == fileName).Id;
+            var acceptedId = Assert.ContainsSingle(request.Items.Where(item => item.FileName == fileName)).Id;
             return await node.AcceptAsync(request.RequestId, new AcceptTransferOptions { AcceptedItemIds = [acceptedId] });
         }
         throw new InvalidOperationException("Incoming request stream ended.");
@@ -143,13 +187,13 @@ public sealed class PortableServerTests
     private static SendOutcome.Completed RequireCompleted(SendOutcome outcome) => outcome switch
     {
         SendOutcome.Completed completed => completed,
-        _ => throw new Xunit.Sdk.XunitException("Expected completed send outcome."),
+        _ => throw new AssertFailedException("Expected completed send outcome."),
     };
 
     private static ReceiveOutcome.Completed RequireCompleted(ReceiveOutcome outcome) => outcome switch
     {
         ReceiveOutcome.Completed completed => completed,
-        _ => throw new Xunit.Sdk.XunitException("Expected completed receive outcome."),
+        _ => throw new AssertFailedException("Expected completed receive outcome."),
     };
 
     private static string CreateTemporaryDirectory()

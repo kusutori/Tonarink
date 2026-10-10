@@ -6,50 +6,51 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace LocalSendDotNet.Core.Tests;
 
+[TestClass]
 public sealed class ReliabilityTests
 {
-    [Fact]
+    [TestMethod]
     public async Task ReliableBroadcastWaitsInsteadOfDroppingDecisionEvents()
     {
         var hub = new BroadcastHub<int>(1, dropOldest: false);
         await using var reader = hub.Subscribe(default).GetAsyncEnumerator();
         var firstRead = reader.MoveNextAsync().AsTask();
         hub.Publish(1);
-        Assert.True(await firstRead);
-        Assert.Equal(1, reader.Current);
+        Assert.IsTrue(await firstRead);
+        Assert.AreEqual(1, reader.Current);
 
         await hub.PublishAsync(2, default);
         var blocked = hub.PublishAsync(3, default);
         await Task.Delay(50);
-        Assert.False(blocked.IsCompleted);
-        Assert.True(await reader.MoveNextAsync());
-        Assert.Equal(2, reader.Current);
+        Assert.IsFalse(blocked.IsCompleted);
+        Assert.IsTrue(await reader.MoveNextAsync());
+        Assert.AreEqual(2, reader.Current);
         await blocked;
-        Assert.True(await reader.MoveNextAsync());
-        Assert.Equal(3, reader.Current);
+        Assert.IsTrue(await reader.MoveNextAsync());
+        Assert.AreEqual(3, reader.Current);
     }
 
-    [Fact]
+    [TestMethod]
     public void DeviceStoreExpiresAndPublishesRemovedDevice()
     {
         var hub = new BroadcastHub<DeviceChange>(8);
         var store = new DeviceStore(hub);
         store.Upsert(new("old", "2.2", null, LocalSendDeviceType.Desktop, "fingerprint", false, [], DateTimeOffset.UtcNow.AddMinutes(-5)));
-        Assert.Equal(1, store.RemoveExpired(DateTimeOffset.UtcNow.AddMinutes(-1)));
-        Assert.Empty(store.Snapshot());
+        Assert.AreEqual(1, store.RemoveExpired(DateTimeOffset.UtcNow.AddMinutes(-1)));
+        Assert.IsEmpty(store.Snapshot());
     }
 
-    [Fact]
+    [TestMethod]
     public void ManuallyTrustedDeviceDoesNotExpire()
     {
         var store = new DeviceStore(new BroadcastHub<DeviceChange>(8));
         store.Upsert(new("manual", "2.2", null, LocalSendDeviceType.Desktop, "fingerprint", false, [],
             DateTimeOffset.UtcNow.AddDays(-1)), persistent: true);
-        Assert.Equal(0, store.RemoveExpired(DateTimeOffset.UtcNow));
-        Assert.Single(store.Snapshot());
+        Assert.AreEqual(0, store.RemoveExpired(DateTimeOffset.UtcNow));
+        Assert.ContainsSingle(store.Snapshot());
     }
 
-    [Fact]
+    [TestMethod]
     public void DirectoryItemsPreserveRelativePathsAndInferContentTypes()
     {
         var root = TestDirectory.Create();
@@ -58,15 +59,15 @@ public sealed class ReliabilityTests
             var child = Path.Combine(root, "nested");
             Directory.CreateDirectory(child);
             File.WriteAllText(Path.Combine(child, "note.txt"), "hello");
-            var item = Assert.Single(LocalSendItems.FromDirectory(root));
-            Assert.Equal("nested/note.txt", item.FileName);
-            Assert.Equal("text/plain", item.ContentType);
-            Assert.Equal("image/png", LocalSendContentTypes.GetForFileName("photo.PNG"));
+            var item = Assert.ContainsSingle(LocalSendItems.FromDirectory(root));
+            Assert.AreEqual("nested/note.txt", item.FileName);
+            Assert.AreEqual("text/plain", item.ContentType);
+            Assert.AreEqual("image/png", LocalSendContentTypes.GetForFileName("photo.PNG"));
         }
         finally { Directory.Delete(root, recursive: true); }
     }
 
-    [Fact]
+    [TestMethod]
     public void OptionsRejectUnsafeLimits()
     {
         var root = TestDirectory.Create();
@@ -79,35 +80,35 @@ public sealed class ReliabilityTests
                 DownloadDirectory = root,
                 MaxIncomingItemsPerTransfer = 0
             };
-            Assert.Throws<ArgumentOutOfRangeException>(options.Validate);
+            Assert.ThrowsExactly<ArgumentOutOfRangeException>(options.Validate);
         }
         finally { Directory.Delete(root, recursive: true); }
     }
 
-    [Fact]
+    [TestMethod]
     public void EndpointNormalizesIpv4MappedAddress()
     {
         var endpoint = new DeviceEndpoint(System.Net.IPAddress.Parse("::ffff:192.168.1.10"), 53317, LocalSendProtocol.Https);
-        Assert.Equal(System.Net.IPAddress.Parse("192.168.1.10"), endpoint.Address);
+        Assert.AreEqual(System.Net.IPAddress.Parse("192.168.1.10"), endpoint.Address);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task StreamItemSupportsUiOwnedStreams()
     {
         var bytes = System.Text.Encoding.UTF8.GetBytes("virtual file");
         var item = new SendStreamItem("virtual.txt", bytes.Length,
             _ => ValueTask.FromResult<Stream>(new MemoryStream(bytes, writable: false)));
-        Assert.Equal("text/plain", item.ContentType);
+        Assert.AreEqual("text/plain", item.ContentType);
         await using var stream = await item.OpenReadAsync(default);
         using var reader = new StreamReader(stream);
-        Assert.Equal("virtual file", await reader.ReadToEndAsync());
+        Assert.AreEqual("virtual file", await reader.ReadToEndAsync());
     }
 
-    [Fact]
+    [TestMethod]
     public void PublicSurfaceKeepsProtocolDtosInternalAndUiEntryPointsStable()
     {
         var assembly = typeof(LocalSendNode).Assembly;
-        Assert.DoesNotContain(assembly.GetExportedTypes(), type => type.Namespace?.Contains(".Protocol", StringComparison.Ordinal) == true);
+        Assert.DoesNotContain(type => type.Namespace?.Contains(".Protocol", StringComparison.Ordinal) == true, assembly.GetExportedTypes());
         var methods = typeof(LocalSendNode).GetMethods().Select(static method => method.Name).ToHashSet(StringComparer.Ordinal);
         foreach (var method in new[]
         {
@@ -118,7 +119,8 @@ public sealed class ReliabilityTests
             Assert.Contains(method, methods);
     }
 
-    [Fact(Timeout = 15_000)]
+    [TestMethod]
+    [Timeout(15_000)]
     public async Task DiscoveryReceiverCanRebindAfterInterfaceRefresh()
     {
         var addresses = NetworkInterface.GetAllNetworkInterfaces()
@@ -129,7 +131,7 @@ public sealed class ReliabilityTests
             .Distinct()
             .ToArray();
         if (addresses.Length == 0)
-            return;
+            Assert.Inconclusive("No active IPv4 network interface is available for multicast rebinding.");
         var root = TestDirectory.Create();
         try
         {
@@ -138,18 +140,19 @@ public sealed class ReliabilityTests
             await using var discovery = new V2MulticastDiscovery(options, () => Announcement(options), (_, _, _) => Task.CompletedTask,
                 NullLogger.Instance, () => supplied);
             await discovery.StartAsync(default);
-            Assert.Equal(supplied, discovery.JoinedAddresses);
+            Assert.AreSequenceEqual(supplied, discovery.JoinedAddresses);
             supplied = [];
-            Assert.False(await discovery.RefreshInterfacesAsync(force: true));
-            Assert.NotEmpty(discovery.JoinedAddresses);
+            Assert.IsFalse(await discovery.RefreshInterfacesAsync(force: true));
+            Assert.IsNotEmpty(discovery.JoinedAddresses);
             supplied = addresses;
-            Assert.True(await discovery.RefreshInterfacesAsync(force: true));
-            Assert.Equal(addresses.OrderBy(static address => address.ToString(), StringComparer.Ordinal), discovery.JoinedAddresses);
+            Assert.IsTrue(await discovery.RefreshInterfacesAsync(force: true));
+            Assert.AreSequenceEqual(addresses.OrderBy(static address => address.ToString(), StringComparer.Ordinal), discovery.JoinedAddresses);
         }
         finally { Directory.Delete(root, recursive: true); }
     }
 
-    [Fact(Timeout = 15_000)]
+    [TestMethod]
+    [Timeout(15_000)]
     public async Task OccupiedUdpPortLeavesHttpServerRunning()
     {
         var root = TestDirectory.Create();
@@ -161,15 +164,16 @@ public sealed class ReliabilityTests
         try
         {
             await node.StartAsync();
-            Assert.Equal(LocalSendNodeState.Running, node.State);
-            Assert.NotNull(node.Identity);
-            Assert.NotNull(node.DiscoveryError);
+            Assert.AreEqual(LocalSendNodeState.Running, node.State);
+            Assert.IsNotNull(node.Identity);
+            Assert.IsNotNull(node.DiscoveryError);
             await node.StopAsync();
         }
         finally { Directory.Delete(root, recursive: true); }
     }
 
-    [Fact(Timeout = 15_000)]
+    [TestMethod]
+    [Timeout(15_000)]
     public async Task OccupiedTcpPortProducesActionableException()
     {
         var root = TestDirectory.Create();
@@ -181,12 +185,12 @@ public sealed class ReliabilityTests
         await using var node = new LocalSendNode(TestOptions(port, root));
         try
         {
-            var exception = await Assert.ThrowsAsync<PortUnavailableException>(() => node.StartAsync());
-            Assert.Equal(port, exception.Port);
-            Assert.Equal(LocalSendNodeState.Faulted, node.State);
+            var exception = await Assert.ThrowsExactlyAsync<PortUnavailableException>(() => node.StartAsync());
+            Assert.AreEqual(port, exception.Port);
+            Assert.AreEqual(LocalSendNodeState.Faulted, node.State);
             listener.Stop();
             await node.StartAsync();
-            Assert.Equal(LocalSendNodeState.Running, node.State);
+            Assert.AreEqual(LocalSendNodeState.Running, node.State);
             await node.StopAsync();
         }
         finally
@@ -196,7 +200,8 @@ public sealed class ReliabilityTests
         }
     }
 
-    [Fact(Timeout = 20_000)]
+    [TestMethod]
+    [Timeout(20_000)]
     public async Task CancelledStartupCleansUpAndCanBeRetried()
     {
         var root = TestDirectory.Create();
@@ -204,10 +209,10 @@ public sealed class ReliabilityTests
         try
         {
             using var cancellation = new CancellationTokenSource(TimeSpan.FromMilliseconds(50));
-            await Assert.ThrowsAnyAsync<OperationCanceledException>(() => node.StartAsync(cancellation.Token));
-            Assert.Equal(LocalSendNodeState.Created, node.State);
+            await Assert.ThrowsAsync<OperationCanceledException>(() => node.StartAsync(cancellation.Token));
+            Assert.AreEqual(LocalSendNodeState.Created, node.State);
             await node.StartAsync();
-            Assert.Equal(LocalSendNodeState.Running, node.State);
+            Assert.AreEqual(LocalSendNodeState.Running, node.State);
             await node.StopAsync();
         }
         finally { Directory.Delete(root, recursive: true); }

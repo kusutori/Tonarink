@@ -2,57 +2,58 @@ using LocalSendDotNet;
 
 namespace LocalSendDotNet.Core.Tests;
 
+[TestClass]
 public sealed class NetworkAddressPatternsTests
 {
-    [Fact]
+    [TestMethod]
     public void NullListsDoNotIgnoreInterfaces()
     {
-        Assert.False(NetworkAddressPatterns.IsInterfaceIgnored(["192.168.1.20"], null, null));
+        Assert.IsFalse(NetworkAddressPatterns.IsInterfaceIgnored(["192.168.1.20"], null, null));
     }
 
-    [Fact]
+    [TestMethod]
     public void EmptyWhitelistIgnoresEveryInterface()
     {
-        Assert.True(NetworkAddressPatterns.IsInterfaceIgnored(["192.168.1.20"], [""], null));
-        Assert.True(NetworkAddressPatterns.IsInterfaceIgnored(["192.168.1.20"], [], null));
+        Assert.IsTrue(NetworkAddressPatterns.IsInterfaceIgnored(["192.168.1.20"], [""], null));
+        Assert.IsTrue(NetworkAddressPatterns.IsInterfaceIgnored(["192.168.1.20"], [], null));
     }
 
-    [Fact]
+    [TestMethod]
     public void WhitelistKeepsMatchingInterface()
     {
-        Assert.False(NetworkAddressPatterns.IsInterfaceIgnored(["192.168.1.20"], ["192.168.1.*"], null));
-        Assert.True(NetworkAddressPatterns.IsInterfaceIgnored(["10.0.0.8"], ["192.168.1.*"], null));
+        Assert.IsFalse(NetworkAddressPatterns.IsInterfaceIgnored(["192.168.1.20"], ["192.168.1.*"], null));
+        Assert.IsTrue(NetworkAddressPatterns.IsInterfaceIgnored(["10.0.0.8"], ["192.168.1.*"], null));
     }
 
-    [Fact]
+    [TestMethod]
     public void BlacklistIgnoresMatchingInterface()
     {
-        Assert.True(NetworkAddressPatterns.IsInterfaceIgnored(["10.0.0.8"], null, ["10.0.0.*"]));
-        Assert.False(NetworkAddressPatterns.IsInterfaceIgnored(["192.168.1.20"], null, ["10.0.0.*"]));
+        Assert.IsTrue(NetworkAddressPatterns.IsInterfaceIgnored(["10.0.0.8"], null, ["10.0.0.*"]));
+        Assert.IsFalse(NetworkAddressPatterns.IsInterfaceIgnored(["192.168.1.20"], null, ["10.0.0.*"]));
     }
 
-    [Fact]
+    [TestMethod]
     public void BlacklistIgnoresWholeInterfaceWhenAnyAddressMatches()
     {
-        Assert.True(NetworkAddressPatterns.IsInterfaceIgnored(["192.168.1.20", "10.0.0.8"], null, ["10.0.0.8"]));
+        Assert.IsTrue(NetworkAddressPatterns.IsInterfaceIgnored(["192.168.1.20", "10.0.0.8"], null, ["10.0.0.8"]));
     }
 
-    [Fact]
+    [TestMethod]
     public void WhitelistTakesPrecedenceOverBlacklist()
     {
-        Assert.False(NetworkAddressPatterns.IsInterfaceIgnored(["192.168.1.20"], ["192.168.1.20"], ["192.168.1.20"]));
-        Assert.True(NetworkAddressPatterns.IsInterfaceIgnored(["10.0.0.8"], ["192.168.1.20"], ["10.0.0.8"]));
+        Assert.IsFalse(NetworkAddressPatterns.IsInterfaceIgnored(["192.168.1.20"], ["192.168.1.20"], ["192.168.1.20"]));
+        Assert.IsTrue(NetworkAddressPatterns.IsInterfaceIgnored(["10.0.0.8"], ["192.168.1.20"], ["10.0.0.8"]));
     }
 
-    [Theory]
-    [InlineData("192.168.1.20", "192.168.1.20", true)]
-    [InlineData("192.168.1.*", "192.168.1.20", true)]
-    [InlineData("192.168.*.20", "192.168.9.20", true)]
-    [InlineData("192.168.1.*", "192.168.2.20", false)]
-    [InlineData("192.168.1.20", "192.168.1.21", false)]
-    [InlineData("", "192.168.1.20", false)]
-    [InlineData("192.168.1", "192.168.1.20", false)]
-    [InlineData("not-an-ip", "192.168.1.20", false)]
+    [TestMethod]
+    [DataRow("192.168.1.20", "192.168.1.20", true)]
+    [DataRow("192.168.1.*", "192.168.1.20", true)]
+    [DataRow("192.168.*.20", "192.168.9.20", true)]
+    [DataRow("192.168.1.*", "192.168.2.20", false)]
+    [DataRow("192.168.1.20", "192.168.1.21", false)]
+    [DataRow("", "192.168.1.20", false)]
+    [DataRow("192.168.1", "192.168.1.20", false)]
+    [DataRow("not-an-ip", "192.168.1.20", false)]
     public void MatchesDottedQuadPatterns(string pattern, string address, bool expected) =>
-        Assert.Equal(expected, NetworkAddressPatterns.Matches(pattern, address));
+        Assert.AreEqual(expected, NetworkAddressPatterns.Matches(pattern, address));
 }

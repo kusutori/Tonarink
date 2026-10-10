@@ -13,6 +13,7 @@ internal sealed class IncomingSession
     private readonly object _tokenGate = new();
     private readonly Dictionary<string, long> _itemProgress = new(StringComparer.Ordinal);
     private long _totalBytes;
+    private bool _cancelling;
 
     public required Guid RequestId { get; init; }
     public required Guid TransferId { get; init; }
@@ -20,6 +21,7 @@ internal sealed class IncomingSession
     public required IPAddress RemoteAddress { get; init; }
     public required PrepareUploadRequestDto Request { get; init; }
     public required IncomingTransferRequest PublicRequest { get; init; }
+    public bool CanCancelSender { get; init; }
     public required TaskCompletionSource<IncomingDecision> Decision { get; init; }
     public required TaskCompletionSource<ReceiveOutcome> Completion { get; init; }
     public Dictionary<string, string> Tokens { get; } = new(StringComparer.Ordinal);
@@ -70,14 +72,36 @@ internal sealed class IncomingSession
         }
     }
 
-    public void Fail(string code, string message, string? itemId = null)
+    // Record intent before asking the sender to stop. The sender may close its
+    // body while /cancel is still being acknowledged; that EOF is cancellation,
+    // not an unrelated receive failure. Already completed outcomes are retained.
+    public void RequestCancellation()
     {
-        Completion.TrySetResult(new ReceiveOutcome.Failed(
-            TransferId,
-            _results.ToArray(),
-            new TransferFailure(code, message, itemId)));
-        Cancellation.Cancel();
+        lock (_gate) _cancelling = true;
     }
 
-    public void Cancel() => Completion.TrySetResult(new ReceiveOutcome.Cancelled(TransferId, _results.ToArray()));
+    public void Fail(string code, string message, string? itemId = null)
+    {
+        lock (_gate)
+        {
+            if (_cancelling)
+                Completion.TrySetResult(new ReceiveOutcome.Cancelled(TransferId, _results.ToArray()));
+            else
+                Completion.TrySetResult(new ReceiveOutcome.Failed(
+                    TransferId,
+                    _results.ToArray(),
+                    new TransferFailure(code, message, itemId)));
+        }
+        try { Cancellation.Cancel(); }
+        catch (ObjectDisposedException) when (Completion.Task.IsCompleted) { }
+    }
+
+    public void Cancel()
+    {
+        lock (_gate)
+        {
+            _cancelling = true;
+            Completion.TrySetResult(new ReceiveOutcome.Cancelled(TransferId, _results.ToArray()));
+        }
+    }
 }

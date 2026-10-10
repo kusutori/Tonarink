@@ -32,6 +32,8 @@ Use `SendFileItem`, `SendTextItem`, or `SendStreamItem`. The stream factory make
 
 `WatchIncomingTransfersAsync` is a reliable bounded stream: when a subscriber is slow, producers wait instead of silently dropping a request requiring a decision. Call `AcceptAsync` with item IDs for partial acceptance or `DeclineAsync`. Unknown IDs are rejected before a decision is sent.
 
+The watch stream reports arrivals, not removals. `GetPendingIncomingTransfers()` gives the current offers still awaiting a decision, excluding accepted, declined, disconnected, timed-out, or stopped requests. Hosts that cache arrivals should reconcile that cache against this snapshot; it is not a reservation, so an offer may end between a snapshot and a later accept call.
+
 Accepted files are streamed to `.part-*`, length-checked, optionally SHA-256 checked, and atomically renamed. Absolute paths, traversal, linked subdirectories, and platform-invalid names are rejected. `AcceptAsync` returns `ReceiveOutcome.Completed`, `ReceiveOutcome.Cancelled`, or `ReceiveOutcome.Failed`; caller cancellation still throws `OperationCanceledException`. Abandoned accepted sessions fail after `IncomingTransferTimeout`, release their concurrency slot, and remove temporary files. When all slots are occupied, new sessions receive an immediate busy response instead of waiting indefinitely.
 
 ## Limits

@@ -2,9 +2,10 @@ using LocalSendDotNet;
 
 namespace LocalSendDotNet.Core.Tests;
 
+[TestClass]
 public sealed class TransferOutcomeTests
 {
-    [Fact]
+    [TestMethod]
     public void SendOutcomeCarriesOnlyCaseSpecificData()
     {
         var transferId = Guid.NewGuid();
@@ -21,10 +22,10 @@ public sealed class TransferOutcomeTests
             SendOutcome.Failed failed => $"failed:{failed.Failure.Code}",
         };
 
-        Assert.Equal("pin:True", description);
+        Assert.AreEqual("pin:True", description);
     }
 
-    [Fact]
+    [TestMethod]
     public void ReceiveFailureRequiresStructuredFailure()
     {
         var failure = new TransferFailure(TransferFailureCodes.ChecksumMismatch, "Digest mismatch", "item-1");
@@ -36,6 +37,6 @@ public sealed class TransferOutcomeTests
             _ => null,
         };
 
-        Assert.Same(failure, actual);
+        Assert.AreSame(failure, actual);
     }
 }

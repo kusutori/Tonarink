@@ -5,9 +5,11 @@ using LocalSendDotNet.Protocol.V2;
 
 namespace LocalSendDotNet.Core.Tests;
 
+[TestClass]
 public sealed class TransportReliabilityTests
 {
-    [Fact(Timeout = 30_000)]
+    [TestMethod]
+    [Timeout(30_000)]
     public async Task ReceiverHandlesConcurrentUploadsInOneSession()
     {
         var setup = await TestPeers.CreateAsync();
@@ -23,19 +25,21 @@ public sealed class TransportReliabilityTests
             var prepareTask = setup.Client.PrepareUploadAsync(setup.Endpoint, setup.ReceiverFingerprint, setup.Request(files), null, default);
             var incoming = await requestTask;
             var receiveTask = receiver.AcceptAsync(incoming.RequestId);
-            var prepared = Assert.IsType<PrepareUploadResponseDto>(await prepareTask);
+            var prepared = await prepareTask;
+            Assert.IsNotNull(prepared);
 
             await Task.WhenAll(files.Select(pair => UploadAsync(setup, prepared, pair.Value, pair.Key == "a" ? "alpha" : "bravo")));
             var result = await receiveTask;
 
-            Assert.Equal(2, result.RequireCompleted().Items.Count);
-            Assert.Equal("alpha", await System.IO.File.ReadAllTextAsync(Path.Combine(setup.Downloads, "a.txt")));
-            Assert.Equal("bravo", await System.IO.File.ReadAllTextAsync(Path.Combine(setup.Downloads, "b.txt")));
+            Assert.AreEqual(2, result.RequireCompleted().Items.Count);
+            Assert.AreEqual("alpha", await System.IO.File.ReadAllTextAsync(Path.Combine(setup.Downloads, "a.txt")));
+            Assert.AreEqual("bravo", await System.IO.File.ReadAllTextAsync(Path.Combine(setup.Downloads, "b.txt")));
         }
         finally { setup.Delete(); }
     }
 
-    [Fact(Timeout = 30_000)]
+    [TestMethod]
+    [Timeout(30_000)]
     public async Task AcceptedButAbandonedSessionTimesOutAndReleasesSlot()
     {
         var setup = await TestPeers.CreateAsync(incomingTransferTimeout: TimeSpan.FromMilliseconds(200));
@@ -50,12 +54,13 @@ public sealed class TransportReliabilityTests
             _ = await prepareTask;
 
             var result = await receiveTask;
-            Assert.Equal("transfer_timeout", result.RequireFailed().Failure.Code);
+            Assert.AreEqual("transfer_timeout", result.RequireFailed().Failure.Code);
         }
         finally { setup.Delete(); }
     }
 
-    [Fact(Timeout = 30_000)]
+    [TestMethod]
+    [Timeout(30_000)]
     public async Task BusyReceiverRejectsNewSessionWithoutQueueing()
     {
         var setup = await TestPeers.CreateAsync(maxConcurrentTransfers: 1);
@@ -67,15 +72,16 @@ public sealed class TransportReliabilityTests
                 setup.Request(new Dictionary<string, FileDto> { ["a"] = File("a", "a.txt", "alpha") }), null, default);
             var firstRequest = await firstRequestTask;
 
-            await Assert.ThrowsAsync<PeerBusyException>(() => setup.Client.PrepareUploadAsync(setup.Endpoint, setup.ReceiverFingerprint,
+            await Assert.ThrowsExactlyAsync<PeerBusyException>(() => setup.Client.PrepareUploadAsync(setup.Endpoint, setup.ReceiverFingerprint,
                 setup.Request(new Dictionary<string, FileDto> { ["b"] = File("b", "b.txt", "bravo") }), null, default));
             await receiver.DeclineAsync(firstRequest.RequestId);
-            await Assert.ThrowsAsync<TransferDeclinedException>(() => firstPrepare);
+            await Assert.ThrowsExactlyAsync<TransferDeclinedException>(() => firstPrepare);
         }
         finally { setup.Delete(); }
     }
 
-    [Fact(Timeout = 30_000)]
+    [TestMethod]
+    [Timeout(30_000)]
     public async Task IncorrectChecksumFailsAndDoesNotPublishFile()
     {
         var setup = await TestPeers.CreateAsync();
@@ -88,18 +94,20 @@ public sealed class TransportReliabilityTests
                 setup.Request(new Dictionary<string, FileDto> { ["a"] = file }), null, default);
             var incoming = await requestTask;
             var receiveTask = receiver.AcceptAsync(incoming.RequestId);
-            var prepared = Assert.IsType<PrepareUploadResponseDto>(await prepareTask);
+            var prepared = await prepareTask;
+            Assert.IsNotNull(prepared);
 
-            await Assert.ThrowsAsync<HttpRequestException>(() => UploadAsync(setup, prepared, file, "expected"));
+            await Assert.ThrowsExactlyAsync<HttpRequestException>(() => UploadAsync(setup, prepared, file, "expected"));
             var result = await receiveTask;
-            Assert.Equal("checksum_mismatch", result.RequireFailed().Failure.Code);
-            Assert.False(System.IO.File.Exists(Path.Combine(setup.Downloads, "bad.txt")));
-            Assert.Empty(Directory.EnumerateFiles(setup.Downloads, "*.part-*"));
+            Assert.AreEqual("checksum_mismatch", result.RequireFailed().Failure.Code);
+            Assert.IsFalse(System.IO.File.Exists(Path.Combine(setup.Downloads, "bad.txt")));
+            Assert.IsEmpty(Directory.EnumerateFiles(setup.Downloads, "*.part-*"));
         }
         finally { setup.Delete(); }
     }
 
-    [Fact(Timeout = 30_000)]
+    [TestMethod]
+    [Timeout(30_000)]
     public async Task WrongUploadTokenDoesNotConsumeTheValidToken()
     {
         var setup = await TestPeers.CreateAsync();
@@ -112,21 +120,23 @@ public sealed class TransportReliabilityTests
                 setup.Request(new Dictionary<string, FileDto> { ["a"] = file }), null, default);
             var incoming = await requestTask;
             var receiveTask = receiver.AcceptAsync(incoming.RequestId);
-            var prepared = Assert.IsType<PrepareUploadResponseDto>(await prepareTask);
+            var prepared = await prepareTask;
+            Assert.IsNotNull(prepared);
             var validToken = prepared.Files[file.Id];
             var bytes = System.Text.Encoding.UTF8.GetBytes("retry");
 
-            await Assert.ThrowsAsync<HttpRequestException>(() => setup.Client.UploadAsync(setup.Endpoint, setup.ReceiverFingerprint,
+            await Assert.ThrowsExactlyAsync<HttpRequestException>(() => setup.Client.UploadAsync(setup.Endpoint, setup.ReceiverFingerprint,
                 prepared.SessionId, file.Id, validToken + "wrong", new MemoryStream(bytes), bytes.Length, file.FileType, default));
             await UploadAsync(setup, prepared, file, "retry");
 
             _ = (await receiveTask).RequireCompleted();
-            Assert.Equal("retry", await System.IO.File.ReadAllTextAsync(Path.Combine(setup.Downloads, "retry.txt")));
+            Assert.AreEqual("retry", await System.IO.File.ReadAllTextAsync(Path.Combine(setup.Downloads, "retry.txt")));
         }
         finally { setup.Delete(); }
     }
 
-    [Fact(Timeout = 30_000)]
+    [TestMethod]
+    [Timeout(30_000)]
     public async Task InterruptedBodyRemovesTemporaryFile()
     {
         var setup = await TestPeers.CreateAsync(incomingTransferTimeout: TimeSpan.FromSeconds(1));
@@ -139,19 +149,21 @@ public sealed class TransportReliabilityTests
                 setup.Request(new Dictionary<string, FileDto> { ["a"] = file }), null, default);
             var incoming = await requestTask;
             var receiveTask = receiver.AcceptAsync(incoming.RequestId);
-            var prepared = Assert.IsType<PrepareUploadResponseDto>(await prepareTask);
+            var prepared = await prepareTask;
+            Assert.IsNotNull(prepared);
 
-            await Assert.ThrowsAnyAsync<Exception>(() => setup.Client.UploadAsync(setup.Endpoint, setup.ReceiverFingerprint,
+            await Assert.ThrowsAsync<Exception>(() => setup.Client.UploadAsync(setup.Endpoint, setup.ReceiverFingerprint,
                 prepared.SessionId, file.Id, prepared.Files[file.Id], new MemoryStream([1, 2]), file.Size, file.FileType, default));
             var result = await receiveTask;
-            Assert.True(result is ReceiveOutcome.Cancelled or ReceiveOutcome.Failed);
-            Assert.False(System.IO.File.Exists(Path.Combine(setup.Downloads, "interrupted.txt")));
-            Assert.Empty(Directory.EnumerateFiles(setup.Downloads, "*.part-*"));
+            Assert.IsTrue(result is ReceiveOutcome.Cancelled or ReceiveOutcome.Failed);
+            Assert.IsFalse(System.IO.File.Exists(Path.Combine(setup.Downloads, "interrupted.txt")));
+            Assert.IsEmpty(Directory.EnumerateFiles(setup.Downloads, "*.part-*"));
         }
         finally { setup.Delete(); }
     }
 
-    [Fact(Timeout = 30_000)]
+    [TestMethod]
+    [Timeout(30_000)]
     public async Task RegisterRejectsFingerprintThatDiffersFromClientCertificate()
     {
         var setup = await TestPeers.CreateAsync();
@@ -167,14 +179,15 @@ public sealed class TransportReliabilityTests
                 Port = setup.SenderInfo.Port,
                 Protocol = setup.SenderInfo.Protocol
             };
-            await Assert.ThrowsAsync<HttpRequestException>(() =>
+            await Assert.ThrowsExactlyAsync<HttpRequestException>(() =>
                 setup.Client.RegisterAsync(setup.Endpoint, setup.ReceiverFingerprint, spoofed, default));
-            Assert.DoesNotContain(receiver.GetDevices(), device => device.Fingerprint == spoofed.Fingerprint);
+            Assert.DoesNotContain(device => device.Fingerprint == spoofed.Fingerprint, receiver.GetDevices());
         }
         finally { setup.Delete(); }
     }
 
-    [Fact(Timeout = 30_000)]
+    [TestMethod]
+    [Timeout(30_000)]
     public async Task PrepareMetadataLimitRemainsEnforcedWhileLargeUploadsAreAllowed()
     {
         var setup = await TestPeers.CreateAsync(maxPrepareRequestBytes: 128);
@@ -182,7 +195,7 @@ public sealed class TransportReliabilityTests
         try
         {
             var file = File("a", new string('x', 256) + ".txt", "content");
-            await Assert.ThrowsAsync<HttpRequestException>(() => setup.Client.PrepareUploadAsync(setup.Endpoint, setup.ReceiverFingerprint,
+            await Assert.ThrowsExactlyAsync<HttpRequestException>(() => setup.Client.PrepareUploadAsync(setup.Endpoint, setup.ReceiverFingerprint,
                 setup.Request(new Dictionary<string, FileDto> { ["a"] = file }), null, default));
         }
         finally { setup.Delete(); }

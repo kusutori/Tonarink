@@ -19,7 +19,13 @@ internal sealed class BroadcastHub<T>(int capacity, bool dropOldest = true)
     public async Task PublishAsync(T item, CancellationToken cancellationToken)
     {
         foreach (var channel in _subscribers.Values)
-            await channel.Writer.WriteAsync(item, cancellationToken).ConfigureAwait(false);
+        {
+            try { await channel.Writer.WriteAsync(item, cancellationToken).ConfigureAwait(false); }
+            // A subscriber can leave, or the hub can complete, while a reliable
+            // writer is waiting for capacity. Neither closes other subscribers;
+            // caller cancellation still propagates rather than being swallowed.
+            catch (ChannelClosedException) { }
+        }
     }
 
     public async IAsyncEnumerable<T> Subscribe([EnumeratorCancellation] CancellationToken cancellationToken)
@@ -45,6 +51,9 @@ internal sealed class BroadcastHub<T>(int capacity, bool dropOldest = true)
         finally
         {
             _subscribers.TryRemove(id, out _);
+            // Removing the dictionary entry alone leaves writers that captured
+            // this full channel blocked indefinitely, even after hub completion.
+            channel.Writer.TryComplete();
         }
     }
 
