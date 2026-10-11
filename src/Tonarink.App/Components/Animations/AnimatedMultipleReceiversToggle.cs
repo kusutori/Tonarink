@@ -211,44 +211,30 @@ sealed class AnimatedMultipleReceiversToggle : Component<AnimatedMultipleReceive
     private static void UpdateForeground(
         XamlToggleButton button,
         Tonarink.MultipleReceiversIcon source,
-        bool isChecked)
-    {
-        if (isChecked)
-        {
-            source.Foreground = Microsoft.UI.Colors.Black;
-            return;
-        }
-
-        if (button.Foreground is SolidColorBrush brush)
-            source.Foreground = brush.Color;
-    }
+        bool isChecked) => UpdateForeground(button, button, source, isChecked);
 
     private static void UpdateForeground(
         XamlToggleButton? button,
-        AnimatedVisualPlayer player,
+        FrameworkElement element,
         Tonarink.MultipleReceiversIcon source,
         bool isChecked)
     {
-        if (isChecked)
-        {
-            source.Foreground = Microsoft.UI.Colors.Black;
-            return;
-        }
-
-        if (button?.Foreground is SolidColorBrush brush)
+        if (!isChecked && button?.Foreground is SolidColorBrush brush)
         {
             source.Foreground = brush.Color;
             return;
         }
 
-        var theme = player.ActualTheme;
+        var theme = button?.ActualTheme ?? element.ActualTheme;
         if (theme == ElementTheme.Default
-            && player.XamlRoot?.Content is FrameworkElement root)
+            && element.XamlRoot?.Content is FrameworkElement root)
         {
             theme = root.ActualTheme;
         }
 
-        source.Foreground = theme == ElementTheme.Dark
+        // The selected accent background needs the opposite foreground in
+        // light and dark themes; the animation is an overlay, not button content.
+        source.Foreground = (theme == ElementTheme.Dark) != isChecked
             ? Microsoft.UI.Colors.White
             : Microsoft.UI.Colors.Black;
     }
