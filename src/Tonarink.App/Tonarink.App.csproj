@@ -230,7 +230,6 @@
                           PrivateAssets="all" />
         <PackageReference Include="Microsoft.UI.Reactor" />
         <PackageReference Include="Microsoft.UI.Reactor.Advanced" />
-        <PackageReference Include="WinUIEx" />
         <PackageReference Include="Net.Codecrete.QrCodeGenerator" />
         <ProjectReference Include="..\LocalSendDotNet.Core\LocalSendDotNet.Core.csproj" />
         <ProjectReference Include="..\Tonarink.Application\Tonarink.Application.csproj" />
