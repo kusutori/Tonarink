@@ -1,4 +1,3 @@
-using LocalSendDotNet;
 using Tonarink.Utilities;
 using Windows.UI.StartScreen;
 
@@ -49,7 +48,7 @@ static class JumpListService
                     favorite.Name,
                     labels.FavoritesGroup,
                     labels.FavoriteDescription(favorite.Name),
-                    DeviceLogo(favorite.DeviceType ?? LocalSendDeviceType.Desktop)));
+                    DeviceIconAssets.ForDeviceType(favorite.DeviceType)));
                 if (++favoriteCount == ItemsPerGroup)
                     break;
             }
@@ -98,9 +97,6 @@ static class JumpListService
         item.Logo = logo;
         return item;
     }
-
-    private static Uri DeviceLogo(LocalSendDeviceType type) =>
-        new($"ms-appx:///Assets/JumpList/JumpList.Device.{type}.png");
 
     private static Uri FileLogo(string path)
     {

@@ -114,7 +114,7 @@ static class PeopleSuggestionsService
                 FirstName = favorite.Name,
                 RemoteId = favorite.Fingerprint,
                 SourceDisplayPicture = RandomAccessStreamReference.CreateFromUri(
-                    new Uri("ms-appx:///Assets/Square150x150Logo.png")),
+                    DeviceIconAssets.ForDeviceType(favorite.DeviceType)),
             };
             await contactList.SaveContactAsync(contact);
         }
