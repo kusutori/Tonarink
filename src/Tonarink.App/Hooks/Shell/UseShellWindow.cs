@@ -49,7 +49,7 @@ static class ShellWindowHooks
 
             // The host's component owns UseTrayIcon, so closing the auxiliary
             // window also unregisters the icon and detaches its callbacks.
-            var menuHost = new TrayMenuHost(window, t);
+            var menuHost = new TrayMenuHost(t);
             return menuHost.Dispose;
         }, window, minimizeToTray, t.Locale);
 

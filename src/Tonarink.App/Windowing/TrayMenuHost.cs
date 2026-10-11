@@ -14,6 +14,8 @@ namespace Tonarink.Windowing;
 
 // This window only supplies an activated XamlRoot for MenuFlyout. The menu
 // remains a XAML popup; it is not rendered inside a tray-panel-sized window.
+// Keep it unowned so activating the menu does not raise the main window.
+// The shell hook explicitly disposes the host when its lifetime ends.
 sealed class TrayMenuHost : IDisposable
 {
     private readonly ReactorWindow _window;
@@ -24,13 +26,12 @@ sealed class TrayMenuHost : IDisposable
     private int _menuEpoch;
     private bool _disposed;
 
-    public TrayMenuHost(ReactorWindow owner, IntlAccessor intl)
+    public TrayMenuHost(IntlAccessor intl)
     {
         _intl = intl;
         _window = ReactorApp.OpenWindow(new WindowSpec
         {
             Key = WindowKey.Of("tray-menu-host"),
-            Owner = owner,
             Title = "Tonarink tray menu",
             Width = 1,
             Height = 1,
