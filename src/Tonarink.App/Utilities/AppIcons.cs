@@ -37,6 +37,7 @@ static class AppIcons
     public const string MultipleReceivers = "\uF22C";
     public const string Network = "\uE704";
     public const string Notification = "\uEA8F";
+    public const string OpenApp = "\uE8A7";
     public const string OpenFolder = "\uE8DA";
     public const string OpenFile = "\uE8E5";
     public const string Pin = "\uE718";

@@ -5,6 +5,7 @@ using Microsoft.UI.Reactor.Localization;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
+using Microsoft.UI.Xaml.Media;
 using Windows.Foundation;
 using Windows.Graphics;
 using static Microsoft.UI.Reactor.Factories;
@@ -18,15 +19,17 @@ sealed class TrayMenuHost : IDisposable
     private readonly ReactorWindow _window;
     private readonly IntlAccessor _intl;
     private readonly Action _restore;
+    private readonly Action _openSettings;
     private FrameworkElement? _anchor;
     private MenuFlyout? _menu;
     private bool _pendingShow;
     private bool _disposed;
 
-    public TrayMenuHost(ReactorWindow owner, IntlAccessor intl, Action restore)
+    public TrayMenuHost(ReactorWindow owner, IntlAccessor intl, Action restore, Action openSettings)
     {
         _intl = intl;
         _restore = restore;
+        _openSettings = openSettings;
         _window = ReactorApp.OpenWindow(new WindowSpec
         {
             Key = WindowKey.Of("tray-menu-host"),
@@ -100,9 +103,27 @@ sealed class TrayMenuHost : IDisposable
         _anchor.FlowDirection = _intl.Direction;
         var menu = new MenuFlyout { ShouldConstrainToRootBounds = false };
 
-        var open = new MenuFlyoutItem { Text = _intl.Message(new("App", "TrayOpen")) };
+        var open = new MenuFlyoutItem
+        {
+            Text = _intl.Message(new("App", "TrayOpen")),
+            Icon = CreateIcon(AppIcons.OpenApp),
+        };
         open.Click += (_, _) => Restore();
-        var exit = new MenuFlyoutItem { Text = _intl.Message(new("App", "TrayExit")) };
+        var settings = new MenuFlyoutItem
+        {
+            Text = _intl.Message(new("App", "NavSettings")),
+            Icon = CreateIcon(AppIcons.Settings),
+        };
+        settings.Click += (_, _) =>
+        {
+            Restore();
+            _openSettings();
+        };
+        var exit = new MenuFlyoutItem
+        {
+            Text = _intl.Message(new("App", "TrayExit")),
+            Icon = CreateIcon(AppIcons.Cancel),
+        };
         exit.Click += (_, _) =>
         {
             DismissMenu();
@@ -110,6 +131,7 @@ sealed class TrayMenuHost : IDisposable
             ReactorApp.Exit();
         };
         menu.Items.Add(open);
+        menu.Items.Add(settings);
         menu.Items.Add(new MenuFlyoutSeparator());
         menu.Items.Add(exit);
         menu.Closed += OnMenuClosed;
@@ -123,6 +145,12 @@ sealed class TrayMenuHost : IDisposable
         _ = SetForegroundWindow(WinRT.Interop.WindowNative.GetWindowHandle(_window.NativeWindow));
         TryShowMenu();
     }
+
+    private static FontIcon CreateIcon(string glyph) => new()
+    {
+        FontFamily = new FontFamily("Segoe Fluent Icons"),
+        Glyph = glyph,
+    };
 
     private void TryShowMenu()
     {

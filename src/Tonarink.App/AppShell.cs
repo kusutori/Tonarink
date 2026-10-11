@@ -174,7 +174,11 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
         var mouseBackHandler = context.UseRef<PointerEventHandler?>();
         var nodeSession = context.UseLocalSendNode(settings, t);
         var runtime = nodeSession.Runtime;
-        var windowController = context.UseShellWindow(window, settings.MinimizeToTray, t);
+        var windowController = context.UseShellWindow(window, settings.MinimizeToTray, t, () =>
+        {
+            if (navigation.CurrentRoute != AppRoute.Settings)
+                navigation.Navigate(AppRoute.Settings);
+        });
 
         CliBridge.Current = new(nodeSession, updateSettings, windowController.Restore,
             token => AppCommandNavigation.PrepareAsync(window?.NativeWindow?.Content?.XamlRoot,
