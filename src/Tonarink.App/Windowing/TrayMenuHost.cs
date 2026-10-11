@@ -99,8 +99,6 @@ sealed class TrayMenuHost : IDisposable
         _anchor.RequestedTheme = theme;
         _anchor.FlowDirection = _intl.Direction;
         var menu = new MenuFlyout { ShouldConstrainToRootBounds = false };
-        if (TonarinkThemeResources.TrayMenuPresenterStyle(theme) is { } style)
-            menu.MenuFlyoutPresenterStyle = style;
 
         var open = new MenuFlyoutItem { Text = _intl.Message(new("App", "TrayOpen")) };
         open.Click += (_, _) => Restore();
