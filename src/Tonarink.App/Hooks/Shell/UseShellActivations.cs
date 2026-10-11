@@ -24,6 +24,8 @@ static class ShellActivationHooks
         bool canPresentDialogs)
     {
         var (shareTargetPayload, setShareTargetPayload) = context.UseState<ShareTargetPayload?>(null);
+        var activeSharePayload = context.UseRef<ShareTargetPayload?>(null);
+        var pendingSharePayloads = context.UseRef(new Queue<ShareTargetPayload>());
         var (navigationFavoriteFingerprint, setNavigationFavoriteFingerprint) = context.UseState<string?>(null);
         var (navigationHistoryId, setNavigationHistoryId) = context.UseState<Guid?>(null);
         var drainingActivations = context.UseRef(false);
@@ -78,6 +80,7 @@ static class ShellActivationHooks
             {
                 if (request.Route is { } route)
                 {
+                    if (request.Payload is { } payload) PublishSharePayload(payload);
                     setNavigationFavoriteFingerprint(fingerprint);
                     setNavigationHistoryId(request.History);
                     if (navigation.CurrentRoute != route)
@@ -93,8 +96,21 @@ static class ShellActivationHooks
 
         void ConsumeShareTargetPayload(Guid payloadId)
         {
-            if (shareTargetPayload?.Id == payloadId)
-                setShareTargetPayload(null);
+            if (activeSharePayload.Current?.Id != payloadId) return;
+            activeSharePayload.Current = pendingSharePayloads.Current.TryDequeue(out var next) ? next : null;
+            setShareTargetPayload(activeSharePayload.Current);
+        }
+
+        void PublishSharePayload(ShareTargetPayload payload)
+        {
+            // Consecutive Send To invocations must not replace/cancel an active
+            // folder import. Reuse the existing send-page import pipeline in order.
+            if (activeSharePayload.Current is not null) pendingSharePayloads.Current.Enqueue(payload);
+            else
+            {
+                activeSharePayload.Current = payload;
+                setShareTargetPayload(payload);
+            }
         }
 
         void ConsumeNavigationFavorite(string fingerprint)
@@ -140,7 +156,7 @@ static class ShellActivationHooks
                     if (payload is null)
                         continue;
 
-                    setShareTargetPayload(payload);
+                    PublishSharePayload(payload);
                     if (navigation.CurrentRoute != AppRoute.Send)
                         navigation.Navigate(AppRoute.Send);
                     restoreWindow();

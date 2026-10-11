@@ -370,6 +370,9 @@
   <data name="ExplorerCommandTitle" xml:space="preserve"><value>Send with Tonarink</value></data>
   <data name="SettingsExplorerContextMenu" xml:space="preserve"><value>File Explorer context menu</value></data>
   <data name="SettingsExplorerContextMenuDescription" xml:space="preserve"><value>Add “Send with Tonarink” to the context menu; requires the MSIX app on Windows 11</value></data>
+  <data name="SettingsSendTo" xml:space="preserve"><value>File Explorer Send to menu</value></data>
+  <data name="SettingsSendToDescription" xml:space="preserve"><value>Add Tonarink to Send to and add selected files to the send list; unpackaged builds only</value></data>
+  <data name="SettingsSendToFailed" xml:space="preserve"><value>Could not update the Send to menu: {error}</value></data>
   <data name="SettingsAppExecutionAliases" xml:space="preserve"><value>App execution aliases</value></data>
   <data name="SettingsAppExecutionAliasesDescription" xml:space="preserve"><value>Open Windows Settings, then go to Apps → Advanced app settings → App execution aliases to manage the tonarink command; requires the MSIX app</value></data>
   <data name="SettingsAppExecutionAliasesOpenFailed" xml:space="preserve"><value>Could not open Windows Settings; go to Settings → Apps → Advanced app settings → App execution aliases</value></data>

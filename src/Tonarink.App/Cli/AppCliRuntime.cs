@@ -76,6 +76,12 @@ sealed class AppCliRuntime(Func<CliBindings> bindings) : ICliRuntime
                 var next = CliSettings.Set(previous, key, value, workingDirectory);
                 if (next.StartWithWindows != previous.StartWithWindows)
                     await WindowsStartup.SetEnabledAsync(next.StartWithWindows, next.MinimizeToTray);
+                if (next.ShowInSendToMenu != previous.ShowInSendToMenu)
+                {
+                    if (AppPlatform.HasPackageIdentity())
+                        throw new CliException(CliText.Get("Send To integration is only available in unpackaged builds."), 3);
+                    WindowsSendTo.SetEnabled(next.ShowInSendToMenu);
+                }
                 AppSettingsStore.Save(next); current.UpdateSettings(_ => next);
                 AppNotificationService.SetEnabled(next.NotificationsEnabled);
                 return next;
@@ -124,6 +130,23 @@ sealed class AppCliRuntime(Func<CliBindings> bindings) : ICliRuntime
     public Task OpenAppAsync(string? favorite, Guid? history, CancellationToken token) =>
         AppNavigationService.OpenAsync(favorite is not null ? AppNavigationRequest.ForFavorite(favorite)
             : history is { } id ? AppNavigationRequest.ForHistory(id) : new(), token);
+    public Task OpenAppAsync(string? favorite, Guid? history, IReadOnlyList<string> paths,
+        string workingDirectory, CancellationToken token)
+    {
+        if (paths.Count == 0) return OpenAppAsync(favorite, history, token);
+        token.ThrowIfCancellationRequested();
+        if (history is not null) throw new CliException(CliText.Get("Do not combine paths with --history."), 2);
+        var items = paths.Select(path => CliPath.FullPath(path, workingDirectory))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Select(path =>
+            {
+                if (!File.Exists(path) && !Directory.Exists(path))
+                    throw new CliException(CliText.Get("File or folder does not exist: {0}", path), 2);
+                return (ShareTargetItem)new ShareTargetItem.FileSystem(path, Directory.Exists(path));
+            }).ToArray();
+        return AppNavigationService.OpenAsync(new(AppRoute.Send, Favorite: favorite,
+            Payload: new(Guid.NewGuid(), items)), token);
+    }
     public Task QuitAsync(CancellationToken token) => CliUi.InvokeAsync(() => { ReactorApp.Exit(); return true; }, token);
 }
 

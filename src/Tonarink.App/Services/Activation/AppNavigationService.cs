@@ -7,7 +7,8 @@ namespace Tonarink.Services.Activation;
 
 // A null route only restores the current page. Entity requests also identify
 // the page to show; CLI syntax and URI parsing stay outside the navigator.
-sealed record AppNavigationRequest(AppRoute? Route = null, string? Favorite = null, Guid? History = null)
+sealed record AppNavigationRequest(AppRoute? Route = null, string? Favorite = null, Guid? History = null,
+    ShareTargetPayload? Payload = null)
 {
     public static AppNavigationRequest ForFavorite(string fingerprint) => new(AppRoute.Send, Favorite: fingerprint);
     public static AppNavigationRequest ForHistory(Guid id) => new(AppRoute.History, History: id);

@@ -122,7 +122,13 @@ sealed class CliCommandLine
         var app = Group("app", integrated ? CliText.Get("Control the desktop application") : CliText.Get("Control the independent CLI host"));
         if (integrated)
         {
-            var open = new Command("open", CliText.Get("Show the main window, a favorite device or a history entry"));
+            var open = new Command("open", CliText.Get("Open the app, add files, or locate a favorite or history entry"));
+            var paths = new Argument<string[]>("paths")
+            {
+                Description = CliText.Get("Files or folders; relative to the caller's working directory"),
+                Arity = ArgumentArity.ZeroOrMore,
+            };
+            open.Arguments.Add(paths);
             var favorite = Text(open, "favorite", CliText.Get("Open a saved device by fingerprint"));
             var entry = new Option<Guid?>("--history")
             {
@@ -134,8 +140,15 @@ sealed class CliCommandLine
             {
                 if (p.GetValue(favorite) is not null && p.GetResult(entry)?.Tokens.Count > 0)
                     p.AddError(CliText.Get("Do not combine --favorite and --history."));
+                if (p.GetValue(paths) is { Length: > 0 } && p.GetResult(entry)?.Tokens.Count > 0)
+                    p.AddError(CliText.Get("Do not combine paths with --history."));
             });
-            Attach(app, open, async (p, ct) => { await runtime!.OpenAppAsync(p.GetValue(favorite), p.GetValue(entry), ct).ConfigureAwait(false); return CliProtocol.Success(CliText.Get("Main window opened")); });
+            Attach(app, open, async (p, ct) =>
+            {
+                await runtime!.OpenAppAsync(p.GetValue(favorite), p.GetValue(entry), p.GetValue(paths) ?? [],
+                    request!.WorkingDirectory, ct).ConfigureAwait(false);
+                return CliProtocol.Success(CliText.Get("Main window opened"));
+            });
         }
         _quit = new("quit", CliText.Get("Exit the host and stop its services")); Confirm(_quit);
         Attach(app, _quit, (_, _) => Task.FromResult(CliProtocol.Success(CliText.Get("Host is exiting"))));

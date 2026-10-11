@@ -124,6 +124,7 @@ tonarink server restart
 tonarink app open
 tonarink app open --favorite FINGERPRINT
 tonarink app open --history HISTORY_ID
+tonarink app open -- "C:\Photos\photo.jpg" "C:\Documents"
 tonarink app quit --yes
 ```
 
@@ -141,6 +142,8 @@ tonarink-cli app quit --yes           # 完全退出后台宿主
 
 集成版 `app open --favorite` 跳转到发送页，打开收藏列表并优先显示该设备；`app open --history` 跳转到接收历史并打开记录详情，两者不能同时使用。CLI 与托盘、深度链接共用导航入口；Windows 跳转列表使用 `tonarink://` 地址，旧版跳转列表命令及参数仍兼容。地址格式见 [应用深度链接](deep-links.md)。
 
+集成版 `app open <路径...>` 将文件或文件夹加入发送列表并显示发送页，不会自动发送；相对路径按调用者的工作目录解析，多项路径分别传入。可以搭配 `--favorite`，但不能搭配 `--history`。未打包版也可直接运行 `Tonarink.exe app open -- <路径...>`，无需注册执行别名；资源管理器的[“发送到”集成](send-to.md)复用此入口。
+
 切换这两个目标时会先关闭此前打开的收藏/历史对话框；若其他编辑对话框正在打开，则返回退出码 4，需先关闭它，命令不会丢弃未保存的编辑内容。
 
 ## 设置
@@ -151,11 +154,14 @@ tonarink settings get alias
 tonarink settings set alias "书房电脑" --restart
 tonarink settings set download-directory D:\Received
 tonarink settings set tray-click panel
+tonarink settings set send-to-menu true
 tonarink settings set preview-tool QuickLook
 tonarink settings set network-allowlist "192.168.1.*,10.0.0.*" --restart
 ```
 
 设置通过与 GUI 相同的存储保存并同步到界面。设备名称、端口、加密、网络筛选、PIN 等服务器配置需要重启服务器；可以附加 `--restart` 一并应用。涉及 Windows 自启动的修改沿用系统权限限制。
+
+`send-to-menu` 仅限未打包 GUI，控制当前用户的资源管理器“发送到”快捷方式；MSIX 版不支持开启，独立 CLI 不提供此设置。
 
 独立版只支持服务器、传输和存储相关设置，不包含主题、托盘、系统通知和预览等 GUI 设置。运行 `settings list` 获取当前宿主支持的键；独立版 `language` 支持 `zh-CN` / `en-US`，用于浏览器分享页面。
 

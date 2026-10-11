@@ -118,6 +118,7 @@ sealed class AppSettingsFile
     public string[]? NetworkWhitelist { get; set; }
     public string[]? NetworkBlacklist { get; set; }
     public bool? ShowExplorerContextMenu { get; set; }
+    public bool? ShowInSendToMenu { get; set; }
 
     public static AppSettingsFile FromSettings(AppSettings settings) => new()
     {
@@ -156,6 +157,7 @@ sealed class AppSettingsFile
         NetworkWhitelist = Copy(settings.NetworkWhitelist),
         NetworkBlacklist = Copy(settings.NetworkBlacklist),
         ShowExplorerContextMenu = settings.ShowExplorerContextMenu,
+        ShowInSendToMenu = settings.ShowInSendToMenu,
     };
 
     public AppSettings ToSettings()
@@ -225,6 +227,7 @@ sealed class AppSettingsFile
             NetworkWhitelist = Copy(NetworkWhitelist),
             NetworkBlacklist = NetworkWhitelist is null ? Copy(NetworkBlacklist) : null,
             ShowExplorerContextMenu = ShowExplorerContextMenu ?? defaults.ShowExplorerContextMenu,
+            ShowInSendToMenu = ShowInSendToMenu ?? defaults.ShowInSendToMenu,
         };
     }
 

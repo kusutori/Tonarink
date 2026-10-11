@@ -27,6 +27,10 @@ interface ICliRuntime
     Task DismissIncomingAsync(Guid id, CancellationToken token);
     IDisposable BeginReceiveWatch();
     Task OpenAppAsync(string? favorite, Guid? history, CancellationToken token);
+    Task OpenAppAsync(string? favorite, Guid? history, IReadOnlyList<string> paths,
+        string workingDirectory, CancellationToken token) => paths.Count == 0
+        ? OpenAppAsync(favorite, history, token)
+        : throw new CliException(CliText.Get("This host does not support adding files to a graphical window."), 3);
     Task QuitAsync(CancellationToken token);
 }
 

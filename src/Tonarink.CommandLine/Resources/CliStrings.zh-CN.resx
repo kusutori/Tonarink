@@ -176,4 +176,8 @@
   <data name="Expected a UUID for {0}." xml:space="preserve"><value>{0} 需要有效的 UUID</value></data>
   <data name="Expected an integer for {0}." xml:space="preserve"><value>{0} 需要整数</value></data>
   <data name="Text:" xml:space="preserve"><value>文本：</value></data>
+  <data name="Open the app, add files, or locate a favorite or history entry" xml:space="preserve"><value>打开应用、添加文件或定位收藏设备及历史记录</value></data>
+  <data name="Do not combine paths with --history." xml:space="preserve"><value>不能同时传入文件路径和 --history</value></data>
+  <data name="This host does not support adding files to a graphical window." xml:space="preserve"><value>当前宿主不支持向图形界面添加文件</value></data>
+  <data name="Send To integration is only available in unpackaged builds." xml:space="preserve"><value>“发送到”集成仅限未打包版</value></data>
 </root>

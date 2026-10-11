@@ -36,6 +36,12 @@ sealed class AppShell : Component
         UseEffect(() => AppSettingsStore.Save(settings), settings);
         UseEffect(() =>
         {
+            if (AppPlatform.HasPackageIdentity()) return;
+            try { WindowsSendTo.SetEnabled(settings.ShowInSendToMenu); }
+            catch (Exception exception) { AppDiagnostics.Report("Could not synchronize the Send To shortcut", exception); }
+        }, settings.ShowInSendToMenu);
+        UseEffect(() =>
+        {
             if (settings.StartWithWindows)
                 WindowsStartup.UpdateLaunchCommand(settings.MinimizeToTray);
         }, settings.StartWithWindows, settings.MinimizeToTray);

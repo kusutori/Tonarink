@@ -54,6 +54,7 @@ sealed record AppSettings(
     // Null marks legacy settings that still need automatic tool discovery.
     // An explicit empty list means the user removed every tool.
     public IReadOnlyList<FilePreviewProvider>? PreviewProviders { get; init; }
+    public bool ShowInSendToMenu { get; init; }
 
     public static readonly AppSettings Default = new(
         Alias: string.IsNullOrWhiteSpace(Environment.UserName) ? Environment.MachineName : Environment.UserName,

@@ -316,7 +316,18 @@ sealed class SettingsPage : Component<SettingsPageProps>
                         Props.UpdateSettings(settings => settings with { ShowExplorerContextMenu = value }))
                     .AutomationName(t.Message(new("App", "SettingsExplorerContextMenu")))
                     .HelpText(t.Message(new("App", "SettingsExplorerContextMenuDescription")))
-                    .IsEnabled(AppPlatform.HasPackageIdentity())));
+                    .IsEnabled(AppPlatform.HasPackageIdentity())),
+            SettingsCard(
+                header: t.Message(new("App", "SettingsSendTo")),
+                description: t.Message(new("App", "SettingsSendToDescription")),
+                headerIcon: HeaderGlyph(AppIcons.Send),
+                isClickEnabled: false,
+                isActionIconVisible: false,
+                content:
+                ToggleSwitch(Props.Settings.ShowInSendToMenu, SetSendToEnabled)
+                    .AutomationName(t.Message(new("App", "SettingsSendTo")))
+                    .HelpText(t.Message(new("App", "SettingsSendToDescription")))
+                    .IsEnabled(!AppPlatform.HasPackageIdentity())));
 
         var receiveCards = SettingsGroup(
             t.Message(new("App", "SettingsReceive")),
@@ -769,6 +780,20 @@ sealed class SettingsPage : Component<SettingsPageProps>
             {
                 AppDiagnostics.Report("Could not apply server settings", exception);
                 setStatusMessage(t.Message(new("App", "SettingsApplyFailed"), ("error", exception.Message)));
+            }
+        }
+
+        void SetSendToEnabled(bool enabled)
+        {
+            try
+            {
+                WindowsSendTo.SetEnabled(enabled);
+                Props.UpdateSettings(settings => settings with { ShowInSendToMenu = enabled });
+            }
+            catch (Exception exception)
+            {
+                AppDiagnostics.Report("Could not update the Send To shortcut", exception);
+                setStatusMessage(t.Message(new("App", "SettingsSendToFailed"), ("error", exception.Message)));
             }
         }
 
