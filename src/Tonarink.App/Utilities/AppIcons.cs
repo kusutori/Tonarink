@@ -48,6 +48,7 @@ static class AppIcons
     public const string Receive = "\uE701";
     public const string Redo = "\uE7A6";
     public const string Rename = "\uE8AC";
+    public const string ReportBug = "\uEBE8";
     public const string Send = "\uE724";
     public const string SendFile = "\uE74B";
     public const string Server = "\uE703";

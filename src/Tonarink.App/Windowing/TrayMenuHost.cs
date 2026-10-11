@@ -1,4 +1,5 @@
 using System.Runtime.InteropServices;
+using Microsoft.Extensions.Logging;
 using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Core;
 using Microsoft.UI.Reactor.Localization;
@@ -161,6 +162,26 @@ sealed class TrayMenuHost : IDisposable
     private void Restore()
         => Navigate(new());
 
+    private async Task ReportBugAsync()
+    {
+        try
+        {
+            AppDiagnostics.Write(LogLevel.Information, "tray", "Opening the issue tracker from the tray menu");
+            // Start URI activation on the UI thread while the menu host is
+            // still foreground, then dismiss the menu without blocking it.
+            var launch = Windows.System.Launcher.LaunchUriAsync(new Uri("https://github.com/kusutori/Tonarink/issues"));
+            DismissMenu();
+            TrayFlyoutHost.Dismiss();
+            if (!await launch)
+                AppDiagnostics.Report("Could not open the issue tracker",
+                    new InvalidOperationException("Windows could not launch the issue tracker URI."));
+        }
+        catch (Exception exception)
+        {
+            AppDiagnostics.Report("Could not open the issue tracker", exception);
+        }
+    }
+
     private void Navigate(AppNavigationRequest request)
     {
         DismissMenu();
@@ -177,7 +198,7 @@ sealed class TrayMenuHost : IDisposable
                 host._intl.Message(new("App", "TrayTooltip")), WindowKey.Of("main-tray-icon")));
             var open = UseCommand(new Command
             {
-                Label = host._intl.Message(new("App", "TrayOpen")),
+                Label = host._intl.Message(new("App", "TrayMenuOpen")),
                 Icon = new FontIconData(AppIcons.OpenApp),
                 Execute = host.Restore,
             });
@@ -186,6 +207,14 @@ sealed class TrayMenuHost : IDisposable
                 Label = host._intl.Message(new("App", "NavSettings")),
                 Icon = new FontIconData(AppIcons.Settings),
                 Execute = () => host.Navigate(new(AppRoute.Settings)),
+            });
+            var reportBug = UseCommand(new Command
+            {
+                Label = host._intl.Message(new("App", "TrayReportBug")),
+                Icon = new FontIconData(AppIcons.ReportBug),
+                // UseCommand dispatches ExecuteAsync on the thread pool;
+                // window operations and URI activation must start on the UI thread.
+                Execute = () => { _ = host.ReportBugAsync(); },
             });
             var exit = UseCommand(new Command
             {
@@ -225,7 +254,7 @@ sealed class TrayMenuHost : IDisposable
             }, tray);
 
             return Grid(columns: [], rows: [])
-                .WithContextFlyout(MenuItems(MenuItem(open), MenuItem(settings), MenuSeparator(), MenuItem(exit)))
+                .WithContextFlyout(MenuItems(MenuItem(open), MenuItem(settings), MenuItem(reportBug), MenuSeparator(), MenuItem(exit)))
                 .Set(host.SetAnchor);
         }
     }
