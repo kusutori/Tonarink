@@ -1,6 +1,6 @@
 # 测试实施记录
 
-更新日期：2026-10-10
+更新日期：2026-10-11
 
 目标见 [testing-plan.md](testing-plan.md)。本记录只声明已核验的范围，不代表完整计划已完成。
 
@@ -8,7 +8,36 @@
 
 逐功能、逐 CLI 命令和 App 页面对应的证据及缺口见 [testing-coverage.md](testing-coverage.md)。矩阵是首轮责任审计，不将语法转发或控件宿主成功视为整个产品能力完成。
 
-## 暂停交接点（2026-10-10）
+## 收尾交接（2026-10-11）
+
+按用户要求暂停测试扩展，不标记完整计划完成，也不继续调查非产品需求的控件边界。
+
+- 撤除历史页交换已有两条记录顺序的案例，以及纯原生 ItemsRepeater Move 对照。当前历史功能仅新增、删除、清空；交换已有记录顺序不是产品需求，不再作为缺口或门禁。
+- 历史页保留九个有效控件案例，接收页保留十五个案例及无效/重复选择不保存的防御性处理。WinUI 常规套件数量下限由 128 调整为 126。
+- 撤回尚未配套测试的设备详情页收藏存储注入改动，包括 `IFavoriteDeviceStore`；设备详情页恢复原实现，不遗留半成品测试接口。
+- 旧 TRX、诊断与首次失败记录保留。撤除案例不改写旧报告为通过；最近完整运行仍为 128 执行、126 通过、2 失败。收尾仅做编译检查，不重新运行完整套件，不能声称当前 126 项已重新全套通过。
+- 真实输入、生产 App E2E、集成 CLI、最终 MSIX、其余平台及 CI 的未验收范围继续保留，但暂停实施；没有提交、发布或修改生产安装与数据。
+- 收尾编译：`dotnet build tests/Tonarink.App.WinUI.Tests/Tonarink.App.WinUI.Tests.csproj -c Release -p:Platform=x64 --no-restore --nologo` 成功，包含主 App 项目引用，0 警告、0 错误；未运行测试。
+
+以下为收尾前的实施记录，不再表示下一步执行安排。
+
+## 恢复实施：Receive / History 真实控件（2026-10-11，历史记录）
+
+目标已恢复，仍保持完整计划范围，不标记完成。本批只使用独立非打包 WinUI 测试宿主、内存设置/历史边界及自有临时文件；没有启动生产网络服务、安装 App、修改正式设置/联系人、启用 Windows 功能或运行发布。
+
+接收页首次编译失败保留在 `artifacts/test-results/receive-page-20261011-201832/controller/`：CsWinRT1032 要求传给投影边界的两个集合表达式显式转换为 `IncomingTransferRequest[]`。修正后真实 12 项均因初始化保存回传失败，报告 `receive-page-fixed-20261011-201926/`。进一步三个自动保存案例的值序列为 `-1 → 原模式`；`receive-selection-stack-20261011-202514/` 的实际栈指向 `CommunityToolkit.WinUI.Controls.Segmented.OnApplyTemplate()`，而不是此前怀疑的 ItemsHost 重建。保留这次根因修正，不将先前猜测当作结论。
+
+生产 `ReceivePage` 现在忽略无效模式及与当前传入设置相同的模式。测试不再把页头从 null 插入导致的夹具布局替换、相同 runtime 值不触发 UseState 重渲染、同一 dispatcher 回合中连续写原生属性而未等待受控值渲染的行为混入生产回归。真实导航宿主、设置更新回调和“初始化不能保存”的断言都保留；每次操作等待实际渲染完成后仍严格要求一次回调。新增三个空选择/模板重新应用/下一次编辑案例，接收页共 15 项通过。
+
+历史页新增十个生产页面案例和一个原生框架对照。只替换 `IReceiveHistoryStore`，不复制 HistoryPage 或绕过命令；菜单/确认按钮通过 native UIA Invoke 执行，外部文件打开/资源管理器启动不执行。通过的九项验证空态到新增/删除/清空、订阅终结、三种路径门控、单项删除只影响目标 ID、清空取消/确认而文件字节不变、真实 ContentDialog 元数据、已知/缺失导航 ID 消费、切换存储后的订阅与命令更新。初始 `history-page-first-20261011-203030/` 六项失败中，回收池控件误计入显示行和未挂载 XamlRoot 的夹具读取已修正；现在只按 ItemsRepeater 的有效索引读取行，不强制 GetOrCreateElement，也不取消虚拟化。
+
+仍失败的重排有可重复的运行证据：`history-sized-viewport-20261011-203520/` 使用 1000×640 宿主，repeater 实际 928×515、数据两项，而显示索引为 `+,-`、第一项仍显示旧内容。`history-native-move-20261011-203706/` 使用原生 ItemsRepeater、普通 DataTemplate 和 `ObservableCollection<string>.Move`，完全不经过 Reactor，仍显示 `first,null`。这只证明故障能够在原生路径复现，不足以宣布已定位到 WinUI、CsWinRT 或某个版本的具体内部原因；不能归因于 HistoryPage 的自定义工厂。微软[ItemsRepeater 数据源说明](https://learn.microsoft.com/en-us/windows/apps/develop/ui/controls/items-repeater#configure-the-data-source)说明 INotifyCollectionChanged 支持 Move，IObservableVector 没有 Move 动作，投影使用哪条路径仍需进一步核验。未引入列表整体重建、未屏蔽或忽略这两条失败。
+
+完整统一入口结果：`artifacts/test-results/receive-history-complete-win-20261011-203850/winui/`，128 执行 / 126 通过 / 2 失败 / 0 跳过；MTP 和控制器均退出 2、输出排空，外层脚本正确非零失败。TRX 的类别数量为 Expander 2、FilePreviewContent 1、FilePreviewSettings 15、History 11、NetworkInterfaces 4、PluralMessage 6、Receive 15、SelectedSendItem 16、SendDeviceResolver 32、SendDevicesCard 6、SettingsInputDraft 20。该次命令使用数量下限 122，随后按实际清单将入口下限改为 128；不把旧 96 项报告当作当前工作区的数量或通过状态。
+
+被测 App DLL SHA-256 `07FC34083417D8BA6FF41A8D7C435A383D6E6F2AC879150375F01AF082BA0D62`，WinUI 测试 DLL `68A30F698A6223E558979C744353629CF8E23DD428965DABC7BDB0B26504FD45`；ReceivePage 源码 `57C1DB7A9F9BEB8FAEAAD51AEBE206636D6A7C316E02CE8F8DB43673523D1425`、Receive 用例 `7F29FF0809E1FB619632F57BA4949E02CB7D79F23AF75AFEEEEED8FC0C1D16B2`。首次失败与中间报告均保留。本批尚不能认定 History 重排、完整 WinUI、真实用户输入、生产 App 导航、集成 CLI、最终 MSIX 或其他 OS/架构验收通过；后续继续定位 Move 运行时路径并推进其余计划缺口。
+
+## 暂停交接点（2026-10-10，历史记录）
 
 按用户要求收尾，测试建设目标保持暂停，不标记整体完成。本次只核对现有文件、TRX、控制器结果及进程状态，更新交接记录；没有启动新测试、构建、CI 或发布。
 

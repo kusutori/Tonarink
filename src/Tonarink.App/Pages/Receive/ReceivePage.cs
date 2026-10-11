@@ -116,11 +116,20 @@ sealed class ReceivePage : Component<ReceivePageProps>
                         },
                         Segmented(
                                 selectedIndex: (int)Props.Settings.AutoSave,
-                                onSelectedIndexChanged: index => Props.UpdateSettings(settings => settings with
+                                onSelectedIndexChanged: index =>
                                 {
-                                    AutoSave = (AutoSaveMode)index,
-                                    FavoritesOnly = (AutoSaveMode)index == AutoSaveMode.Favorites,
-                                }),
+                                    // Segmented reapplies its template by clearing and
+                                    // restoring selection. Those events aren't user edits.
+                                    if (!Enum.IsDefined((AutoSaveMode)index)
+                                        || index == (int)Props.Settings.AutoSave)
+                                        return;
+
+                                    Props.UpdateSettings(settings => settings with
+                                    {
+                                        AutoSave = (AutoSaveMode)index,
+                                        FavoritesOnly = (AutoSaveMode)index == AutoSaveMode.Favorites,
+                                    });
+                                },
                                 items: autoSaveItems)
                             .HAlign(HorizontalAlignment.Stretch)) with
                 {

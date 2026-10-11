@@ -39,7 +39,7 @@ public sealed class ReceivePageTests
         Assert.Contains("Loading identity…", page.Texts);
         Assert.IsEmpty(page.Changes);
         var rendered = page.RenderCount;
-        page.ReplaceRuntime(page.Runtime with { NodeState = LocalSendNodeState.Running });
+        page.ReplaceRuntime(page.Runtime with { NodeState = LocalSendNodeState.Running, AppliedReceivePin = "5678" });
         await UntilAsync(() => page.RenderCount > rendered && button.IsEnabled);
         Assert.AreSame(button, page.WebReceiveButton);
         Invoke(button);
@@ -61,18 +61,26 @@ public sealed class ReceivePageTests
         await UntilAsync(() => page.Segments.Count == 1 && page.Segments[0].Items.Count == 3);
         var segmented = page.Segments.Single();
         Assert.AreEqual((int)initial, segmented.SelectedIndex);
-        Assert.IsEmpty(page.Changes, "Applying controlled native values must not echo a user change.");
+        Assert.IsEmpty(page.Changes, "Applying controlled native values must not echo a user change. Received: "
+            + string.Join(", ", page.Changes.Select(settings => (int)settings.AutoSave)));
+        var renders = page.RenderCount;
         page.ReplaceSettings(page.Settings with { MinimizeToTray = true, ReceivePin = "5678" });
-        await UntilAsync(() => ReferenceEquals(segmented, page.Segments.Single()) && page.Settings.MinimizeToTray);
+        await UntilAsync(() => page.RenderCount > renders);
+        Assert.AreSame(segmented, page.Segments.Single());
         Assert.IsEmpty(page.Changes);
         foreach (var mode in new[] { AutoSaveMode.Off, AutoSaveMode.Favorites, AutoSaveMode.On, AutoSaveMode.Off }.Where(mode => mode != initial || page.Changes.Count > 0))
         {
             if (segmented.SelectedIndex == (int)mode) continue;
             var previous = page.Changes.Count;
+            renders = page.RenderCount;
             // Native SelectionChanged, not the production callback invoked by
             // the test. This is control wiring, not OS mouse/keyboard coverage.
             segmented.SelectedIndex = (int)mode;
-            await UntilAsync(() => page.Changes.Count == previous + 1 && page.Settings.AutoSave == mode);
+            await UntilAsync(() => page.RenderCount > renders && page.Changes.Count >= previous + 1
+                && page.Settings.AutoSave == mode && segmented.SelectedIndex == (int)mode,
+                () => $"Mode={mode}; native={segmented.SelectedIndex}; changes="
+                    + string.Join(",", page.Changes.Select(settings => settings.AutoSave)));
+            Assert.AreEqual(previous + 1, page.Changes.Count);
             Assert.AreEqual(mode == AutoSaveMode.Favorites, page.Settings.FavoritesOnly);
             Assert.AreEqual("Owned autosave receiver", page.Settings.Alias);
             Assert.AreEqual("5678", page.Settings.ReceivePin);
@@ -80,6 +88,41 @@ public sealed class ReceivePageTests
             Assert.AreSame(segmented, page.Segments.Single());
             Assert.AreEqual((int)mode, segmented.SelectedIndex);
         }
+    }
+
+    [UITestMethod]
+    [DataRow(0)]
+    [DataRow(1)]
+    [DataRow(2)]
+    public async Task EmptySelectionAndTemplateReapplicationDoNotSaveOrBlockTheNextEdit(int mode)
+    {
+        await using var page = new PageFixture(AppSettings.Default with
+        {
+            AutoSave = (AutoSaveMode)mode, FavoritesOnly = mode == (int)AutoSaveMode.Favorites
+        }, AppRuntimeState.Initial);
+        await UntilAsync(() => page.Segments.Count == 1 && page.Segments[0].IsLoaded);
+        var segmented = page.Segments.Single();
+        segmented.SelectedIndex = -1;
+        Assert.IsEmpty(page.Changes, "An empty native selection is not a valid autosave mode.");
+        var renders = page.RenderCount;
+        page.ReplaceRuntime(page.Runtime with { NodeState = LocalSendNodeState.Running });
+        await UntilAsync(() => page.RenderCount > renders && segmented.SelectedIndex == mode);
+        Assert.IsEmpty(page.Changes, "Restoring a controlled selection must not save settings.");
+        var template = segmented.Template;
+        Assert.IsNotNull(template);
+        segmented.Template = null;
+        segmented.Template = template;
+        segmented.ApplyTemplate();
+        Assert.AreEqual(mode, segmented.SelectedIndex);
+        Assert.IsEmpty(page.Changes, "Toolkit's template clear/restore pair must not save settings.");
+        var nextMode = (AutoSaveMode)((mode + 1) % 3);
+        renders = page.RenderCount;
+        segmented.SelectedIndex = (int)nextMode;
+        await UntilAsync(() => page.RenderCount > renders && page.Changes.Count > 0);
+        Assert.AreEqual(1, page.Changes.Count);
+        Assert.AreEqual(nextMode, page.Settings.AutoSave);
+        Assert.AreEqual(nextMode == AutoSaveMode.Favorites, page.Settings.FavoritesOnly);
+        Assert.AreSame(segmented, page.Segments.Single());
     }
 
     [UITestMethod]
@@ -116,10 +159,10 @@ public sealed class ReceivePageTests
             new string('A', 64), false, [], DateTimeOffset.UtcNow);
         var first = new IncomingTransferRequest(Guid.NewGuid(), Guid.NewGuid(), "owned-first", peer, [], DateTimeOffset.UtcNow);
         var second = first with { RequestId = Guid.NewGuid(), TransferId = Guid.NewGuid(), SessionId = "owned-second" };
-        page.ReplaceRuntime(page.Runtime with { IncomingTransfers = [first, second] });
+        page.ReplaceRuntime(page.Runtime with { IncomingTransfers = (IncomingTransferRequest[])[first, second] });
         await UntilAsync(() => page.Badges.Count == 1 && page.Badges[0].Value == 2 && page.Players.Count == 0);
         Assert.AreSame(segmented, page.Segments.Single());
-        page.ReplaceRuntime(page.Runtime with { IncomingTransfers = [second] });
+        page.ReplaceRuntime(page.Runtime with { IncomingTransfers = (IncomingTransferRequest[])[second] });
         await UntilAsync(() => page.Badges.Count == 1 && page.Badges[0].Value == 1);
         page.ReplaceRuntime(page.Runtime with { IncomingTransfers = [] });
         await UntilAsync(() => page.Badges.Count == 0 && page.Players.Count == 1);
@@ -166,7 +209,7 @@ public sealed class ReceivePageTests
                 var navigation = context.UseNavigation(AppRoute.Receive);
                 Route = navigation.CurrentRoute;
                 return LocaleProvider("en-US", VStack(8,
-                    header.Owner == AppRoute.Receive ? header.Build?.Invoke() : null,
+                    Border(header.Owner == AppRoute.Receive ? header.Build?.Invoke() : null).WithKey("header"),
                     NavigationHost(navigation, route => route == AppRoute.Receive
                         ? Component<ReceivePage, ReceivePageProps>(new(currentRuntime, currentSettings, update =>
                         {
@@ -174,7 +217,7 @@ public sealed class ReceivePageTests
                             Changes.Add(Settings);
                             setSettings(Settings);
                         }))
-                        : TextBlock("Owned web destination")))
+                        : TextBlock("Owned web destination")).WithKey("navigation"))
                     .Provide(PageHeader.RightSlot, header), global::Tonarink.AppShell.Resources, defaultLocale: "en-US");
             });
         }
@@ -215,12 +258,12 @@ public sealed class ReceivePageTests
             foreach (var child in Descendants<T>(VisualTreeHelper.GetChild(root, index))) yield return child;
     }
 
-    private static async Task UntilAsync(Func<bool> condition)
+    private static async Task UntilAsync(Func<bool> condition, Func<string>? diagnostic = null)
     {
         var deadline = DateTime.UtcNow.AddSeconds(10);
         while (!condition())
         {
-            if (DateTime.UtcNow >= deadline) Assert.Fail("Timed out waiting for the real receive page.");
+            if (DateTime.UtcNow >= deadline) Assert.Fail("Timed out waiting for the real receive page. " + diagnostic?.Invoke());
             await Task.Delay(25);
         }
     }
