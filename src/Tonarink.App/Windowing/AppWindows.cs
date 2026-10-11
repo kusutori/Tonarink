@@ -22,6 +22,8 @@ static class AppWindows
         MinWidth = AppLayout.WindowMinWidth,
         MinHeight = AppLayout.WindowMinHeight,
         Icon = AppPlatform.AppWindowIcon,
+        // Keep the custom ShellTitleBar active when tray actions update the window spec.
+        ExtendsContentIntoTitleBar = true,
         ShowInTaskbar = !startHidden,
     };
 }
