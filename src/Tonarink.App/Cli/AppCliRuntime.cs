@@ -5,8 +5,7 @@ using Microsoft.UI.Reactor;
 namespace Tonarink.Cli;
 
 sealed record CliBindings(LocalSendNodeSession Session,
-    Action<Func<AppSettings, AppSettings>> UpdateSettings, Action RestoreWindow,
-    Func<CancellationToken, Task> PrepareNavigation, string Locale);
+    Action<Func<AppSettings, AppSettings>> UpdateSettings, string Locale);
 
 static class CliBridge
 {
@@ -19,7 +18,6 @@ static class CliBridge
 sealed class AppCliRuntime(Func<CliBindings> bindings) : ICliRuntime
 {
     private readonly SemaphoreSlim _settingsGate = new(1, 1);
-    private static readonly SemaphoreSlim AppOpenGate = new(1, 1);
     private static int _receiveClients;
     public static bool HasReceiveClient => Volatile.Read(ref _receiveClients) > 0;
     public bool Integrated => true;
@@ -123,31 +121,9 @@ sealed class AppCliRuntime(Func<CliBindings> bindings) : ICliRuntime
     public Task DismissIncomingAsync(Guid id, CancellationToken token) => CliUi.InvokeAsync(() => { bindings().Session.DismissIncoming(id); return true; }, token);
     public IDisposable BeginReceiveWatch()
     { Interlocked.Increment(ref _receiveClients); return new CliScope(() => Interlocked.Decrement(ref _receiveClients)); }
-    public async Task OpenAppAsync(string? favorite, Guid? history, CancellationToken token)
-    {
-        await AppOpenGate.WaitAsync(token).ConfigureAwait(false);
-        try
-        {
-            var stored = await CliUi.InvokeAsync(() =>
-            {
-                var fingerprint = favorite is null ? null : FavoriteDeviceStore.Entries.Keys
-                    .FirstOrDefault(k => k.Equals(favorite, StringComparison.OrdinalIgnoreCase))
-                    ?? throw new CliException(CliText.Get("Favorite fingerprint not found."), 3);
-                if (history is { } id && !ReceiveHistoryStore.Entries.Any(e => e.Id == id))
-                    throw new CliException(CliText.Get("History entry not found."), 3);
-                return fingerprint;
-            }, token).ConfigureAwait(false);
-            if (stored is not null || history is not null)
-                await (await CliUi.InvokeAsync(() => bindings().PrepareNavigation(token), token).ConfigureAwait(false)).ConfigureAwait(false);
-            await CliUi.InvokeAsync(() =>
-            {
-                if (stored is not null) JumpListService.Enqueue(new JumpListActivation.Favorite(stored));
-                if (history is { } id) JumpListService.Enqueue(new JumpListActivation.History(id));
-                bindings().RestoreWindow(); return true;
-            }, token).ConfigureAwait(false);
-        }
-        finally { AppOpenGate.Release(); }
-    }
+    public Task OpenAppAsync(string? favorite, Guid? history, CancellationToken token) =>
+        AppNavigationService.OpenAsync(favorite is not null ? AppNavigationRequest.ForFavorite(favorite)
+            : history is { } id ? AppNavigationRequest.ForHistory(id) : new(), token);
     public Task QuitAsync(CancellationToken token) => CliUi.InvokeAsync(() => { ReactorApp.Exit(); return true; }, token);
 }
 

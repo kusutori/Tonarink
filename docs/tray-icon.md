@@ -15,6 +15,9 @@ a large custom flyout window.
   that is owned by the main window and absent from the taskbar and Alt+Tab.
 - Its root component calls `UseTrayIcon`. Closing the host unmounts that component,
   detaches the callbacks, and unregisters the icon through the hook's cleanup.
+- The same component builds the Open / Settings / Exit menu using `UseCommand`,
+  `MenuItem`, and `MenuItems`, attached with `WithContextFlyout`. Reactor owns
+  the menu and its command bindings; the host only opens the resulting native popup.
 - On right-click, the host is positioned at the cursor in physical pixels and
   activated. The menu waits for a valid `XamlRoot`, uses its rasterization scale,
   and sets `ShouldConstrainToRootBounds = false` so it is not clipped to 1×1.
@@ -31,8 +34,12 @@ animations, and click-away behavior.
 
 `MenuItems(...)` is flyout content for a control's context-flyout slot, not an
 independently mountable visual root. Reactor's generic tray flyout also uses a
-larger window for custom content. Neither is needed for this two-item context menu:
+larger window for custom content. Neither is needed for this three-item context menu:
 `MenuFlyout.ShowAt` on a minimal XAML host supplies the Fluent popup itself.
+
+Open and Settings dispatch typed requests to `AppNavigationService`, the same
+navigator used by CLI and deep links. Internal clicks do not launch their own
+protocol through Windows. Exit remains a local command, not a public deep link.
 
 Earlier implementations used Win32 `TrackPopupMenuEx` (classic shell appearance)
 and then WinUIEx `TrayIcon` (which supplied its own XAML host). The current host

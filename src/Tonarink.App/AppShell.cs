@@ -174,20 +174,16 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
         var mouseBackHandler = context.UseRef<PointerEventHandler?>();
         var nodeSession = context.UseLocalSendNode(settings, t);
         var runtime = nodeSession.Runtime;
-        var windowController = context.UseShellWindow(window, settings.MinimizeToTray, t, () =>
-        {
-            if (navigation.CurrentRoute != AppRoute.Settings)
-                navigation.Navigate(AppRoute.Settings);
-        });
+        var windowController = context.UseShellWindow(window, settings.MinimizeToTray, t);
 
-        CliBridge.Current = new(nodeSession, updateSettings, windowController.Restore,
-            token => AppCommandNavigation.PrepareAsync(window?.NativeWindow?.Content?.XamlRoot,
-                t.Message(new("App", "FavoritesTitle")), t.Message(new("App", "HistoryInfoTitle")), token), Props.Locale);
+        CliBridge.Current = new(nodeSession, updateSettings, Props.Locale);
 
         var activations = context.UseShellActivations(
             navigation,
             nodeSession,
             windowController.Restore,
+            token => AppNavigationDialogs.PrepareAsync(window?.NativeWindow?.Content?.XamlRoot,
+                t.Message(new("App", "FavoritesTitle")), t.Message(new("App", "HistoryInfoTitle")), token),
             canPresentDialogs: !Props.IsSplashVisible);
         context.UseJumpListIntegration(t, Props.Locale);
 
@@ -259,8 +255,8 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
                     new(
                         settings.DownloadDirectory,
                         contentTheme,
-                        activations.JumpListHistoryId,
-                        activations.ConsumeJumpListHistory)),
+                        activations.NavigationHistoryId,
+                        activations.ConsumeNavigationHistory)),
                 AppRoute.Send => Component<SendPage, SendPageProps>(new(
                     runtime,
                     nodeSession.Node,
@@ -290,8 +286,8 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
                         setDetailsDevice(device);
                         navigation.Navigate(AppRoute.DeviceDetails, AppNavigation.DrillIn);
                     },
-                    activations.JumpListFavoriteFingerprint,
-                    activations.ConsumeJumpListFavorite)),
+                    activations.NavigationFavoriteFingerprint,
+                    activations.ConsumeNavigationFavorite)),
                 AppRoute.Settings => Component<SettingsPage, SettingsPageProps>(new(
                     settings,
                     runtime,

@@ -35,6 +35,10 @@ static class ShareTargetActivationBroker
         if (!AppPlatform.HasPackageIdentity())
         {
             beforePrimaryActivationRead?.Invoke();
+            // Unpackaged builds do not register the protocol with Windows, but
+            // can still accept a URI explicitly supplied as a launch argument.
+            var arguments = Environment.GetCommandLineArgs();
+            if (arguments.Length == 2) AppDeepLinks.TryHandle(arguments[1]);
             DrainExplorerShare();
             StartExplorerShareWatch();
             return false;
@@ -72,6 +76,11 @@ static class ShareTargetActivationBroker
                 case ExtendedActivationKind.Launch
                     when activation.Data is ILaunchActivatedEventArgs launchArgs:
                     AppCommandActivation.EnqueueLaunch(launchArgs.Arguments);
+                    break;
+
+                case ExtendedActivationKind.Protocol
+                    when activation.Data is IProtocolActivatedEventArgs protocolArgs:
+                    AppDeepLinks.TryHandle(protocolArgs.Uri.AbsoluteUri);
                     break;
 
                 // AppActivationArguments.Data exposes the activation *interface*, not

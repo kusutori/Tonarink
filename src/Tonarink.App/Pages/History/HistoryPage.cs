@@ -76,23 +76,23 @@ sealed class HistoryPage : Component<HistoryPageProps>
                 },
                 t.Locale, history)));
 
-        var previousJumpListHistory = UseRef<Guid?>(null);
+        var previousNavigationHistory = UseRef<Guid?>(null);
         UseEffect(() =>
         {
-            if (Props.JumpListHistoryId is not { } historyId)
+            if (Props.NavigationHistoryId is not { } historyId)
             {
-                if (previousJumpListHistory.Current is not null) setInfoEntry(null);
-                previousJumpListHistory.Current = null;
+                if (previousNavigationHistory.Current is not null) setInfoEntry(null);
+                previousNavigationHistory.Current = null;
                 return;
             }
-            previousJumpListHistory.Current = historyId;
+            previousNavigationHistory.Current = historyId;
 
             var entry = entries.FirstOrDefault(candidate => candidate.Id == historyId);
             if (entry is null)
-                Props.ConsumeJumpListHistory(historyId);
+                Props.ConsumeNavigationHistory(historyId);
             else
                 setInfoEntry(entry);
-        }, Props.JumpListHistoryId, entries);
+        }, Props.NavigationHistoryId, entries);
 
         var actions = FlexRow(
                 AnimatedButtons.OpenFolder(
@@ -166,8 +166,8 @@ sealed class HistoryPage : Component<HistoryPageProps>
                             OnClosed = _ =>
                             {
                                 setInfoEntry(null);
-                                if (Props.JumpListHistoryId is { } historyId)
-                                    Props.ConsumeJumpListHistory(historyId);
+                                if (Props.NavigationHistoryId is { } historyId)
+                                    Props.ConsumeNavigationHistory(historyId);
                             },
                         }).Themed(Props.Theme)) with
                 {

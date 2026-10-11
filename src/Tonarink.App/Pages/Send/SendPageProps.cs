@@ -21,5 +21,5 @@ sealed record SendPageProps(
     FilePreviewProvider PreviewProvider,
     string PreviewExecutablePath,
     Action<LocalSendDevice> OpenDeviceDetails,
-    string? JumpListFavoriteFingerprint,
-    Action<string> ConsumeJumpListFavorite);
+    string? NavigationFavoriteFingerprint,
+    Action<string> ConsumeNavigationFavorite);

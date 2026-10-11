@@ -12,12 +12,8 @@ static class ShellWindowHooks
         this RenderContext context,
         ReactorWindow? window,
         bool minimizeToTray,
-        IntlAccessor t,
-        Action openSettings)
+        IntlAccessor t)
     {
-        var openSettingsRef = context.UseRef(openSettings);
-        openSettingsRef.Current = openSettings;
-
         context.UseEffect(() =>
         {
             if (window is null)
@@ -53,7 +49,7 @@ static class ShellWindowHooks
 
             // The host's component owns UseTrayIcon, so closing the auxiliary
             // window also unregisters the icon and detaches its callbacks.
-            var menuHost = new TrayMenuHost(window, t, Restore, () => openSettingsRef.Current());
+            var menuHost = new TrayMenuHost(window, t);
             return menuHost.Dispose;
         }, window, minimizeToTray, t.Locale);
 

@@ -5,7 +5,6 @@ using Microsoft.UI.Reactor.Localization;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Media;
 using Windows.Foundation;
 using Windows.Graphics;
 using static Microsoft.UI.Reactor.Factories;
@@ -18,18 +17,15 @@ sealed class TrayMenuHost : IDisposable
 {
     private readonly ReactorWindow _window;
     private readonly IntlAccessor _intl;
-    private readonly Action _restore;
-    private readonly Action _openSettings;
     private FrameworkElement? _anchor;
     private MenuFlyout? _menu;
     private bool _pendingShow;
+    private int _menuEpoch;
     private bool _disposed;
 
-    public TrayMenuHost(ReactorWindow owner, IntlAccessor intl, Action restore, Action openSettings)
+    public TrayMenuHost(ReactorWindow owner, IntlAccessor intl)
     {
         _intl = intl;
-        _restore = restore;
-        _openSettings = openSettings;
         _window = ReactorApp.OpenWindow(new WindowSpec
         {
             Key = WindowKey.Of("tray-menu-host"),
@@ -83,11 +79,12 @@ sealed class TrayMenuHost : IDisposable
     private void OnDeactivated(object? sender, EventArgs args)
     {
         var menu = _menu;
+        var epoch = _menuEpoch;
         // Defer light-dismiss until WinUI finishes routing the activation event.
         // A queued dismissal of an old menu must not close a newly opened one.
         _window.NativeWindow.DispatcherQueue.TryEnqueue(() =>
         {
-            if (!_disposed && menu is not null && ReferenceEquals(menu, _menu))
+            if (!_disposed && epoch == _menuEpoch && menu is not null && ReferenceEquals(menu, _menu))
                 DismissMenu();
         });
     }
@@ -101,39 +98,11 @@ sealed class TrayMenuHost : IDisposable
         var theme = AppTheme.ToElementTheme(AppSettingsStore.Load().ThemeIndex);
         _anchor.RequestedTheme = theme;
         _anchor.FlowDirection = _intl.Direction;
-        var menu = new MenuFlyout { ShouldConstrainToRootBounds = false };
-
-        var open = new MenuFlyoutItem
-        {
-            Text = _intl.Message(new("App", "TrayOpen")),
-            Icon = CreateIcon(AppIcons.OpenApp),
-        };
-        open.Click += (_, _) => Restore();
-        var settings = new MenuFlyoutItem
-        {
-            Text = _intl.Message(new("App", "NavSettings")),
-            Icon = CreateIcon(AppIcons.Settings),
-        };
-        settings.Click += (_, _) =>
-        {
-            Restore();
-            _openSettings();
-        };
-        var exit = new MenuFlyoutItem
-        {
-            Text = _intl.Message(new("App", "TrayExit")),
-            Icon = CreateIcon(AppIcons.Cancel),
-        };
-        exit.Click += (_, _) =>
-        {
-            DismissMenu();
-            TrayFlyoutHost.Close();
-            ReactorApp.Exit();
-        };
-        menu.Items.Add(open);
-        menu.Items.Add(settings);
-        menu.Items.Add(new MenuFlyoutSeparator());
-        menu.Items.Add(exit);
+        // Reactor owns the menu and its commands. Only popup placement and
+        // activation cross the native tray/window boundary here.
+        if (_anchor.ContextFlyout is not MenuFlyout menu)
+            return;
+        menu.ShouldConstrainToRootBounds = false;
         menu.Closed += OnMenuClosed;
         _menu = menu;
         _pendingShow = true;
@@ -145,12 +114,6 @@ sealed class TrayMenuHost : IDisposable
         _ = SetForegroundWindow(WinRT.Interop.WindowNative.GetWindowHandle(_window.NativeWindow));
         TryShowMenu();
     }
-
-    private static FontIcon CreateIcon(string glyph) => new()
-    {
-        FontFamily = new FontFamily("Segoe Fluent Icons"),
-        Glyph = glyph,
-    };
 
     private void TryShowMenu()
     {
@@ -184,6 +147,7 @@ sealed class TrayMenuHost : IDisposable
     private void DismissMenu()
     {
         _pendingShow = false;
+        _menuEpoch++;
         var menu = _menu;
         _menu = null;
         if (menu is not null)
@@ -195,10 +159,13 @@ sealed class TrayMenuHost : IDisposable
     }
 
     private void Restore()
+        => Navigate(new());
+
+    private void Navigate(AppNavigationRequest request)
     {
         DismissMenu();
         TrayFlyoutHost.Dismiss();
-        _restore();
+        AppNavigationService.Open(request);
     }
 
     private sealed class TrayMenuRoot(TrayMenuHost host) : Component
@@ -208,6 +175,29 @@ sealed class TrayMenuHost : IDisposable
             var icon = UseMemo(() => AppPlatform.AppWindowIcon);
             var tray = UseTrayIcon(new TrayIconSpec(icon,
                 host._intl.Message(new("App", "TrayTooltip")), WindowKey.Of("main-tray-icon")));
+            var open = UseCommand(new Command
+            {
+                Label = host._intl.Message(new("App", "TrayOpen")),
+                Icon = new FontIconData(AppIcons.OpenApp),
+                Execute = host.Restore,
+            });
+            var settings = UseCommand(new Command
+            {
+                Label = host._intl.Message(new("App", "NavSettings")),
+                Icon = new FontIconData(AppIcons.Settings),
+                Execute = () => host.Navigate(new(AppRoute.Settings)),
+            });
+            var exit = UseCommand(new Command
+            {
+                Label = host._intl.Message(new("App", "TrayExit")),
+                Icon = new FontIconData(AppIcons.Cancel),
+                Execute = () =>
+                {
+                    host.DismissMenu();
+                    TrayFlyoutHost.Close();
+                    ReactorApp.Exit();
+                },
+            });
             UseEffect(() =>
             {
                 if (tray is null)
@@ -234,7 +224,9 @@ sealed class TrayMenuHost : IDisposable
                 };
             }, tray);
 
-            return Grid(columns: [], rows: []).Set(host.SetAnchor);
+            return Grid(columns: [], rows: [])
+                .WithContextFlyout(MenuItems(MenuItem(open), MenuItem(settings), MenuSeparator(), MenuItem(exit)))
+                .Set(host.SetAnchor);
         }
     }
 

@@ -13,8 +13,8 @@ static class AppCommandActivation
     public static bool HasPending => !Pending.IsEmpty;
     public static bool TryDequeue(out Func<Task>? invocation) => Pending.TryDequeue(out invocation);
 
-    // Compatibility is confined to the activation boundary. New jump-list
-    // entries and execution aliases use the same System.CommandLine syntax.
+    // Compatibility is confined to the activation boundary. CLI aliases keep
+    // System.CommandLine syntax; new jump-list entries carry deep links.
     public static string[] NormalizeLegacyArguments(string[] arguments)
     {
         if (arguments.Length != 1) return arguments;
@@ -30,6 +30,7 @@ static class AppCommandActivation
     public static void EnqueueLaunch(string? arguments)
     {
         if (string.IsNullOrWhiteSpace(arguments)) return;
+        if (AppDeepLinks.TryHandle(arguments)) return;
         var runtime = new AppCliRuntime(CliBridge.Get);
         var model = new CliCommandLine(integrated: true, runtime: runtime,
             request: new([], Environment.CurrentDirectory, null), emit: (response, _) =>

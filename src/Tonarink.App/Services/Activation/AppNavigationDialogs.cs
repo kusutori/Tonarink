@@ -2,10 +2,11 @@ using Microsoft.UI.Reactor;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
+using Tonarink.Cli;
 
-namespace Tonarink.Cli;
+namespace Tonarink.Services.Activation;
 
-static class AppCommandNavigation
+static class AppNavigationDialogs
 {
     // WinUI permits one ContentDialog per XamlRoot. Finish the previous launch
     // dialog before navigating to another; never discard an unrelated editor.

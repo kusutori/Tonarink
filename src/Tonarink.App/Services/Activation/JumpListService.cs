@@ -1,16 +1,8 @@
-using System.Collections.Concurrent;
 using LocalSendDotNet;
 using Tonarink.Utilities;
 using Windows.UI.StartScreen;
 
 namespace Tonarink.Services.Activation;
-
-union JumpListActivation(JumpListActivation.Favorite, JumpListActivation.History)
-{
-    public sealed record Favorite(string Fingerprint);
-
-    public sealed record History(Guid Id);
-}
 
 sealed record JumpListLabels(
     string FavoritesGroup,
@@ -26,22 +18,9 @@ static class JumpListService
     private static readonly string RemovedItemsPath = Path.Combine(
         AppPlatform.DataDirectory,
         "jump-list-removed.txt");
-    private static readonly ConcurrentQueue<JumpListActivation> PendingActivations = new();
     private static readonly SemaphoreSlim UpdateGate = new(1, 1);
     private static readonly Lock RemovedItemsGate = new();
     private static HashSet<string>? _removedItems;
-
-    public static bool HasPendingActivations => !PendingActivations.IsEmpty;
-    public static event EventHandler? Activated;
-
-    public static bool TryDequeue(out JumpListActivation activation) =>
-        PendingActivations.TryDequeue(out activation);
-
-    public static void Enqueue(JumpListActivation activation)
-    {
-        PendingActivations.Enqueue(activation);
-        Activated?.Invoke(null, EventArgs.Empty);
-    }
 
     public static async Task RefreshAsync(JumpListLabels labels)
     {
@@ -60,8 +39,9 @@ static class JumpListService
             foreach (var favorite in FavoriteDeviceStore.Entries.Values
                          .OrderBy(static favorite => favorite.Name, StringComparer.CurrentCultureIgnoreCase))
             {
-                var arguments = "app open --favorite " + favorite.Fingerprint;
-                if (WasRemoved(arguments) || WasRemoved(FavoritePrefix + favorite.Fingerprint))
+                var arguments = AppDeepLinks.ForFavorite(favorite.Fingerprint);
+                if (WasRemoved(arguments) || WasRemoved("app open --favorite " + favorite.Fingerprint)
+                    || WasRemoved(FavoritePrefix + favorite.Fingerprint))
                     continue;
 
                 jumpList.Items.Add(CreateItem(
@@ -78,8 +58,9 @@ static class JumpListService
             foreach (var entry in ReceiveHistoryStore.Entries
                          .Where(static entry => File.Exists(entry.Path) || Directory.Exists(entry.Path)))
             {
-                var arguments = "app open --history " + entry.Id.ToString("D");
-                if (WasRemoved(arguments) || WasRemoved(HistoryPrefix + entry.Id.ToString("N")))
+                var arguments = AppDeepLinks.ForHistory(entry.Id);
+                if (WasRemoved(arguments) || WasRemoved("app open --history " + entry.Id.ToString("D"))
+                    || WasRemoved(HistoryPrefix + entry.Id.ToString("N")))
                     continue;
 
                 jumpList.Items.Add(CreateItem(

@@ -96,15 +96,15 @@ sealed class SendPage : Component<SendPageProps>
             onNavigatedTo: _ =>
                 PlaySearchingAnimation(searchingPlayerRef.Current, play: !reduceMotion));
 
-        var previousJumpListFavorite = context.UseRef<string?>(null);
+        var previousNavigationFavorite = context.UseRef<string?>(null);
         context.UseEffect(() =>
         {
-            if (Props.JumpListFavoriteFingerprint is not null)
+            if (Props.NavigationFavoriteFingerprint is not null)
                 setShowFavoritesDialog(true);
-            else if (previousJumpListFavorite.Current is not null)
+            else if (previousNavigationFavorite.Current is not null)
                 setShowFavoritesDialog(false);
-            previousJumpListFavorite.Current = Props.JumpListFavoriteFingerprint;
-        }, Props.JumpListFavoriteFingerprint);
+            previousNavigationFavorite.Current = Props.NavigationFavoriteFingerprint;
+        }, Props.NavigationFavoriteFingerprint);
 
         context.UseEffect(() =>
         {
@@ -339,7 +339,7 @@ sealed class SendPage : Component<SendPageProps>
             RenameDialog().Grid(row: 0, column: 0),
             Component<FavoriteDevicesDialog, FavoriteDevicesDialogProps>(new(
                     favorites,
-                    Props.JumpListFavoriteFingerprint,
+                    Props.NavigationFavoriteFingerprint,
                     Props.Theme,
                     showFavoritesDialog,
                     SendFavorite,
@@ -355,8 +355,8 @@ sealed class SendPage : Component<SendPageProps>
                     () =>
                     {
                         setShowFavoritesDialog(false);
-                        if (Props.JumpListFavoriteFingerprint is { } fingerprint)
-                            Props.ConsumeJumpListFavorite(fingerprint);
+                        if (Props.NavigationFavoriteFingerprint is { } fingerprint)
+                            Props.ConsumeNavigationFavorite(fingerprint);
                     }))
                 .Grid(row: 0, column: 0),
             favoriteEdit is null
