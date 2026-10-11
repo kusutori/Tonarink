@@ -10,7 +10,7 @@ sealed record SendRequest(
     string? Pin,
     CancellationToken CancellationToken);
 
-sealed record SuggestedContactSend(Guid Id, string Fingerprint);
+sealed record SuggestedContactSend(Guid Id, string Fingerprint, IReadOnlyList<SelectedSendItem> Items);
 
 union TransferUiState(TransferUiState.Idle, TransferUiState.Active)
 {

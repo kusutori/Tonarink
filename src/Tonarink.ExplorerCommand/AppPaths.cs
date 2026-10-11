@@ -10,6 +10,7 @@ internal static partial class AppPaths
     public const string ShareFolderName = "explorer-share";
     public const string SettingsFileName = "settings.json";
     public const string MenuSettingName = "ShowExplorerContextMenu";
+    public const string FavoritesMenuSettingName = "ShowFavoriteDevicesInExplorerMenu";
     public const string UnpackagedPublisher = "kusutori";
     public const string UnpackagedProduct = "Tonarink";
     public const string AppExeName = "Tonarink.exe";
@@ -26,7 +27,10 @@ internal static partial class AppPaths
 
     public static string ShareDirectory => Path.Combine(SharedDataDirectory, ShareFolderName);
 
-    public static bool IsMenuEnabled()
+    public static bool IsMenuEnabled() => ReadMenuSetting(MenuSettingName, defaultValue: true);
+    public static bool IsFavoriteMenuEnabled() => ReadMenuSetting(FavoritesMenuSettingName, defaultValue: false);
+
+    private static bool ReadMenuSetting(string name, bool defaultValue)
     {
         try
         {
@@ -37,10 +41,11 @@ internal static partial class AppPaths
                     continue;
 
                 using var document = JsonDocument.Parse(File.ReadAllText(path));
-                if (!document.RootElement.TryGetProperty(MenuSettingName, out var value))
-                    return true;
+                if (!document.RootElement.TryGetProperty(name, out var value))
+                    return defaultValue;
 
-                return value.ValueKind != JsonValueKind.False;
+                return value.ValueKind is JsonValueKind.True ? true
+                    : value.ValueKind is JsonValueKind.False ? false : defaultValue;
             }
         }
         catch (Exception exception) when (exception is JsonException or IOException or UnauthorizedAccessException)
@@ -48,7 +53,39 @@ internal static partial class AppPaths
             Report("Could not read the Explorer menu setting", exception);
         }
 
-        return true;
+        return defaultValue;
+    }
+
+    public static IReadOnlyList<ExplorerFavorite> Favorites()
+    {
+        try
+        {
+            foreach (var directory in SettingsDirectories())
+            {
+                // Choose the same application profile as the settings reader;
+                // never mix another installation's favorites into this menu.
+                if (!File.Exists(Path.Combine(directory, SettingsFileName))) continue;
+                var path = Path.Combine(directory, "favorite-devices.json");
+                if (!File.Exists(path)) return [];
+                using var document = JsonDocument.Parse(File.ReadAllText(path));
+                if (document.RootElement.ValueKind != JsonValueKind.Object) return [];
+                var entries = new List<ExplorerFavorite>();
+                foreach (var entry in document.RootElement.EnumerateObject())
+                {
+                    if (entry.Value.ValueKind != JsonValueKind.Object
+                        || !entry.Value.TryGetProperty("Name", out var name)
+                        || name.ValueKind != JsonValueKind.String
+                        || string.IsNullOrWhiteSpace(entry.Name)) continue;
+                    entries.Add(new(entry.Name, name.GetString() ?? entry.Name));
+                }
+                return entries.OrderBy(entry => entry.Name, StringComparer.OrdinalIgnoreCase).ToArray();
+            }
+        }
+        catch (Exception exception) when (exception is JsonException or IOException or UnauthorizedAccessException)
+        {
+            Report("Could not read favorites for the Explorer menu", exception);
+        }
+        return [];
     }
 
     public static string MenuTitle() => ExplorerStrings.Title();
@@ -102,11 +139,24 @@ internal static partial class AppPaths
         }
     }
 
-    public static void WriteShareRequest(IReadOnlyList<string> paths)
+    public static void WriteShareRequest(IReadOnlyList<string> paths, string? fingerprint = null)
     {
         Directory.CreateDirectory(ShareDirectory);
-        var file = Path.Combine(ShareDirectory, $"{Guid.NewGuid():N}.txt");
-        File.WriteAllLines(file, paths);
+        // Publish atomically: FileSystemWatcher must not consume a partial
+        // write. JSON carries a target fingerprint; legacy .txt remains readable.
+        var file = Path.Combine(ShareDirectory, $"{Guid.NewGuid():N}.json");
+        var temporary = file + ".tmp";
+        using (var stream = File.Create(temporary))
+        using (var writer = new Utf8JsonWriter(stream))
+        {
+            writer.WriteStartObject();
+            if (fingerprint is not null) writer.WriteString("Fingerprint", fingerprint);
+            writer.WriteStartArray("Paths");
+            foreach (var path in paths) writer.WriteStringValue(path);
+            writer.WriteEndArray();
+            writer.WriteEndObject();
+        }
+        File.Move(temporary, file);
         try
         {
             using var signal = new EventWaitHandle(false, EventResetMode.AutoReset, ShareEventName);

@@ -1,5 +1,4 @@
 using LocalSendDotNet;
-using System.Net;
 using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Core;
 using Microsoft.UI.Reactor.Layout;
@@ -50,7 +49,6 @@ sealed class SendPage : Component<SendPageProps>
         var (manualAddressError, setManualAddressError) = context.UseState<string?>(null);
         var (isResolvingAddress, setResolvingAddress) = context.UseState(false);
         var (recentManualAddress, setRecentManualAddress) = context.UseState(RecentManualAddressStore.Load());
-        var (suggestedContactSend, setSuggestedContactSend) = context.UseState<SuggestedContactSend?>(null);
         var favorites = context.UseExternalStore(
             listener =>
             {
@@ -71,6 +69,8 @@ sealed class SendPage : Component<SendPageProps>
             setPickerMessage,
             setRecentManualAddress,
             t);
+        var enqueueFavoriteShare = context.UseFavoriteShareSend(Props.Node, Props.Runtime, transfer,
+            t, setPickerMessage, setResolvingAddress);
         var itemSelection = context.UseSendItemSelection(
             storagePicker,
             pickerMessage,
@@ -79,7 +79,7 @@ sealed class SendPage : Component<SendPageProps>
             Props.ConsumeShareTargetPayload,
             updateSelectedItems,
             transfer.Reset,
-            setSuggestedContactSend,
+            enqueueFavoriteShare,
             t);
 
         context.UseEffect(() => () =>
@@ -105,17 +105,6 @@ sealed class SendPage : Component<SendPageProps>
                 setShowFavoritesDialog(false);
             previousNavigationFavorite.Current = Props.NavigationFavoriteFingerprint;
         }, Props.NavigationFavoriteFingerprint);
-
-        context.UseEffect(() =>
-        {
-            if (suggestedContactSend is not { } pending
-                || Props.Runtime.NodeState != LocalSendNodeState.Running
-                || Props.Node is null)
-                return;
-
-            setSuggestedContactSend(null);
-            _ = SendToSuggestedContactAsync(pending);
-        }, suggestedContactSend?.Id ?? Guid.Empty, Props.Runtime.NodeState, selectedItems.Count);
 
         // Clipboard APIs require the UI/STA thread. Use a synchronous command dispatcher
         // to start the existing async flow there; an ExecuteAsync command is intentionally
@@ -507,40 +496,7 @@ sealed class SendPage : Component<SendPageProps>
                 return;
             }
 
-            var address = IPAddress.Parse(favorite.Address);
-            _ = SendToAddressAsync(FormatAddress(address, favorite.Port));
-        }
-
-        async Task SendToSuggestedContactAsync(SuggestedContactSend pending)
-        {
-            if (!FavoriteDeviceStore.Entries.TryGetValue(pending.Fingerprint, out var favorite))
-            {
-                setPickerMessage(t.Message(new("App", "ShareSuggestedDeviceUnavailable")));
-                return;
-            }
-
-            var discovered = Props.Runtime.Devices.FirstOrDefault(device =>
-                string.Equals(device.Fingerprint, pending.Fingerprint, StringComparison.Ordinal));
-            if (discovered is not null)
-            {
-                await transfer.StartAsync(discovered, null, null).ConfigureAwait(true);
-                return;
-            }
-
-            if (!IPAddress.TryParse(favorite.Address, out var address))
-            {
-                setPickerMessage(t.Message(
-                    new("App", "ShareSuggestedDeviceOffline"),
-                    ("device", favorite.Name)));
-                return;
-            }
-
-            await SendToAddressAsync(
-                    FormatAddress(address, favorite.Port),
-                    showDialogOnFailure: false,
-                    expectedFingerprint: favorite.Fingerprint,
-                    suggestedDeviceName: favorite.Name)
-                .ConfigureAwait(true);
+            enqueueFavoriteShare(new(Guid.NewGuid(), favorite.Fingerprint, selectedItems.ToArray()));
         }
 
         void UseRecentAddress()
@@ -553,25 +509,12 @@ sealed class SendPage : Component<SendPageProps>
             _ = SendToAddressAsync(address);
         }
 
-        async Task SendToAddressAsync(
-            string value,
-            bool showDialogOnFailure = true,
-            string? expectedFingerprint = null,
-            string? suggestedDeviceName = null)
+        async Task SendToAddressAsync(string value)
         {
             if (!TryParseAddress(value, out var address, out var port))
             {
-                if (showDialogOnFailure)
-                {
-                    setManualAddressError(t.Message(new("App", "InvalidDeviceAddress")));
-                    setShowAddressDialog(true);
-                }
-                else
-                {
-                    setPickerMessage(t.Message(
-                        new("App", "ShareSuggestedDeviceOffline"),
-                        ("device", suggestedDeviceName ?? value)));
-                }
+                setManualAddressError(t.Message(new("App", "InvalidDeviceAddress")));
+                setShowAddressDialog(true);
                 return;
             }
 
@@ -587,7 +530,7 @@ sealed class SendPage : Component<SendPageProps>
                             address,
                             port,
                             Props.Runtime.Identity?.Protocol ?? LocalSendProtocol.Https,
-                            expectedFingerprint)
+                            expectedFingerprint: null)
                         .ConfigureAwait(true)
                     : new DeviceResolutionFailure(new InvalidOperationException(
                         "The LocalSend node is not running."));
@@ -599,19 +542,10 @@ sealed class SendPage : Component<SendPageProps>
                         return;
 
                     case DeviceResolutionFailure:
-                        if (showDialogOnFailure)
-                        {
-                            setManualAddressError(t.Message(
-                                new("App", "DeviceAddressNotFound"),
-                                ("address", normalizedAddress)));
-                            setShowAddressDialog(true);
-                        }
-                        else
-                        {
-                            setPickerMessage(t.Message(
-                                new("App", "ShareSuggestedDeviceOffline"),
-                                ("device", suggestedDeviceName ?? normalizedAddress)));
-                        }
+                        setManualAddressError(t.Message(
+                            new("App", "DeviceAddressNotFound"),
+                            ("address", normalizedAddress)));
+                        setShowAddressDialog(true);
                         return;
                 }
             }

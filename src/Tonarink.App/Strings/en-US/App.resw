@@ -370,6 +370,9 @@
   <data name="ExplorerCommandTitle" xml:space="preserve"><value>Send with Tonarink</value></data>
   <data name="SettingsExplorerContextMenu" xml:space="preserve"><value>File Explorer context menu</value></data>
   <data name="SettingsExplorerContextMenuDescription" xml:space="preserve"><value>Add “Send with Tonarink” to the context menu; requires the MSIX app on Windows 11</value></data>
+  <data name="SettingsExplorerFavorites" xml:space="preserve"><value>Show favorite devices in the submenu</value></data>
+  <data name="SettingsExplorerFavoritesDescription" xml:space="preserve"><value>Select a favorite to send directly; when off, selected files are only added to the send list</value></data>
+  <data name="ExplorerCommandAddToList" xml:space="preserve"><value>Add to send list</value></data>
   <data name="SettingsSendTo" xml:space="preserve"><value>File Explorer Send to menu</value></data>
   <data name="SettingsSendToDescription" xml:space="preserve"><value>Add Tonarink to Send to and add selected files to the send list; unpackaged builds only</value></data>
   <data name="SettingsSendToFailed" xml:space="preserve"><value>Could not update the Send to menu: {error}</value></data>
@@ -411,7 +414,9 @@
   <data name="ShareTargetEmpty" xml:space="preserve"><value>No accessible files or text in the shared content</value></data>
   <data name="ShareTargetFailed" xml:space="preserve"><value>Could not add the shared content: {error}</value></data>
   <data name="ShareSuggestedDeviceOffline" xml:space="preserve"><value>{device} is currently offline. The shared content remains in the send list; retry or choose another device.</value></data>
-  <data name="ShareSuggestedDeviceUnavailable" xml:space="preserve"><value>This Windows Share contact is no longer in your favorites. The shared content remains in the send list.</value></data>
+  <data name="ShareSuggestedDeviceUnavailable" xml:space="preserve"><value>This device is no longer in your favorites; the shared content remains in the send list</value></data>
+  <data name="ShareSuggestedDeviceConnecting" xml:space="preserve"><value>Looking for {device}, please wait</value></data>
+  <data name="ShareSuggestedServiceUnavailable" xml:space="preserve"><value>The network service is not ready; shared content remains in the send list. Start the service and retry</value></data>
   <data name="TargetDevice" xml:space="preserve"><value>Target device</value></data>
   <data name="TargetRequiresPin" xml:space="preserve"><value>The receiving device requires a PIN</value></data>
   <data name="Text" xml:space="preserve"><value>Text</value></data>

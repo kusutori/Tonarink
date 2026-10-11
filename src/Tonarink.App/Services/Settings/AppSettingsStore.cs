@@ -119,6 +119,7 @@ sealed class AppSettingsFile
     public string[]? NetworkBlacklist { get; set; }
     public bool? ShowExplorerContextMenu { get; set; }
     public bool? ShowInSendToMenu { get; set; }
+    public bool? ShowFavoriteDevicesInExplorerMenu { get; set; }
 
     public static AppSettingsFile FromSettings(AppSettings settings) => new()
     {
@@ -158,6 +159,7 @@ sealed class AppSettingsFile
         NetworkBlacklist = Copy(settings.NetworkBlacklist),
         ShowExplorerContextMenu = settings.ShowExplorerContextMenu,
         ShowInSendToMenu = settings.ShowInSendToMenu,
+        ShowFavoriteDevicesInExplorerMenu = settings.ShowFavoriteDevicesInExplorerMenu,
     };
 
     public AppSettings ToSettings()
@@ -228,6 +230,8 @@ sealed class AppSettingsFile
             NetworkBlacklist = NetworkWhitelist is null ? Copy(NetworkBlacklist) : null,
             ShowExplorerContextMenu = ShowExplorerContextMenu ?? defaults.ShowExplorerContextMenu,
             ShowInSendToMenu = ShowInSendToMenu ?? defaults.ShowInSendToMenu,
+            ShowFavoriteDevicesInExplorerMenu = ShowFavoriteDevicesInExplorerMenu
+                                               ?? defaults.ShowFavoriteDevicesInExplorerMenu,
         };
     }
 

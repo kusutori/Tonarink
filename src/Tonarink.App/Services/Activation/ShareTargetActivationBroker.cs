@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Reactor;
@@ -131,7 +132,7 @@ static class ShareTargetActivationBroker
         DrainExplorerShare();
         var watcher = new FileSystemWatcher(directory)
         {
-            Filter = "*.txt",
+            Filters = { "*.txt", "*.json" },
             NotifyFilter = NotifyFilters.FileName | NotifyFilters.LastWrite | NotifyFilters.CreationTime,
             EnableRaisingEvents = true,
         };
@@ -158,19 +159,34 @@ static class ShareTargetActivationBroker
         var ingested = false;
         lock (ExplorerShareGate)
         {
-            foreach (var file in Directory.GetFiles(directory, "*.txt"))
+            foreach (var file in Directory.GetFiles(directory)
+                         .Where(file => Path.GetExtension(file) is ".txt" or ".json")
+                         .OrderBy(File.GetCreationTimeUtc))
             {
                 try
                 {
                     string[] paths;
+                    string? fingerprint = null;
                     try
                     {
-                        paths =
-                        [
-                            .. File.ReadAllLines(file)
-                                .Select(static path => path.Trim())
-                                .Where(static path => path.Length > 0 && Path.Exists(path))
-                        ];
+                        if (Path.GetExtension(file) == ".json")
+                        {
+                            using var document = JsonDocument.Parse(File.ReadAllText(file));
+                            var root = document.RootElement;
+                            if (root.TryGetProperty("Fingerprint", out var target)
+                                && target.ValueKind == JsonValueKind.String)
+                                fingerprint = target.GetString();
+                            paths = root.GetProperty("Paths").EnumerateArray()
+                                .Where(value => value.ValueKind == JsonValueKind.String)
+                                .Select(value => value.GetString()!)
+                                .Where(path => !string.IsNullOrWhiteSpace(path) && Path.Exists(path))
+                                .Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+                        }
+                        else
+                        {
+                            paths = File.ReadAllLines(file).Select(path => path.Trim())
+                                .Where(path => path.Length > 0 && Path.Exists(path)).ToArray();
+                        }
                     }
                     catch (IOException)
                     {
@@ -186,10 +202,11 @@ static class ShareTargetActivationBroker
                             path,
                             Directory.Exists(path)))
                         .ToArray();
-                    PendingPayloads.Enqueue(new ShareTargetPayload(Guid.NewGuid(), items));
+                    PendingPayloads.Enqueue(new ShareTargetPayload(Guid.NewGuid(), items, fingerprint));
                     ingested = true;
                 }
-                catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+                catch (Exception exception) when (exception is IOException or UnauthorizedAccessException
+                                                 or JsonException or InvalidOperationException or KeyNotFoundException)
                 {
                     WriteDiagnostic($"Could not ingest explorer share file '{file}'.", exception);
                 }

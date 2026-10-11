@@ -66,6 +66,13 @@ internal static partial class ComServer
         return 0;
     }
 
+    internal static int ExportInterface(object instance, Guid iid, out nint pointer)
+    {
+        var unknown = Wrappers.GetOrCreateComInterfaceForObject(instance, CreateComInterfaceFlags.None);
+        try { return Marshal.QueryInterface(unknown, in iid, out pointer); }
+        finally { Marshal.Release(unknown); }
+    }
+
     [GeneratedComClass]
     private sealed partial class ClassFactory : IClassFactory
     {

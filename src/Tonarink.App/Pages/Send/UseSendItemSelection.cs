@@ -247,7 +247,8 @@ static class SendItemSelectionHooks
                 {
                     requestSuggestedContactSend(new(
                         Guid.NewGuid(),
-                        payload.SuggestedContactFingerprint));
+                        payload.SuggestedContactFingerprint,
+                        imported.ToArray()));
                 }
                 consumeShareTargetPayload(payload.Id);
             }

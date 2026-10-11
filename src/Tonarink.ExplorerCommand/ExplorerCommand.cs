@@ -1,4 +1,6 @@
 using System.Runtime.InteropServices.Marshalling;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace Tonarink.ExplorerCommand;
 
@@ -6,6 +8,15 @@ namespace Tonarink.ExplorerCommand;
 internal sealed partial class ExplorerCommand : IExplorerCommand, IObjectWithSite
 {
     private nint _site;
+    private readonly ExplorerCommand? _parent;
+    private readonly ExplorerFavorite? _favorite;
+
+    public ExplorerCommand() { }
+    private ExplorerCommand(ExplorerCommand parent, ExplorerFavorite? favorite = null)
+    {
+        _parent = parent;
+        _favorite = favorite;
+    }
 
     private const int Ok = 0;
     private const int NotImplemented = unchecked((int)0x80004001);
@@ -19,7 +30,10 @@ internal sealed partial class ExplorerCommand : IExplorerCommand, IObjectWithSit
         ppszName = 0;
         try
         {
-            ppszName = AppPaths.Dup(AppPaths.MenuTitle());
+            var title = _favorite?.Name ?? (_parent is not null
+                ? ExplorerStrings.Get("ExplorerCommandAddToList") ?? "Add to send list"
+                : AppPaths.MenuTitle());
+            ppszName = AppPaths.Dup(title.Replace("&", "&&", StringComparison.Ordinal));
             return Ok;
         }
         catch (Exception exception)
@@ -58,7 +72,9 @@ internal sealed partial class ExplorerCommand : IExplorerCommand, IObjectWithSit
 
     public int GetCanonicalName(out Guid pguidCommandName)
     {
-        pguidCommandName = new Guid(AppPaths.Clsid);
+        pguidCommandName = _favorite is { } favorite
+            ? new Guid(SHA256.HashData(Encoding.UTF8.GetBytes("Tonarink.ExplorerFavorite:" + favorite.Fingerprint)).AsSpan(0, 16))
+            : _parent is not null ? new Guid("09B36B4B-35A8-4367-B3A8-AC5E9A0BF632") : new Guid(AppPaths.Clsid);
         return Ok;
     }
 
@@ -75,13 +91,15 @@ internal sealed partial class ExplorerCommand : IExplorerCommand, IObjectWithSit
         _ = pbc;
         try
         {
+            // A submenu parent is not a send action. Only its leaves invoke.
+            if (SubmenuFavorites().Count > 0) return Ok;
             var paths = ComVtbl.GetShellItemPaths(psiItemArray);
             if (paths.Count == 0)
-                paths = ComVtbl.GetShellItemPathsFromSite(_site);
+                paths = ComVtbl.GetShellItemPathsFromSite(_parent?._site ?? _site);
             if (paths.Count == 0)
                 return Ok;
 
-            AppPaths.WriteShareRequest(paths);
+            AppPaths.WriteShareRequest(paths, _favorite?.Fingerprint);
             AppPaths.LaunchApp();
             return Ok;
         }
@@ -118,13 +136,28 @@ internal sealed partial class ExplorerCommand : IExplorerCommand, IObjectWithSit
 
     public int GetFlags(out uint pFlags)
     {
-        pFlags = 0;
+        pFlags = SubmenuFavorites().Count > 0 ? 1u : 0u; // ECF_HASSUBCOMMANDS
         return Ok;
     }
+
+    private IReadOnlyList<ExplorerFavorite> SubmenuFavorites() =>
+        _parent is null && AppPaths.IsFavoriteMenuEnabled() ? AppPaths.Favorites() : [];
 
     public int EnumSubCommands(out nint ppEnum)
     {
         ppEnum = 0;
-        return NotImplemented;
+        try
+        {
+            var favorites = SubmenuFavorites();
+            if (favorites.Count == 0) return NotImplemented;
+            ExplorerCommand[] commands = [new(this), .. favorites.Select(favorite => new ExplorerCommand(this, favorite))];
+            return ComServer.ExportInterface(new ExplorerCommandEnumerator(commands),
+                typeof(IEnumExplorerCommand).GUID, out ppEnum);
+        }
+        catch (Exception exception)
+        {
+            AppPaths.Report("Could not create the favorites submenu", exception);
+            return Fail;
+        }
     }
 }

@@ -17,7 +17,8 @@ static class SendDeviceResolver
         int port,
         LocalSendProtocol preferredProtocol,
         string? expectedFingerprint,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        TimeSpan? probeTimeout = null)
     {
         Exception? lastError = null;
         LocalSendProtocol[] protocols =
@@ -30,10 +31,12 @@ static class SendDeviceResolver
         foreach (var protocol in protocols)
         {
             cancellationToken.ThrowIfCancellationRequested();
+            using var probeDeadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            if (probeTimeout is { } timeout) probeDeadline.CancelAfter(timeout);
             try
             {
                 var endpoint = new DeviceEndpoint(address, port, protocol);
-                var probe = await node.ProbeDeviceAsync(endpoint, cancellationToken).ConfigureAwait(true);
+                var probe = await node.ProbeDeviceAsync(endpoint, probeDeadline.Token).ConfigureAwait(true);
                 if (expectedFingerprint is not null
                     && !string.Equals(
                         probe.Device.Fingerprint,
@@ -47,11 +50,15 @@ static class SendDeviceResolver
                 var device = await node.AddKnownDeviceAsync(
                     endpoint,
                     probe.Device.Fingerprint,
-                    cancellationToken).ConfigureAwait(true);
-                return new ResolvedDevice(device);
+                    probeDeadline.Token).ConfigureAwait(true);
+                // The registry may merge in stale endpoints from discovery.
+                // Send through the endpoint we just verified, not an older one
+                // that the transfer's HTTPS preference happens to select.
+                return new ResolvedDevice(device with { Endpoints = (DeviceEndpoint[])[endpoint] });
             }
             catch (OperationCanceledException exception)
-                when (!cancellationToken.IsCancellationRequested && exception.InnerException is TimeoutException)
+                when (!cancellationToken.IsCancellationRequested
+                      && (probeDeadline.IsCancellationRequested || exception.InnerException is TimeoutException))
             {
                 // HttpClient's request deadline is a failed probe, not a user
                 // cancellation. The other protocol may still reach the peer.

@@ -304,19 +304,36 @@ sealed class SettingsPage : Component<SettingsPageProps>
                     expander.Header = t.Message(new("App", "SettingsNotifications"));
                     expander.Description = t.Message(new("App", "SettingsNotificationsDescription"));
                 }),
-            SettingsCard(
-                header: t.Message(new("App", "SettingsExplorerContextMenu")),
-                description: t.Message(new("App", "SettingsExplorerContextMenuDescription")),
+            SettingsExpander(
                 headerIcon: AnimatedButtons.SettingsContextMenuIcon(Props.Settings.ShowExplorerContextMenu)
                     .WithKey("settings-context-menu-icon"),
-                isClickEnabled: false,
-                isActionIconVisible: false,
                 content:
                 ToggleSwitch(Props.Settings.ShowExplorerContextMenu, value =>
                         Props.UpdateSettings(settings => settings with { ShowExplorerContextMenu = value }))
                     .AutomationName(t.Message(new("App", "SettingsExplorerContextMenu")))
                     .HelpText(t.Message(new("App", "SettingsExplorerContextMenuDescription")))
-                    .IsEnabled(AppPlatform.HasPackageIdentity())),
+                    .IsEnabled(AppPlatform.HasPackageIdentity()),
+                items:
+                [
+                    SettingsCard(
+                        header: t.Message(new("App", "SettingsExplorerFavorites")),
+                        description: t.Message(new("App", "SettingsExplorerFavoritesDescription")),
+                        isClickEnabled: false,
+                        isActionIconVisible: false,
+                        content:
+                        ToggleSwitch(Props.Settings.ShowFavoriteDevicesInExplorerMenu, value =>
+                                Props.UpdateSettings(settings => settings with { ShowFavoriteDevicesInExplorerMenu = value }))
+                            .AutomationName(t.Message(new("App", "SettingsExplorerFavorites")))
+                            .AutomationId("Settings.Explorer.Favorites")
+                            .HelpText(t.Message(new("App", "SettingsExplorerFavoritesDescription")))
+                            .IsEnabled(AppPlatform.HasPackageIdentity() && Props.Settings.ShowExplorerContextMenu)),
+                ])
+                .AutomationId("Settings.Explorer.Expander")
+                .Set(expander =>
+                {
+                    expander.Header = t.Message(new("App", "SettingsExplorerContextMenu"));
+                    expander.Description = t.Message(new("App", "SettingsExplorerContextMenuDescription"));
+                }),
             SettingsCard(
                 header: t.Message(new("App", "SettingsSendTo")),
                 description: t.Message(new("App", "SettingsSendToDescription")),

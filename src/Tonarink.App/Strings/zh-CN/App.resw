@@ -370,6 +370,9 @@
   <data name="ExplorerCommandTitle" xml:space="preserve"><value>使用 Tonarink 发送</value></data>
   <data name="SettingsExplorerContextMenu" xml:space="preserve"><value>文件资源管理器右键菜单</value></data>
   <data name="SettingsExplorerContextMenuDescription" xml:space="preserve"><value>添加“使用 Tonarink 发送”菜单项，仅限 Windows 11 的 MSIX 安装版</value></data>
+  <data name="SettingsExplorerFavorites" xml:space="preserve"><value>在子菜单中显示收藏设备</value></data>
+  <data name="SettingsExplorerFavoritesDescription" xml:space="preserve"><value>选择收藏设备直接发送，关闭后仅将所选文件加入发送列表</value></data>
+  <data name="ExplorerCommandAddToList" xml:space="preserve"><value>添加到发送列表</value></data>
   <data name="SettingsSendTo" xml:space="preserve"><value>文件资源管理器“发送到”菜单</value></data>
   <data name="SettingsSendToDescription" xml:space="preserve"><value>在“发送到”菜单中添加 Tonarink，将所选文件加入发送列表，仅限未打包版</value></data>
   <data name="SettingsSendToFailed" xml:space="preserve"><value>无法更新“发送到”菜单：{error}</value></data>
@@ -411,7 +414,9 @@
   <data name="ShareTargetEmpty" xml:space="preserve"><value>分享内容中没有可访问的文件或文本</value></data>
   <data name="ShareTargetFailed" xml:space="preserve"><value>无法添加分享内容：{error}</value></data>
   <data name="ShareSuggestedDeviceOffline" xml:space="preserve"><value>{device} 当前不在线。分享内容已保留在待发送列表中，可以重试或选择其他设备。</value></data>
-  <data name="ShareSuggestedDeviceUnavailable" xml:space="preserve"><value>这个 Windows 分享联系人已不在收藏夹中，分享内容已保留在待发送列表中。</value></data>
+  <data name="ShareSuggestedDeviceUnavailable" xml:space="preserve"><value>该设备已不在收藏夹中，分享内容已保留在待发送列表中</value></data>
+  <data name="ShareSuggestedDeviceConnecting" xml:space="preserve"><value>正在查找 {device}，请稍候</value></data>
+  <data name="ShareSuggestedServiceUnavailable" xml:space="preserve"><value>网络服务未能就绪，分享内容已保留在待发送列表中，可启动服务后重试</value></data>
   <data name="TargetDevice" xml:space="preserve"><value>目标设备</value></data>
   <data name="TargetRequiresPin" xml:space="preserve"><value>接收设备要求输入 PIN</value></data>
   <data name="Text" xml:space="preserve"><value>文本</value></data>

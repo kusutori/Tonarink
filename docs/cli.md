@@ -155,6 +155,7 @@ tonarink settings set alias "书房电脑" --restart
 tonarink settings set download-directory D:\Received
 tonarink settings set tray-click panel
 tonarink settings set send-to-menu true
+tonarink settings set explorer-favorites true
 tonarink settings set preview-tool QuickLook
 tonarink settings set network-allowlist "192.168.1.*,10.0.0.*" --restart
 ```
@@ -162,6 +163,8 @@ tonarink settings set network-allowlist "192.168.1.*,10.0.0.*" --restart
 设置通过与 GUI 相同的存储保存并同步到界面。设备名称、端口、加密、网络筛选、PIN 等服务器配置需要重启服务器；可以附加 `--restart` 一并应用。涉及 Windows 自启动的修改沿用系统权限限制。
 
 `send-to-menu` 仅限未打包 GUI，控制当前用户的资源管理器“发送到”快捷方式；MSIX 版不支持开启，独立 CLI 不提供此设置。
+
+`explorer-favorites` 控制 MSIX 版资源管理器右键菜单中的收藏设备子菜单，需要同时启用 `explorer-menu`；选择收藏设备会直接发送本次选中的项目，详见[资源管理器收藏设备菜单](explorer-favorites.md)。
 
 独立版只支持服务器、传输和存储相关设置，不包含主题、托盘、系统通知和预览等 GUI 设置。运行 `settings list` 获取当前宿主支持的键；独立版 `language` 支持 `zh-CN` / `en-US`，用于浏览器分享页面。
 

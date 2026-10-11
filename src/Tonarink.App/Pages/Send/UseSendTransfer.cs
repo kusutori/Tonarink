@@ -9,7 +9,9 @@ namespace Tonarink.Pages.Send;
 sealed record SendTransferController(
     bool IsSending,
     Action Reset,
-    Func<LocalSendDevice, string?, string?, Task> StartAsync);
+    Func<LocalSendDevice, string?, string?, Task> StartAsync,
+    Func<LocalSendDevice, string?, string?, IReadOnlyList<SelectedSendItem>, Task> StartItemsAsync,
+    Func<bool> IsBusy);
 
 static class SendTransferHooks
 {
@@ -31,11 +33,18 @@ static class SendTransferHooks
             new TransferUiState.Idle(t.Message(new("App", "SendHint"))));
         var (isSending, setIsSending) = context.UseState(false);
         var sendCancellationRef = context.UseRef<CancellationTokenSource?>();
+        var busy = context.UseRef(false);
+        var liveItems = context.UseRef(selectedItems);
+        liveItems.Current = selectedItems;
 
-        return new(isSending, Reset, StartAsync);
+        return new(isSending, Reset, (device, pin, address) => StartItemsAsync(device, pin, address, selectedItems),
+            StartItemsAsync, () => busy.Current);
 
-        void Reset() => dispatchTransfer(new SendTransferAction.Reset(
-            t.Message(new("App", "SendHint"))));
+        void Reset()
+        {
+            if (!busy.Current)
+                dispatchTransfer(new SendTransferAction.Reset(t.Message(new("App", "SendHint"))));
+        }
 
         async Task<OutgoingTransferResult> SendAsync(SendRequest request)
         {
@@ -101,16 +110,19 @@ static class SendTransferHooks
             }
         }
 
-        async Task StartAsync(
+        async Task StartItemsAsync(
             LocalSendDevice device,
             string? pin,
-            string? resolvedManualAddress = null)
+            string? resolvedManualAddress,
+            IReadOnlyList<SelectedSendItem> batch)
         {
-            if (node?.State != LocalSendNodeState.Running || selectedItems.Count == 0)
+            if (node?.State != LocalSendNodeState.Running || batch.Count == 0 || busy.Current)
                 return;
 
-            var items = (SendItem[])[.. selectedItems.Select(static item => item.Item)];
-            var totalBytes = selectedItems.Sum(static item => item.Length);
+            busy.Current = true;
+            var awaitingPin = false;
+            var items = (SendItem[])[.. batch.Select(static item => item.Item)];
+            var totalBytes = batch.Sum(static item => item.Length);
             var cancellation = new CancellationTokenSource();
             sendCancellationRef.Current?.Dispose();
             sendCancellationRef.Current = cancellation;
@@ -153,8 +165,13 @@ static class SendTransferHooks
                         waitingState,
                         new OutgoingOverlayUpdate.AwaitingPin(new OutgoingPinPrompt(
                             pinRequired.InvalidPin ? t.Message(new("App", "PinIncorrect")) : null,
-                            enteredPin => _ = StartAsync(device, enteredPin, resolvedManualAddress),
-                            Reset)));
+                            enteredPin =>
+                            {
+                                busy.Current = false;
+                                _ = StartItemsAsync(device, enteredPin, resolvedManualAddress, batch);
+                            },
+                            () => { busy.Current = false; Reset(); })));
+                    awaitingPin = true;
                     return;
                 }
 
@@ -196,7 +213,7 @@ static class SendTransferHooks
                     t.Message(new("App", "NotificationSendCompleteTitle")),
                     t.Message(
                         new("App", "NotificationSendComplete"),
-                        ("count", selectedItems.Count),
+                        ("count", batch.Count),
                         ("device", device.Alias)),
                     "send-complete",
                     items
@@ -207,8 +224,10 @@ static class SendTransferHooks
                     t.Message(new("App", "NotificationShowInFolder")));
                 if (!keepItemsForMultipleReceivers)
                 {
-                    updateSelectedItems(_ => []);
-                    setPickerMessage(t.Message(new("App", "NothingSelected")));
+                    var sentIds = batch.Select(item => item.Id).ToHashSet();
+                    var remaining = liveItems.Current.Count(item => !sentIds.Contains(item.Id));
+                    updateSelectedItems(current => current.Where(item => !sentIds.Contains(item.Id)).ToArray());
+                    setPickerMessage(t.Message(new("App", remaining == 0 ? "NothingSelected" : "SendHint")));
                 }
             }
             catch (Exception exception)
@@ -229,6 +248,7 @@ static class SendTransferHooks
             }
             finally
             {
+                if (!awaitingPin) busy.Current = false;
                 if (ReferenceEquals(sendCancellationRef.Current, cancellation))
                     sendCancellationRef.Current = null;
                 cancellation.Dispose();

@@ -54,4 +54,21 @@ internal partial interface IExplorerCommand
     int EnumSubCommands(out nint ppEnum);
 }
 
+[GeneratedComInterface]
+[Guid("a88826f8-186f-4987-aade-ea0cef8fbfe8")]
+internal partial interface IEnumExplorerCommand
+{
+    [PreserveSig]
+    int Next(uint count, nint commands, nint fetched);
+
+    [PreserveSig]
+    int Skip(uint count);
+
+    [PreserveSig]
+    int Reset();
+
+    [PreserveSig]
+    int Clone(out nint enumerator);
+}
+
 
