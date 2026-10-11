@@ -580,9 +580,7 @@ sealed class SettingsPage : Component<SettingsPageProps>
                 onClick: () => _ = OpenExecutionAliasSettingsAsync())
                 .AutomationName(t.Message(new("App", "SettingsAppExecutionAliases")))
                 .HelpText(t.Message(new("App", "SettingsAppExecutionAliasesDescription")))
-                .IsEnabled(AppPlatform.HasPackageIdentity())
-                .OnPointerEntered((_, _) => PlayAliasAnimation())
-                .OnGotFocus((_, _) => PlayAliasAnimation()),
+                .IsEnabled(AppPlatform.HasPackageIdentity()),
             SettingsCard(
                 header: t.Message(new("App", "SettingsWindowsShareSuggestions")),
                 description: t.Message(new("App", "SettingsWindowsShareSuggestionsDescription")),
@@ -774,27 +772,24 @@ sealed class SettingsPage : Component<SettingsPageProps>
             }
         }
 
-        void PlayAliasAnimation()
-        {
-            if (AppPlatform.HasPackageIdentity() && !reduceMotion)
-                setAliasAnimationVersion(aliasAnimationVersion + 1);
-        }
-
         async Task OpenExecutionAliasSettingsAsync()
         {
             if (!AppPlatform.HasPackageIdentity())
                 return;
 
+            if (!reduceMotion)
+                setAliasAnimationVersion(aliasAnimationVersion + 1);
+
             try
             {
-                var opened = await Windows.System.Launcher.LaunchUriAsync(new Uri("ms-settings:appsfeatures"));
+                var opened = await Windows.System.Launcher.LaunchUriAsync(new Uri("ms-settings:"));
                 setStatusMessage(opened
                     ? null
                     : t.Message(new("App", "SettingsAppExecutionAliasesOpenFailed")));
             }
             catch (Exception exception)
             {
-                AppDiagnostics.Report("Could not open Windows app execution alias settings", exception);
+                AppDiagnostics.Report("Could not open Windows Settings for app execution aliases", exception);
                 setStatusMessage(t.Message(new("App", "SettingsAppExecutionAliasesOpenFailed")));
             }
         }
