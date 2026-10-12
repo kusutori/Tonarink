@@ -32,7 +32,7 @@ static class SelectedSendItemReader
                 return stream.AsStreamForRead();
             },
             contentType);
-        return new(Guid.NewGuid(), item, fileName, length, "clipboard");
+        return new(Guid.NewGuid(), item, fileName, length, SelectedSendItemKind.Clipboard);
     }
 
     public static async Task<IReadOnlyList<SelectedSendItem>> ReadDroppedAsync(
@@ -76,7 +76,7 @@ static class SelectedSendItemReader
                 token.ThrowIfCancellationRequested();
                 return await file.OpenStreamForReadAsync().ConfigureAwait(false);
             });
-        return new(Guid.NewGuid(), item, protocolName, length, "file", file.Path);
+        return new(Guid.NewGuid(), item, protocolName, length, SelectedSendItemKind.File, file.Path);
     }
 
     public static Task<IReadOnlyList<SelectedSendItem>> FromFolderAsync(
@@ -108,7 +108,7 @@ static class SelectedSendItemReader
                         new SendFileItem(path, protocolName),
                         protocolName,
                         new FileInfo(path).Length,
-                        "file",
+                        SelectedSendItemKind.File,
                         path);
                 })
         ];

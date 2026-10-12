@@ -44,7 +44,8 @@ static class SendTransferPresentation
                 requestedBytes,
                 failed.Failure.Message,
                 IsError: true),
-            _ => new TransferUiState.Active(
+            OutgoingTransferResult.PinRequired or OutgoingTransferResult.PinRateLimited
+                or OutgoingTransferResult.PeerBusy or OutgoingTransferResult.Declined => new TransferUiState.Active(
                 TransferState.Failed,
                 deviceAlias,
                 0,
@@ -63,6 +64,6 @@ static class SendTransferPresentation
             TransferState.Transferring => t.Message(new("App", "SendingToDevice"), ("device", deviceAlias)),
             TransferState.Completed => t.Message(new("App", "SentToDevice"), ("device", deviceAlias)),
             TransferState.Cancelled => t.Message(new("App", "TransferCancelled")),
-            _ => t.Message(new("App", "TransferFailed")),
+            TransferState.Failed => t.Message(new("App", "TransferFailed")),
         };
 }

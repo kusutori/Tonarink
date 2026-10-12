@@ -306,7 +306,7 @@ sealed class SendPage : Component<SendPageProps>
                                 item,
                                 t.Message(new("App", "TextMessage")),
                                 TextLength(value),
-                                "text")
+                                SelectedSendItemKind.Text)
                         ]);
                     },
                     () => setShowTextDialog(false)))
@@ -534,20 +534,20 @@ sealed class SendPage : Component<SendPageProps>
                         .ConfigureAwait(true)
                     : new DeviceResolutionFailure(new InvalidOperationException(
                         "The LocalSend node is not running."));
-                switch (resolution)
+                var resolvedDevice = resolution switch
                 {
-                    case ResolvedDevice(var device):
-                        await transfer.StartAsync(device, null, normalizedAddress)
-                            .ConfigureAwait(true);
-                        return;
-
-                    case DeviceResolutionFailure:
-                        setManualAddressError(t.Message(
-                            new("App", "DeviceAddressNotFound"),
-                            ("address", normalizedAddress)));
-                        setShowAddressDialog(true);
-                        return;
+                    ResolvedDevice(var device) => device,
+                    DeviceResolutionFailure => null,
+                };
+                if (resolvedDevice is not null)
+                {
+                    await transfer.StartAsync(resolvedDevice, null, normalizedAddress).ConfigureAwait(true);
+                    return;
                 }
+                setManualAddressError(t.Message(
+                    new("App", "DeviceAddressNotFound"),
+                    ("address", normalizedAddress)));
+                setShowAddressDialog(true);
             }
             finally
             {

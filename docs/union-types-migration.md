@@ -382,3 +382,62 @@ Android 多目标构建仍需要本机安装 Android API 37；同一 Mobile 项�
 - 文档、示例和迁移说明足以让外部使用者完成升级。
 
 这三个阶段必须按顺序推进。第一阶段用于建立应用侧模式和经验；第二阶段可以专注于 Core 的公共契约；第三阶段再一次性承担真正的跨层破坏性迁移，避免主应用长期处于新旧 API 混用状态。
+
+## 2026-10-12：对照 Reactor spec 008 的收尾审计
+
+参考本地 `microsoft-ui-reactor/docs/specs/008-csharp-language-improvements.md`。它是探索性讨论，不是已实现的 C# 语法或当前支持承诺；其中的 `Why Not` 应理解为设计成本和反例，不是永久否定某个能力。
+
+### 设想与当前实现的区别
+
+文章设想直接把 case 及负载写进 union：
+
+```csharp
+// 讨论中的伪语法，不能复制到当前项目编译
+union FetchResult { Loading, Error(string Message), Success(List<Item> Items) }
+```
+
+当前 .NET 11 SDK 的 C# Preview 组合的是已有类型：
+
+```csharp
+union FetchResult(FetchResult.Loading, FetchResult.Error, FetchResult.Success)
+{
+    public sealed record Loading;
+    public sealed record Error(string Message);
+    public sealed record Success(List<Item> Items);
+}
+```
+
+case 的负载、解构和 record 相等性来自 case 类型，不来自 union 的继承层次。标准 union 本身是值类型包装，自动提供各 case 的转换，值类型 case 可能装箱；它不会自动成为 record，也不会消除 `default` 带来的空内容。
+
+因此保留几项明确约定：
+
+- 对封闭 union 使用直接匹配 union 的 `switch` 表达式，不转成 `object` 或 `.Value` 再匹配，也不以 `_` 隐藏遗漏的 case
+- 穷尽检查针对 `switch` 表达式；普通 `switch` 语句不能提供相同的遗漏诊断
+- 可空 union 需要显式处理 `null`；不能把 `default` 当作 `Idle`。可空包装的 `.Value` 与 union 自己的 `.Value` 不同，动画播放状态通过 `HasValue` 后取出包装里的 union
+- 编译器产生遗漏警告，仓库的 `TreatWarningsAsErrors` 将其视为编译错误；不是所有 C# 工程都会默认报错
+- 不为“语法更短”引入状态魔法或第三方 DSL，仍保留普通 record、局部函数和明确的 Reactor Hook 调用
+
+### 本轮修正
+
+- 清理 `SendTransferPresentation`、`TraySendCoordinator`、`IncomingTransferCoordinator` 和 `LocalSendRuntime` 中遮蔽已知结果的 `_`；前置已处理的 PIN/完成分支也显式列出
+- 补齐确实漏迁移的接收消费端：Blazor 接收页不再把 `Task<RuntimeReceiveResult>` 上转为 `Task` 丢弃结果，失败或取消显式反馈、仅成功返回；提示移到请求是否还存在的判断之外，避免请求移除后错误被隐藏。LocalSend 与独立 CLI 自动接收显式处理返回的失败 case，分别通知/记录日志，不再只依赖异常 catch
+- 托盘发送反馈、通知激活、收藏设备对话框、设备解析、Share Target 导入、Blazor 发送改用穷尽的结果映射，避免普通 switch 语句在新增 case 后静默漏处理
+- 撤销/重做、托盘开关、设置服务器按钮的图标源从 `object` 改为三个小 union，使着色和图标源匹配都受编译器检查
+- 发送项的 `file/text/clipboard` 展示标签没有不同负载，改成 `SelectedSendItemKind` 枚举；文件夹本来就展开成文件，不保留不可达的 folder 展示标签
+- 设备类型、传输进度、节点状态、路由、预览工具、自动保存、图标分类等枚举映射显式列出所有命名值；导航和任务栏进度也使用穷尽表达式
+- 三态全选动画显式列出不发生状态变化的三种组合，不以 `_` 掩盖其余状态
+
+普通 enum 仍允许强制转换出未命名数值。仓库只忽略 `CS8524`（未命名数值未匹配），保留 `CS8509` 等遗漏命名成员的诊断；无兜底的表达式在收到非法数值时仍会抛出异常。持久化和输入边界继续负责验证/回退，不把非法值默默当作正常 UI 状态。
+
+### 有意保留的模型与 fallback
+
+- `SendItem` 有真实的共享成员和虚方法（长度、打开流），不是只为模式匹配存在的 marker 基类，不改成 union
+- `ShareItem`、协议 DTO、CLI JSON、持久化设置及 iOS 分享负载不借本轮审计破坏格式；传输进度保持轻量 enum
+- `AppRuntimeState` 仍是共享快照；已存在的 state/action union 不再另建一套同义状态模型
+- MIME、扩展名、语言标签、外部通知动作、路由字符串、设置键、HTTP 状态码、列表数量和可选覆盖层不是封闭的业务 case 集合，保留有意义的开放输入/条件 fallback
+- Windows 启动状态与设备卡片动画角色的语句已列出所有已知枚举值，`default` 仅用于拒绝非法数值，不承担正常分支
+- transport 内部的 PIN 等异常是 HTTP 到 outcome 的私有映射手段；公开结果和消费端不再通过旧业务异常分流，不删除这类内部实现细节
+
+验证只做编译和差异检查，未新增或运行测试。旧 WinUI 测试的构造参数与分类断言同步改为枚举，保持既有用例与类型契约一致，没有增加用例。App、Web、CLI、WidgetProvider、ExplorerCommand 及 Hybrid Windows 的 Release 编译通过，均为 0 警告、0 错误，包含对应共享/Core/LocalSend 引用项目。Android 仍沿用缺少 API 37 的未验证说明，本轮不下载 SDK，也不把普通 Release 构建称为 Native AOT/实机验证。
+
+当前语义参考：[C# union 类型](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/union)、[CS8524 与穷尽 switch 诊断](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/compiler-messages/pattern-matching-warnings)。

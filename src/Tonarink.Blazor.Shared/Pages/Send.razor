@@ -124,7 +124,31 @@
     private async Task RefreshAsync() => await RunAsync(() => Runtime.RefreshAsync());
     private async Task SendAsync(NearbyDevice device) => await SendCoreAsync((pin, token) => Runtime.SendAsync(device, AppState.SendItems, pin, cancellationToken: token));
     private async Task SendToManualAddressAsync() { if (!DeviceAddress.TryParse(_manualAddress, out _, out _)) { _error = T("InvalidAddress"); return; } _showAddress = false; await SendCoreAsync((pin, token) => Runtime.SendToAddressAsync(_manualAddress, AppState.SendItems, pin, cancellationToken: token)); }
-    private async Task SendCoreAsync(Func<string?, CancellationToken, Task<RuntimeSendResult>> send) { _sendCancellation = new(); await RunAsync(async () => { var result = await send(string.IsNullOrWhiteSpace(_pin) ? null : _pin, _sendCancellation.Token); switch (result) { case RuntimeSendResult.Completed: case RuntimeSendResult.Cancelled: break; case RuntimeSendResult.PinRequired required: _pinRequested = true; throw new InvalidOperationException(required.InvalidPin ? T("IncorrectPin") : T("DeviceRequiresPin")); case RuntimeSendResult.PinRateLimited: throw new InvalidOperationException(T("TooManyPinAttempts")); case RuntimeSendResult.PeerBusy: throw new InvalidOperationException(T("DeviceBusy")); case RuntimeSendResult.Declined: throw new InvalidOperationException(T("TransferDeclined")); case RuntimeSendResult.Failed failed: throw new InvalidOperationException(failed.Message); } }); _sendCancellation.Dispose(); _sendCancellation = null; }
+    private async Task SendCoreAsync(Func<string?, CancellationToken, Task<RuntimeSendResult>> send)
+    {
+        _sendCancellation = new();
+        await RunAsync(async () =>
+        {
+            var result = await send(string.IsNullOrWhiteSpace(_pin) ? null : _pin, _sendCancellation.Token);
+            _error = result switch
+            {
+                RuntimeSendResult.Completed or RuntimeSendResult.Cancelled => null,
+                RuntimeSendResult.PinRequired required => RequestPin(required),
+                RuntimeSendResult.PinRateLimited => T("TooManyPinAttempts"),
+                RuntimeSendResult.PeerBusy => T("DeviceBusy"),
+                RuntimeSendResult.Declined => T("TransferDeclined"),
+                RuntimeSendResult.Failed failed => failed.Message,
+            };
+        });
+        _sendCancellation.Dispose();
+        _sendCancellation = null;
+
+        string RequestPin(RuntimeSendResult.PinRequired required)
+        {
+            _pinRequested = true;
+            return required.InvalidPin ? T("IncorrectPin") : T("DeviceRequiresPin");
+        }
+    }
     private void CancelSend() => _sendCancellation?.Cancel();
     private async Task RunAsync(Func<Task> action) { _busy = true; _error = null; try { await action(); } catch (Exception exception) { _error = exception.Message; } finally { _busy = false; } }
     private static string DeviceInitial(string alias) => string.IsNullOrWhiteSpace(alias) ? "?" : alias[..1].ToUpperInvariant();

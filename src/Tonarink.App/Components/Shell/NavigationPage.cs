@@ -68,25 +68,17 @@ sealed class ShellNavigationCoordinator(NavigationHandle<AppRoute> navigation) :
                 if (_disposed || pending is null || pending.Route == navigation.CurrentRoute)
                     return;
 
-                switch (pending.Mode)
+                Action navigate = pending.Mode switch
                 {
-                    case NavigationMode.Pop:
-                        navigation.PopTo(route => route == pending.Route);
-                        break;
-                    case NavigationMode.Forward:
-                        navigation.GoForward();
-                        break;
-                    case NavigationMode.Replace:
-                        navigation.Replace(pending.Route);
-                        break;
-                    case NavigationMode.Reset:
-                        navigation.Reset(pending.Route);
-                        break;
-                    default:
+                    NavigationMode.Pop => () => navigation.PopTo(route => route == pending.Route),
+                    NavigationMode.Forward => () => navigation.GoForward(),
+                    NavigationMode.Replace => () => navigation.Replace(pending.Route),
+                    NavigationMode.Reset => () => navigation.Reset(pending.Route),
+                    NavigationMode.Push => () =>
                         navigation.Navigate(pending.Route,
-                            AppNavigation.IsDetail(pending.Route) ? AppNavigation.DrillIn : null);
-                        break;
-                }
+                            AppNavigation.IsDetail(pending.Route) ? AppNavigation.DrillIn : null),
+                };
+                navigate();
             }))
         {
             _draining = false;

@@ -185,7 +185,7 @@ sealed class DeviceDetailsPage : Component<DeviceDetailsPageProps>
         {
             DeviceChangeKind.Added => t.Message(new("App", "DeviceLogAdded")),
             DeviceChangeKind.Removed => t.Message(new("App", "DeviceLogRemoved")),
-            _ => t.Message(new("App", "DeviceLogUpdated")),
+            DeviceChangeKind.Updated => t.Message(new("App", "DeviceLogUpdated")),
         };
         var endpoints = entry.Endpoints.Count == 0
             ? string.Empty

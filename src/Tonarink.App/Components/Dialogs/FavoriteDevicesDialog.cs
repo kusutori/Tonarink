@@ -71,17 +71,13 @@ sealed class FavoriteDevicesDialog : Component<FavoriteDevicesDialogProps>
                     return;
                 }
 
-                switch (pending)
+                Action finish = pending switch
                 {
-                    case PendingAction.Edit(var device):
-                        Props.Edit(device);
-                        return;
-                    case PendingAction.Delete(var device):
-                        Props.Delete(device);
-                        return;
-                }
-
-                Props.Close();
+                    PendingAction.Edit(var device) => () => Props.Edit(device),
+                    PendingAction.Delete(var device) => () => Props.Delete(device),
+                    null => Props.Close,
+                };
+                finish();
             },
         }).Themed(Props.Theme);
 

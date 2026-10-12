@@ -23,7 +23,7 @@ public sealed class SelectedSendItemTests
         var bytes = Encoding.UTF8.GetBytes("原始内容 🦊\r\n");
         await File.WriteAllBytesAsync(path, bytes);
         var original = new SelectedSendItem(Guid.NewGuid(), new SendFileItem(path, "folder/nested/original.txt"),
-            "Original display", bytes.Length, "file", path);
+            "Original display", bytes.Length, SelectedSendItemKind.File, path);
 
         Assert.AreSame(original, SelectedSendItemOperations.UndoRename(original));
         Assert.AreSame(original, SelectedSendItemOperations.RedoRename(original));
@@ -112,7 +112,7 @@ public sealed class SelectedSendItemTests
         foreach (var item in items)
         {
             Assert.AreEqual(item.Item.FileName, item.DisplayName);
-            Assert.AreEqual("file", item.Kind);
+            Assert.AreEqual(SelectedSendItemKind.File, item.Kind);
             Assert.AreEqual(expected[item.Item.FileName].LongLength, item.Length);
             Assert.IsNotNull(item.LocalPath);
             Assert.IsTrue(Path.IsPathFullyQualified(item.LocalPath));
@@ -164,7 +164,7 @@ public sealed class SelectedSendItemTests
         Assert.AreEqual(bytes.LongLength, selected.Length);
         Assert.AreEqual(bytes.LongLength, ((SendStreamItem)selected.Item).LengthValue);
         Assert.AreEqual("text/plain", selected.Item.ContentType);
-        Assert.AreEqual("file", selected.Kind);
+        Assert.AreEqual(SelectedSendItemKind.File, selected.Kind);
 
         await using var peers = await FileTransferPeers.CreateAsync();
         using var cancelled = new CancellationTokenSource();
@@ -209,7 +209,7 @@ public sealed class SelectedSendItemTests
         Assert.AreEqual("clipboard-image.png", selected.Item.FileName);
         Assert.AreEqual(selected.Item.FileName, selected.DisplayName);
         Assert.AreEqual("image/png", selected.Item.ContentType);
-        Assert.AreEqual("clipboard", selected.Kind);
+        Assert.AreEqual(SelectedSendItemKind.Clipboard, selected.Kind);
         Assert.IsNull(selected.LocalPath);
         Assert.AreEqual(bytes.LongLength, selected.Length);
         await using var peers = await FileTransferPeers.CreateAsync();

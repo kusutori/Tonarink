@@ -21,7 +21,7 @@ static class ShellLauncher
                 (true, _, _) => Start(fullPath),
                 (false, true, false) => Start(fullPath),
                 (false, true, true) => Start("explorer.exe", $"/select,\"{fullPath}\""),
-                _ => false,
+                (false, false, _) => false,
             };
         }
         catch (Exception exception) when (exception is ArgumentException

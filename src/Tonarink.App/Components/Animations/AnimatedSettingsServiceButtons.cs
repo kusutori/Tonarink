@@ -345,7 +345,7 @@ sealed class AnimatedSettingsServiceButtons : Component<AnimatedSettingsServiceB
 
     private static void UpdateForeground(
         XamlButton button,
-        object source)
+        ServiceIconSource source)
     {
         if (button.Foreground is SolidColorBrush brush)
             SetForeground(source, brush.Color);
@@ -354,7 +354,7 @@ sealed class AnimatedSettingsServiceButtons : Component<AnimatedSettingsServiceB
     private static void UpdateForeground(
         XamlButton? button,
         AnimatedVisualPlayer player,
-        object source)
+        ServiceIconSource source)
     {
         if (button?.Foreground is SolidColorBrush brush)
         {
@@ -376,18 +376,13 @@ sealed class AnimatedSettingsServiceButtons : Component<AnimatedSettingsServiceB
                 : Microsoft.UI.Colors.Black);
     }
 
-    private static void SetForeground(object source, Windows.UI.Color color)
+    private static void SetForeground(ServiceIconSource source, Windows.UI.Color color) => _ = source switch
     {
-        switch (source)
-        {
-            case Tonarink.SettingsServiceActionIcon action:
-                action.Foreground = color;
-                break;
-            case Tonarink.SettingsStopIcon stop:
-                stop.Foreground = color;
-                break;
-        }
-    }
+        Tonarink.SettingsServiceActionIcon action => action.Foreground = color,
+        Tonarink.SettingsStopIcon stop => stop.Foreground = color,
+    };
+
+    private union ServiceIconSource(Tonarink.SettingsServiceActionIcon, Tonarink.SettingsStopIcon);
 
     private sealed class ServiceActionPlayback
     {

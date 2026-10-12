@@ -67,7 +67,7 @@ static class WindowsStartup
             {
                 StartupTaskState.Enabled or StartupTaskState.EnabledByPolicy => task.State,
                 StartupTaskState.Disabled => await task.RequestEnableAsync(),
-                _ => task.State,
+                StartupTaskState.DisabledByUser or StartupTaskState.DisabledByPolicy => task.State,
             };
 
             switch (state)
@@ -87,8 +87,10 @@ static class WindowsStartup
                     throw new StartupDisabledException("StartupDisabledByUser");
                 case StartupTaskState.DisabledByPolicy:
                     throw new StartupDisabledException("StartupDisabledByPolicy");
-                default:
+                case StartupTaskState.Disabled:
                     throw new StartupDisabledException("StartupFailed");
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(state), state, "Unknown startup task state.");
             }
         }
 

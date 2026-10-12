@@ -215,6 +215,6 @@ sealed class OutgoingTransferOverlay : Component<OutgoingTransferOverlayProps>
         TransferState.Transferring => t.Message(new("App", "SendingTransferring")),
         TransferState.Completed => t.Message(new("App", "TransferComplete")),
         TransferState.Cancelled => t.Message(new("App", "SendCancelled")),
-        _ => t.Message(new("App", "SendFailed")),
+        TransferState.Failed => t.Message(new("App", "SendFailed")),
     };
 }

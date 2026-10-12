@@ -2,6 +2,7 @@ using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Core;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.AnimatedVisuals;
 using Microsoft.UI.Xaml.Media;
 using static Microsoft.UI.Reactor.Factories;
 using XamlToggleButton = Microsoft.UI.Xaml.Controls.Primitives.ToggleButton;
@@ -50,10 +51,11 @@ sealed class AnimatedTrayToggleButton : Component<AnimatedTrayToggleButtonProps>
             if (wasChecked == Props.IsChecked)
                 return;
 
-            if (playback.Button is { } button && playback.Source is not null)
+            if (playback.Button is { } button && playback.Source.HasValue)
             {
+                var source = playback.Source.Value;
                 button.DispatcherQueue.TryEnqueue(() =>
-                    UpdateForeground(button, playback.Source, Props.IsChecked));
+                    UpdateForeground(button, source, Props.IsChecked));
             }
 
             PlayToggleTransition(playback, Props.Kind, Props.IsChecked);
@@ -73,8 +75,8 @@ sealed class AnimatedTrayToggleButton : Component<AnimatedTrayToggleButtonProps>
                 playback.Button = button;
                 button.DispatcherQueue.TryEnqueue(() =>
                 {
-                    if (playback.Source is not null)
-                        UpdateForeground(button, playback.Source, Props.IsChecked);
+                    if (playback.Source.HasValue)
+                        UpdateForeground(button, playback.Source.Value, Props.IsChecked);
                 });
             })
             .OnUnmountAdd(_ =>
@@ -104,7 +106,7 @@ sealed class AnimatedTrayToggleButton : Component<AnimatedTrayToggleButtonProps>
                 };
                 player.ActualThemeChanged += (_, _) =>
                     UpdateForeground(playback.Button, player, source, playback.IsChecked);
-                SetSource(player, source);
+                player.Source = source.Visual;
                 player.SetProgress(RestProgress(Props.Kind, playback.IsChecked));
                 playback.Source = source;
                 playback.Player = player;
@@ -125,31 +127,16 @@ sealed class AnimatedTrayToggleButton : Component<AnimatedTrayToggleButtonProps>
             icon);
     }
 
-    private static object CreateSource(TrayToggleIconKind kind) => kind switch
+    private static TrayToggleIconSource CreateSource(TrayToggleIconKind kind) => kind switch
     {
         TrayToggleIconKind.Service => new Tonarink.TrayServiceToggleIcon(),
         TrayToggleIconKind.Pin => new Tonarink.TrayPinToggleIcon(),
-        _ => throw new ArgumentOutOfRangeException(nameof(kind)),
     };
-
-    private static void SetSource(AnimatedVisualPlayer player, object source)
-    {
-        switch (source)
-        {
-            case Tonarink.TrayServiceToggleIcon service:
-                player.Source = service;
-                break;
-            case Tonarink.TrayPinToggleIcon pin:
-                player.Source = pin;
-                break;
-        }
-    }
 
     private static double RestProgress(TrayToggleIconKind kind, bool isChecked) => kind switch
     {
         TrayToggleIconKind.Service => isChecked ? ServiceOnRestProgress : ServiceOffRestProgress,
         TrayToggleIconKind.Pin => isChecked ? PinnedRestProgress : UnpinnedRestProgress,
-        _ => 0,
     };
 
     private static void PlayToggleTransition(
@@ -180,7 +167,6 @@ sealed class AnimatedTrayToggleButton : Component<AnimatedTrayToggleButtonProps>
                 (UnpinnedRestProgress, PinnedRestProgress),
             (TrayToggleIconKind.Pin, false) =>
                 (UnpinStartProgress, UnpinEndProgress),
-            _ => (settledProgress, settledProgress),
         };
 
         _ = PlayAndSettleAsync(
@@ -208,7 +194,7 @@ sealed class AnimatedTrayToggleButton : Component<AnimatedTrayToggleButtonProps>
 
     private static void UpdateForeground(
         XamlToggleButton button,
-        object source,
+        TrayToggleIconSource source,
         bool isChecked)
     {
         if (isChecked)
@@ -224,7 +210,7 @@ sealed class AnimatedTrayToggleButton : Component<AnimatedTrayToggleButtonProps>
     private static void UpdateForeground(
         XamlToggleButton? button,
         AnimatedVisualPlayer player,
-        object source,
+        TrayToggleIconSource source,
         bool isChecked)
     {
         if (isChecked)
@@ -253,24 +239,29 @@ sealed class AnimatedTrayToggleButton : Component<AnimatedTrayToggleButtonProps>
                 : Microsoft.UI.Colors.Black);
     }
 
-    private static void SetForeground(object source, Windows.UI.Color color)
+    private static void SetForeground(TrayToggleIconSource source, Windows.UI.Color color) =>
+        source.SetForeground(color);
+
+    private union TrayToggleIconSource(Tonarink.TrayServiceToggleIcon, Tonarink.TrayPinToggleIcon)
     {
-        switch (source)
+        public IAnimatedVisualSource Visual => this switch
         {
-            case Tonarink.TrayServiceToggleIcon service:
-                service.Foreground = color;
-                break;
-            case Tonarink.TrayPinToggleIcon pin:
-                pin.Foreground = color;
-                break;
-        }
+            Tonarink.TrayServiceToggleIcon service => service,
+            Tonarink.TrayPinToggleIcon pin => pin,
+        };
+
+        public void SetForeground(Windows.UI.Color color) => _ = this switch
+        {
+            Tonarink.TrayServiceToggleIcon service => service.Foreground = color,
+            Tonarink.TrayPinToggleIcon pin => pin.Foreground = color,
+        };
     }
 
     private sealed class TrayTogglePlayback
     {
         public AnimatedVisualPlayer? Player { get; set; }
 
-        public object? Source { get; set; }
+        public TrayToggleIconSource? Source { get; set; }
 
         public XamlToggleButton? Button { get; set; }
 

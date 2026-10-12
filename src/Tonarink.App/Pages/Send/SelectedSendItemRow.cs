@@ -159,11 +159,10 @@ sealed class SelectedSendItemRow : Component<SelectedSendItemRowProps>
             row);
     }
 
-    private static string ItemKindLabel(IntlAccessor t, string kind) => kind switch
+    private static string ItemKindLabel(IntlAccessor t, SelectedSendItemKind kind) => kind switch
     {
-        "text" => t.Message(new("App", "Text")),
-        "clipboard" => t.Message(new("App", "Clipboard")),
-        "folder" => t.Message(new("App", "Folder")),
-        _ => t.Message(new("App", "File")),
+        SelectedSendItemKind.Text => t.Message(new("App", "Text")),
+        SelectedSendItemKind.Clipboard => t.Message(new("App", "Clipboard")),
+        SelectedSendItemKind.File => t.Message(new("App", "File")),
     };
 }

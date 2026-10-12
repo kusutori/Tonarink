@@ -151,7 +151,7 @@ sealed class AnimatedSelectAllToggle : Component<AnimatedSelectAllToggleProps>
             (true, null) => (CheckedRestProgress, CheckedToIndeterminateEndProgress),
             (true, false) => (CheckedRestProgress, UncheckedReturnEndProgress),
             (null, false) => (CheckedToIndeterminateEndProgress, UncheckedReturnEndProgress),
-            _ => (settledProgress, settledProgress),
+            (false, false) or (true, true) or (null, null) => (settledProgress, settledProgress),
         };
 
         _ = PlayAndSettleAsync(

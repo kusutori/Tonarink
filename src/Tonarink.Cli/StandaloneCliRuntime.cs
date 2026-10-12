@@ -134,6 +134,13 @@ sealed class StandaloneCliRuntime : ICliRuntime, IAsyncDisposable
             var s = (await ReadAsync(token).ConfigureAwait(false)).Settings;
             var result = await node.AcceptAsync(request.RequestId, new() { DestinationDirectory = s.DownloadDirectory, VerifySha256 = s.VerifyChecksumsOnReceive }, cancellationToken: token).ConfigureAwait(false);
             if (result is ReceiveOutcome.Completed completed && s.SaveReceiveHistory) await RecordReceiveAsync(request, completed, token).ConfigureAwait(false);
+            var failure = result switch
+            {
+                ReceiveOutcome.Completed or ReceiveOutcome.Cancelled => null,
+                ReceiveOutcome.Failed failed => $"Transfer {failed.TransferId} [{failed.Failure.Code}]: {failed.Failure.Message}",
+            };
+            if (failure is not null)
+                Report("Automatic receive failed", failure);
         }
         catch (OperationCanceledException) when (token.IsCancellationRequested) { }
         catch (Exception exception) { Report("Automatic receive failed", exception); }
@@ -215,5 +222,8 @@ sealed class StandaloneCliRuntime : ICliRuntime, IAsyncDisposable
         File.WriteAllText(temporary, JsonSerializer.Serialize(value, type)); File.Move(temporary, target, overwrite: true);
     }
     private void Report(string operation, Exception exception)
-    { lock (_gate) File.AppendAllText(Path.Combine(_profile, "cli.log"), $"{DateTimeOffset.Now:O} {operation}: {exception}\n"); }
+        => Report(operation, exception.ToString());
+
+    private void Report(string operation, string details)
+    { lock (_gate) File.AppendAllText(Path.Combine(_profile, "cli.log"), $"{DateTimeOffset.Now:O} {operation}: {details}\n"); }
 }

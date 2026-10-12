@@ -2,6 +2,7 @@ using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Core;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.AnimatedVisuals;
 using static Microsoft.UI.Reactor.Factories;
 
 namespace Tonarink.Components.Animations;
@@ -47,10 +48,9 @@ sealed class AnimatedUndoRedoButton : Component<AnimatedUndoRedoButtonProps>
                         player.SetProgress(0);
                     };
                     player.ActualThemeChanged += (_, _) => UpdateForeground(player, source);
-                    SetSource(player, source);
+                    player.Source = source.Visual;
                     player.SetProgress(0);
                     playback.Player = player;
-                    playback.Source = source;
                 })
                 .OnUnmountAdd(element =>
                 {
@@ -59,7 +59,6 @@ sealed class AnimatedUndoRedoButton : Component<AnimatedUndoRedoButtonProps>
 
                     playback.AnimationVersion++;
                     playback.Player = null;
-                    playback.Source = null;
                 }),
                 () =>
                 {
@@ -90,27 +89,13 @@ sealed class AnimatedUndoRedoButton : Component<AnimatedUndoRedoButtonProps>
             player.SetProgress(0);
     }
 
-    private static object CreateSource(UndoRedoIconKind kind) => kind switch
+    private static UndoRedoIconSource CreateSource(UndoRedoIconKind kind) => kind switch
     {
         UndoRedoIconKind.Undo => new Tonarink.UndoFlowIcon(),
         UndoRedoIconKind.Redo => new Tonarink.RedoFlowIcon(),
-        _ => throw new ArgumentOutOfRangeException(nameof(kind)),
     };
 
-    private static void SetSource(AnimatedVisualPlayer player, object source)
-    {
-        switch (source)
-        {
-            case Tonarink.UndoFlowIcon undo:
-                player.Source = undo;
-                break;
-            case Tonarink.RedoFlowIcon redo:
-                player.Source = redo;
-                break;
-        }
-    }
-
-    private static void UpdateForeground(AnimatedVisualPlayer player, object source)
+    private static void UpdateForeground(AnimatedVisualPlayer player, UndoRedoIconSource source)
     {
         var theme = player.ActualTheme;
         if (theme == ElementTheme.Default
@@ -122,22 +107,27 @@ sealed class AnimatedUndoRedoButton : Component<AnimatedUndoRedoButtonProps>
         var color = theme == ElementTheme.Dark
             ? Microsoft.UI.Colors.White
             : Microsoft.UI.Colors.Black;
-        switch (source)
+        source.SetForeground(color);
+    }
+
+    private union UndoRedoIconSource(Tonarink.UndoFlowIcon, Tonarink.RedoFlowIcon)
+    {
+        public IAnimatedVisualSource Visual => this switch
         {
-            case Tonarink.UndoFlowIcon undo:
-                undo.Foreground = color;
-                break;
-            case Tonarink.RedoFlowIcon redo:
-                redo.Foreground = color;
-                break;
-        }
+            Tonarink.UndoFlowIcon undo => undo,
+            Tonarink.RedoFlowIcon redo => redo,
+        };
+
+        public void SetForeground(Windows.UI.Color color) => _ = this switch
+        {
+            Tonarink.UndoFlowIcon undo => undo.Foreground = color,
+            Tonarink.RedoFlowIcon redo => redo.Foreground = color,
+        };
     }
 
     private sealed class UndoRedoPlayback
     {
         public AnimatedVisualPlayer? Player { get; set; }
-
-        public object? Source { get; set; }
 
         public int AnimationVersion { get; set; }
     }

@@ -457,7 +457,9 @@ sealed class SettingsPage : Component<SettingsPageProps>
                 LocalSendNodeState.Running => t.Message(new("App", "SettingsServerRunning")),
                 LocalSendNodeState.Starting => t.Message(new("App", "NodeStarting")),
                 LocalSendNodeState.Stopping => t.Message(new("App", "NodeStopping")),
-                _ => t.Message(new("App", "SettingsServerStopped")),
+                LocalSendNodeState.Created or LocalSendNodeState.Stopped
+                    or LocalSendNodeState.Faulted or LocalSendNodeState.Disposed =>
+                    t.Message(new("App", "SettingsServerStopped")),
             };
         var networkCards = SettingsGroup(
             t.Message(new("App", "SettingsNetwork")),

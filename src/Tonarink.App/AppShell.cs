@@ -285,7 +285,7 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
                     settings.PreviewProvider switch
                     {
                         FilePreviewProvider.QuickLook => settings.QuickLookExecutablePath,
-                        _ => settings.PowerToysPeekExecutablePath,
+                        FilePreviewProvider.PowerToysPeek => settings.PowerToysPeekExecutablePath,
                     },
                     device =>
                     {
@@ -327,7 +327,7 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
                             detailsDevice,
                             contentTheme))
                         .WithKey(detailsDevice.Fingerprint),
-                _ => TextBlock(t.Message(new("App", "PageNotFound"))),
+                AppRoute.DeviceDetails => TextBlock(t.Message(new("App", "PageNotFound"))),
             }))) with
         {
             CacheMode = NavigationCacheMode.Enabled,
@@ -585,7 +585,6 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
         AppRoute.WebShare => "send",
         AppRoute.WebReceive => "receive",
         AppRoute.DeviceDetails => "send",
-        _ => "receive",
     };
 
     private static AppRoute ParseRoute(string tag) => tag switch

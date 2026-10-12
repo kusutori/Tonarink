@@ -20,30 +20,25 @@ static class TransferOverlayVisuals
         var taskbar = window.TaskbarItem;
         taskbar.Description = transfer.Description;
 
-        switch (transfer.State)
+        (TaskbarProgressState? State, double? Value) progress = transfer.State switch
         {
-            case TransferState.Preparing or TransferState.WaitingForAcceptance:
-                taskbar.Progress.State = TaskbarProgressState.Indeterminate;
-                break;
-
-            case TransferState.Transferring when transfer.TotalBytes > 0:
-                taskbar.Progress.State = TaskbarProgressState.Normal;
-                taskbar.Progress.Value = transfer.Fraction;
-                break;
-
-            case TransferState.Transferring:
-                taskbar.Progress.State = TaskbarProgressState.Indeterminate;
-                break;
-
-            case TransferState.Failed:
-                taskbar.Progress.State = TaskbarProgressState.Error;
-                taskbar.Progress.Value = transfer.TotalBytes > 0 ? transfer.Fraction : 1;
-                break;
-
-            default:
-                ClearTaskbarProgress(window);
-                break;
+            TransferState.Preparing or TransferState.WaitingForAcceptance =>
+                (TaskbarProgressState.Indeterminate, null),
+            TransferState.Transferring when transfer.TotalBytes > 0 =>
+                (TaskbarProgressState.Normal, transfer.Fraction),
+            TransferState.Transferring => (TaskbarProgressState.Indeterminate, null),
+            TransferState.Failed =>
+                (TaskbarProgressState.Error, transfer.TotalBytes > 0 ? transfer.Fraction : 1),
+            TransferState.Completed or TransferState.Cancelled => (null, null),
+        };
+        if (progress.State is null)
+        {
+            ClearTaskbarProgress(window);
+            return;
         }
+        taskbar.Progress.State = progress.State.Value;
+        if (progress.Value is { } fraction)
+            taskbar.Progress.Value = fraction;
     }
 
     public static void ClearTaskbarProgress(ReactorWindow? window)

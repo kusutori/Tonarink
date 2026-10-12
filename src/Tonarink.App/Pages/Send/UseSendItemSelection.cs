@@ -162,7 +162,7 @@ static class SendItemSelectionHooks
                                 item,
                                 t.Message(new("App", "ClipboardText")),
                                 TextLength(clipboardText),
-                                "clipboard")
+                                SelectedSendItemKind.Clipboard)
                         ]);
                         return;
                     }
@@ -203,40 +203,7 @@ static class SendItemSelectionHooks
                 foreach (var sharedItem in payload.Items)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    switch (sharedItem)
-                    {
-                        case ShareTargetItem.FileSystem { IsDirectory: true } directory:
-                            imported.AddRange(await SelectedSendItemReader.FromFolderPathAsync(
-                                directory.Path,
-                                cancellationToken));
-                            break;
-
-                        case ShareTargetItem.FileSystem file:
-                            var fileInfo = new FileInfo(file.Path);
-                            if (!fileInfo.Exists)
-                            {
-                                throw new FileNotFoundException(
-                                    "The shared file is no longer available.",
-                                    file.Path);
-                            }
-                            imported.Add(new SelectedSendItem(
-                                Guid.NewGuid(),
-                                new SendFileItem(fileInfo.FullName, fileInfo.Name),
-                                fileInfo.Name,
-                                fileInfo.Length,
-                                "file",
-                                fileInfo.FullName));
-                            break;
-
-                        case ShareTargetItem.Text sharedText:
-                            imported.Add(new SelectedSendItem(
-                                Guid.NewGuid(),
-                                new SendTextItem(sharedText.Value, sharedText.FileName),
-                                sharedText.FileName,
-                                TextLength(sharedText.Value),
-                                "text"));
-                            break;
-                    }
+                    imported.AddRange(await ImportItemAsync(sharedItem));
                 }
 
                 if (imported.Count == 0)
@@ -262,6 +229,33 @@ static class SendItemSelectionHooks
                     new("App", "ShareTargetFailed"),
                     ("error", exception.Message)));
                 consumeShareTargetPayload(payload.Id);
+            }
+
+            async Task<IReadOnlyList<SelectedSendItem>> ImportItemAsync(ShareTargetItem item) => item switch
+            {
+                ShareTargetItem.FileSystem { IsDirectory: true } directory =>
+                    await SelectedSendItemReader.FromFolderPathAsync(directory.Path, cancellationToken),
+                ShareTargetItem.FileSystem file => (SelectedSendItem[])[ImportFile(file.Path)],
+                ShareTargetItem.Text text => (SelectedSendItem[])[new SelectedSendItem(
+                    Guid.NewGuid(),
+                    new SendTextItem(text.Value, text.FileName),
+                    text.FileName,
+                    TextLength(text.Value),
+                    SelectedSendItemKind.Text)],
+            };
+
+            static SelectedSendItem ImportFile(string path)
+            {
+                var fileInfo = new FileInfo(path);
+                if (!fileInfo.Exists)
+                    throw new FileNotFoundException("The shared file is no longer available.", path);
+                return new(
+                    Guid.NewGuid(),
+                    new SendFileItem(fileInfo.FullName, fileInfo.Name),
+                    fileInfo.Name,
+                    fileInfo.Length,
+                    SelectedSendItemKind.File,
+                    fileInfo.FullName);
             }
         }
 

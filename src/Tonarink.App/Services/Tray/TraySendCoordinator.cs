@@ -126,11 +126,13 @@ static class TraySendCoordinator
                     failed.Items.Sum(static item => item.BytesTransferred),
                     failed.Failure.Message,
                     true),
-                _ => (
+                OutgoingTransferResult.PeerBusy or OutgoingTransferResult.Declined => (
                     TransferState.Failed,
                     0,
                     t.Message(new("App", "TransferFailed")),
                     true),
+                OutgoingTransferResult.PinRequired =>
+                    throw new InvalidOperationException("PIN requests must be returned before publishing a finished transfer."),
             };
             PublishFinished(
                 state,
@@ -190,7 +192,7 @@ static class TraySendCoordinator
         TransferState.Transferring => t.Message(new("App", "SendingToDevice"), ("device", deviceAlias)),
         TransferState.Completed => t.Message(new("App", "SentToDevice"), ("device", deviceAlias)),
         TransferState.Cancelled => t.Message(new("App", "TransferCancelled")),
-        _ => t.Message(new("App", "TransferFailed")),
+        TransferState.Failed => t.Message(new("App", "TransferFailed")),
     };
 
     private static string ProgressText(long bytesTransferred, long totalBytes) => totalBytes > 0

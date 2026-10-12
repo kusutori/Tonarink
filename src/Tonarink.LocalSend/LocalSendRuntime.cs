@@ -54,7 +54,7 @@ public sealed class LocalSendRuntime : ITonarinkRuntime
                 {
                     TonarinkDeviceKind.Mobile => LocalSendDeviceType.Mobile,
                     TonarinkDeviceKind.Web => LocalSendDeviceType.Web,
-                    _ => LocalSendDeviceType.Desktop,
+                    TonarinkDeviceKind.Desktop => LocalSendDeviceType.Desktop,
                 },
                 DataDirectory = Path.Combine(_platform.DataDirectory, "identity"),
                 DownloadDirectory = settings.DownloadDirectory,
@@ -182,7 +182,8 @@ public sealed class LocalSendRuntime : ITonarinkRuntime
                 AppTransferStatus.Failed,
                 failed.Items.Sum(static item => item.BytesTransferred),
                 new RuntimeSendResult.Failed(failed.Failure.Message)),
-            _ => throw new InvalidOperationException("Unexpected send outcome."),
+            SendOutcome.PinRequired or SendOutcome.PinRateLimited =>
+                throw new InvalidOperationException("PIN outcomes must be returned before recording the final transfer."),
         };
         _state.UpsertTransfer(new TransferActivity(
             transferId.ToString("N"),
@@ -392,7 +393,17 @@ public sealed class LocalSendRuntime : ITonarinkRuntime
     {
         try
         {
-            await AcceptAsync(offer, offer.Items.Select(static item => item.Id).ToHashSet(), cancellationToken).ConfigureAwait(false);
+            var result = await AcceptAsync(offer, offer.Items.Select(static item => item.Id).ToHashSet(), cancellationToken).ConfigureAwait(false);
+            var failure = result switch
+            {
+                RuntimeReceiveResult.Completed or RuntimeReceiveResult.Cancelled => null,
+                RuntimeReceiveResult.Failed failed => failed.Message,
+            };
+            if (failure is not null)
+            {
+                _logger.LogError("Automatically accepting transfer {TransferId} failed: {Reason}", offer.Id, failure);
+                await _platform.NotifyAsync(Text("AutoReceiveFailed"), failure, CancellationToken.None).ConfigureAwait(false);
+            }
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
@@ -422,7 +433,7 @@ public sealed class LocalSendRuntime : ITonarinkRuntime
         CoreTransferState.Cancelled => AppTransferStatus.Cancelled,
         CoreTransferState.Failed => AppTransferStatus.Failed,
         CoreTransferState.Transferring => AppTransferStatus.Transferring,
-        _ => AppTransferStatus.Waiting,
+        CoreTransferState.Preparing or CoreTransferState.WaitingForAcceptance => AppTransferStatus.Waiting,
     };
 
     private string Text(string key, params object?[] arguments) => AppText.Get(key, _state.Settings.Language, arguments);

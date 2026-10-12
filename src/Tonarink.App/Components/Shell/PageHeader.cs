@@ -133,7 +133,7 @@ sealed class PageHeader : Component<PageHeaderProps>
                 t.Message(new("App", "NavSettings"))),
             AppRoute.Send => (t.Message(new("App", "SendTitle")), null, null),
             AppRoute.Settings => (t.Message(new("App", "SettingsTitle")), null, null),
-            _ => (t.Message(new("App", "ReceiveTitle")), null, null),
+            AppRoute.Receive => (t.Message(new("App", "ReceiveTitle")), null, null),
         };
 
     private static void ApplyHeadingMetrics(DependencyObject root)

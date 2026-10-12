@@ -2,12 +2,20 @@ using LocalSendDotNet;
 
 namespace Tonarink.Pages.Send;
 
+// Presentation metadata only; stream/file behavior remains on SendItem.
+enum SelectedSendItemKind
+{
+    File,
+    Text,
+    Clipboard,
+}
+
 sealed record SelectedSendItem(
     Guid Id,
     SendItem Item,
     string DisplayName,
     long Length,
-    string Kind,
+    SelectedSendItemKind Kind,
     string? LocalPath = null,
     string? OriginalFileName = null,
     string? OriginalDisplayName = null,

@@ -62,7 +62,6 @@ static class FilePreviewLauncher
             FilePreviewProvider.PowerToysPeek => ResolveProviderExecutable(provider, executablePath) is not null,
             FilePreviewProvider.QuickLook => ResolveProviderExecutable(provider, executablePath) is not null
                                              || (string.IsNullOrWhiteSpace(executablePath) && IsQuickLookRunning()),
-            _ => false,
         };
 
     public static bool CanPreview(string? path) => IsLocalFile(path);
@@ -87,7 +86,6 @@ static class FilePreviewLauncher
                 fullPath,
                 "Could not preview a file with PowerToys Peek"),
             FilePreviewProvider.QuickLook => TryQuickLook(executable, fullPath),
-            _ => false,
         };
     }
 
@@ -187,7 +185,6 @@ static class FilePreviewLauncher
         {
             FilePreviewProvider.PowerToysPeek => FindInstalledExecutable(PowerToysPeekExecutableCandidates),
             FilePreviewProvider.QuickLook => FindInstalledExecutable(QuickLookExecutableCandidates),
-            _ => null,
         });
 
     private static string? ResolveExecutable(string? path)

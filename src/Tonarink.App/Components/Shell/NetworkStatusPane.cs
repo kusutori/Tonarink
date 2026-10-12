@@ -298,6 +298,7 @@ sealed class NetworkStatusPane : Component<NetworkStatusPaneProps>
             LocalSendNodeState.Running => t.Message(new("App", "NodeRunning")),
             LocalSendNodeState.Faulted => t.Message(new("App", "NodeFaulted")),
             LocalSendNodeState.Stopping => t.Message(new("App", "NodeStopping")),
-            _ => t.Message(new("App", "NodeDisconnected")),
+            LocalSendNodeState.Created or LocalSendNodeState.Stopped or LocalSendNodeState.Disposed =>
+                t.Message(new("App", "NodeDisconnected")),
         };
 }

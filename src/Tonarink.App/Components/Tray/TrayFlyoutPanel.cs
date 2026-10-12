@@ -410,7 +410,8 @@ sealed class TrayFlyoutPanel : Component<TrayFlyoutPanelProps>
             LocalSendNodeState.Running => t.Message(new("App", "NodeRunning")),
             LocalSendNodeState.Faulted => t.Message(new("App", "NodeFaulted")),
             LocalSendNodeState.Stopping => t.Message(new("App", "NodeStopping")),
-            _ => t.Message(new("App", "NodeDisconnected")),
+            LocalSendNodeState.Created or LocalSendNodeState.Stopped or LocalSendNodeState.Disposed =>
+                t.Message(new("App", "NodeDisconnected")),
         };
 
     sealed class Lists : Component<TrayFlyoutListsProps>
@@ -567,35 +568,25 @@ sealed class TrayFlyoutPanel : Component<TrayFlyoutPanelProps>
                         payload.Items,
                         payload.TotalBytes,
                         pin));
-                    switch (result)
+                    TrayDropStatus? status = result switch
                     {
-                        case OutgoingTransferResult.Completed:
-                            setDropStatus(new TrayDropStatus.Information(
-                                t.Message(new("App", "SentToDevice"), ("device", device.Alias))));
-                            break;
-                        case OutgoingTransferResult.PinRequired required:
-                            setDropStatus(null);
-                            setPendingPin(new(
-                                device,
-                                payload,
-                                required.InvalidPin ? t.Message(new("App", "PinIncorrect")) : null));
-                            break;
-                        case OutgoingTransferResult.PinRateLimited:
-                            setDropStatus(new TrayDropStatus.Error(
-                                t.Message(new("App", "PinRateLimited"))));
-                            break;
-                        case OutgoingTransferResult.Cancelled:
-                            setDropStatus(new TrayDropStatus.Information(
-                                t.Message(new("App", "TransferCancelled"))));
-                            break;
-                        case OutgoingTransferResult.Failed failed:
-                            setDropStatus(new TrayDropStatus.Error(failed.Failure.Message));
-                            break;
-                        default:
-                            setDropStatus(new TrayDropStatus.Error(
-                                t.Message(new("App", "TransferFailed"))));
-                            break;
-                    }
+                        OutgoingTransferResult.Completed => new TrayDropStatus.Information(
+                            t.Message(new("App", "SentToDevice"), ("device", device.Alias))),
+                        OutgoingTransferResult.PinRequired => null,
+                        OutgoingTransferResult.PinRateLimited => new TrayDropStatus.Error(
+                            t.Message(new("App", "PinRateLimited"))),
+                        OutgoingTransferResult.Cancelled => new TrayDropStatus.Information(
+                            t.Message(new("App", "TransferCancelled"))),
+                        OutgoingTransferResult.Failed failed => new TrayDropStatus.Error(failed.Failure.Message),
+                        OutgoingTransferResult.PeerBusy or OutgoingTransferResult.Declined => new TrayDropStatus.Error(
+                            t.Message(new("App", "TransferFailed"))),
+                    };
+                    setDropStatus(status);
+                    if (result is OutgoingTransferResult.PinRequired required)
+                        setPendingPin(new(
+                            device,
+                            payload,
+                            required.InvalidPin ? t.Message(new("App", "PinIncorrect")) : null));
                 }
                 catch (OperationCanceledException)
                 {

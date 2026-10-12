@@ -46,7 +46,8 @@ static class NavigationAnimatedIcons
         {
             0 => "Navigation.Receive",
             1 => "Navigation.Send",
-            _ => "Navigation.Settings",
+            2 => "Navigation.Settings",
+            _ => throw new ArgumentOutOfRangeException(nameof(index)),
         });
         AnimatedIcon.SetState(item, "Normal");
         item.Icon = icon;

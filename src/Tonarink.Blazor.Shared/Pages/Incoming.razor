@@ -8,6 +8,14 @@
 <PageTitle>@T("IncomingRequest") · Tonarink</PageTitle>
 
 <div class="page incoming-page">
+    @if (_error is not null)
+    {
+        <StatusMessage Intent="error" Title="@T("CouldNotComplete")">
+            <Icon><FluentIcon Value="@(new Icons.Regular.Size20.ErrorCircle())" /></Icon>
+            <ChildContent>@_error</ChildContent>
+        </StatusMessage>
+    }
+
     @if (Offer is null)
     {
         <EmptyState Title="@T("RequestExpired")" Description="@T("RequestExpiredDescription")">
@@ -28,14 +36,6 @@
                 @(_selected.Count == Offer.Items.Count ? T("SelectNone") : T("SelectAll"))
             </FluentButton>
         </header>
-
-        @if (_error is not null)
-        {
-            <StatusMessage Intent="error" Title="@T("CouldNotComplete")">
-                <Icon><FluentIcon Value="@(new Icons.Regular.Size20.ErrorCircle())" /></Icon>
-                <ChildContent>@_error</ChildContent>
-            </StatusMessage>
-        }
 
         <AppCard Title="@T("ChooseWhatToReceive")">
             <ChildContent>
@@ -130,9 +130,24 @@
     private async Task AcceptAsync()
     {
         _receiveCancellation = new CancellationTokenSource();
-        await DecideAsync(offer => Runtime.AcceptAsync(offer, _selected, _receiveCancellation.Token));
-        _receiveCancellation.Dispose();
-        _receiveCancellation = null;
+        try
+        {
+            await DecideAsync(async offer =>
+            {
+                var result = await Runtime.AcceptAsync(offer, _selected, _receiveCancellation.Token);
+                _error = result switch
+                {
+                    RuntimeReceiveResult.Completed => null,
+                    RuntimeReceiveResult.Cancelled => T("TransferCanceled"),
+                    RuntimeReceiveResult.Failed failed => failed.Message,
+                };
+            });
+        }
+        finally
+        {
+            _receiveCancellation.Dispose();
+            _receiveCancellation = null;
+        }
     }
 
     private Task DeclineAsync() => DecideAsync(offer => Runtime.DeclineAsync(offer));
@@ -149,7 +164,8 @@
         try
         {
             await action(offer);
-            Navigation.NavigateTo("/");
+            if (_error is null)
+                Navigation.NavigateTo("/");
         }
         catch (OperationCanceledException) when (_receiveCancellation?.IsCancellationRequested is true)
         {

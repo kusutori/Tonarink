@@ -22,7 +22,7 @@ sealed class IncomingTransferCoordinator(
             {
                 AutoSaveMode.On => true,
                 AutoSaveMode.Favorites => FavoriteDeviceStore.Contains(request.Sender.Fingerprint),
-                _ => false,
+                AutoSaveMode.Off => false,
             };
             if (autoAccept)
             {
@@ -122,7 +122,8 @@ sealed class IncomingTransferCoordinator(
                 {
                     IncomingTransferResult.Cancelled => t.Message(new("App", "ReceiveCancelled")),
                     IncomingTransferResult.Failed failed => failed.Failure.Message,
-                    _ => t.Message(new("App", "ReceiveFailed")),
+                    IncomingTransferResult.Completed =>
+                        throw new InvalidOperationException("Completed transfers cannot enter the failure branch."),
                 };
                 AppNotificationService.Show(t.Message(new("App", "ReceiveFailed")), message, "receive-failed");
                 dispatchRuntime(new AppRuntimeAction.ErrorReported(message));

@@ -57,7 +57,8 @@ public static class AnimatedButtons
             {
                 LocalSendNodeState.Running => "Running",
                 LocalSendNodeState.Starting or LocalSendNodeState.Stopping => "Busy",
-                _ => "Offline",
+                LocalSendNodeState.Created or LocalSendNodeState.Stopped
+                    or LocalSendNodeState.Faulted or LocalSendNodeState.Disposed => "Offline",
             },
             iconSize);
 

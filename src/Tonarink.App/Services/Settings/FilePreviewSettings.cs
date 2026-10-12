@@ -59,14 +59,14 @@ static class FilePreviewSettings
         return provider switch
         {
             FilePreviewProvider.QuickLook => next with { QuickLookExecutablePath = "" },
-            _ => next with { PowerToysPeekExecutablePath = "" },
+            FilePreviewProvider.PowerToysPeek => next with { PowerToysPeekExecutablePath = "" },
         };
     }
 
     public static string ExecutablePath(AppSettings settings, FilePreviewProvider provider) => provider switch
     {
         FilePreviewProvider.QuickLook => settings.QuickLookExecutablePath,
-        _ => settings.PowerToysPeekExecutablePath,
+        FilePreviewProvider.PowerToysPeek => settings.PowerToysPeekExecutablePath,
     };
 
     public static AppSettings SetExecutablePath(AppSettings settings, FilePreviewProvider provider, string path)
@@ -79,7 +79,7 @@ static class FilePreviewSettings
         return provider switch
         {
             FilePreviewProvider.QuickLook => settings with { QuickLookExecutablePath = normalized },
-            _ => settings with { PowerToysPeekExecutablePath = normalized },
+            FilePreviewProvider.PowerToysPeek => settings with { PowerToysPeekExecutablePath = normalized },
         };
     }
 

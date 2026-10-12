@@ -35,7 +35,7 @@ static class DeviceVisuals
         LocalSendDeviceType.Web => "\uE12B",
         LocalSendDeviceType.Server => "\uE968",
         LocalSendDeviceType.Headless => "\uE950",
-        _ => "\uE977",
+        LocalSendDeviceType.Desktop => "\uE977",
     };
 
     public static string DeviceModel(IntlAccessor t, string? model, LocalSendDeviceType type) =>
@@ -46,7 +46,7 @@ static class DeviceVisuals
                 LocalSendDeviceType.Web => t.Message(new("App", "DeviceWeb")),
                 LocalSendDeviceType.Headless => t.Message(new("App", "DeviceHeadless")),
                 LocalSendDeviceType.Server => t.Message(new("App", "DeviceServer")),
-                _ => t.Message(new("App", "DeviceDesktop")),
+                LocalSendDeviceType.Desktop => t.Message(new("App", "DeviceDesktop")),
             }
             : model;
 

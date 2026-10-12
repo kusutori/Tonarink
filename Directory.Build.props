@@ -4,6 +4,9 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <!-- Exhaustive enum switches intentionally reject unnamed numeric values at runtime.
+         Keep CS8509 enabled so adding a named member still breaks incomplete switches. -->
+    <NoWarn>$(NoWarn);CS8524</NoWarn>
     <AnalysisLevel>latest</AnalysisLevel>
     <LangVersion>preview</LangVersion>
     <Deterministic>true</Deterministic>

@@ -126,18 +126,23 @@ static class SendPageVisuals
                 state switch
                 {
                     LocalSendNodeState.Faulted => Icon(AppIcons.Error).AccessibilityHidden(),
-                    _ => searchingAnimation,
+                    LocalSendNodeState.Created or LocalSendNodeState.Starting or LocalSendNodeState.Running
+                        or LocalSendNodeState.Stopping or LocalSendNodeState.Stopped or LocalSendNodeState.Disposed =>
+                        searchingAnimation,
                 },
                 Subtitle(state switch
                 {
                     LocalSendNodeState.Faulted => t.Message(new("App", "NetworkStartFailed")),
-                    _ => t.Message(new("App", "SearchingDevices")),
+                    LocalSendNodeState.Created or LocalSendNodeState.Starting or LocalSendNodeState.Running
+                        or LocalSendNodeState.Stopping or LocalSendNodeState.Stopped or LocalSendNodeState.Disposed =>
+                        t.Message(new("App", "SearchingDevices")),
                 }),
                 TextBlock(state switch
                 {
                     LocalSendNodeState.Faulted => t.Message(new("App", "PortInUseHint")),
-                    _ when discoveryWarning is not null => t.Message(new("App", "DiscoveryScanHint")),
-                    _ => t.Message(new("App", "SameNetworkHint")),
+                    LocalSendNodeState.Created or LocalSendNodeState.Starting or LocalSendNodeState.Running
+                        or LocalSendNodeState.Stopping or LocalSendNodeState.Stopped or LocalSendNodeState.Disposed =>
+                        t.Message(new("App", discoveryWarning is not null ? "DiscoveryScanHint" : "SameNetworkHint")),
                 })
                     .Foreground(Theme.SecondaryText)
                     .TextWrapping(TextWrapping.WrapWholeWords)) with
