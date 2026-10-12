@@ -8,8 +8,8 @@
   <data name="Write progress and results as NDJSON" xml:space="preserve"><value>Write progress and results as NDJSON</value></data>
   <data name="Cancel this command after N seconds (1-86400)" xml:space="preserve"><value>Cancel this command after N seconds (1-86400)</value></data>
   <data name="Only connect to an already running host" xml:space="preserve"><value>Only connect to an already running host</value></data>
-  <data name="CLI output language: system, zh-CN or en-US (default: system)" xml:space="preserve"><value>CLI output language: system, zh-CN or en-US (default: system)</value></data>
-  <data name="Expected --language system, zh-CN or en-US." xml:space="preserve"><value>Expected --language system, zh-CN or en-US.</value></data>
+  <data name="CLI output language: {0} (default: system)" xml:space="preserve"><value>CLI output language: {0} (default: system)</value></data>
+  <data name="Expected --language one of: {0}." xml:space="preserve"><value>Expected --language one of: {0}.</value></data>
   <data name="Show server state without starting the host" xml:space="preserve"><value>Show server state without starting the host</value></data>
   <data name="Refresh discovery and list nearby devices" xml:space="preserve"><value>Refresh discovery and list nearby devices</value></data>
   <data name="List known devices" xml:space="preserve"><value>List known devices</value></data>

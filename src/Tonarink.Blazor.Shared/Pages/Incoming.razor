@@ -22,7 +22,7 @@
         <header class="page-header">
             <div>
                 <h1>@Offer.SenderAlias</h1>
-                <p>@T("WantsToSend", Offer.SenderModel, Offer.Items.Count)</p>
+                <p>@T("WantsToSend", SenderModel(Offer), Offer.Items.Count)</p>
             </div>
             <FluentButton Appearance="ButtonAppearance.Subtle" OnClick="ToggleAll">
                 @(_selected.Count == Offer.Items.Count ? T("SelectNone") : T("SelectAll"))

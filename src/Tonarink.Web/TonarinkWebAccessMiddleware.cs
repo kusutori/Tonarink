@@ -1,6 +1,7 @@
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
+using Tonarink.Application;
 
 namespace Tonarink.Web;
 
@@ -30,7 +31,8 @@ internal sealed class TonarinkWebAccessMiddleware
             }
 
             context.Response.StatusCode = StatusCodes.Status403Forbidden;
-            await context.Response.WriteAsync("Tonarink Web is restricted to localhost until Tonarink:WebPassword or TONARINK_WEB_PASSWORD is configured.");
+            context.Response.ContentType = "text/plain; charset=utf-8";
+            await context.Response.WriteAsync(AppText.Get("WebAccessRestricted"));
             return;
         }
 

@@ -8,8 +8,8 @@
   <data name="Write progress and results as NDJSON" xml:space="preserve"><value>以 NDJSON 输出进度和结果</value></data>
   <data name="Cancel this command after N seconds (1-86400)" xml:space="preserve"><value>在 N 秒后取消当前命令（1–86400）</value></data>
   <data name="Only connect to an already running host" xml:space="preserve"><value>仅连接已经运行的宿主</value></data>
-  <data name="CLI output language: system, zh-CN or en-US (default: system)" xml:space="preserve"><value>命令行语言：system、zh-CN 或 en-US（默认：system）</value></data>
-  <data name="Expected --language system, zh-CN or en-US." xml:space="preserve"><value>--language 仅支持 system、zh-CN 或 en-US</value></data>
+  <data name="CLI output language: {0} (default: system)" xml:space="preserve"><value>命令行语言：{0}（默认：system）</value></data>
+  <data name="Expected --language one of: {0}." xml:space="preserve"><value>--language 仅支持以下值：{0}</value></data>
   <data name="Show server state without starting the host" xml:space="preserve"><value>查看服务器状态，不启动宿主</value></data>
   <data name="Refresh discovery and list nearby devices" xml:space="preserve"><value>刷新发现并列出附近设备</value></data>
   <data name="List known devices" xml:space="preserve"><value>列出已知设备</value></data>

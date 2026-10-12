@@ -1,0 +1,464 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Accept" xml:space="preserve"><value>Accepter</value></data>
+  <data name="Add" xml:space="preserve"><value>Ajouter</value></data>
+  <data name="AddFavoriteTitle" xml:space="preserve"><value>Ajouter aux favoris</value></data>
+  <data name="AddFolder" xml:space="preserve"><value>Ajouter un dossier</value></data>
+  <data name="AutoSaveDescription" xml:space="preserve"><value>Choisir si le contenu reçu est accepté et enregistré automatiquement</value></data>
+  <data name="AutoSaveFavorites" xml:space="preserve"><value>Favoris uniquement</value></data>
+  <data name="AutoSaveOff" xml:space="preserve"><value>Désactivé</value></data>
+  <data name="AutoSaveOn" xml:space="preserve"><value>Activé</value></data>
+  <data name="AutoSaveTitle" xml:space="preserve"><value>Enregistrement automatique</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Annuler</value></data>
+  <data name="CancelCurrentSend" xml:space="preserve"><value>Annuler l’envoi en cours</value></data>
+  <data name="CancelCurrentTransfer" xml:space="preserve"><value>Annuler le transfert en cours</value></data>
+  <data name="Cancelled" xml:space="preserve"><value>Annulé</value></data>
+  <data name="CancellingTransfer" xml:space="preserve"><value>Annulation du transfert…</value></data>
+  <data name="Change" xml:space="preserve"><value>Modifier…</value></data>
+  <data name="ChangeSaveLocation" xml:space="preserve"><value>Modifier l’emplacement des fichiers reçus</value></data>
+  <data name="ChooseContent" xml:space="preserve"><value>Choisir le contenu</value></data>
+  <data name="ChooseItem" xml:space="preserve"><value>Choisir {item}</value></data>
+  <data name="DropFilesCaption" xml:space="preserve"><value>Ajouter à la liste d’envoi</value></data>
+  <data name="DropFilesOrFolders" xml:space="preserve"><value>Déposer des fichiers ou dossiers ici</value></data>
+  <data name="DropFilesOrFoldersAnywhere" xml:space="preserve"><value>Déposer des fichiers ou dossiers n’importe où dans l’application</value></data>
+  <data name="DropFilesAnywherePrompt" xml:space="preserve"><value>Relâcher pour ajouter les fichiers ou dossiers à la liste d’envoi</value></data>
+  <data name="DropItemsFailed" xml:space="preserve"><value>Impossible d’ajouter les éléments déposés : {error}</value></data>
+  <data name="DroppedItemsEmpty" xml:space="preserve"><value>Aucun fichier accessible parmi les éléments déposés</value></data>
+  <data name="ReleaseFilesToAdd" xml:space="preserve"><value>Relâcher pour ajouter</value></data>
+  <data name="Clear" xml:space="preserve"><value>Vider</value></data>
+  <data name="Clipboard" xml:space="preserve"><value>Presse-papiers</value></data>
+  <data name="ClipboardEmpty" xml:space="preserve"><value>Le presse-papiers ne contient aucun texte, fichier ou dossier à envoyer</value></data>
+  <data name="ClipboardImage" xml:space="preserve"><value>Image du presse-papiers</value></data>
+  <data name="ClipboardReadFailed" xml:space="preserve"><value>Impossible de lire le presse-papiers : {error}</value></data>
+  <data name="ClipboardText" xml:space="preserve"><value>Texte du presse-papiers</value></data>
+  <data name="Close" xml:space="preserve"><value>Fermer</value></data>
+  <data name="Confirm" xml:space="preserve"><value>OK</value></data>
+  <data name="ContentItems" xml:space="preserve"><value>{count, plural, one {# élément} other {# éléments}}</value></data>
+  <data name="ContentOneFile" xml:space="preserve"><value>Fichier {file}</value></data>
+  <data name="ContentOneTextMessage" xml:space="preserve"><value>Un message texte</value></data>
+  <data name="ContentSaved" xml:space="preserve"><value>Contenu enregistré</value></data>
+  <data name="Copied" xml:space="preserve"><value>Copié</value></data>
+  <data name="Copy" xml:space="preserve"><value>Copier</value></data>
+  <data name="CopyReceivedText" xml:space="preserve"><value>Copier le texte reçu</value></data>
+  <data name="Decline" xml:space="preserve"><value>Refuser</value></data>
+  <data name="Delete" xml:space="preserve"><value>Supprimer</value></data>
+  <data name="DeleteFavoriteConfirm" xml:space="preserve"><value>Retirer « {device} » des favoris ?</value></data>
+  <data name="DeleteFavoriteTitle" xml:space="preserve"><value>Supprimer un favori</value></data>
+  <data name="DeviceInfo" xml:space="preserve"><value>Informations sur l’appareil</value></data>
+  <data name="DeviceInfoAlias" xml:space="preserve"><value>Alias (nom de l’appareil) :</value></data>
+  <data name="DeviceInfoIp" xml:space="preserve"><value>IP :</value></data>
+  <data name="DeviceInfoNoAddress" xml:space="preserve"><value>Aucune adresse disponible</value></data>
+  <data name="DeviceInfoPort" xml:space="preserve"><value>Port :</value></data>
+  <data name="DeviceDetailsTitle" xml:space="preserve"><value>Détails de l’appareil</value></data>
+  <data name="OpenDeviceDetails" xml:space="preserve"><value>Afficher les détails de {device}</value></data>
+  <data name="DeviceInformation" xml:space="preserve"><value>Informations sur l’appareil</value></data>
+  <data name="DeviceModelLabel" xml:space="preserve"><value>Modèle de l’appareil</value></data>
+  <data name="ProtocolVersion" xml:space="preserve"><value>Version du protocole</value></data>
+  <data name="Address" xml:space="preserve"><value>Adresse</value></data>
+  <data name="LastSeen" xml:space="preserve"><value>Dernière détection</value></data>
+  <data name="FingerprintLabel" xml:space="preserve"><value>Empreinte</value></data>
+  <data name="FavoriteAction" xml:space="preserve"><value>Ajouter aux favoris</value></data>
+  <data name="RemoveFavoriteAction" xml:space="preserve"><value>Retirer des favoris</value></data>
+  <data name="VerifyAction" xml:space="preserve"><value>Vérifier</value></data>
+  <data name="VerificationTitle" xml:space="preserve"><value>Vérifier l’appareil</value></data>
+  <data name="VerificationIcons" xml:space="preserve"><value>Icônes</value></data>
+  <data name="VerificationText" xml:space="preserve"><value>Texte</value></data>
+  <data name="VerificationCompareHint" xml:space="preserve"><value>L’autre appareil affiche-t-il le même contenu ?</value></data>
+  <data name="VerificationUnencryptedTitle" xml:space="preserve"><value>Connexion non chiffrée</value></data>
+  <data name="VerificationUnencryptedMessage" xml:space="preserve"><value>Avec HTTP, cette comparaison n’est pas liée cryptographiquement à la connexion</value></data>
+  <data name="DeviceLog" xml:space="preserve"><value>Activité</value></data>
+  <data name="DeviceLogEmpty" xml:space="preserve"><value>Aucune activité de détection enregistrée dans cette session</value></data>
+  <data name="DeviceLogAdded" xml:space="preserve"><value>Détecté</value></data>
+  <data name="DeviceLogUpdated" xml:space="preserve"><value>Mis à jour</value></data>
+  <data name="DeviceLogRemoved" xml:space="preserve"><value>Expiré</value></data>
+  <data name="DeviceDesktop" xml:space="preserve"><value>Ordinateur</value></data>
+  <data name="DeviceHeadless" xml:space="preserve"><value>Appareil sans écran</value></data>
+  <data name="DeviceMobile" xml:space="preserve"><value>Appareil mobile</value></data>
+  <data name="DeviceName" xml:space="preserve"><value>Nom de l’appareil</value></data>
+  <data name="DeviceServer" xml:space="preserve"><value>Serveur</value></data>
+  <data name="DeviceWeb" xml:space="preserve"><value>Appareil web</value></data>
+  <data name="EditFavorite" xml:space="preserve"><value>Modifier un favori</value></data>
+  <data name="EditFavoriteDevice" xml:space="preserve"><value>Modifier le favori {device}</value></data>
+  <data name="EditFavoriteTitle" xml:space="preserve"><value>Modifier l’appareil favori</value></data>
+  <data name="FavoriteDevice" xml:space="preserve"><value>Ajouter {device} aux favoris</value></data>
+  <data name="FavoriteDeviceName" xml:space="preserve"><value>Nom de l’appareil favori</value></data>
+  <data name="FavoriteIpAddress" xml:space="preserve"><value>Adresse IP de l’appareil favori</value></data>
+  <data name="FavoritePort" xml:space="preserve"><value>Port de l’appareil favori</value></data>
+  <data name="FavoritesEmpty" xml:space="preserve"><value>Aucun appareil favori</value></data>
+  <data name="FavoritesTitle" xml:space="preserve"><value>Favoris</value></data>
+  <data name="NewFavorite" xml:space="preserve"><value>Nouveau</value></data>
+  <data name="MultipleReceivers" xml:space="preserve"><value>Envoyer à plusieurs appareils</value></data>
+  <data name="MultipleReceiversDescription" xml:space="preserve"><value>Conserver la liste après un transfert pour choisir un autre destinataire</value></data>
+  <data name="SendToFavorite" xml:space="preserve"><value>Envoyer à l’appareil favori « {device} »</value></data>
+  <data name="File" xml:space="preserve"><value>Fichier</value></data>
+  <data name="Fingerprint" xml:space="preserve"><value>Empreinte  {fingerprint}…</value></data>
+  <data name="Folder" xml:space="preserve"><value>Dossier</value></data>
+  <data name="FolderEmpty" xml:space="preserve"><value>Le dossier sélectionné ne contient aucun fichier à envoyer</value></data>
+  <data name="HistoryBack" xml:space="preserve"><value>Retour</value></data>
+  <data name="HistoryDeleteAll" xml:space="preserve"><value>Supprimer l’historique</value></data>
+  <data name="HistoryDeleteAllConfirm" xml:space="preserve"><value>Supprimer l’historique de réception ?</value></data>
+  <data name="HistoryDeleteAllConfirmMessage" xml:space="preserve"><value>Seule la liste locale est supprimée. Les fichiers enregistrés ne sont pas supprimés.</value></data>
+  <data name="HistoryDeleteItem" xml:space="preserve"><value>Retirer de l’historique</value></data>
+  <data name="HistoryEmpty" xml:space="preserve"><value>Aucun historique de réception</value></data>
+  <data name="HistoryEntryActions" xml:space="preserve"><value>Actions pour {file}</value></data>
+  <data name="HistoryInfo" xml:space="preserve"><value>Informations</value></data>
+  <data name="HistoryInfoFileName" xml:space="preserve"><value>Nom du fichier</value></data>
+  <data name="HistoryInfoPath" xml:space="preserve"><value>Chemin</value></data>
+  <data name="HistoryInfoSender" xml:space="preserve"><value>Expéditeur</value></data>
+  <data name="HistoryInfoSize" xml:space="preserve"><value>Taille</value></data>
+  <data name="HistoryInfoTime" xml:space="preserve"><value>Date et heure</value></data>
+  <data name="HistoryInfoTitle" xml:space="preserve"><value>Informations sur le fichier</value></data>
+  <data name="HistoryOpenDirectory" xml:space="preserve"><value>Ouvrir le dossier</value></data>
+  <data name="HistoryOpenFile" xml:space="preserve"><value>Ouvrir le fichier</value></data>
+  <data name="HistoryOpenFileDescription" xml:space="preserve"><value>Ouvrir l’historique de {file}</value></data>
+  <data name="JumpListFavoriteDevicesGroup" xml:space="preserve"><value>Appareils favoris</value></data>
+  <data name="JumpListHistoryGroup" xml:space="preserve"><value>Historique</value></data>
+  <data name="HistoryOpenReceiveHistory" xml:space="preserve"><value>Historique de réception</value></data>
+  <data name="HistoryShowInFolder" xml:space="preserve"><value>Afficher dans le dossier</value></data>
+  <data name="HistorySubtitle" xml:space="preserve"><value>{date} · {size} · {sender}</value></data>
+  <data name="HistoryTitle" xml:space="preserve"><value>Historique de réception</value></data>
+  <data name="IdentityLoading" xml:space="preserve"><value>Chargement de l’identité…</value></data>
+  <data name="IncomingFileSummary" xml:space="preserve"><value>Souhaite vous envoyer le fichier {file}</value></data>
+  <data name="IncomingFiles" xml:space="preserve"><value>Fichiers</value></data>
+  <data name="IncomingItemsSummary" xml:space="preserve"><value>Souhaite vous envoyer {count, plural, one {# élément} other {# éléments}}</value></data>
+  <data name="IncomingTextSummary" xml:space="preserve"><value>Souhaite vous envoyer un message texte</value></data>
+  <data name="InvalidIpAddress" xml:space="preserve"><value>Saisir une adresse IP valide</value></data>
+  <data name="InvalidPort" xml:space="preserve"><value>Le port doit être un entier de 1 à 65535</value></data>
+  <data name="IpAddress" xml:space="preserve"><value>Adresse IP</value></data>
+  <data name="ItemKindAndSize" xml:space="preserve"><value>{kind} · {size}</value></data>
+  <data name="ItemsAdded" xml:space="preserve"><value>{count, plural, one {# élément ajouté} other {# éléments ajoutés}}</value></data>
+  <data name="LanguageChinese" xml:space="preserve"><value>简体中文</value></data>
+  <data name="LanguageEnglish" xml:space="preserve"><value>English</value></data>
+  <data name="LanguageSystem" xml:space="preserve"><value>Utiliser les paramètres système</value></data>
+  <data name="MoreItems" xml:space="preserve"><value>{count, number} de plus…</value></data>
+  <data name="Name" xml:space="preserve"><value>Nom</value></data>
+  <data name="NavReceive" xml:space="preserve"><value>Recevoir</value></data>
+  <data name="NavSend" xml:space="preserve"><value>Envoyer</value></data>
+  <data name="NavSettings" xml:space="preserve"><value>Paramètres</value></data>
+  <data name="MainNavigation" xml:space="preserve"><value>Navigation principale</value></data>
+  <data name="NotificationIncomingTitle" xml:space="preserve"><value>Transfert entrant de {device}</value></data>
+  <data name="NotificationReceiveProgressTitle" xml:space="preserve"><value>Réception depuis {device}</value></data>
+  <data name="NotificationReceiveCompleteTitle" xml:space="preserve"><value>Réception terminée</value></data>
+  <data name="NotificationReceiveComplete" xml:space="preserve"><value>{count, plural, one {# élément reçu} other {# éléments reçus}} de {device}</value></data>
+  <data name="NotificationSendCompleteTitle" xml:space="preserve"><value>Envoi terminé</value></data>
+  <data name="NotificationSendProgressTitle" xml:space="preserve"><value>Envoi vers {device}</value></data>
+  <data name="NotificationSendComplete" xml:space="preserve"><value>{count, plural, one {# élément envoyé} other {# éléments envoyés}} à {device}</value></data>
+  <data name="NotificationOpenFile" xml:space="preserve"><value>Ouvrir le fichier</value></data>
+  <data name="NotificationShowInFolder" xml:space="preserve"><value>Afficher dans le dossier</value></data>
+  <data name="NearbyDevices" xml:space="preserve"><value>Appareils à proximité</value></data>
+  <data name="AddressExample" xml:space="preserve"><value>Exemple : {address}</value></data>
+  <data name="AddressPlaceholder" xml:space="preserve"><value>Adresse IP ou IP:port</value></data>
+  <data name="DeviceAddress" xml:space="preserve"><value>Adresse de l’appareil</value></data>
+  <data name="DeviceAddressNotFound" xml:space="preserve"><value>Aucun appareil compatible trouvé à {address}. Vérifiez l’adresse et la connexion réseau.</value></data>
+  <data name="EnterAddressTitle" xml:space="preserve"><value>Saisir une adresse</value></data>
+  <data name="InvalidDeviceAddress" xml:space="preserve"><value>Saisir une adresse IP valide</value></data>
+  <data name="InvalidFileName" xml:space="preserve"><value>Le nom du fichier ne peut pas être vide ni contenir de caractères interdits</value></data>
+  <data name="RecentlyUsedAddress" xml:space="preserve"><value>Adresses récentes :</value></data>
+  <data name="SendToAddress" xml:space="preserve"><value>Envoyer à une adresse</value></data>
+  <data name="UseRecentAddress" xml:space="preserve"><value>Utiliser l’adresse récente {address}</value></data>
+  <data name="NetworkStartFailed" xml:space="preserve"><value>Impossible de démarrer le service réseau</value></data>
+  <data name="DiscoveryScanHint" xml:space="preserve"><value>Détection multicast indisponible ; recherche des appareils sur le réseau local</value></data>
+  <data name="NodeDisconnected" xml:space="preserve"><value>Déconnecté</value></data>
+  <data name="NetworkStatus" xml:space="preserve"><value>État du réseau</value></data>
+  <data name="NodeDiscoveryLimited" xml:space="preserve"><value>Connecté ; détection par analyse du réseau</value></data>
+  <data name="NodeFaulted" xml:space="preserve"><value>Service réseau indisponible</value></data>
+  <data name="NodeRunning" xml:space="preserve"><value>Connecté au réseau local</value></data>
+  <data name="NodeStarting" xml:space="preserve"><value>Démarrage…</value></data>
+  <data name="NodeStopping" xml:space="preserve"><value>Arrêt…</value></data>
+  <data name="NothingSelected" xml:space="preserve"><value>Aucune sélection</value></data>
+  <data name="OptionSystem" xml:space="preserve"><value>Utiliser les paramètres système</value></data>
+  <data name="PageNotFound" xml:space="preserve"><value>Page introuvable</value></data>
+  <data name="PendingRequests" xml:space="preserve"><value>{count, plural, one {# demande en attente} other {# demandes en attente}}</value></data>
+  <data name="PickFileFailed" xml:space="preserve"><value>Impossible de sélectionner le fichier : {error}</value></data>
+  <data name="PickFolderFailed" xml:space="preserve"><value>Impossible de sélectionner le dossier : {error}</value></data>
+  <data name="PinIncorrect" xml:space="preserve"><value>PIN incorrect ; réessayez</value></data>
+  <data name="Pin" xml:space="preserve"><value>PIN</value></data>
+  <data name="PinConfirm" xml:space="preserve"><value>Confirmer</value></data>
+  <data name="PinPlaceholder" xml:space="preserve"><value>Saisir le PIN</value></data>
+  <data name="PinRateLimited" xml:space="preserve"><value>Trop de tentatives de PIN ; réessayez plus tard</value></data>
+  <data name="PinRequiredMessage" xml:space="preserve"><value>{device} exige un PIN de réception</value></data>
+  <data name="PinRequiredTitle" xml:space="preserve"><value>PIN requis</value></data>
+  <data name="Port" xml:space="preserve"><value>Port</value></data>
+  <data name="PortInUseHint" xml:space="preserve"><value>Vérifiez si Tonarink ou une autre application compatible LocalSend utilise le port 53317</value></data>
+  <data name="PreparingForDevice" xml:space="preserve"><value>Préparation de l’envoi vers {device}…</value></data>
+  <data name="Preview" xml:space="preserve"><value>Aperçu</value></data>
+  <data name="SelectSendItem" xml:space="preserve"><value>Sélectionner {item}</value></data>
+  <data name="DeselectSendItem" xml:space="preserve"><value>Désélectionner {item}</value></data>
+  <data name="SendItemPreviewHint" xml:space="preserve"><value>Appuyer sur Espace pour prévisualiser le fichier</value></data>
+  <data name="SendItemRenamed" xml:space="preserve"><value>Renommé · {kind} · {size}</value></data>
+  <data name="Share" xml:space="preserve"><value>Partager</value></data>
+  <data name="Undo" xml:space="preserve"><value>Annuler</value></data>
+  <data name="Redo" xml:space="preserve"><value>Rétablir</value></data>
+  <data name="ShareFileFailed" xml:space="preserve"><value>Impossible de partager ce fichier avec Windows</value></data>
+  <data name="SettingsExperimental" xml:space="preserve"><value>Fonctionnalités expérimentales</value></data>
+  <data name="SettingsFilePreview" xml:space="preserve"><value>Aperçu des fichiers</value></data>
+  <data name="SettingsFilePreviewDescription" xml:space="preserve"><value>Appuyer sur Espace dans la liste d’envoi pour prévisualiser avec un outil tiers</value></data>
+  <data name="SettingsFilePreviewEnabled" xml:space="preserve"><value>Activer l’aperçu des fichiers</value></data>
+  <data name="SettingsFilePreviewEnabledDescription" xml:space="preserve"><value>Sélectionner un fichier et appuyer sur Espace pour l’ouvrir avec l’outil choisi</value></data>
+  <data name="SettingsFilePreviewProvider" xml:space="preserve"><value>Outil d’aperçu</value></data>
+  <data name="SettingsFilePreviewProviderDescription" xml:space="preserve"><value>Détecter automatiquement l’outil choisi ; utiliser le bouton + pour remplacer son chemin</value></data>
+  <data name="SettingsFilePreviewProviderPowerToysPeek" xml:space="preserve"><value>PowerToys Peek</value></data>
+  <data name="SettingsFilePreviewProviderQuickLook" xml:space="preserve"><value>QuickLook</value></data>
+  <data name="SettingsFilePreviewAddTool" xml:space="preserve"><value>Ajouter un chemin personnalisé</value></data>
+  <data name="SettingsFilePreviewToolPath" xml:space="preserve"><value>Chemin personnalisé de {tool}</value></data>
+  <data name="SettingsFilePreviewToolPathDescription" xml:space="preserve"><value>Vérifier et enregistrer le chemin ; supprimer cette entrée pour rétablir la détection automatique</value></data>
+  <data name="SettingsFilePreviewVerifyPath" xml:space="preserve"><value>Vérifier et enregistrer le chemin</value></data>
+  <data name="SettingsFilePreviewAutoPathPlaceholder" xml:space="preserve"><value>Saisir un chemin personnalisé</value></data>
+  <data name="SettingsFilePreviewAutoPathSaved" xml:space="preserve"><value>Détection automatique rétablie</value></data>
+  <data name="SettingsFilePreviewPathSaved" xml:space="preserve"><value>Chemin personnalisé enregistré</value></data>
+  <data name="SettingsFilePreviewPathExists" xml:space="preserve"><value>Le chemin est valide</value></data>
+  <data name="SettingsFilePreviewPathMissing" xml:space="preserve"><value>Le chemin est invalide ou le fichier n’existe pas</value></data>
+  <data name="ReceiveCancelled" xml:space="preserve"><value>Réception annulée</value></data>
+  <data name="ReceivedMessage" xml:space="preserve"><value>Vous a envoyé un message :</value></data>
+  <data name="ReceivedTextContent" xml:space="preserve"><value>Texte reçu</value></data>
+  <data name="ReceiveFailed" xml:space="preserve"><value>Échec de la réception</value></data>
+  <data name="ReceiveSaveDirectory" xml:space="preserve"><value>Emplacement d’enregistrement</value></data>
+  <data name="ReceiveTitle" xml:space="preserve"><value>Recevoir</value></data>
+  <data name="ReceivingContent" xml:space="preserve"><value>Réception du contenu…</value></data>
+  <data name="ReceivingPreparing" xml:space="preserve"><value>Préparation de la réception…</value></data>
+  <data name="RefreshDevices" xml:space="preserve"><value>Actualiser les appareils à proximité</value></data>
+  <data name="Remove" xml:space="preserve"><value>Retirer</value></data>
+  <data name="RemoveFavoriteDevice" xml:space="preserve"><value>Retirer {device} des favoris</value></data>
+  <data name="RemoveItem" xml:space="preserve"><value>Retirer {item}</value></data>
+  <data name="Rename" xml:space="preserve"><value>Renommer</value></data>
+  <data name="RenameIncomingFile" xml:space="preserve"><value>Renommer {file}</value></data>
+  <data name="RenameSuccess" xml:space="preserve"><value>Renommé · {size}</value></data>
+  <data name="ResetReceiveOptions" xml:space="preserve"><value>Réinitialiser les choix de fichiers</value></data>
+  <data name="QuickActionsTitle" xml:space="preserve"><value>Actions rapides</value></data>
+  <data name="QuickActionsCounter" xml:space="preserve"><value>Numérotation</value></data>
+  <data name="QuickActionsRandom" xml:space="preserve"><value>Aléatoire</value></data>
+  <data name="QuickActionsPrefix" xml:space="preserve"><value>Préfixe</value></data>
+  <data name="QuickActionsPadZero" xml:space="preserve"><value>Compléter avec des zéros</value></data>
+  <data name="QuickActionsSortBeforeCount" xml:space="preserve"><value>Trier par nom avant la numérotation</value></data>
+  <data name="QuickActionsExample" xml:space="preserve"><value>Exemple : {name}</value></data>
+  <data name="QuickActionsInvalidPrefix" xml:space="preserve"><value>Le préfixe contient des caractères interdits</value></data>
+  <data name="UndoIncomingFileRename" xml:space="preserve"><value>Annuler le renommage</value></data>
+  <data name="Retry" xml:space="preserve"><value>Réessayer</value></data>
+  <data name="SameNetworkHint" xml:space="preserve"><value>Vérifiez que les deux appareils sont connectés au même réseau local</value></data>
+  <data name="Save" xml:space="preserve"><value>Enregistrer</value></data>
+  <data name="SearchingDevices" xml:space="preserve"><value>Recherche d’appareils à proximité</value></data>
+  <data name="SelectContentFirst" xml:space="preserve"><value>Choisir d’abord le contenu à envoyer</value></data>
+  <data name="SelectedItems" xml:space="preserve"><value>{count, plural, one {# élément sélectionné} other {# éléments sélectionnés}} · {size}</value></data>
+  <data name="SelectedIncomingFiles" xml:space="preserve"><value>Fichiers sélectionnés : {selected, number} sur {count, plural, one {# fichier} other {# fichiers}}</value></data>
+  <data name="SelectIncomingFile" xml:space="preserve"><value>Sélectionner {file}</value></data>
+  <data name="SelectAllIncomingFiles" xml:space="preserve"><value>Tout sélectionner</value></data>
+  <data name="DeselectIncomingFile" xml:space="preserve"><value>Désélectionner {file}</value></data>
+  <data name="DeselectAllIncomingFiles" xml:space="preserve"><value>Tout désélectionner</value></data>
+  <data name="ShowReceiveOptions" xml:space="preserve"><value>Détails</value></data>
+  <data name="HideReceiveOptions" xml:space="preserve"><value>Réduire</value></data>
+  <data name="SendCancelled" xml:space="preserve"><value>Envoi annulé</value></data>
+  <data name="SendFailed" xml:space="preserve"><value>Échec de l’envoi</value></data>
+  <data name="SendHint" xml:space="preserve"><value>Choisir le contenu, puis un appareil destinataire</value></data>
+  <data name="SendingPreparing" xml:space="preserve"><value>Préparation de l’envoi…</value></data>
+  <data name="SendingTitle" xml:space="preserve"><value>Envoi</value></data>
+  <data name="SendingToDevice" xml:space="preserve"><value>Envoi vers {device}…</value></data>
+  <data name="SendingTransferring" xml:space="preserve"><value>Transfert…</value></data>
+  <data name="SendingWaiting" xml:space="preserve"><value>En attente d’une réponse…</value></data>
+  <data name="SendTextPlaceholder" xml:space="preserve"><value>Saisir le texte à envoyer…</value></data>
+  <data name="SendTextTitle" xml:space="preserve"><value>Envoyer du texte</value></data>
+  <data name="SendTitle" xml:space="preserve"><value>Envoyer</value></data>
+  <data name="SendToDevice" xml:space="preserve"><value>Envoyer à {device}</value></data>
+  <data name="SentToDevice" xml:space="preserve"><value>Envoyé à {device}</value></data>
+  <data name="SettingsAdvanced" xml:space="preserve"><value>Paramètres avancés</value></data>
+  <data name="SettingsAdvancedDescription" xml:space="preserve"><value>Informations sur l’appareil, interfaces réseau et sécurité des transferts</value></data>
+  <data name="SettingsAbout" xml:space="preserve"><value>À propos</value></data>
+  <data name="SettingsAboutCopyright" xml:space="preserve"><value>© {year} Tous droits réservés</value></data>
+  <data name="SettingsAboutRelationship" xml:space="preserve"><value>Tonarink est une implémentation indépendante et non officielle du protocole LocalSend. Elle n’est ni affiliée au projet LocalSend ni approuvée par celui-ci. Merci à Tien Do Nam et aux contributeurs de LocalSend pour la création et la documentation du protocole.</value></data>
+  <data name="SettingsAboutFeedback" xml:space="preserve"><value>Envoyer un commentaire</value></data>
+  <data name="SettingsAboutViewLogs" xml:space="preserve"><value>Afficher les journaux</value></data>
+  <data name="SettingsAboutGitHub" xml:space="preserve"><value>Dépôt GitHub</value></data>
+  <data name="SettingsAboutIssues" xml:space="preserve"><value>Signaler un problème</value></data>
+  <data name="SettingsAboutLocalSend" xml:space="preserve"><value>Site de LocalSend</value></data>
+  <data name="SettingsAboutThirdPartyLicenses" xml:space="preserve"><value>Licences tierces</value></data>
+  <data name="SettingsAboutVersion" xml:space="preserve"><value>Version {version}</value></data>
+  <data name="SettingsAutoSave" xml:space="preserve"><value>Enregistrement automatique</value></data>
+  <data name="SettingsAutoSaveDescription" xml:space="preserve"><value>Accepter et enregistrer le contenu reçu sans confirmation</value></data>
+  <data name="SettingsDeviceModel" xml:space="preserve"><value>Modèle de l’appareil</value></data>
+  <data name="SettingsDeviceModelDescription" xml:space="preserve"><value>Modèle affiché sur les autres appareils ; laisser vide pour utiliser le nom de cet ordinateur</value></data>
+  <data name="SettingsDeviceName" xml:space="preserve"><value>Nom de l’appareil</value></data>
+  <data name="SettingsDeviceNameDescription" xml:space="preserve"><value>Nom affiché sur les autres appareils ; enregistrer puis démarrer ou redémarrer le serveur pour appliquer</value></data>
+  <data name="SettingsDeviceType" xml:space="preserve"><value>Type d’appareil</value></data>
+  <data name="SettingsDeviceTypeDescription" xml:space="preserve"><value>Choisir comment cet appareil apparaît sur les autres appareils</value></data>
+  <data name="SettingsDiscoveryTimeout" xml:space="preserve"><value>Délai de détection des appareils</value></data>
+  <data name="SettingsDiscoveryTimeoutDescription" xml:space="preserve"><value>Délai d’attente pour chaque sonde d’appareil, en millisecondes</value></data>
+  <data name="SettingsEncryption" xml:space="preserve"><value>Chiffrement</value></data>
+  <data name="SettingsEncryptionDescription" xml:space="preserve"><value>Chiffrer les transferts avec HTTPS et identifier les appareils par leurs certificats</value></data>
+  <data name="SettingsEncryptionDisabledNotice" xml:space="preserve"><value>Le chiffrement est désactivé. Les appareils se connecteront en HTTP et la vérification d’identité sera moins fiable. Redémarrez le serveur pour appliquer.</value></data>
+  <data name="SettingsEncryptionDisabledTitle" xml:space="preserve"><value>Chiffrement désactivé</value></data>
+  <data name="SettingsFavoritesOnly" xml:space="preserve"><value>Réception automatique depuis les favoris uniquement</value></data>
+  <data name="SettingsFavoritesOnlyDescription" xml:space="preserve"><value>Lorsque l’enregistrement automatique est activé, n’accepter automatiquement que les favoris</value></data>
+  <data name="SettingsGeneral" xml:space="preserve"><value>Général</value></data>
+  <data name="SettingsLanguage" xml:space="preserve"><value>Langue</value></data>
+  <data name="SettingsLanguageDescription" xml:space="preserve"><value>Choisir la langue de l’interface ou utiliser les paramètres système</value></data>
+  <data name="SettingsNeedRestart" xml:space="preserve"><value>Paramètres modifiés ; redémarrer le serveur pour appliquer</value></data>
+  <data name="SettingsInputsPending" xml:space="preserve"><value>Les modifications seront enregistrées et appliquées au démarrage ou au redémarrage du serveur</value></data>
+  <data name="SettingsApplyAndRestart" xml:space="preserve"><value>Enregistrer et redémarrer le serveur</value></data>
+  <data name="SettingsApplyAndStart" xml:space="preserve"><value>Enregistrer et démarrer le serveur</value></data>
+  <data name="SettingsPortInvalid" xml:space="preserve"><value>Le port doit être un entier de 1 à 65535</value></data>
+  <data name="SettingsDiscoveryTimeoutInvalid" xml:space="preserve"><value>Le délai doit être un entier de 1 à 60000 millisecondes</value></data>
+  <data name="SettingsMulticastInvalid" xml:space="preserve"><value>Saisir une adresse multicast IPv4 valide (224.0.0.0 à 239.255.255.255)</value></data>
+  <data name="SettingsReceivePinInvalid" xml:space="preserve"><value>Le PIN ne doit pas dépasser 32 caractères et ne peut pas être vide si la protection est activée</value></data>
+  <data name="SettingsApplyFailed" xml:space="preserve"><value>Impossible d’enregistrer les paramètres du serveur : {error}</value></data>
+  <data name="SettingsNetwork" xml:space="preserve"><value>Appareil et réseau</value></data>
+  <data name="SettingsNetworkInterfaces" xml:space="preserve"><value>Interfaces réseau</value></data>
+  <data name="SettingsNetworkInterfacesAll" xml:space="preserve"><value>Toutes</value></data>
+  <data name="SettingsNetworkInterfacesBlacklist" xml:space="preserve"><value>Liste de blocage</value></data>
+  <data name="SettingsNetworkInterfacesEmpty" xml:space="preserve"><value>Aucune interface réseau IPv4 disponible</value></data>
+  <data name="SettingsNetworkInterfacesExample" xml:space="preserve"><value>Exemples de motifs d’adresse :</value></data>
+  <data name="SettingsNetworkInterfacesInfo" xml:space="preserve"><value>Utiliser toutes les interfaces par défaut ; filtrer avec une liste d’autorisation ou de blocage, puis redémarrer le serveur</value></data>
+  <data name="SettingsNetworkInterfacesPattern" xml:space="preserve"><value>Motif {index}</value></data>
+  <data name="SettingsNetworkInterfacesPreview" xml:space="preserve"><value>Aperçu des interfaces réseau</value></data>
+  <data name="SettingsNetworkInterfacesRemovePattern" xml:space="preserve"><value>Retirer le motif</value></data>
+  <data name="SettingsNetworkInterfacesWhitelist" xml:space="preserve"><value>Liste d’autorisation</value></data>
+  <data name="SettingsPort" xml:space="preserve"><value>Port</value></data>
+  <data name="SettingsPortDescription" xml:space="preserve"><value>Port UDP et TCP utilisé pour la détection et les transferts</value></data>
+  <data name="SettingsPortWarning" xml:space="preserve"><value>Les ports personnalisés doivent correspondre sur tous les appareils ; valeur par défaut : {port}</value></data>
+  <data name="SettingsMulticast" xml:space="preserve"><value>Adresse multicast</value></data>
+  <data name="SettingsMulticastDescription" xml:space="preserve"><value>Adresse du groupe multicast IPv4 pour la détection des appareils</value></data>
+  <data name="SettingsMulticastWarning" xml:space="preserve"><value>Les adresses personnalisées doivent correspondre sur tous les appareils ; valeur par défaut : {group}</value></data>
+  <data name="SettingsMinimizeToTray" xml:space="preserve"><value>Réduire dans la zone de notification à la fermeture</value></data>
+  <data name="SettingsMinimizeToTrayDescription" xml:space="preserve"><value>Masquer la fenêtre principale et continuer en arrière-plan</value></data>
+  <data name="SettingsTrayClickOpensFlyout" xml:space="preserve"><value>Action du clic sur l’icône de notification</value></data>
+  <data name="SettingsTrayClickOpensFlyoutDescription" xml:space="preserve"><value>Choisir ce qui s’ouvre au clic sur l’icône</value></data>
+  <data name="SettingsTrayClickOpenPanel" xml:space="preserve"><value>Ouvrir le panneau de notification</value></data>
+  <data name="SettingsTrayClickOpenWindow" xml:space="preserve"><value>Ouvrir la fenêtre principale</value></data>
+  <data name="SettingsReceive" xml:space="preserve"><value>Réception</value></data>
+  <data name="SettingsSend" xml:space="preserve"><value>Envoi</value></data>
+  <data name="SettingsExpandDragDrop" xml:space="preserve"><value>Glisser-déposer dans toute l’application</value></data>
+  <data name="SettingsExpandDragDropDescription" xml:space="preserve"><value>Déposer des fichiers ou dossiers n’importe où pour les ajouter à la liste d’envoi</value></data>
+  <data name="SettingsVerifyChecksumsOnReceive" xml:space="preserve"><value>Vérifier les sommes de contrôle</value></data>
+  <data name="SettingsVerifyChecksumsOnReceiveDescription" xml:space="preserve"><value>Vérifier l’intégrité des fichiers avec les sommes SHA-256 fournies par l’expéditeur</value></data>
+  <data name="SettingsVerifyChecksumsOnSend" xml:space="preserve"><value>Calculer les sommes de contrôle</value></data>
+  <data name="SettingsVerifyChecksumsOnSendDescription" xml:space="preserve"><value>Calculer les sommes SHA-256 avant l’envoi pour permettre la vérification à la réception</value></data>
+  <data name="SettingsReceivePin" xml:space="preserve"><value>PIN de réception</value></data>
+  <data name="SettingsReceivePinDescription" xml:space="preserve"><value>32 caractères maximum ; enregistrer puis démarrer ou redémarrer le serveur pour appliquer</value></data>
+  <data name="SettingsReceivePinEnabled" xml:space="preserve"><value>Activer la protection par PIN</value></data>
+  <data name="SettingsReceivePinEnabledDescription" xml:space="preserve"><value>Exiger un PIN de l’expéditeur</value></data>
+  <data name="SettingsReceivePinProtection" xml:space="preserve"><value>Protection par PIN</value></data>
+  <data name="SettingsReceivePinProtectionDescription" xml:space="preserve"><value>Exiger un PIN avant de recevoir du contenu</value></data>
+  <data name="SettingsSaveReceiveHistory" xml:space="preserve"><value>Conserver l’historique de réception</value></data>
+  <data name="SettingsSaveReceiveHistoryDescription" xml:space="preserve"><value>Conserver une trace des fichiers reçus pour y accéder facilement</value></data>
+  <data name="SettingsRestartServer" xml:space="preserve"><value>Redémarrer le serveur</value></data>
+  <data name="SettingsSaveLocation" xml:space="preserve"><value>Emplacement d’enregistrement</value></data>
+  <data name="SettingsServerOffline" xml:space="preserve"><value>Serveur</value></data>
+  <data name="SettingsServerRunning" xml:space="preserve"><value>Le serveur est en cours d’exécution</value></data>
+  <data name="SettingsServerStopped" xml:space="preserve"><value>Le serveur est arrêté</value></data>
+  <data name="SettingsStartServer" xml:space="preserve"><value>Démarrer le serveur</value></data>
+  <data name="SettingsStopServer" xml:space="preserve"><value>Arrêter le serveur</value></data>
+  <data name="SettingsStartWithWindows" xml:space="preserve"><value>Démarrer à la connexion</value></data>
+  <data name="SettingsStartWithWindowsDescription" xml:space="preserve"><value>Lancer Tonarink à la connexion à Windows</value></data>
+  <data name="SettingsWindowsShareSuggestions" xml:space="preserve"><value>Afficher les favoris dans le partage Windows</value></data>
+  <data name="SettingsWindowsShareSuggestionsDescription" xml:space="preserve"><value>Afficher les appareils favoris comme contacts suggérés ; nécessite l’application MSIX</value></data>
+  <data name="SettingsNotifications" xml:space="preserve"><value>Notifications système</value></data>
+  <data name="SettingsNotificationsDescription" xml:space="preserve"><value>Afficher des notifications Windows pour les demandes et les transferts terminés</value></data>
+  <data name="SettingsNotificationsEnabled" xml:space="preserve"><value>Activer les notifications</value></data>
+  <data name="SettingsNotificationsEnabledDescription" xml:space="preserve"><value>Autoriser les notifications Windows de Tonarink</value></data>
+  <data name="SettingsNotificationsDefaultAction" xml:space="preserve"><value>Au clic sur une notification de fin</value></data>
+  <data name="SettingsNotificationsDefaultActionDescription" xml:space="preserve"><value>Ouvrir le fichier ou l’afficher dans son dossier</value></data>
+  <data name="SettingsNotificationsDefaultOpenFile" xml:space="preserve"><value>Ouvrir le fichier</value></data>
+  <data name="SettingsNotificationsDefaultShowInFolder" xml:space="preserve"><value>Afficher dans le dossier</value></data>
+  <data name="SettingsNotificationsTest" xml:space="preserve"><value>Notification de test</value></data>
+  <data name="SettingsNotificationsTestDescription" xml:space="preserve"><value>Vérifier si Windows autorise les notifications</value></data>
+  <data name="SettingsNotificationsSendTest" xml:space="preserve"><value>Envoyer une notification de test</value></data>
+  <data name="SettingsNotificationsTestTitle" xml:space="preserve"><value>Notification de test Tonarink</value></data>
+  <data name="SettingsNotificationsTestMessage" xml:space="preserve"><value>Les notifications système fonctionnent</value></data>
+  <data name="SettingsNotificationsTestFailed" xml:space="preserve"><value>Impossible d’envoyer la notification ; vérifier les paramètres Windows ou notifications.log</value></data>
+  <data name="ExplorerCommandTitle" xml:space="preserve"><value>Envoyer avec Tonarink</value></data>
+  <data name="SettingsExplorerContextMenu" xml:space="preserve"><value>Menu contextuel de l’Explorateur de fichiers</value></data>
+  <data name="SettingsExplorerContextMenuDescription" xml:space="preserve"><value>Ajouter « Envoyer avec Tonarink » au menu contextuel ; nécessite l’application MSIX sur Windows 11</value></data>
+  <data name="SettingsExplorerFavorites" xml:space="preserve"><value>Afficher les appareils favoris dans le sous-menu</value></data>
+  <data name="SettingsExplorerFavoritesDescription" xml:space="preserve"><value>Choisir un favori pour envoyer directement ; sinon, ajouter les fichiers à la liste d’envoi</value></data>
+  <data name="ExplorerCommandAddToList" xml:space="preserve"><value>Ajouter à la liste d’envoi</value></data>
+  <data name="SettingsSendTo" xml:space="preserve"><value>Menu Envoyer vers de l’Explorateur</value></data>
+  <data name="SettingsSendToDescription" xml:space="preserve"><value>Ajouter Tonarink à Envoyer vers pour ajouter les fichiers sélectionnés à la liste ; version non empaquetée uniquement</value></data>
+  <data name="SettingsSendToFailed" xml:space="preserve"><value>Impossible de mettre à jour le menu Envoyer vers : {error}</value></data>
+  <data name="SettingsAppExecutionAliases" xml:space="preserve"><value>Alias d’exécution des applications</value></data>
+  <data name="SettingsAppExecutionAliasesDescription" xml:space="preserve"><value>Ouvrir les paramètres Windows, puis Applications → Paramètres avancés des applications → Alias d’exécution des applications pour gérer la commande tonarink ; nécessite MSIX</value></data>
+  <data name="SettingsAppExecutionAliasesOpenFailed" xml:space="preserve"><value>Impossible d’ouvrir les paramètres Windows ; accéder à Paramètres → Applications → Paramètres avancés des applications → Alias d’exécution des applications</value></data>
+  <data name="StartupDisabledByPolicy" xml:space="preserve"><value>Une stratégie Windows empêche Tonarink de démarrer à la connexion</value></data>
+  <data name="StartupDisabledByUser" xml:space="preserve"><value>Activer Tonarink dans les paramètres de démarrage Windows, puis réessayer</value></data>
+  <data name="StartupFailed" xml:space="preserve"><value>Impossible de modifier les paramètres de démarrage : {error}</value></data>
+  <data name="TrayExit" xml:space="preserve"><value>Quitter</value></data>
+  <data name="TrayFromPeer" xml:space="preserve"><value>De {peer}</value></data>
+  <data name="TrayHistoryTab" xml:space="preserve"><value>Historique</value></data>
+  <data name="TrayNearbyTab" xml:space="preserve"><value>À proximité</value></data>
+  <data name="TrayNoDevices" xml:space="preserve"><value>Aucun appareil à proximité</value></data>
+  <data name="TrayOpen" xml:space="preserve"><value>Ouvrir Tonarink</value></data>
+  <data name="TrayMenuOpen" xml:space="preserve"><value>Ouvrir</value></data>
+  <data name="TrayReportBug" xml:space="preserve"><value>Signaler un bug</value></data>
+  <data name="TrayPinPanel" xml:space="preserve"><value>Épingler le panneau</value></data>
+  <data name="TrayUnpinPanel" xml:space="preserve"><value>Détacher le panneau</value></data>
+  <data name="TrayDropToSend" xml:space="preserve"><value>Envoyer à {device}</value></data>
+  <data name="TrayReceiveOff" xml:space="preserve"><value>Désactivé</value></data>
+  <data name="TrayReceiveOn" xml:space="preserve"><value>Activé</value></data>
+  <data name="TrayReceiveService" xml:space="preserve"><value>Service de réception</value></data>
+  <data name="TrayToPeer" xml:space="preserve"><value>À {peer}</value></data>
+  <data name="TrayTooltip" xml:space="preserve"><value>Tonarink</value></data>
+  <data name="TrayWaitingReceive" xml:space="preserve"><value>En attente de réception</value></data>
+  <data name="WidgetAppClosed" xml:space="preserve"><value>L’application est fermée</value></data>
+  <data name="WidgetAppClosedStatus" xml:space="preserve"><value>Fermée</value></data>
+  <data name="WidgetAppOpen" xml:space="preserve"><value>En cours d’exécution</value></data>
+  <data name="WidgetHintAppClosed" xml:space="preserve"><value>Ouvrir l’application pour détecter des appareils et recevoir des fichiers</value></data>
+  <data name="WidgetHintServerOff" xml:space="preserve"><value>Cliquer pour démarrer la réception</value></data>
+  <data name="WidgetHintServerOn" xml:space="preserve"><value>Prêt à recevoir du contenu</value></data>
+  <data name="WidgetHistoryCount" xml:space="preserve"><value>Historique : {count}</value></data>
+  <data name="WidgetNearbyCount" xml:space="preserve"><value>À proximité : {count}</value></data>
+  <data name="WidgetReceivingOff" xml:space="preserve"><value>Réception désactivée</value></data>
+  <data name="WidgetServerOff" xml:space="preserve"><value>Désactivé</value></data>
+  <data name="WidgetServerOn" xml:space="preserve"><value>Activé</value></data>
+  <data name="SettingsTheme" xml:space="preserve"><value>Thème</value></data>
+  <data name="SettingsThemeDescription" xml:space="preserve"><value>Choisir une apparence claire, sombre ou système</value></data>
+  <data name="SettingsTitle" xml:space="preserve"><value>Paramètres</value></data>
+  <data name="ShareTargetEmpty" xml:space="preserve"><value>Aucun fichier ou texte accessible dans le contenu partagé</value></data>
+  <data name="ShareTargetFailed" xml:space="preserve"><value>Impossible d’ajouter le contenu partagé : {error}</value></data>
+  <data name="ShareSuggestedDeviceOffline" xml:space="preserve"><value>{device} est hors ligne. Le contenu reste dans la liste d’envoi ; réessayez ou choisissez un autre appareil.</value></data>
+  <data name="ShareSuggestedDeviceUnavailable" xml:space="preserve"><value>Cet appareil n’est plus dans vos favoris ; le contenu reste dans la liste d’envoi</value></data>
+  <data name="ShareSuggestedDeviceConnecting" xml:space="preserve"><value>Recherche de {device}, veuillez patienter</value></data>
+  <data name="ShareSuggestedServiceUnavailable" xml:space="preserve"><value>Le service réseau n’est pas prêt. Le contenu reste dans la liste d’envoi. Démarrez le service et réessayez.</value></data>
+  <data name="TargetDevice" xml:space="preserve"><value>Appareil destinataire</value></data>
+  <data name="TargetRequiresPin" xml:space="preserve"><value>L’appareil destinataire exige un PIN</value></data>
+  <data name="Text" xml:space="preserve"><value>Texte</value></data>
+  <data name="TextAvailableAfterAccept" xml:space="preserve"><value>Accepter pour voir le texte complet</value></data>
+  <data name="TextContent" xml:space="preserve"><value>Contenu du texte</value></data>
+  <data name="TextMessage" xml:space="preserve"><value>Message texte</value></data>
+  <data name="TextReceived" xml:space="preserve"><value>Texte reçu</value></data>
+  <data name="ThemeDark" xml:space="preserve"><value>Sombre</value></data>
+  <data name="ThemeLight" xml:space="preserve"><value>Clair</value></data>
+  <data name="ThisDevice" xml:space="preserve"><value>Cet appareil</value></data>
+  <data name="TransferCancelled" xml:space="preserve"><value>Transfert annulé</value></data>
+  <data name="TransferComplete" xml:space="preserve"><value>Transfert terminé</value></data>
+  <data name="TransferFailed" xml:space="preserve"><value>Échec du transfert</value></data>
+  <data name="TransferPreparing" xml:space="preserve"><value>Préparation</value></data>
+  <data name="TransferTransferring" xml:space="preserve"><value>Transfert en cours</value></data>
+  <data name="TransferWaiting" xml:space="preserve"><value>En attente d’acceptation</value></data>
+  <data name="WaitingForDevice" xml:space="preserve"><value>En attente de l’acceptation de {device}…</value></data>
+  <data name="WebShareAccepted" xml:space="preserve"><value>Accepté</value></data>
+  <data name="WebShareAutoAccept" xml:space="preserve"><value>Accepter automatiquement les demandes</value></data>
+  <data name="WebShareCopy" xml:space="preserve"><value>Copier le lien</value></data>
+  <data name="WebShareEncryption" xml:space="preserve"><value>Chiffrement</value></data>
+  <data name="WebShareEncryptionHint" xml:space="preserve"><value>HTTPS utilise le certificat de cet appareil ; le navigateur peut le signaler comme non fiable</value></data>
+  <data name="WebShareNoRequests" xml:space="preserve"><value>Aucune demande</value></data>
+  <data name="WebShareNoLinkAvailable" xml:space="preserve"><value>Aucun lien à partager</value></data>
+  <data name="WebShareOpenLink" xml:space="preserve"><value>Ouvrir ce lien dans un navigateur :</value></data>
+  <data name="WebSharePinHint" xml:space="preserve"><value>PIN : {pin}</value></data>
+  <data name="WebSharePinTitle" xml:space="preserve"><value>PIN</value></data>
+  <data name="WebShareQr" xml:space="preserve"><value>Code QR</value></data>
+  <data name="WebShareQrTitle" xml:space="preserve"><value>Code QR</value></data>
+  <data name="WebShareRequests" xml:space="preserve"><value>Demandes</value></data>
+  <data name="WebShareSystemShare" xml:space="preserve"><value>Partager le lien avec Windows</value></data>
+  <data name="WebShareRequirePin" xml:space="preserve"><value>Exiger un PIN</value></data>
+  <data name="WebShareTitle" xml:space="preserve"><value>Partager par lien</value></data>
+  <data name="WebReceiveTitle" xml:space="preserve"><value>Recevoir par lien</value></data>
+  <data name="WebShareZoom" xml:space="preserve"><value>Agrandir le lien</value></data>
+  <data name="WebShareZoomTitle" xml:space="preserve"><value>Lien</value></data>
+  <data name="WantsToSendMessage" xml:space="preserve"><value>Souhaite vous envoyer un message :</value></data>
+  <data name="WindowUnavailable" xml:space="preserve"><value>La fenêtre actuelle est indisponible</value></data>
+  <data name="LanguageJapanese" xml:space="preserve"><value>日本語</value></data>
+  <data name="LanguageKorean" xml:space="preserve"><value>한국어</value></data>
+  <data name="LanguageFrench" xml:space="preserve"><value>Français</value></data>
+  <data name="LanguageSpanish" xml:space="preserve"><value>Español</value></data>
+</root>

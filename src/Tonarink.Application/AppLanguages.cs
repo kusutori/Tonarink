@@ -6,6 +6,10 @@ public static class AppLanguages
 {
     public const string English = "en-US";
     public const string SimplifiedChinese = "zh-CN";
+    public const string Japanese = "ja-JP";
+    public const string Korean = "ko-KR";
+    public const string French = "fr-FR";
+    public const string Spanish = "es-ES";
     public const string DefaultCulture = English;
 
     public static readonly IReadOnlyList<LanguageChoice> Choices =
@@ -13,6 +17,10 @@ public static class AppLanguages
         new(0, TonarinkLanguage.System, null, "LanguageSystem"),
         new(1, TonarinkLanguage.SimplifiedChinese, SimplifiedChinese, "LanguageChinese"),
         new(2, TonarinkLanguage.English, English, "LanguageEnglish"),
+        new(3, TonarinkLanguage.Japanese, Japanese, "LanguageJapanese"),
+        new(4, TonarinkLanguage.Korean, Korean, "LanguageKorean"),
+        new(5, TonarinkLanguage.French, French, "LanguageFrench"),
+        new(6, TonarinkLanguage.Spanish, Spanish, "LanguageSpanish"),
     ];
 
     public static int MaxIndex => Choices.Count - 1;

@@ -50,6 +50,22 @@ internal static partial class ExplorerStrings
         var dash = locale.IndexOf('-');
         if (dash > 0)
             yield return locale[..dash];
+
+        // The app ships one regional resource folder per supported language.
+        // Match variants such as fr-CA/es-MX when following the system locale.
+        var language = dash > 0 ? locale[..dash] : locale;
+        var supportedLocale = language.ToLowerInvariant() switch
+        {
+            "en" => "en-US",
+            "zh" => "zh-CN",
+            "ja" => "ja-JP",
+            "ko" => "ko-KR",
+            "fr" => "fr-FR",
+            "es" => "es-ES",
+            _ => null,
+        };
+        if (supportedLocale is not null)
+            yield return supportedLocale;
     }
 
     private static string PreferredLocale()

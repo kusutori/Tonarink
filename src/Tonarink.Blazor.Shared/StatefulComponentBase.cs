@@ -44,6 +44,19 @@ public abstract class StatefulComponentBase : ComponentBase, IDisposable
 
     protected string T(string key, params object[] args) => Localize(key, args);
 
+    protected string TransferStatusText(TransferStatus status) => T("Status" + status);
+
+    protected string TransferSummary(TransferActivity activity) => activity.ItemCount is { } count
+        ? AppText.Get("ItemSummary", AppState.Settings.Language, count) : activity.Summary;
+
+    protected string DeviceModel(NearbyDevice device) => device.IsModelFallback
+        && device.DeviceType is "Desktop" or "Mobile" or "Server" or "Headless" or "Web"
+            ? AppText.Get("Device" + device.DeviceType, AppState.Settings.Language) : device.Model;
+
+    protected string SenderModel(IncomingOffer offer) => offer.IsSenderModelFallback
+        && offer.SenderDeviceType is "Desktop" or "Mobile" or "Server" or "Headless" or "Web"
+            ? AppText.Get("Device" + offer.SenderDeviceType, AppState.Settings.Language) : offer.SenderModel;
+
     private string Localize(string key, object[]? args)
     {
         // A queued render can inherit a different execution context from the

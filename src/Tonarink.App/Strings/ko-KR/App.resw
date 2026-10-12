@@ -1,0 +1,464 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Accept" xml:space="preserve"><value>수락</value></data>
+  <data name="Add" xml:space="preserve"><value>추가</value></data>
+  <data name="AddFavoriteTitle" xml:space="preserve"><value>즐겨찾기에 추가</value></data>
+  <data name="AddFolder" xml:space="preserve"><value>폴더 추가</value></data>
+  <data name="AutoSaveDescription" xml:space="preserve"><value>수신 내용을 자동으로 수락하고 저장할지 선택</value></data>
+  <data name="AutoSaveFavorites" xml:space="preserve"><value>즐겨찾기만</value></data>
+  <data name="AutoSaveOff" xml:space="preserve"><value>끔</value></data>
+  <data name="AutoSaveOn" xml:space="preserve"><value>켬</value></data>
+  <data name="AutoSaveTitle" xml:space="preserve"><value>자동 저장</value></data>
+  <data name="Cancel" xml:space="preserve"><value>취소</value></data>
+  <data name="CancelCurrentSend" xml:space="preserve"><value>현재 전송 취소</value></data>
+  <data name="CancelCurrentTransfer" xml:space="preserve"><value>현재 파일 전송 취소</value></data>
+  <data name="Cancelled" xml:space="preserve"><value>취소됨</value></data>
+  <data name="CancellingTransfer" xml:space="preserve"><value>전송 취소 중…</value></data>
+  <data name="Change" xml:space="preserve"><value>변경…</value></data>
+  <data name="ChangeSaveLocation" xml:space="preserve"><value>수신 파일 저장 위치 변경</value></data>
+  <data name="ChooseContent" xml:space="preserve"><value>보낼 내용 선택</value></data>
+  <data name="ChooseItem" xml:space="preserve"><value>{item} 선택</value></data>
+  <data name="DropFilesCaption" xml:space="preserve"><value>전송 목록에 추가</value></data>
+  <data name="DropFilesOrFolders" xml:space="preserve"><value>여기에 파일이나 폴더 놓기</value></data>
+  <data name="DropFilesOrFoldersAnywhere" xml:space="preserve"><value>앱 어디에나 파일이나 폴더 놓기</value></data>
+  <data name="DropFilesAnywherePrompt" xml:space="preserve"><value>놓으면 파일이나 폴더가 전송 목록에 추가됩니다</value></data>
+  <data name="DropItemsFailed" xml:space="preserve"><value>놓은 항목을 추가하지 못했습니다: {error}</value></data>
+  <data name="DroppedItemsEmpty" xml:space="preserve"><value>놓은 항목에 접근 가능한 파일이 없습니다</value></data>
+  <data name="ReleaseFilesToAdd" xml:space="preserve"><value>놓아서 추가</value></data>
+  <data name="Clear" xml:space="preserve"><value>비우기</value></data>
+  <data name="Clipboard" xml:space="preserve"><value>클립보드</value></data>
+  <data name="ClipboardEmpty" xml:space="preserve"><value>클립보드에 보낼 텍스트, 파일 또는 폴더가 없습니다</value></data>
+  <data name="ClipboardImage" xml:space="preserve"><value>클립보드 이미지</value></data>
+  <data name="ClipboardReadFailed" xml:space="preserve"><value>클립보드를 읽지 못했습니다: {error}</value></data>
+  <data name="ClipboardText" xml:space="preserve"><value>클립보드 텍스트</value></data>
+  <data name="Close" xml:space="preserve"><value>닫기</value></data>
+  <data name="Confirm" xml:space="preserve"><value>확인</value></data>
+  <data name="ContentItems" xml:space="preserve"><value>{count, plural, other {항목 #개}}</value></data>
+  <data name="ContentOneFile" xml:space="preserve"><value>파일 {file}</value></data>
+  <data name="ContentOneTextMessage" xml:space="preserve"><value>텍스트 메시지</value></data>
+  <data name="ContentSaved" xml:space="preserve"><value>내용 저장됨</value></data>
+  <data name="Copied" xml:space="preserve"><value>복사됨</value></data>
+  <data name="Copy" xml:space="preserve"><value>복사</value></data>
+  <data name="CopyReceivedText" xml:space="preserve"><value>수신한 텍스트 복사</value></data>
+  <data name="Decline" xml:space="preserve"><value>거절</value></data>
+  <data name="Delete" xml:space="preserve"><value>삭제</value></data>
+  <data name="DeleteFavoriteConfirm" xml:space="preserve"><value>즐겨찾기에서 “{device}” 기기를 삭제할까요?</value></data>
+  <data name="DeleteFavoriteTitle" xml:space="preserve"><value>즐겨찾기 삭제</value></data>
+  <data name="DeviceInfo" xml:space="preserve"><value>기기 정보</value></data>
+  <data name="DeviceInfoAlias" xml:space="preserve"><value>별칭(기기 이름):</value></data>
+  <data name="DeviceInfoIp" xml:space="preserve"><value>IP:</value></data>
+  <data name="DeviceInfoNoAddress" xml:space="preserve"><value>사용 가능한 주소가 없습니다</value></data>
+  <data name="DeviceInfoPort" xml:space="preserve"><value>포트:</value></data>
+  <data name="DeviceDetailsTitle" xml:space="preserve"><value>기기 상세 정보</value></data>
+  <data name="OpenDeviceDetails" xml:space="preserve"><value>{device} 상세 정보 보기</value></data>
+  <data name="DeviceInformation" xml:space="preserve"><value>기기 정보</value></data>
+  <data name="DeviceModelLabel" xml:space="preserve"><value>기기 모델</value></data>
+  <data name="ProtocolVersion" xml:space="preserve"><value>프로토콜 버전</value></data>
+  <data name="Address" xml:space="preserve"><value>주소</value></data>
+  <data name="LastSeen" xml:space="preserve"><value>마지막 발견</value></data>
+  <data name="FingerprintLabel" xml:space="preserve"><value>지문</value></data>
+  <data name="FavoriteAction" xml:space="preserve"><value>즐겨찾기에 추가</value></data>
+  <data name="RemoveFavoriteAction" xml:space="preserve"><value>즐겨찾기에서 삭제</value></data>
+  <data name="VerifyAction" xml:space="preserve"><value>확인</value></data>
+  <data name="VerificationTitle" xml:space="preserve"><value>기기 확인</value></data>
+  <data name="VerificationIcons" xml:space="preserve"><value>아이콘</value></data>
+  <data name="VerificationText" xml:space="preserve"><value>텍스트</value></data>
+  <data name="VerificationCompareHint" xml:space="preserve"><value>상대 기기에도 같은 내용이 표시되나요?</value></data>
+  <data name="VerificationUnencryptedTitle" xml:space="preserve"><value>암호화되지 않은 연결</value></data>
+  <data name="VerificationUnencryptedMessage" xml:space="preserve"><value>HTTP 연결에서는 이 비교가 연결과 암호학적으로 연계되지 않습니다</value></data>
+  <data name="DeviceLog" xml:space="preserve"><value>활동</value></data>
+  <data name="DeviceLogEmpty" xml:space="preserve"><value>이 세션에 기록된 기기 검색 활동이 없습니다</value></data>
+  <data name="DeviceLogAdded" xml:space="preserve"><value>발견됨</value></data>
+  <data name="DeviceLogUpdated" xml:space="preserve"><value>업데이트됨</value></data>
+  <data name="DeviceLogRemoved" xml:space="preserve"><value>만료됨</value></data>
+  <data name="DeviceDesktop" xml:space="preserve"><value>컴퓨터</value></data>
+  <data name="DeviceHeadless" xml:space="preserve"><value>헤드리스 기기</value></data>
+  <data name="DeviceMobile" xml:space="preserve"><value>모바일 기기</value></data>
+  <data name="DeviceName" xml:space="preserve"><value>기기 이름</value></data>
+  <data name="DeviceServer" xml:space="preserve"><value>서버</value></data>
+  <data name="DeviceWeb" xml:space="preserve"><value>웹 기기</value></data>
+  <data name="EditFavorite" xml:space="preserve"><value>즐겨찾기 편집</value></data>
+  <data name="EditFavoriteDevice" xml:space="preserve"><value>즐겨찾기 {device} 편집</value></data>
+  <data name="EditFavoriteTitle" xml:space="preserve"><value>즐겨찾는 기기 편집</value></data>
+  <data name="FavoriteDevice" xml:space="preserve"><value>{device} 즐겨찾기에 추가</value></data>
+  <data name="FavoriteDeviceName" xml:space="preserve"><value>즐겨찾는 기기 이름</value></data>
+  <data name="FavoriteIpAddress" xml:space="preserve"><value>즐겨찾는 기기 IP 주소</value></data>
+  <data name="FavoritePort" xml:space="preserve"><value>즐겨찾는 기기 포트</value></data>
+  <data name="FavoritesEmpty" xml:space="preserve"><value>즐겨찾는 기기가 없습니다</value></data>
+  <data name="FavoritesTitle" xml:space="preserve"><value>즐겨찾기</value></data>
+  <data name="NewFavorite" xml:space="preserve"><value>새로 추가</value></data>
+  <data name="MultipleReceivers" xml:space="preserve"><value>여러 기기에 보내기</value></data>
+  <data name="MultipleReceiversDescription" xml:space="preserve"><value>전송 후 목록을 유지하여 다른 수신 기기 선택</value></data>
+  <data name="SendToFavorite" xml:space="preserve"><value>즐겨찾는 “{device}” 기기에 보내기</value></data>
+  <data name="File" xml:space="preserve"><value>파일</value></data>
+  <data name="Fingerprint" xml:space="preserve"><value>지문  {fingerprint}…</value></data>
+  <data name="Folder" xml:space="preserve"><value>폴더</value></data>
+  <data name="FolderEmpty" xml:space="preserve"><value>선택한 폴더에 보낼 파일이 없습니다</value></data>
+  <data name="HistoryBack" xml:space="preserve"><value>뒤로</value></data>
+  <data name="HistoryDeleteAll" xml:space="preserve"><value>기록 삭제</value></data>
+  <data name="HistoryDeleteAllConfirm" xml:space="preserve"><value>수신 기록을 삭제할까요?</value></data>
+  <data name="HistoryDeleteAllConfirmMessage" xml:space="preserve"><value>이 기기의 기록 목록만 삭제합니다. 저장된 파일은 삭제되지 않습니다</value></data>
+  <data name="HistoryDeleteItem" xml:space="preserve"><value>기록에서 삭제</value></data>
+  <data name="HistoryEmpty" xml:space="preserve"><value>수신 기록이 없습니다</value></data>
+  <data name="HistoryEntryActions" xml:space="preserve"><value>{file} 작업</value></data>
+  <data name="HistoryInfo" xml:space="preserve"><value>정보</value></data>
+  <data name="HistoryInfoFileName" xml:space="preserve"><value>파일 이름</value></data>
+  <data name="HistoryInfoPath" xml:space="preserve"><value>경로</value></data>
+  <data name="HistoryInfoSender" xml:space="preserve"><value>보낸 사람</value></data>
+  <data name="HistoryInfoSize" xml:space="preserve"><value>크기</value></data>
+  <data name="HistoryInfoTime" xml:space="preserve"><value>시간</value></data>
+  <data name="HistoryInfoTitle" xml:space="preserve"><value>파일 정보</value></data>
+  <data name="HistoryOpenDirectory" xml:space="preserve"><value>폴더 열기</value></data>
+  <data name="HistoryOpenFile" xml:space="preserve"><value>파일 열기</value></data>
+  <data name="HistoryOpenFileDescription" xml:space="preserve"><value>{file} 기록 열기</value></data>
+  <data name="JumpListFavoriteDevicesGroup" xml:space="preserve"><value>즐겨찾는 기기</value></data>
+  <data name="JumpListHistoryGroup" xml:space="preserve"><value>기록</value></data>
+  <data name="HistoryOpenReceiveHistory" xml:space="preserve"><value>수신 기록</value></data>
+  <data name="HistoryShowInFolder" xml:space="preserve"><value>폴더에서 보기</value></data>
+  <data name="HistorySubtitle" xml:space="preserve"><value>{date} · {size} · {sender}</value></data>
+  <data name="HistoryTitle" xml:space="preserve"><value>수신 기록</value></data>
+  <data name="IdentityLoading" xml:space="preserve"><value>기기 식별 정보 불러오는 중…</value></data>
+  <data name="IncomingFileSummary" xml:space="preserve"><value>{file} 파일을 보내려고 합니다</value></data>
+  <data name="IncomingFiles" xml:space="preserve"><value>파일</value></data>
+  <data name="IncomingItemsSummary" xml:space="preserve"><value>{count, plural, other {항목 #개}}를 보내려고 합니다</value></data>
+  <data name="IncomingTextSummary" xml:space="preserve"><value>텍스트 메시지를 보내려고 합니다</value></data>
+  <data name="InvalidIpAddress" xml:space="preserve"><value>올바른 IP 주소를 입력하세요</value></data>
+  <data name="InvalidPort" xml:space="preserve"><value>포트는 1~65535 사이의 정수여야 합니다</value></data>
+  <data name="IpAddress" xml:space="preserve"><value>IP 주소</value></data>
+  <data name="ItemKindAndSize" xml:space="preserve"><value>{kind} · {size}</value></data>
+  <data name="ItemsAdded" xml:space="preserve"><value>{count, plural, other {항목 #개}} 추가됨</value></data>
+  <data name="LanguageChinese" xml:space="preserve"><value>简体中文</value></data>
+  <data name="LanguageEnglish" xml:space="preserve"><value>English</value></data>
+  <data name="LanguageSystem" xml:space="preserve"><value>시스템 설정 사용</value></data>
+  <data name="MoreItems" xml:space="preserve"><value>외 {count, number}개…</value></data>
+  <data name="Name" xml:space="preserve"><value>이름</value></data>
+  <data name="NavReceive" xml:space="preserve"><value>받기</value></data>
+  <data name="NavSend" xml:space="preserve"><value>보내기</value></data>
+  <data name="NavSettings" xml:space="preserve"><value>설정</value></data>
+  <data name="MainNavigation" xml:space="preserve"><value>기본 탐색</value></data>
+  <data name="NotificationIncomingTitle" xml:space="preserve"><value>{device}의 전송 요청</value></data>
+  <data name="NotificationReceiveProgressTitle" xml:space="preserve"><value>{device}에서 받는 중</value></data>
+  <data name="NotificationReceiveCompleteTitle" xml:space="preserve"><value>수신 완료</value></data>
+  <data name="NotificationReceiveComplete" xml:space="preserve"><value>{device}에서 {count, plural, other {항목 #개}}를 받았습니다</value></data>
+  <data name="NotificationSendCompleteTitle" xml:space="preserve"><value>송신 완료</value></data>
+  <data name="NotificationSendProgressTitle" xml:space="preserve"><value>{device}에 보내는 중</value></data>
+  <data name="NotificationSendComplete" xml:space="preserve"><value>{device}에 {count, plural, other {항목 #개}}를 보냈습니다</value></data>
+  <data name="NotificationOpenFile" xml:space="preserve"><value>파일 열기</value></data>
+  <data name="NotificationShowInFolder" xml:space="preserve"><value>폴더에서 보기</value></data>
+  <data name="NearbyDevices" xml:space="preserve"><value>주변 기기</value></data>
+  <data name="AddressExample" xml:space="preserve"><value>예: {address}</value></data>
+  <data name="AddressPlaceholder" xml:space="preserve"><value>IP 주소 또는 IP:포트</value></data>
+  <data name="DeviceAddress" xml:space="preserve"><value>기기 주소</value></data>
+  <data name="DeviceAddressNotFound" xml:space="preserve"><value>{address}에서 호환 기기를 찾지 못했습니다. 주소와 네트워크 연결을 확인하세요</value></data>
+  <data name="EnterAddressTitle" xml:space="preserve"><value>주소 입력</value></data>
+  <data name="InvalidDeviceAddress" xml:space="preserve"><value>올바른 IP 주소를 입력하세요</value></data>
+  <data name="InvalidFileName" xml:space="preserve"><value>파일 이름은 비어 있거나 사용할 수 없는 문자를 포함할 수 없습니다</value></data>
+  <data name="RecentlyUsedAddress" xml:space="preserve"><value>최근 사용한 주소:</value></data>
+  <data name="SendToAddress" xml:space="preserve"><value>주소로 보내기</value></data>
+  <data name="UseRecentAddress" xml:space="preserve"><value>최근 주소 {address} 사용</value></data>
+  <data name="NetworkStartFailed" xml:space="preserve"><value>네트워크 서비스를 시작하지 못했습니다</value></data>
+  <data name="DiscoveryScanHint" xml:space="preserve"><value>멀티캐스트 검색을 사용할 수 없어 로컬 네트워크를 스캔합니다</value></data>
+  <data name="NodeDisconnected" xml:space="preserve"><value>연결 끊김</value></data>
+  <data name="NetworkStatus" xml:space="preserve"><value>네트워크 상태</value></data>
+  <data name="NodeDiscoveryLimited" xml:space="preserve"><value>연결됨 · 네트워크 스캔으로 기기 검색 중</value></data>
+  <data name="NodeFaulted" xml:space="preserve"><value>네트워크 서비스를 사용할 수 없습니다</value></data>
+  <data name="NodeRunning" xml:space="preserve"><value>로컬 네트워크에 연결됨</value></data>
+  <data name="NodeStarting" xml:space="preserve"><value>시작 중…</value></data>
+  <data name="NodeStopping" xml:space="preserve"><value>중지 중…</value></data>
+  <data name="NothingSelected" xml:space="preserve"><value>선택된 항목 없음</value></data>
+  <data name="OptionSystem" xml:space="preserve"><value>시스템 설정 사용</value></data>
+  <data name="PageNotFound" xml:space="preserve"><value>페이지를 찾을 수 없습니다</value></data>
+  <data name="PendingRequests" xml:space="preserve"><value>{count, plural, other {대기 중인 요청 #개}}</value></data>
+  <data name="PickFileFailed" xml:space="preserve"><value>파일을 선택하지 못했습니다: {error}</value></data>
+  <data name="PickFolderFailed" xml:space="preserve"><value>폴더를 선택하지 못했습니다: {error}</value></data>
+  <data name="PinIncorrect" xml:space="preserve"><value>PIN이 올바르지 않습니다. 다시 시도하세요</value></data>
+  <data name="Pin" xml:space="preserve"><value>PIN</value></data>
+  <data name="PinConfirm" xml:space="preserve"><value>확인</value></data>
+  <data name="PinPlaceholder" xml:space="preserve"><value>PIN 입력</value></data>
+  <data name="PinRateLimited" xml:space="preserve"><value>PIN 입력 횟수가 너무 많습니다. 나중에 다시 시도하세요</value></data>
+  <data name="PinRequiredMessage" xml:space="preserve"><value>{device}의 수신 PIN이 필요합니다</value></data>
+  <data name="PinRequiredTitle" xml:space="preserve"><value>PIN 필요</value></data>
+  <data name="Port" xml:space="preserve"><value>포트</value></data>
+  <data name="PortInUseHint" xml:space="preserve"><value>Tonarink 또는 다른 LocalSend 호환 앱이 53317 포트를 사용 중인지 확인하세요</value></data>
+  <data name="PreparingForDevice" xml:space="preserve"><value>{device}에 보낼 준비 중…</value></data>
+  <data name="Preview" xml:space="preserve"><value>미리 보기</value></data>
+  <data name="SelectSendItem" xml:space="preserve"><value>{item} 선택</value></data>
+  <data name="DeselectSendItem" xml:space="preserve"><value>{item} 선택 해제</value></data>
+  <data name="SendItemPreviewHint" xml:space="preserve"><value>스페이스 키로 파일 미리 보기</value></data>
+  <data name="SendItemRenamed" xml:space="preserve"><value>이름 변경됨 · {kind} · {size}</value></data>
+  <data name="Share" xml:space="preserve"><value>공유</value></data>
+  <data name="Undo" xml:space="preserve"><value>실행 취소</value></data>
+  <data name="Redo" xml:space="preserve"><value>다시 실행</value></data>
+  <data name="ShareFileFailed" xml:space="preserve"><value>Windows에서 이 파일을 공유하지 못했습니다</value></data>
+  <data name="SettingsExperimental" xml:space="preserve"><value>실험적 기능</value></data>
+  <data name="SettingsFilePreview" xml:space="preserve"><value>파일 미리 보기</value></data>
+  <data name="SettingsFilePreviewDescription" xml:space="preserve"><value>전송 목록에서 스페이스 키를 눌러 외부 도구로 파일 미리 보기</value></data>
+  <data name="SettingsFilePreviewEnabled" xml:space="preserve"><value>파일 미리 보기 사용</value></data>
+  <data name="SettingsFilePreviewEnabledDescription" xml:space="preserve"><value>파일을 선택하고 스페이스 키를 눌러 선택한 도구로 미리 보기</value></data>
+  <data name="SettingsFilePreviewProvider" xml:space="preserve"><value>미리 보기 도구</value></data>
+  <data name="SettingsFilePreviewProviderDescription" xml:space="preserve"><value>선택한 도구를 자동으로 감지하며 + 버튼으로 경로 재정의</value></data>
+  <data name="SettingsFilePreviewProviderPowerToysPeek" xml:space="preserve"><value>PowerToys Peek</value></data>
+  <data name="SettingsFilePreviewProviderQuickLook" xml:space="preserve"><value>QuickLook</value></data>
+  <data name="SettingsFilePreviewAddTool" xml:space="preserve"><value>재정의 경로 추가</value></data>
+  <data name="SettingsFilePreviewToolPath" xml:space="preserve"><value>{tool} 재정의 경로</value></data>
+  <data name="SettingsFilePreviewToolPathDescription" xml:space="preserve"><value>재정의 경로를 검사하고 저장하며 이 항목을 삭제하면 자동 감지로 복원</value></data>
+  <data name="SettingsFilePreviewVerifyPath" xml:space="preserve"><value>경로 검사 및 저장</value></data>
+  <data name="SettingsFilePreviewAutoPathPlaceholder" xml:space="preserve"><value>재정의 경로 입력</value></data>
+  <data name="SettingsFilePreviewAutoPathSaved" xml:space="preserve"><value>자동 감지로 복원됨</value></data>
+  <data name="SettingsFilePreviewPathSaved" xml:space="preserve"><value>재정의 경로 저장됨</value></data>
+  <data name="SettingsFilePreviewPathExists" xml:space="preserve"><value>올바른 경로입니다</value></data>
+  <data name="SettingsFilePreviewPathMissing" xml:space="preserve"><value>경로가 올바르지 않거나 파일이 없습니다</value></data>
+  <data name="ReceiveCancelled" xml:space="preserve"><value>수신 취소됨</value></data>
+  <data name="ReceivedMessage" xml:space="preserve"><value>메시지를 보냈습니다:</value></data>
+  <data name="ReceivedTextContent" xml:space="preserve"><value>수신한 텍스트 내용</value></data>
+  <data name="ReceiveFailed" xml:space="preserve"><value>수신 실패</value></data>
+  <data name="ReceiveSaveDirectory" xml:space="preserve"><value>저장 위치</value></data>
+  <data name="ReceiveTitle" xml:space="preserve"><value>받기</value></data>
+  <data name="ReceivingContent" xml:space="preserve"><value>내용 받는 중…</value></data>
+  <data name="ReceivingPreparing" xml:space="preserve"><value>수신 준비 중…</value></data>
+  <data name="RefreshDevices" xml:space="preserve"><value>주변 기기 새로 고침</value></data>
+  <data name="Remove" xml:space="preserve"><value>제거</value></data>
+  <data name="RemoveFavoriteDevice" xml:space="preserve"><value>{device} 즐겨찾기에서 삭제</value></data>
+  <data name="RemoveItem" xml:space="preserve"><value>{item} 제거</value></data>
+  <data name="Rename" xml:space="preserve"><value>이름 변경</value></data>
+  <data name="RenameIncomingFile" xml:space="preserve"><value>{file} 이름 변경</value></data>
+  <data name="RenameSuccess" xml:space="preserve"><value>이름 변경됨 · {size}</value></data>
+  <data name="ResetReceiveOptions" xml:space="preserve"><value>파일 선택 초기화</value></data>
+  <data name="QuickActionsTitle" xml:space="preserve"><value>빠른 작업</value></data>
+  <data name="QuickActionsCounter" xml:space="preserve"><value>번호 매기기</value></data>
+  <data name="QuickActionsRandom" xml:space="preserve"><value>무작위</value></data>
+  <data name="QuickActionsPrefix" xml:space="preserve"><value>접두사</value></data>
+  <data name="QuickActionsPadZero" xml:space="preserve"><value>0으로 채우기</value></data>
+  <data name="QuickActionsSortBeforeCount" xml:space="preserve"><value>먼저 이름순으로 정렬</value></data>
+  <data name="QuickActionsExample" xml:space="preserve"><value>예: {name}</value></data>
+  <data name="QuickActionsInvalidPrefix" xml:space="preserve"><value>접두사에 사용할 수 없는 문자가 있습니다</value></data>
+  <data name="UndoIncomingFileRename" xml:space="preserve"><value>이름 변경 취소</value></data>
+  <data name="Retry" xml:space="preserve"><value>다시 시도</value></data>
+  <data name="SameNetworkHint" xml:space="preserve"><value>두 기기가 같은 로컬 네트워크에 연결되어 있는지 확인하세요</value></data>
+  <data name="Save" xml:space="preserve"><value>저장</value></data>
+  <data name="SearchingDevices" xml:space="preserve"><value>주변 기기 검색 중</value></data>
+  <data name="SelectContentFirst" xml:space="preserve"><value>먼저 보낼 내용을 선택하세요</value></data>
+  <data name="SelectedItems" xml:space="preserve"><value>{count, plural, other {항목 #개}} 선택됨 · {size}</value></data>
+  <data name="SelectedIncomingFiles" xml:space="preserve"><value>{count, plural, other {파일 #개}} 중 {selected, number}개 선택됨</value></data>
+  <data name="SelectIncomingFile" xml:space="preserve"><value>{file} 선택</value></data>
+  <data name="SelectAllIncomingFiles" xml:space="preserve"><value>모두 선택</value></data>
+  <data name="DeselectIncomingFile" xml:space="preserve"><value>{file} 선택 해제</value></data>
+  <data name="DeselectAllIncomingFiles" xml:space="preserve"><value>모두 선택 해제</value></data>
+  <data name="ShowReceiveOptions" xml:space="preserve"><value>상세 정보</value></data>
+  <data name="HideReceiveOptions" xml:space="preserve"><value>접기</value></data>
+  <data name="SendCancelled" xml:space="preserve"><value>송신 취소됨</value></data>
+  <data name="SendFailed" xml:space="preserve"><value>송신 실패</value></data>
+  <data name="SendHint" xml:space="preserve"><value>보낼 내용을 선택한 다음 수신 기기 선택</value></data>
+  <data name="SendingPreparing" xml:space="preserve"><value>송신 준비 중…</value></data>
+  <data name="SendingTitle" xml:space="preserve"><value>보내는 중</value></data>
+  <data name="SendingToDevice" xml:space="preserve"><value>{device}에 보내는 중…</value></data>
+  <data name="SendingTransferring" xml:space="preserve"><value>전송 중…</value></data>
+  <data name="SendingWaiting" xml:space="preserve"><value>응답 대기 중…</value></data>
+  <data name="SendTextPlaceholder" xml:space="preserve"><value>보낼 텍스트 입력…</value></data>
+  <data name="SendTextTitle" xml:space="preserve"><value>텍스트 보내기</value></data>
+  <data name="SendTitle" xml:space="preserve"><value>보내기</value></data>
+  <data name="SendToDevice" xml:space="preserve"><value>{device}에 보내기</value></data>
+  <data name="SentToDevice" xml:space="preserve"><value>{device}에 보냄</value></data>
+  <data name="SettingsAdvanced" xml:space="preserve"><value>고급 설정</value></data>
+  <data name="SettingsAdvancedDescription" xml:space="preserve"><value>기기 정보, 네트워크 인터페이스 및 전송 보안</value></data>
+  <data name="SettingsAbout" xml:space="preserve"><value>정보</value></data>
+  <data name="SettingsAboutCopyright" xml:space="preserve"><value>© {year} 모든 권리 보유</value></data>
+  <data name="SettingsAboutRelationship" xml:space="preserve"><value>Tonarink는 LocalSend 프로토콜을 독립적으로 구현한 비공식 앱입니다. LocalSend 프로젝트와 제휴 관계가 없으며 공식 승인을 받지 않았습니다. 프로토콜을 개발하고 문서화한 Tien Do Nam과 LocalSend 기여자들에게 감사드립니다</value></data>
+  <data name="SettingsAboutFeedback" xml:space="preserve"><value>의견 보내기</value></data>
+  <data name="SettingsAboutViewLogs" xml:space="preserve"><value>로그 보기</value></data>
+  <data name="SettingsAboutGitHub" xml:space="preserve"><value>GitHub 저장소</value></data>
+  <data name="SettingsAboutIssues" xml:space="preserve"><value>문제 신고</value></data>
+  <data name="SettingsAboutLocalSend" xml:space="preserve"><value>LocalSend 웹사이트</value></data>
+  <data name="SettingsAboutThirdPartyLicenses" xml:space="preserve"><value>타사 라이선스</value></data>
+  <data name="SettingsAboutVersion" xml:space="preserve"><value>버전 {version}</value></data>
+  <data name="SettingsAutoSave" xml:space="preserve"><value>자동 저장</value></data>
+  <data name="SettingsAutoSaveDescription" xml:space="preserve"><value>확인 없이 수신 내용을 수락하고 저장</value></data>
+  <data name="SettingsDeviceModel" xml:space="preserve"><value>기기 모델</value></data>
+  <data name="SettingsDeviceModelDescription" xml:space="preserve"><value>다른 기기에 표시할 모델이며 비워 두면 이 컴퓨터의 이름 사용</value></data>
+  <data name="SettingsDeviceName" xml:space="preserve"><value>기기 이름</value></data>
+  <data name="SettingsDeviceNameDescription" xml:space="preserve"><value>다른 기기에 표시할 이름이며 저장 후 서버를 시작하거나 다시 시작하면 적용</value></data>
+  <data name="SettingsDeviceType" xml:space="preserve"><value>기기 유형</value></data>
+  <data name="SettingsDeviceTypeDescription" xml:space="preserve"><value>다른 기기에 표시할 이 기기의 유형 선택</value></data>
+  <data name="SettingsDiscoveryTimeout" xml:space="preserve"><value>기기 검색 제한 시간</value></data>
+  <data name="SettingsDiscoveryTimeoutDescription" xml:space="preserve"><value>각 주변 기기의 응답을 기다리는 시간(밀리초)</value></data>
+  <data name="SettingsEncryption" xml:space="preserve"><value>암호화</value></data>
+  <data name="SettingsEncryptionDescription" xml:space="preserve"><value>HTTPS로 전송을 암호화하고 인증서로 기기 식별</value></data>
+  <data name="SettingsEncryptionDisabledNotice" xml:space="preserve"><value>암호화가 꺼져 있습니다. 주변 기기는 HTTP로 연결하며 기기 식별 확인이 약화됩니다. 서버를 다시 시작하면 적용됩니다</value></data>
+  <data name="SettingsEncryptionDisabledTitle" xml:space="preserve"><value>암호화 꺼짐</value></data>
+  <data name="SettingsFavoritesOnly" xml:space="preserve"><value>즐겨찾기에서만 자동 수신</value></data>
+  <data name="SettingsFavoritesOnlyDescription" xml:space="preserve"><value>자동 저장이 켜져 있으면 즐겨찾는 기기의 내용만 자동 수락</value></data>
+  <data name="SettingsGeneral" xml:space="preserve"><value>일반</value></data>
+  <data name="SettingsLanguage" xml:space="preserve"><value>언어</value></data>
+  <data name="SettingsLanguageDescription" xml:space="preserve"><value>화면 언어를 선택하거나 시스템 설정 사용</value></data>
+  <data name="SettingsNeedRestart" xml:space="preserve"><value>설정이 변경되었습니다. 서버를 다시 시작하면 적용됩니다</value></data>
+  <data name="SettingsInputsPending" xml:space="preserve"><value>저장되지 않은 변경 사항은 서버를 시작하거나 다시 시작할 때 저장 및 적용</value></data>
+  <data name="SettingsApplyAndRestart" xml:space="preserve"><value>저장하고 서버 다시 시작</value></data>
+  <data name="SettingsApplyAndStart" xml:space="preserve"><value>저장하고 서버 시작</value></data>
+  <data name="SettingsPortInvalid" xml:space="preserve"><value>포트는 1~65535 사이의 정수여야 합니다</value></data>
+  <data name="SettingsDiscoveryTimeoutInvalid" xml:space="preserve"><value>기기 검색 제한 시간은 1~60000밀리초 사이의 정수여야 합니다</value></data>
+  <data name="SettingsMulticastInvalid" xml:space="preserve"><value>올바른 IPv4 멀티캐스트 주소를 입력하세요(224.0.0.0~239.255.255.255)</value></data>
+  <data name="SettingsReceivePinInvalid" xml:space="preserve"><value>PIN은 32자 이하여야 하며 보호가 켜져 있으면 비워 둘 수 없습니다</value></data>
+  <data name="SettingsApplyFailed" xml:space="preserve"><value>서버 설정을 저장하지 못했습니다: {error}</value></data>
+  <data name="SettingsNetwork" xml:space="preserve"><value>기기 및 네트워크</value></data>
+  <data name="SettingsNetworkInterfaces" xml:space="preserve"><value>네트워크 인터페이스</value></data>
+  <data name="SettingsNetworkInterfacesAll" xml:space="preserve"><value>모두</value></data>
+  <data name="SettingsNetworkInterfacesBlacklist" xml:space="preserve"><value>차단 목록</value></data>
+  <data name="SettingsNetworkInterfacesEmpty" xml:space="preserve"><value>사용 가능한 IPv4 네트워크 인터페이스가 없습니다</value></data>
+  <data name="SettingsNetworkInterfacesExample" xml:space="preserve"><value>주소 패턴 예:</value></data>
+  <data name="SettingsNetworkInterfacesInfo" xml:space="preserve"><value>기본적으로 모든 인터페이스를 사용하며 허용 또는 차단 목록으로 필터링 후 서버를 다시 시작하면 적용</value></data>
+  <data name="SettingsNetworkInterfacesPattern" xml:space="preserve"><value>패턴 {index}</value></data>
+  <data name="SettingsNetworkInterfacesPreview" xml:space="preserve"><value>네트워크 인터페이스 미리 보기</value></data>
+  <data name="SettingsNetworkInterfacesRemovePattern" xml:space="preserve"><value>패턴 제거</value></data>
+  <data name="SettingsNetworkInterfacesWhitelist" xml:space="preserve"><value>허용 목록</value></data>
+  <data name="SettingsPort" xml:space="preserve"><value>포트</value></data>
+  <data name="SettingsPortDescription" xml:space="preserve"><value>기기 검색과 파일 전송에 사용하는 UDP 및 TCP 포트</value></data>
+  <data name="SettingsPortWarning" xml:space="preserve"><value>사용자 지정 포트는 모든 기기에서 같아야 합니다. 기본값: {port}</value></data>
+  <data name="SettingsMulticast" xml:space="preserve"><value>멀티캐스트 주소</value></data>
+  <data name="SettingsMulticastDescription" xml:space="preserve"><value>기기 검색에 사용하는 IPv4 멀티캐스트 그룹 주소</value></data>
+  <data name="SettingsMulticastWarning" xml:space="preserve"><value>사용자 지정 주소는 모든 기기에서 같아야 합니다. 기본값: {group}</value></data>
+  <data name="SettingsMinimizeToTray" xml:space="preserve"><value>닫을 때 트레이로 최소화</value></data>
+  <data name="SettingsMinimizeToTrayDescription" xml:space="preserve"><value>기본 창을 숨기고 백그라운드에서 계속 실행</value></data>
+  <data name="SettingsTrayClickOpensFlyout" xml:space="preserve"><value>트레이 아이콘 클릭 동작</value></data>
+  <data name="SettingsTrayClickOpensFlyoutDescription" xml:space="preserve"><value>트레이 아이콘을 클릭할 때 열 화면 선택</value></data>
+  <data name="SettingsTrayClickOpenPanel" xml:space="preserve"><value>트레이 패널 열기</value></data>
+  <data name="SettingsTrayClickOpenWindow" xml:space="preserve"><value>기본 창 열기</value></data>
+  <data name="SettingsReceive" xml:space="preserve"><value>받기</value></data>
+  <data name="SettingsSend" xml:space="preserve"><value>보내기</value></data>
+  <data name="SettingsExpandDragDrop" xml:space="preserve"><value>앱 전체에서 끌어서 놓기</value></data>
+  <data name="SettingsExpandDragDropDescription" xml:space="preserve"><value>앱 어디에나 파일이나 폴더를 놓아 전송 목록에 추가</value></data>
+  <data name="SettingsVerifyChecksumsOnReceive" xml:space="preserve"><value>파일 체크섬 검증</value></data>
+  <data name="SettingsVerifyChecksumsOnReceiveDescription" xml:space="preserve"><value>보낸 사람이 제공한 SHA-256 체크섬으로 파일 무결성 확인</value></data>
+  <data name="SettingsVerifyChecksumsOnSend" xml:space="preserve"><value>파일 체크섬 계산</value></data>
+  <data name="SettingsVerifyChecksumsOnSendDescription" xml:space="preserve"><value>수신자가 무결성을 확인할 수 있도록 전송 전 SHA-256 체크섬 계산</value></data>
+  <data name="SettingsReceivePin" xml:space="preserve"><value>수신 PIN</value></data>
+  <data name="SettingsReceivePinDescription" xml:space="preserve"><value>최대 32자이며 저장 후 서버를 시작하거나 다시 시작하면 적용</value></data>
+  <data name="SettingsReceivePinEnabled" xml:space="preserve"><value>PIN 보호 사용</value></data>
+  <data name="SettingsReceivePinEnabledDescription" xml:space="preserve"><value>보낸 사람에게 PIN 입력 요구</value></data>
+  <data name="SettingsReceivePinProtection" xml:space="preserve"><value>PIN 보호</value></data>
+  <data name="SettingsReceivePinProtectionDescription" xml:space="preserve"><value>다른 기기에서 내용을 보내려면 PIN 입력 필요</value></data>
+  <data name="SettingsSaveReceiveHistory" xml:space="preserve"><value>수신 기록 저장</value></data>
+  <data name="SettingsSaveReceiveHistoryDescription" xml:space="preserve"><value>나중에 쉽게 열 수 있도록 수신 파일 기록 저장</value></data>
+  <data name="SettingsRestartServer" xml:space="preserve"><value>서버 다시 시작</value></data>
+  <data name="SettingsSaveLocation" xml:space="preserve"><value>저장 위치</value></data>
+  <data name="SettingsServerOffline" xml:space="preserve"><value>서버</value></data>
+  <data name="SettingsServerRunning" xml:space="preserve"><value>서버 실행 중</value></data>
+  <data name="SettingsServerStopped" xml:space="preserve"><value>서버 중지됨</value></data>
+  <data name="SettingsStartServer" xml:space="preserve"><value>서버 시작</value></data>
+  <data name="SettingsStopServer" xml:space="preserve"><value>서버 중지</value></data>
+  <data name="SettingsStartWithWindows" xml:space="preserve"><value>로그인 시 시작</value></data>
+  <data name="SettingsStartWithWindowsDescription" xml:space="preserve"><value>Windows 로그인 시 Tonarink 시작</value></data>
+  <data name="SettingsWindowsShareSuggestions" xml:space="preserve"><value>Windows 공유에 즐겨찾기 표시</value></data>
+  <data name="SettingsWindowsShareSuggestionsDescription" xml:space="preserve"><value>즐겨찾는 기기를 추천 연락처로 표시하며 MSIX 앱에서만 사용 가능</value></data>
+  <data name="SettingsNotifications" xml:space="preserve"><value>시스템 알림</value></data>
+  <data name="SettingsNotificationsDescription" xml:space="preserve"><value>수신 요청과 전송 완료 시 Windows 알림 표시</value></data>
+  <data name="SettingsNotificationsEnabled" xml:space="preserve"><value>알림 사용</value></data>
+  <data name="SettingsNotificationsEnabledDescription" xml:space="preserve"><value>Tonarink의 Windows 알림 허용</value></data>
+  <data name="SettingsNotificationsDefaultAction" xml:space="preserve"><value>완료 알림 클릭 동작</value></data>
+  <data name="SettingsNotificationsDefaultActionDescription" xml:space="preserve"><value>파일을 열거나 저장된 폴더에서 표시</value></data>
+  <data name="SettingsNotificationsDefaultOpenFile" xml:space="preserve"><value>파일 열기</value></data>
+  <data name="SettingsNotificationsDefaultShowInFolder" xml:space="preserve"><value>폴더에서 보기</value></data>
+  <data name="SettingsNotificationsTest" xml:space="preserve"><value>알림 테스트</value></data>
+  <data name="SettingsNotificationsTestDescription" xml:space="preserve"><value>Windows에서 알림이 허용되는지 확인</value></data>
+  <data name="SettingsNotificationsSendTest" xml:space="preserve"><value>테스트 알림 보내기</value></data>
+  <data name="SettingsNotificationsTestTitle" xml:space="preserve"><value>Tonarink 테스트 알림</value></data>
+  <data name="SettingsNotificationsTestMessage" xml:space="preserve"><value>시스템 알림이 정상적으로 작동합니다</value></data>
+  <data name="SettingsNotificationsTestFailed" xml:space="preserve"><value>테스트 알림을 보내지 못했습니다. Windows 알림 설정 또는 notifications.log를 확인하세요</value></data>
+  <data name="ExplorerCommandTitle" xml:space="preserve"><value>Tonarink로 보내기</value></data>
+  <data name="SettingsExplorerContextMenu" xml:space="preserve"><value>파일 탐색기 상황에 맞는 메뉴</value></data>
+  <data name="SettingsExplorerContextMenuDescription" xml:space="preserve"><value>상황에 맞는 메뉴에 “Tonarink로 보내기” 추가. Windows 11의 MSIX 앱에서만 사용 가능</value></data>
+  <data name="SettingsExplorerFavorites" xml:space="preserve"><value>하위 메뉴에 즐겨찾는 기기 표시</value></data>
+  <data name="SettingsExplorerFavoritesDescription" xml:space="preserve"><value>즐겨찾기를 선택하여 바로 전송하며 끄면 전송 목록에만 추가</value></data>
+  <data name="ExplorerCommandAddToList" xml:space="preserve"><value>전송 목록에 추가</value></data>
+  <data name="SettingsSendTo" xml:space="preserve"><value>파일 탐색기 보내기 메뉴</value></data>
+  <data name="SettingsSendToDescription" xml:space="preserve"><value>보내기 메뉴에 Tonarink를 추가하여 선택한 파일을 전송 목록에 추가. 비패키지 버전에서만 사용 가능</value></data>
+  <data name="SettingsSendToFailed" xml:space="preserve"><value>보내기 메뉴를 업데이트하지 못했습니다: {error}</value></data>
+  <data name="SettingsAppExecutionAliases" xml:space="preserve"><value>앱 실행 별칭</value></data>
+  <data name="SettingsAppExecutionAliasesDescription" xml:space="preserve"><value>Windows 설정에서 앱 → 고급 앱 설정 → 앱 실행 별칭으로 이동하여 tonarink 명령 관리. MSIX 앱에서만 사용 가능</value></data>
+  <data name="SettingsAppExecutionAliasesOpenFailed" xml:space="preserve"><value>Windows 설정을 열지 못했습니다. 설정 → 앱 → 고급 앱 설정 → 앱 실행 별칭으로 이동하세요</value></data>
+  <data name="StartupDisabledByPolicy" xml:space="preserve"><value>Windows 정책으로 인해 로그인 시 Tonarink를 시작할 수 없습니다</value></data>
+  <data name="StartupDisabledByUser" xml:space="preserve"><value>Windows 시작 앱 설정에서 Tonarink를 켠 후 다시 시도하세요</value></data>
+  <data name="StartupFailed" xml:space="preserve"><value>시작 설정을 변경하지 못했습니다: {error}</value></data>
+  <data name="TrayExit" xml:space="preserve"><value>종료</value></data>
+  <data name="TrayFromPeer" xml:space="preserve"><value>보낸 기기: {peer}</value></data>
+  <data name="TrayHistoryTab" xml:space="preserve"><value>기록</value></data>
+  <data name="TrayNearbyTab" xml:space="preserve"><value>주변 기기</value></data>
+  <data name="TrayNoDevices" xml:space="preserve"><value>주변 기기가 없습니다</value></data>
+  <data name="TrayOpen" xml:space="preserve"><value>Tonarink 열기</value></data>
+  <data name="TrayMenuOpen" xml:space="preserve"><value>열기</value></data>
+  <data name="TrayReportBug" xml:space="preserve"><value>버그 신고</value></data>
+  <data name="TrayPinPanel" xml:space="preserve"><value>패널 고정</value></data>
+  <data name="TrayUnpinPanel" xml:space="preserve"><value>패널 고정 해제</value></data>
+  <data name="TrayDropToSend" xml:space="preserve"><value>{device}에 보내기</value></data>
+  <data name="TrayReceiveOff" xml:space="preserve"><value>끔</value></data>
+  <data name="TrayReceiveOn" xml:space="preserve"><value>켬</value></data>
+  <data name="TrayReceiveService" xml:space="preserve"><value>수신 서비스</value></data>
+  <data name="TrayToPeer" xml:space="preserve"><value>받는 기기: {peer}</value></data>
+  <data name="TrayTooltip" xml:space="preserve"><value>Tonarink</value></data>
+  <data name="TrayWaitingReceive" xml:space="preserve"><value>수신 대기 중</value></data>
+  <data name="WidgetAppClosed" xml:space="preserve"><value>앱이 닫혀 있습니다</value></data>
+  <data name="WidgetAppClosedStatus" xml:space="preserve"><value>닫힘</value></data>
+  <data name="WidgetAppOpen" xml:space="preserve"><value>실행 중</value></data>
+  <data name="WidgetHintAppClosed" xml:space="preserve"><value>앱을 열어 기기를 검색하고 파일 수신</value></data>
+  <data name="WidgetHintServerOff" xml:space="preserve"><value>클릭하여 수신 시작</value></data>
+  <data name="WidgetHintServerOn" xml:space="preserve"><value>내용을 받을 준비가 되었습니다</value></data>
+  <data name="WidgetHistoryCount" xml:space="preserve"><value>기록 {count}개</value></data>
+  <data name="WidgetNearbyCount" xml:space="preserve"><value>주변 기기 {count}대</value></data>
+  <data name="WidgetReceivingOff" xml:space="preserve"><value>수신 꺼짐</value></data>
+  <data name="WidgetServerOff" xml:space="preserve"><value>끔</value></data>
+  <data name="WidgetServerOn" xml:space="preserve"><value>켬</value></data>
+  <data name="SettingsTheme" xml:space="preserve"><value>테마</value></data>
+  <data name="SettingsThemeDescription" xml:space="preserve"><value>밝게, 어둡게 또는 시스템 설정 선택</value></data>
+  <data name="SettingsTitle" xml:space="preserve"><value>설정</value></data>
+  <data name="ShareTargetEmpty" xml:space="preserve"><value>공유된 내용에 접근 가능한 파일이나 텍스트가 없습니다</value></data>
+  <data name="ShareTargetFailed" xml:space="preserve"><value>공유된 내용을 추가하지 못했습니다: {error}</value></data>
+  <data name="ShareSuggestedDeviceOffline" xml:space="preserve"><value>{device} 기기가 오프라인입니다. 공유된 내용은 전송 목록에 남아 있습니다. 다시 시도하거나 다른 기기를 선택하세요</value></data>
+  <data name="ShareSuggestedDeviceUnavailable" xml:space="preserve"><value>이 기기는 더 이상 즐겨찾기에 없습니다. 공유된 내용은 전송 목록에 남아 있습니다</value></data>
+  <data name="ShareSuggestedDeviceConnecting" xml:space="preserve"><value>{device} 검색 중입니다. 잠시 기다려 주세요</value></data>
+  <data name="ShareSuggestedServiceUnavailable" xml:space="preserve"><value>네트워크 서비스가 준비되지 않았습니다. 공유된 내용은 전송 목록에 남아 있습니다. 서비스를 시작하고 다시 시도하세요</value></data>
+  <data name="TargetDevice" xml:space="preserve"><value>대상 기기</value></data>
+  <data name="TargetRequiresPin" xml:space="preserve"><value>수신 기기에 PIN이 필요합니다</value></data>
+  <data name="Text" xml:space="preserve"><value>텍스트</value></data>
+  <data name="TextAvailableAfterAccept" xml:space="preserve"><value>수락하면 전체 텍스트 표시</value></data>
+  <data name="TextContent" xml:space="preserve"><value>텍스트 내용</value></data>
+  <data name="TextMessage" xml:space="preserve"><value>텍스트 메시지</value></data>
+  <data name="TextReceived" xml:space="preserve"><value>텍스트 수신됨</value></data>
+  <data name="ThemeDark" xml:space="preserve"><value>어둡게</value></data>
+  <data name="ThemeLight" xml:space="preserve"><value>밝게</value></data>
+  <data name="ThisDevice" xml:space="preserve"><value>이 기기</value></data>
+  <data name="TransferCancelled" xml:space="preserve"><value>전송 취소됨</value></data>
+  <data name="TransferComplete" xml:space="preserve"><value>전송 완료</value></data>
+  <data name="TransferFailed" xml:space="preserve"><value>전송 실패</value></data>
+  <data name="TransferPreparing" xml:space="preserve"><value>준비 중</value></data>
+  <data name="TransferTransferring" xml:space="preserve"><value>전송 중</value></data>
+  <data name="TransferWaiting" xml:space="preserve"><value>수락 대기 중</value></data>
+  <data name="WaitingForDevice" xml:space="preserve"><value>{device}의 수락 대기 중…</value></data>
+  <data name="WebShareAccepted" xml:space="preserve"><value>수락됨</value></data>
+  <data name="WebShareAutoAccept" xml:space="preserve"><value>요청 자동 수락</value></data>
+  <data name="WebShareCopy" xml:space="preserve"><value>링크 복사</value></data>
+  <data name="WebShareEncryption" xml:space="preserve"><value>암호화</value></data>
+  <data name="WebShareEncryptionHint" xml:space="preserve"><value>HTTPS는 이 기기의 인증서를 사용하므로 브라우저에 신뢰할 수 없다는 경고가 표시될 수 있습니다</value></data>
+  <data name="WebShareNoRequests" xml:space="preserve"><value>요청이 없습니다</value></data>
+  <data name="WebShareNoLinkAvailable" xml:space="preserve"><value>공유할 링크가 없습니다</value></data>
+  <data name="WebShareOpenLink" xml:space="preserve"><value>브라우저에서 이 링크를 여세요:</value></data>
+  <data name="WebSharePinHint" xml:space="preserve"><value>PIN: {pin}</value></data>
+  <data name="WebSharePinTitle" xml:space="preserve"><value>PIN</value></data>
+  <data name="WebShareQr" xml:space="preserve"><value>QR 코드</value></data>
+  <data name="WebShareQrTitle" xml:space="preserve"><value>QR 코드</value></data>
+  <data name="WebShareRequests" xml:space="preserve"><value>요청</value></data>
+  <data name="WebShareSystemShare" xml:space="preserve"><value>Windows에서 링크 공유</value></data>
+  <data name="WebShareRequirePin" xml:space="preserve"><value>PIN 요구</value></data>
+  <data name="WebShareTitle" xml:space="preserve"><value>링크로 공유</value></data>
+  <data name="WebReceiveTitle" xml:space="preserve"><value>링크로 받기</value></data>
+  <data name="WebShareZoom" xml:space="preserve"><value>링크 크게 보기</value></data>
+  <data name="WebShareZoomTitle" xml:space="preserve"><value>링크</value></data>
+  <data name="WantsToSendMessage" xml:space="preserve"><value>메시지를 보내려고 합니다:</value></data>
+  <data name="WindowUnavailable" xml:space="preserve"><value>현재 창을 사용할 수 없습니다</value></data>
+  <data name="LanguageJapanese" xml:space="preserve"><value>日本語</value></data>
+  <data name="LanguageKorean" xml:space="preserve"><value>한국어</value></data>
+  <data name="LanguageFrench" xml:space="preserve"><value>Français</value></data>
+  <data name="LanguageSpanish" xml:space="preserve"><value>Español</value></data>
+</root>

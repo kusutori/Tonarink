@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <data name="AddText" xml:space="preserve"><value>テキストを追加</value></data>
+  <data name="AddTextDescription" xml:space="preserve"><value>送信するメッセージを入力</value></data>
+  <data name="AddToQueue" xml:space="preserve"><value>送信リストに追加</value></data>
+  <data name="AdvertisedAs" xml:space="preserve"><value>ローカルネットワークに「{0}」として公開されています</value></data>
+  <data name="Appearance" xml:space="preserve"><value>外観</value></data>
+  <data name="AppearanceDescription" xml:space="preserve"><value>テーマと表示言語</value></data>
+  <data name="AutoAccept" xml:space="preserve"><value>自動受信</value></data>
+  <data name="AutoAcceptDescription" xml:space="preserve"><value>受信リクエストをダウンロード先に直接保存</value></data>
+  <data name="BackToReceive" xml:space="preserve"><value>受信に戻る</value></data>
+  <data name="BackToReceivePage" xml:space="preserve"><value>受信に戻る</value></data>
+  <data name="BrowserLimitationsDescription" xml:space="preserve"><value>このブラウザーはサーバー上の Tonarink ノードを操作します</value></data>
+  <data name="BrowserLimitationsTitle" xml:space="preserve"><value>ブラウザーの制限</value></data>
+  <data name="BrowserNotifications" xml:space="preserve"><value>ブラウザー通知</value></data>
+  <data name="BrowserNotificationsDescription" xml:space="preserve"><value>リクエストと転送完了をシステム通知で表示</value></data>
+  <data name="Cancel" xml:space="preserve"><value>キャンセル</value></data>
+  <data name="CancelReceive" xml:space="preserve"><value>受信をキャンセル</value></data>
+  <data name="CancelTransfer" xml:space="preserve"><value>転送をキャンセル</value></data>
+  <data name="ChooseWhatToReceive" xml:space="preserve"><value>受信する内容を選択</value></data>
+  <data name="Clear" xml:space="preserve"><value>クリア</value></data>
+  <data name="Clipboard" xml:space="preserve"><value>クリップボード</value></data>
+  <data name="Close" xml:space="preserve"><value>閉じる</value></data>
+  <data name="Copy" xml:space="preserve"><value>コピー</value></data>
+  <data name="CouldNotComplete" xml:space="preserve"><value>完了できませんでした</value></data>
+  <data name="CouldNotSave" xml:space="preserve"><value>保存できませんでした</value></data>
+  <data name="Decline" xml:space="preserve"><value>拒否</value></data>
+  <data name="DeviceIdentity" xml:space="preserve"><value>デバイス識別情報</value></data>
+  <data name="DeviceIdentityDescription" xml:space="preserve"><value>他のデバイスに表示する名前とファイルの保存先</value></data>
+  <data name="DeviceName" xml:space="preserve"><value>デバイス名</value></data>
+  <data name="DeviceNameDescription" xml:space="preserve"><value>近くのデバイスに表示される名前</value></data>
+  <data name="DeviceRequiresPin" xml:space="preserve"><value>受信側のデバイスには PIN が必要です</value></data>
+  <data name="DownloadDirectory" xml:space="preserve"><value>ダウンロード先</value></data>
+  <data name="DownloadDirectoryDescription" xml:space="preserve"><value>受信ファイルをここに保存</value></data>
+  <data name="EnableNotifications" xml:space="preserve"><value>通知を有効にする</value></data>
+  <data name="Files" xml:space="preserve"><value>ファイル</value></data>
+  <data name="Folder" xml:space="preserve"><value>フォルダー</value></data>
+  <data name="History" xml:space="preserve"><value>履歴</value></data>
+  <data name="HistoryDescription" xml:space="preserve"><value>このセッションの送受信履歴</value></data>
+  <data name="IncomingNotifyBody" xml:space="preserve"><value>{0} が {1} 件の項目を送信しようとしています</value></data>
+  <data name="IncomingRequest" xml:space="preserve"><value>受信リクエスト</value></data>
+  <data name="IncomingRequests" xml:space="preserve"><value>受信リクエスト</value></data>
+  <data name="IncomingRequestsDescription" xml:space="preserve"><value>保存する内容を確認して選択</value></data>
+  <data name="IncomingTransfer" xml:space="preserve"><value>受信する転送</value></data>
+  <data name="IncorrectPin" xml:space="preserve"><value>PIN が違います。もう一度お試しください</value></data>
+  <data name="InvalidAddress" xml:space="preserve"><value>アドレスが無効です。IP または IP:ポートを指定してください</value></data>
+  <data name="Items" xml:space="preserve"><value>件</value></data>
+  <data name="Language" xml:space="preserve"><value>言語</value></data>
+  <data name="LanguageChinese" xml:space="preserve"><value>简体中文</value></data>
+  <data name="LanguageDescription" xml:space="preserve"><value>共有インターフェイスの表示言語</value></data>
+  <data name="LanguageEnglish" xml:space="preserve"><value>English</value></data>
+  <data name="LanguageJapanese" xml:space="preserve"><value>日本語</value></data>
+  <data name="LanguageKorean" xml:space="preserve"><value>한국어</value></data>
+  <data name="LanguageFrench" xml:space="preserve"><value>Français</value></data>
+  <data name="LanguageSpanish" xml:space="preserve"><value>Español</value></data>
+  <data name="LanguageSystem" xml:space="preserve"><value>システムに従う</value></data>
+  <data name="LookingForDevices" xml:space="preserve"><value>近くのデバイスを検索中</value></data>
+  <data name="Navigate" xml:space="preserve"><value>ナビゲーション</value></data>
+  <data name="NearbyDevices" xml:space="preserve"><value>近くのデバイス</value></data>
+  <data name="NearbyDevicesDescription" xml:space="preserve"><value>デバイスを選んで現在の送信リストを送信</value></data>
+  <data name="NoContentHint" xml:space="preserve"><value>上の 4 つの操作でファイル、フォルダー、テキスト、クリップボードの内容を追加</value></data>
+  <data name="NoContentSelected" xml:space="preserve"><value>送信内容が選択されていません</value></data>
+  <data name="NodeRunning" xml:space="preserve"><value>ノードは実行中です</value></data>
+  <data name="NodeStartFailed" xml:space="preserve"><value>ノードを開始できませんでした</value></data>
+  <data name="NodeStopped" xml:space="preserve"><value>ノードは停止しています</value></data>
+  <data name="NoPendingRequests" xml:space="preserve"><value>保留中のリクエストはありません</value></data>
+  <data name="NotConnected" xml:space="preserve"><value>未接続</value></data>
+  <data name="NotificationPermissionDenied" xml:space="preserve"><value>ブラウザーが通知を許可しませんでした</value></data>
+  <data name="NoTransfers" xml:space="preserve"><value>転送履歴はありません</value></data>
+  <data name="NoTransfersHint" xml:space="preserve"><value>完了した送受信がここに表示されます</value></data>
+  <data name="Optional" xml:space="preserve"><value>任意</value></data>
+  <data name="PageNotFound" xml:space="preserve"><value>ページが見つかりません</value></data>
+  <data name="PageNotFoundDescription" xml:space="preserve"><value>このアドレスに対応するページはありません</value></data>
+  <data name="PendingRequestsHint" xml:space="preserve"><value>受信リクエストがここに表示されます</value></data>
+  <data name="PinPlaceholder" xml:space="preserve"><value>受信側の PIN を入力</value></data>
+  <data name="PinRequired" xml:space="preserve"><value>PIN が必要です</value></data>
+  <data name="PinRequiredDescription" xml:space="preserve"><value>受信側のデバイスには PIN が必要です</value></data>
+  <data name="QueueSummary" xml:space="preserve"><value>{0} 件 · {1}</value></data>
+  <data name="ReadyToReceive" xml:space="preserve"><value>受信できます</value></data>
+  <data name="ReadyToSend" xml:space="preserve"><value>送信できます</value></data>
+  <data name="Receive" xml:space="preserve"><value>受信</value></data>
+  <data name="ReceiveDescription" xml:space="preserve"><value>他の LocalSend デバイスがこのデバイスを検出し、内容を送信できます</value></data>
+  <data name="ReceiveNItems" xml:space="preserve"><value>{0} 件を受信</value></data>
+  <data name="ReceivePin" xml:space="preserve"><value>受信 PIN</value></data>
+  <data name="ReceivePinDescription" xml:space="preserve"><value>空欄にすると無効になります。近くの送信者は新しい PIN を使用する必要があります</value></data>
+  <data name="ReceiveSection" xml:space="preserve"><value>受信</value></data>
+  <data name="ReceiveSectionDescription" xml:space="preserve"><value>受信した転送の処理方法</value></data>
+  <data name="RecentActivity" xml:space="preserve"><value>最近のアクティビティ</value></data>
+  <data name="RecentActivityDescription" xml:space="preserve"><value>このセッションの送受信履歴</value></data>
+  <data name="RefreshDevices" xml:space="preserve"><value>デバイスを更新</value></data>
+  <data name="Remove" xml:space="preserve"><value>削除</value></data>
+  <data name="RequestExpired" xml:space="preserve"><value>リクエストは期限切れです</value></data>
+  <data name="RequestExpiredDescription" xml:space="preserve"><value>送信者がリクエストをキャンセルした可能性があります</value></data>
+  <data name="SameNetworkHint" xml:space="preserve"><value>デバイスが同じローカルネットワークに接続されているか確認してください</value></data>
+  <data name="SelectAll" xml:space="preserve"><value>すべて選択</value></data>
+  <data name="SelectNone" xml:space="preserve"><value>選択を解除</value></data>
+  <data name="Send" xml:space="preserve"><value>送信</value></data>
+  <data name="SendDescription" xml:space="preserve"><value>ファイルやテキストを選び、近くのデバイスを選択</value></data>
+  <data name="SendFailed" xml:space="preserve"><value>送信に失敗しました</value></data>
+  <data name="SendToAddress" xml:space="preserve"><value>アドレスを指定して送信</value></data>
+  <data name="SendToKnownAddress" xml:space="preserve"><value>既知のアドレスに送信</value></data>
+  <data name="SendToKnownAddressDescription" xml:space="preserve"><value>近くのデバイスに表示されない場合は IP または IP:ポートを指定</value></data>
+  <data name="Settings" xml:space="preserve"><value>設定</value></data>
+  <data name="SettingsDescription" xml:space="preserve"><value>このデバイスに保存される Tonarink の設定</value></data>
+  <data name="StatusCancelled" xml:space="preserve"><value>キャンセル済み</value></data>
+  <data name="StatusCompleted" xml:space="preserve"><value>完了</value></data>
+  <data name="StatusFailed" xml:space="preserve"><value>失敗</value></data>
+  <data name="StatusTransferring" xml:space="preserve"><value>転送中</value></data>
+  <data name="StatusWaiting" xml:space="preserve"><value>待機中</value></data>
+  <data name="Text" xml:space="preserve"><value>テキスト</value></data>
+  <data name="TextPlaceholder" xml:space="preserve"><value>送信するテキストを入力…</value></data>
+  <data name="Theme" xml:space="preserve"><value>テーマ</value></data>
+  <data name="ThemeDark" xml:space="preserve"><value>ダーク</value></data>
+  <data name="ThemeDescription" xml:space="preserve"><value>システムに従う、または外観を指定</value></data>
+  <data name="ThemeLight" xml:space="preserve"><value>ライト</value></data>
+  <data name="ThemeSystem" xml:space="preserve"><value>システムに従う</value></data>
+  <data name="TooManyPinAttempts" xml:space="preserve"><value>PIN の試行回数が多すぎます。しばらくしてからお試しください</value></data>
+  <data name="ClipboardReadFailed" xml:space="preserve"><value>クリップボードを読み取れませんでした</value></data>
+  <data name="ClipboardWriteFailed" xml:space="preserve"><value>クリップボードに書き込めませんでした</value></data>
+  <data name="DeviceBusy" xml:space="preserve"><value>受信側のデバイスは使用中です</value></data>
+  <data name="TransferDeclined" xml:space="preserve"><value>受信側のデバイスが転送を拒否しました</value></data>
+  <data name="TransferCompleted" xml:space="preserve"><value>転送完了</value></data>
+  <data name="ViewAll" xml:space="preserve"><value>すべて表示</value></data>
+  <data name="WaitingNearby" xml:space="preserve"><value>近くのデバイスを待っています</value></data>
+  <data name="WantsToSend" xml:space="preserve"><value>{0} が {1} 件の項目を送信しようとしています</value></data>
+  <data name="Loading" xml:space="preserve"><value>読み込み中…</value></data>
+  <data name="UnhandledError" xml:space="preserve"><value>予期しないエラーが発生しました</value></data>
+  <data name="Reload" xml:space="preserve"><value>再読み込み</value></data>
+  <data name="Retry" xml:space="preserve"><value>再試行</value></data>
+  <data name="Resume" xml:space="preserve"><value>再開</value></data>
+  <data name="Dismiss" xml:space="preserve"><value>閉じる</value></data>
+  <data name="ReconnectAttempt" xml:space="preserve"><value>サーバーに再接続中…</value></data>
+  <data name="ReconnectRetryPrefix" xml:space="preserve"><value>再接続に失敗しました。次の試行まで:</value></data>
+  <data name="SecondsUnit" xml:space="preserve"><value>秒</value></data>
+  <data name="ReconnectFailed" xml:space="preserve"><value>再接続できませんでした。再試行するかページを再読み込みしてください</value></data>
+  <data name="SessionPaused" xml:space="preserve"><value>サーバーがこのセッションを一時停止しました</value></data>
+  <data name="SessionResumeFailed" xml:space="preserve"><value>セッションを再開できませんでした。再試行するかページを再読み込みしてください</value></data>
+  <data name="WebErrorTitle" xml:space="preserve"><value>エラー</value></data>
+  <data name="WebErrorDescription" xml:space="preserve"><value>リクエストの処理中にエラーが発生しました</value></data>
+  <data name="RequestId" xml:space="preserve"><value>リクエスト ID:</value></data>
+  <data name="DevelopmentMode" xml:space="preserve"><value>開発モード</value></data>
+  <data name="DevelopmentDetails" xml:space="preserve"><value>Development 環境ではエラーの詳細が表示されます</value></data>
+  <data name="DevelopmentWarning" xml:space="preserve"><value>公開済みアプリで Development を有効にしないでください。例外に含まれる機密情報が公開される可能性があります</value></data>
+  <data name="DevelopmentInstructions" xml:space="preserve"><value>ローカルでデバッグする場合は ASPNETCORE_ENVIRONMENT を Development に設定し、アプリを再起動してください</value></data>
+  <data name="WebDescription" xml:space="preserve"><value>Tonarink — LocalSend 対応の非公式ファイル共有クライアント</value></data>
+</root>

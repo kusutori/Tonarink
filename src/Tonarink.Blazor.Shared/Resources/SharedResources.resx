@@ -53,6 +53,10 @@
   <data name="LanguageChinese" xml:space="preserve"><value>简体中文</value></data>
   <data name="LanguageDescription" xml:space="preserve"><value>Language used by the shared interface</value></data>
   <data name="LanguageEnglish" xml:space="preserve"><value>English</value></data>
+  <data name="LanguageJapanese" xml:space="preserve"><value>日本語</value></data>
+  <data name="LanguageKorean" xml:space="preserve"><value>한국어</value></data>
+  <data name="LanguageFrench" xml:space="preserve"><value>Français</value></data>
+  <data name="LanguageSpanish" xml:space="preserve"><value>Español</value></data>
   <data name="LanguageSystem" xml:space="preserve"><value>System</value></data>
   <data name="LookingForDevices" xml:space="preserve"><value>Looking for nearby devices</value></data>
   <data name="Navigate" xml:space="preserve"><value>Navigate</value></data>
@@ -123,4 +127,24 @@
   <data name="ViewAll" xml:space="preserve"><value>View all</value></data>
   <data name="WaitingNearby" xml:space="preserve"><value>Waiting for nearby devices</value></data>
   <data name="WantsToSend" xml:space="preserve"><value>{0} wants to send you {1} items</value></data>
+  <data name="Loading" xml:space="preserve"><value>Loading…</value></data>
+  <data name="UnhandledError" xml:space="preserve"><value>An unexpected error occurred</value></data>
+  <data name="Reload" xml:space="preserve"><value>Reload</value></data>
+  <data name="Retry" xml:space="preserve"><value>Retry</value></data>
+  <data name="Resume" xml:space="preserve"><value>Resume</value></data>
+  <data name="Dismiss" xml:space="preserve"><value>Dismiss</value></data>
+  <data name="ReconnectAttempt" xml:space="preserve"><value>Reconnecting to the server…</value></data>
+  <data name="ReconnectRetryPrefix" xml:space="preserve"><value>Reconnection failed. Next attempt in:</value></data>
+  <data name="SecondsUnit" xml:space="preserve"><value>s</value></data>
+  <data name="ReconnectFailed" xml:space="preserve"><value>Could not reconnect. Retry or reload the page.</value></data>
+  <data name="SessionPaused" xml:space="preserve"><value>The server has paused this session.</value></data>
+  <data name="SessionResumeFailed" xml:space="preserve"><value>Could not resume the session. Retry or reload the page.</value></data>
+  <data name="WebErrorTitle" xml:space="preserve"><value>Error</value></data>
+  <data name="WebErrorDescription" xml:space="preserve"><value>An error occurred while processing your request.</value></data>
+  <data name="RequestId" xml:space="preserve"><value>Request ID:</value></data>
+  <data name="DevelopmentMode" xml:space="preserve"><value>Development mode</value></data>
+  <data name="DevelopmentDetails" xml:space="preserve"><value>The Development environment displays more detailed error information.</value></data>
+  <data name="DevelopmentWarning" xml:space="preserve"><value>Do not enable Development for deployed applications; it can expose sensitive exception information.</value></data>
+  <data name="DevelopmentInstructions" xml:space="preserve"><value>For local debugging, set ASPNETCORE_ENVIRONMENT to Development and restart the app.</value></data>
+  <data name="WebDescription" xml:space="preserve"><value>Tonarink — an unofficial LocalSend-compatible file sharing client.</value></data>
 </root>

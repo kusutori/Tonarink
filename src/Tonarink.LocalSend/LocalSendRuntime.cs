@@ -130,7 +130,7 @@ public sealed class LocalSendRuntime : ITonarinkRuntime
     public async Task<RuntimeSendResult> SendAsync(NearbyDevice device, IReadOnlyList<ShareItem> items, string? pin = null, IProgress<TransferActivity>? progress = null, CancellationToken cancellationToken = default)
     {
         if (!Volatile.Read(ref _devices).TryGetValue(device.Id, out var target))
-            throw new InvalidOperationException("目标设备已离线，请刷新后重试。");
+            throw new InvalidOperationException(Text("DeviceOffline"));
         return await SendToDeviceAsync(target, items, pin, progress, cancellationToken).ConfigureAwait(false);
     }
 
@@ -139,7 +139,7 @@ public sealed class LocalSendRuntime : ITonarinkRuntime
         var coreItems = items.Select(ToCoreItem).ToArray();
         var reporter = new Progress<TransferProgress>(value =>
         {
-            var activity = MapProgress(value, target.Alias, $"{items.Count} 项");
+            var activity = MapProgress(value, target.Alias, Text("ItemSummary", items.Count), items.Count);
             _state.UpsertTransfer(activity);
             progress?.Report(activity);
         });
@@ -188,20 +188,20 @@ public sealed class LocalSendRuntime : ITonarinkRuntime
             transferId.ToString("N"),
             AppTransferDirection.Send,
             target.Alias,
-            $"{items.Count} 项",
+            Text("ItemSummary", items.Count),
             status,
             bytesTransferred,
             items.Sum(static item => item.Size),
-            DateTimeOffset.UtcNow));
+            DateTimeOffset.UtcNow) { ItemCount = items.Count });
         if (runtimeResult is RuntimeSendResult.Completed)
-            await _platform.NotifyAsync("发送完成", $"已成功发送给 {target.Alias}", cancellationToken).ConfigureAwait(false);
+            await _platform.NotifyAsync(Text("SendCompleteTitle"), Text("SendCompleteBody", target.Alias), cancellationToken).ConfigureAwait(false);
         return runtimeResult;
     }
 
     public async Task<RuntimeSendResult> SendToAddressAsync(string address, IReadOnlyList<ShareItem> items, string? pin = null, IProgress<TransferActivity>? progress = null, CancellationToken cancellationToken = default)
     {
         if (!DeviceAddress.TryParse(address, out var ip, out var port))
-            throw new ArgumentException("目标地址无效，请使用 IP 或 IP:端口。", nameof(address));
+            throw new ArgumentException(Text("InvalidAddress"), nameof(address));
 
         Exception? lastError = null;
         foreach (var protocol in new[] { LocalSendProtocol.Https, LocalSendProtocol.Http })
@@ -227,15 +227,15 @@ public sealed class LocalSendRuntime : ITonarinkRuntime
             }
         }
 
-        throw lastError ?? new InvalidOperationException("无法连接到该地址。");
+        throw lastError ?? new InvalidOperationException(Text("CannotConnect"));
     }
 
     public async Task<RuntimeReceiveResult> AcceptAsync(IncomingOffer offer, IReadOnlySet<Guid> acceptedItems, CancellationToken cancellationToken = default)
     {
         if (!_offers.TryGetValue(offer.Id, out var request))
-            throw new InvalidOperationException("接收请求已失效。");
+            throw new InvalidOperationException(Text("RequestExpired"));
         var ids = request.Items.Where(item => acceptedItems.Contains(StableGuid(item.Id))).Select(static item => item.Id).ToArray();
-        var reporter = new Progress<TransferProgress>(value => _state.UpsertTransfer(MapProgress(value, request.Sender.Alias, $"{ids.Length} 项")));
+        var reporter = new Progress<TransferProgress>(value => _state.UpsertTransfer(MapProgress(value, request.Sender.Alias, Text("ItemSummary", ids.Length), ids.Length)));
         var result = await RequiredNode().AcceptAsync(request.RequestId, new AcceptTransferOptions { AcceptedItemIds = ids }, reporter, cancellationToken).ConfigureAwait(false);
         var (transferId, status, bytesTransferred, runtimeResult, receivedItems) = result switch
         {
@@ -262,11 +262,11 @@ public sealed class LocalSendRuntime : ITonarinkRuntime
             transferId.ToString("N"),
             AppTransferDirection.Receive,
             request.Sender.Alias,
-            $"{ids.Length} 项",
+            Text("ItemSummary", ids.Length),
             status,
             bytesTransferred,
             request.Items.Where(item => ids.Contains(item.Id, StringComparer.Ordinal)).Sum(static item => item.Size),
-            DateTimeOffset.UtcNow));
+            DateTimeOffset.UtcNow) { ItemCount = ids.Length });
         if (runtimeResult is RuntimeReceiveResult.Completed)
         {
             foreach (var item in receivedItems.Where(static item => item.SavedPath is not null))
@@ -281,7 +281,7 @@ public sealed class LocalSendRuntime : ITonarinkRuntime
                     _logger.LogWarning(exception, "Publishing received file {FileName} to platform storage failed", item.FileName);
                 }
             }
-            await _platform.NotifyAsync("接收完成", $"已接收来自 {request.Sender.Alias} 的内容", cancellationToken).ConfigureAwait(false);
+            await _platform.NotifyAsync(Text("ReceiveCompleteTitle"), Text("ReceiveCompleteBody", request.Sender.Alias), cancellationToken).ConfigureAwait(false);
         }
         _offers.TryRemove(offer.Id, out _);
         PublishOffers();
@@ -336,7 +336,7 @@ public sealed class LocalSendRuntime : ITonarinkRuntime
                     var request = enumerator.Current;
                     _offers[request.RequestId.ToString("N")] = request;
                     PublishOffers();
-                    await _platform.NotifyAsync("收到发送请求", $"{request.Sender.Alias} 想要发送 {request.Items.Count} 项内容", cancellationToken).ConfigureAwait(false);
+                    await _platform.NotifyAsync(Text("IncomingTitle"), Text("IncomingBody", request.Sender.Alias, request.Items.Count), cancellationToken).ConfigureAwait(false);
                     if (_state.Settings.AutoAccept)
                         _ = AutoAcceptAsync(ToOffer(request), cancellationToken);
                     pending = enumerator.MoveNextAsync();
@@ -367,7 +367,8 @@ public sealed class LocalSendRuntime : ITonarinkRuntime
             snapshot[device.Fingerprint] = device;
             var endpoint = device.PreferredEndpoint;
             nearby.Add(new NearbyDevice(device.Fingerprint, device.Alias, device.DeviceModel ?? device.DeviceType.ToString(),
-                device.DeviceType.ToString(), endpoint?.Address.ToString() ?? "?", endpoint?.Port ?? 0, device.LastSeen));
+                device.DeviceType.ToString(), endpoint?.Address.ToString() ?? "?", endpoint?.Port ?? 0, device.LastSeen)
+            { IsModelFallback = device.DeviceModel is null });
         }
 
         // Never mutate a published dictionary. Readers retain the previous
@@ -384,7 +385,8 @@ public sealed class LocalSendRuntime : ITonarinkRuntime
     private static IncomingOffer ToOffer(IncomingTransferRequest request) => new(
         request.RequestId.ToString("N"), request.Sender.Alias, request.Sender.DeviceModel ?? request.Sender.DeviceType.ToString(),
         request.Items.Select(static item => new ShareItem(StableGuid(item.Id), item.FileName, item.Size, item.ContentType,
-            TextContent: item.ContentType.StartsWith("text/", StringComparison.OrdinalIgnoreCase) ? item.Preview : null)).ToArray(), request.ReceivedAt);
+            TextContent: item.ContentType.StartsWith("text/", StringComparison.OrdinalIgnoreCase) ? item.Preview : null)).ToArray(), request.ReceivedAt)
+    { SenderDeviceType = request.Sender.DeviceType.ToString(), IsSenderModelFallback = request.Sender.DeviceModel is null };
 
     private async Task AutoAcceptAsync(IncomingOffer offer, CancellationToken cancellationToken)
     {
@@ -399,7 +401,7 @@ public sealed class LocalSendRuntime : ITonarinkRuntime
         catch (Exception exception)
         {
             _logger.LogError(exception, "Automatically accepting transfer {TransferId} failed", offer.Id);
-            await _platform.NotifyAsync("自动接收失败", exception.GetBaseException().Message, CancellationToken.None).ConfigureAwait(false);
+            await _platform.NotifyAsync(Text("AutoReceiveFailed"), exception.GetBaseException().Message, CancellationToken.None).ConfigureAwait(false);
         }
     }
 
@@ -409,9 +411,10 @@ public sealed class LocalSendRuntime : ITonarinkRuntime
         return new Guid(hash.AsSpan(0, 16));
     }
 
-    private static TransferActivity MapProgress(TransferProgress value, string peer, string summary) => new(
+    private static TransferActivity MapProgress(TransferProgress value, string peer, string summary, int itemCount) => new(
         value.TransferId.ToString("N"), value.Direction == CoreTransferDirection.Send ? AppTransferDirection.Send : AppTransferDirection.Receive,
-        peer, summary, MapStatus(value.State), value.BytesTransferred, value.TotalBytes, DateTimeOffset.UtcNow);
+        peer, summary, MapStatus(value.State), value.BytesTransferred, value.TotalBytes, DateTimeOffset.UtcNow)
+    { ItemCount = itemCount };
 
     private static AppTransferStatus MapStatus(CoreTransferState state) => state switch
     {
@@ -422,5 +425,7 @@ public sealed class LocalSendRuntime : ITonarinkRuntime
         _ => AppTransferStatus.Waiting,
     };
 
-    private LocalSendNode RequiredNode() => _node ?? throw new InvalidOperationException("Tonarink 节点尚未启动。");
+    private string Text(string key, params object?[] arguments) => AppText.Get(key, _state.Settings.Language, arguments);
+
+    private LocalSendNode RequiredNode() => _node ?? throw new InvalidOperationException(Text("NodeNotStarted"));
 }

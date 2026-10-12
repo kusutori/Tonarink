@@ -1,0 +1,464 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Accept" xml:space="preserve"><value>受信する</value></data>
+  <data name="Add" xml:space="preserve"><value>追加</value></data>
+  <data name="AddFavoriteTitle" xml:space="preserve"><value>お気に入りに追加</value></data>
+  <data name="AddFolder" xml:space="preserve"><value>フォルダーを追加</value></data>
+  <data name="AutoSaveDescription" xml:space="preserve"><value>受信内容を自動で承認して保存するか選択</value></data>
+  <data name="AutoSaveFavorites" xml:space="preserve"><value>お気に入りのみ</value></data>
+  <data name="AutoSaveOff" xml:space="preserve"><value>オフ</value></data>
+  <data name="AutoSaveOn" xml:space="preserve"><value>オン</value></data>
+  <data name="AutoSaveTitle" xml:space="preserve"><value>自動保存</value></data>
+  <data name="Cancel" xml:space="preserve"><value>キャンセル</value></data>
+  <data name="CancelCurrentSend" xml:space="preserve"><value>現在の送信をキャンセル</value></data>
+  <data name="CancelCurrentTransfer" xml:space="preserve"><value>現在の転送をキャンセル</value></data>
+  <data name="Cancelled" xml:space="preserve"><value>キャンセル済み</value></data>
+  <data name="CancellingTransfer" xml:space="preserve"><value>転送をキャンセル中…</value></data>
+  <data name="Change" xml:space="preserve"><value>変更…</value></data>
+  <data name="ChangeSaveLocation" xml:space="preserve"><value>受信ファイルの保存先を変更</value></data>
+  <data name="ChooseContent" xml:space="preserve"><value>送信内容を選択</value></data>
+  <data name="ChooseItem" xml:space="preserve"><value>{item} を選択</value></data>
+  <data name="DropFilesCaption" xml:space="preserve"><value>送信リストに追加</value></data>
+  <data name="DropFilesOrFolders" xml:space="preserve"><value>ここにファイルやフォルダーをドロップ</value></data>
+  <data name="DropFilesOrFoldersAnywhere" xml:space="preserve"><value>アプリ内のどこにでもファイルやフォルダーをドロップ</value></data>
+  <data name="DropFilesAnywherePrompt" xml:space="preserve"><value>離すとファイルやフォルダーを送信リストに追加</value></data>
+  <data name="DropItemsFailed" xml:space="preserve"><value>ドロップした項目を追加できませんでした: {error}</value></data>
+  <data name="DroppedItemsEmpty" xml:space="preserve"><value>ドロップした項目にアクセス可能なファイルがありません</value></data>
+  <data name="ReleaseFilesToAdd" xml:space="preserve"><value>離して追加</value></data>
+  <data name="Clear" xml:space="preserve"><value>クリア</value></data>
+  <data name="Clipboard" xml:space="preserve"><value>クリップボード</value></data>
+  <data name="ClipboardEmpty" xml:space="preserve"><value>クリップボードに送信できるテキスト、ファイル、フォルダーがありません</value></data>
+  <data name="ClipboardImage" xml:space="preserve"><value>クリップボードの画像</value></data>
+  <data name="ClipboardReadFailed" xml:space="preserve"><value>クリップボードを読み取れませんでした: {error}</value></data>
+  <data name="ClipboardText" xml:space="preserve"><value>クリップボードのテキスト</value></data>
+  <data name="Close" xml:space="preserve"><value>閉じる</value></data>
+  <data name="Confirm" xml:space="preserve"><value>OK</value></data>
+  <data name="ContentItems" xml:space="preserve"><value>{count, plural, other {# 件}}</value></data>
+  <data name="ContentOneFile" xml:space="preserve"><value>ファイル {file}</value></data>
+  <data name="ContentOneTextMessage" xml:space="preserve"><value>テキストメッセージ</value></data>
+  <data name="ContentSaved" xml:space="preserve"><value>保存しました</value></data>
+  <data name="Copied" xml:space="preserve"><value>コピーしました</value></data>
+  <data name="Copy" xml:space="preserve"><value>コピー</value></data>
+  <data name="CopyReceivedText" xml:space="preserve"><value>受信したテキストをコピー</value></data>
+  <data name="Decline" xml:space="preserve"><value>拒否</value></data>
+  <data name="Delete" xml:space="preserve"><value>削除</value></data>
+  <data name="DeleteFavoriteConfirm" xml:space="preserve"><value>「{device}」をお気に入りから削除しますか？</value></data>
+  <data name="DeleteFavoriteTitle" xml:space="preserve"><value>お気に入りを削除</value></data>
+  <data name="DeviceInfo" xml:space="preserve"><value>デバイス情報</value></data>
+  <data name="DeviceInfoAlias" xml:space="preserve"><value>表示名（デバイス名）:</value></data>
+  <data name="DeviceInfoIp" xml:space="preserve"><value>IP:</value></data>
+  <data name="DeviceInfoNoAddress" xml:space="preserve"><value>利用可能なアドレスがありません</value></data>
+  <data name="DeviceInfoPort" xml:space="preserve"><value>ポート:</value></data>
+  <data name="DeviceDetailsTitle" xml:space="preserve"><value>デバイスの詳細</value></data>
+  <data name="OpenDeviceDetails" xml:space="preserve"><value>{device} の詳細を表示</value></data>
+  <data name="DeviceInformation" xml:space="preserve"><value>デバイス情報</value></data>
+  <data name="DeviceModelLabel" xml:space="preserve"><value>デバイスのモデル</value></data>
+  <data name="ProtocolVersion" xml:space="preserve"><value>プロトコルのバージョン</value></data>
+  <data name="Address" xml:space="preserve"><value>アドレス</value></data>
+  <data name="LastSeen" xml:space="preserve"><value>最終検出</value></data>
+  <data name="FingerprintLabel" xml:space="preserve"><value>フィンガープリント</value></data>
+  <data name="FavoriteAction" xml:space="preserve"><value>お気に入りに追加</value></data>
+  <data name="RemoveFavoriteAction" xml:space="preserve"><value>お気に入りから削除</value></data>
+  <data name="VerifyAction" xml:space="preserve"><value>確認</value></data>
+  <data name="VerificationTitle" xml:space="preserve"><value>デバイスを確認</value></data>
+  <data name="VerificationIcons" xml:space="preserve"><value>アイコン</value></data>
+  <data name="VerificationText" xml:space="preserve"><value>テキスト</value></data>
+  <data name="VerificationCompareHint" xml:space="preserve"><value>相手のデバイスにも同じ内容が表示されていますか？</value></data>
+  <data name="VerificationUnencryptedTitle" xml:space="preserve"><value>接続が暗号化されていません</value></data>
+  <data name="VerificationUnencryptedMessage" xml:space="preserve"><value>HTTP 接続では、この比較と接続の間に暗号学的な保証はありません</value></data>
+  <data name="DeviceLog" xml:space="preserve"><value>アクティビティ</value></data>
+  <data name="DeviceLogEmpty" xml:space="preserve"><value>このセッションには検出アクティビティがありません</value></data>
+  <data name="DeviceLogAdded" xml:space="preserve"><value>検出</value></data>
+  <data name="DeviceLogUpdated" xml:space="preserve"><value>更新</value></data>
+  <data name="DeviceLogRemoved" xml:space="preserve"><value>期限切れ</value></data>
+  <data name="DeviceDesktop" xml:space="preserve"><value>パソコン</value></data>
+  <data name="DeviceHeadless" xml:space="preserve"><value>ヘッドレスデバイス</value></data>
+  <data name="DeviceMobile" xml:space="preserve"><value>モバイルデバイス</value></data>
+  <data name="DeviceName" xml:space="preserve"><value>デバイス名</value></data>
+  <data name="DeviceServer" xml:space="preserve"><value>サーバー</value></data>
+  <data name="DeviceWeb" xml:space="preserve"><value>Web デバイス</value></data>
+  <data name="EditFavorite" xml:space="preserve"><value>お気に入りを編集</value></data>
+  <data name="EditFavoriteDevice" xml:space="preserve"><value>お気に入りの {device} を編集</value></data>
+  <data name="EditFavoriteTitle" xml:space="preserve"><value>お気に入りのデバイスを編集</value></data>
+  <data name="FavoriteDevice" xml:space="preserve"><value>{device} をお気に入りに追加</value></data>
+  <data name="FavoriteDeviceName" xml:space="preserve"><value>お気に入りのデバイス名</value></data>
+  <data name="FavoriteIpAddress" xml:space="preserve"><value>お気に入りの IP アドレス</value></data>
+  <data name="FavoritePort" xml:space="preserve"><value>お気に入りのポート</value></data>
+  <data name="FavoritesEmpty" xml:space="preserve"><value>お気に入りのデバイスはありません</value></data>
+  <data name="FavoritesTitle" xml:space="preserve"><value>お気に入り</value></data>
+  <data name="NewFavorite" xml:space="preserve"><value>新規</value></data>
+  <data name="MultipleReceivers" xml:space="preserve"><value>複数のデバイスに送信</value></data>
+  <data name="MultipleReceiversDescription" xml:space="preserve"><value>転送後も送信リストを保持して、別の受信先を選択</value></data>
+  <data name="SendToFavorite" xml:space="preserve"><value>お気に入りの「{device}」に送信</value></data>
+  <data name="File" xml:space="preserve"><value>ファイル</value></data>
+  <data name="Fingerprint" xml:space="preserve"><value>フィンガープリント  {fingerprint}…</value></data>
+  <data name="Folder" xml:space="preserve"><value>フォルダー</value></data>
+  <data name="FolderEmpty" xml:space="preserve"><value>選択したフォルダーに送信できるファイルがありません</value></data>
+  <data name="HistoryBack" xml:space="preserve"><value>戻る</value></data>
+  <data name="HistoryDeleteAll" xml:space="preserve"><value>履歴を削除</value></data>
+  <data name="HistoryDeleteAllConfirm" xml:space="preserve"><value>受信履歴を削除しますか？</value></data>
+  <data name="HistoryDeleteAllConfirmMessage" xml:space="preserve"><value>ローカルの履歴を削除します。保存済みのファイルは削除されません</value></data>
+  <data name="HistoryDeleteItem" xml:space="preserve"><value>履歴から削除</value></data>
+  <data name="HistoryEmpty" xml:space="preserve"><value>受信履歴はありません</value></data>
+  <data name="HistoryEntryActions" xml:space="preserve"><value>{file} の操作</value></data>
+  <data name="HistoryInfo" xml:space="preserve"><value>情報</value></data>
+  <data name="HistoryInfoFileName" xml:space="preserve"><value>ファイル名</value></data>
+  <data name="HistoryInfoPath" xml:space="preserve"><value>パス</value></data>
+  <data name="HistoryInfoSender" xml:space="preserve"><value>送信者</value></data>
+  <data name="HistoryInfoSize" xml:space="preserve"><value>サイズ</value></data>
+  <data name="HistoryInfoTime" xml:space="preserve"><value>日時</value></data>
+  <data name="HistoryInfoTitle" xml:space="preserve"><value>ファイル情報</value></data>
+  <data name="HistoryOpenDirectory" xml:space="preserve"><value>フォルダーを開く</value></data>
+  <data name="HistoryOpenFile" xml:space="preserve"><value>ファイルを開く</value></data>
+  <data name="HistoryOpenFileDescription" xml:space="preserve"><value>{file} の履歴を開く</value></data>
+  <data name="JumpListFavoriteDevicesGroup" xml:space="preserve"><value>お気に入りのデバイス</value></data>
+  <data name="JumpListHistoryGroup" xml:space="preserve"><value>履歴</value></data>
+  <data name="HistoryOpenReceiveHistory" xml:space="preserve"><value>受信履歴</value></data>
+  <data name="HistoryShowInFolder" xml:space="preserve"><value>フォルダーで表示</value></data>
+  <data name="HistorySubtitle" xml:space="preserve"><value>{date} · {size} · {sender}</value></data>
+  <data name="HistoryTitle" xml:space="preserve"><value>受信履歴</value></data>
+  <data name="IdentityLoading" xml:space="preserve"><value>デバイス識別情報を読み込み中…</value></data>
+  <data name="IncomingFileSummary" xml:space="preserve"><value>ファイル {file} を送信しようとしています</value></data>
+  <data name="IncomingFiles" xml:space="preserve"><value>ファイル</value></data>
+  <data name="IncomingItemsSummary" xml:space="preserve"><value>{count, plural, other {# 件の項目}}を送信しようとしています</value></data>
+  <data name="IncomingTextSummary" xml:space="preserve"><value>テキストメッセージを送信しようとしています</value></data>
+  <data name="InvalidIpAddress" xml:space="preserve"><value>有効な IP アドレスを入力してください</value></data>
+  <data name="InvalidPort" xml:space="preserve"><value>ポートは 1～65535 の整数で指定してください</value></data>
+  <data name="IpAddress" xml:space="preserve"><value>IP アドレス</value></data>
+  <data name="ItemKindAndSize" xml:space="preserve"><value>{kind} · {size}</value></data>
+  <data name="ItemsAdded" xml:space="preserve"><value>{count, plural, other {# 件}}追加しました</value></data>
+  <data name="LanguageChinese" xml:space="preserve"><value>简体中文</value></data>
+  <data name="LanguageEnglish" xml:space="preserve"><value>English</value></data>
+  <data name="LanguageSystem" xml:space="preserve"><value>システムに従う</value></data>
+  <data name="MoreItems" xml:space="preserve"><value>他 {count, number} 件…</value></data>
+  <data name="Name" xml:space="preserve"><value>名前</value></data>
+  <data name="NavReceive" xml:space="preserve"><value>受信</value></data>
+  <data name="NavSend" xml:space="preserve"><value>送信</value></data>
+  <data name="NavSettings" xml:space="preserve"><value>設定</value></data>
+  <data name="MainNavigation" xml:space="preserve"><value>メインナビゲーション</value></data>
+  <data name="NotificationIncomingTitle" xml:space="preserve"><value>{device} からの受信リクエスト</value></data>
+  <data name="NotificationReceiveProgressTitle" xml:space="preserve"><value>{device} から受信中</value></data>
+  <data name="NotificationReceiveCompleteTitle" xml:space="preserve"><value>受信完了</value></data>
+  <data name="NotificationReceiveComplete" xml:space="preserve"><value>{device} から{count, plural, other {# 件の項目}}を受信しました</value></data>
+  <data name="NotificationSendCompleteTitle" xml:space="preserve"><value>送信完了</value></data>
+  <data name="NotificationSendProgressTitle" xml:space="preserve"><value>{device} に送信中</value></data>
+  <data name="NotificationSendComplete" xml:space="preserve"><value>{device} に{count, plural, other {# 件の項目}}を送信しました</value></data>
+  <data name="NotificationOpenFile" xml:space="preserve"><value>ファイルを開く</value></data>
+  <data name="NotificationShowInFolder" xml:space="preserve"><value>フォルダーで表示</value></data>
+  <data name="NearbyDevices" xml:space="preserve"><value>近くのデバイス</value></data>
+  <data name="AddressExample" xml:space="preserve"><value>例: {address}</value></data>
+  <data name="AddressPlaceholder" xml:space="preserve"><value>IP アドレスまたは IP:ポート</value></data>
+  <data name="DeviceAddress" xml:space="preserve"><value>デバイスのアドレス</value></data>
+  <data name="DeviceAddressNotFound" xml:space="preserve"><value>{address} に対応デバイスが見つかりません。アドレスとネットワーク接続を確認してください</value></data>
+  <data name="EnterAddressTitle" xml:space="preserve"><value>アドレスを入力</value></data>
+  <data name="InvalidDeviceAddress" xml:space="preserve"><value>有効な IP アドレスを入力してください</value></data>
+  <data name="InvalidFileName" xml:space="preserve"><value>ファイル名は空にできず、使用できない文字も含められません</value></data>
+  <data name="RecentlyUsedAddress" xml:space="preserve"><value>最近使用したアドレス:</value></data>
+  <data name="SendToAddress" xml:space="preserve"><value>アドレスを指定して送信</value></data>
+  <data name="UseRecentAddress" xml:space="preserve"><value>最近使用した {address} を選択</value></data>
+  <data name="NetworkStartFailed" xml:space="preserve"><value>ネットワークサービスを開始できませんでした</value></data>
+  <data name="DiscoveryScanHint" xml:space="preserve"><value>マルチキャスト検出が利用できないため、ローカルネットワークをスキャンしています</value></data>
+  <data name="NodeDisconnected" xml:space="preserve"><value>未接続</value></data>
+  <data name="NetworkStatus" xml:space="preserve"><value>ネットワークの状態</value></data>
+  <data name="NodeDiscoveryLimited" xml:space="preserve"><value>接続済み · ネットワークスキャンで検出中</value></data>
+  <data name="NodeFaulted" xml:space="preserve"><value>ネットワークサービスを利用できません</value></data>
+  <data name="NodeRunning" xml:space="preserve"><value>ローカルネットワークに接続済み</value></data>
+  <data name="NodeStarting" xml:space="preserve"><value>開始中…</value></data>
+  <data name="NodeStopping" xml:space="preserve"><value>停止中…</value></data>
+  <data name="NothingSelected" xml:space="preserve"><value>未選択</value></data>
+  <data name="OptionSystem" xml:space="preserve"><value>システムに従う</value></data>
+  <data name="PageNotFound" xml:space="preserve"><value>ページが見つかりません</value></data>
+  <data name="PendingRequests" xml:space="preserve"><value>{count, plural, other {# 件の保留中リクエスト}}</value></data>
+  <data name="PickFileFailed" xml:space="preserve"><value>ファイルを選択できませんでした: {error}</value></data>
+  <data name="PickFolderFailed" xml:space="preserve"><value>フォルダーを選択できませんでした: {error}</value></data>
+  <data name="PinIncorrect" xml:space="preserve"><value>PIN が違います。もう一度お試しください</value></data>
+  <data name="Pin" xml:space="preserve"><value>PIN</value></data>
+  <data name="PinConfirm" xml:space="preserve"><value>確認</value></data>
+  <data name="PinPlaceholder" xml:space="preserve"><value>PIN を入力</value></data>
+  <data name="PinRateLimited" xml:space="preserve"><value>PIN の試行回数が多すぎます。しばらくしてからお試しください</value></data>
+  <data name="PinRequiredMessage" xml:space="preserve"><value>{device} の受信 PIN が必要です</value></data>
+  <data name="PinRequiredTitle" xml:space="preserve"><value>PIN が必要です</value></data>
+  <data name="Port" xml:space="preserve"><value>ポート</value></data>
+  <data name="PortInUseHint" xml:space="preserve"><value>Tonarink や他の LocalSend 対応アプリがポート 53317 を使用していないか確認してください</value></data>
+  <data name="PreparingForDevice" xml:space="preserve"><value>{device} への送信を準備中…</value></data>
+  <data name="Preview" xml:space="preserve"><value>プレビュー</value></data>
+  <data name="SelectSendItem" xml:space="preserve"><value>{item} を選択</value></data>
+  <data name="DeselectSendItem" xml:space="preserve"><value>{item} の選択を解除</value></data>
+  <data name="SendItemPreviewHint" xml:space="preserve"><value>スペースキーでファイルをプレビュー</value></data>
+  <data name="SendItemRenamed" xml:space="preserve"><value>名前を変更済み · {kind} · {size}</value></data>
+  <data name="Share" xml:space="preserve"><value>共有</value></data>
+  <data name="Undo" xml:space="preserve"><value>元に戻す</value></data>
+  <data name="Redo" xml:space="preserve"><value>やり直す</value></data>
+  <data name="ShareFileFailed" xml:space="preserve"><value>Windows でこのファイルを共有できませんでした</value></data>
+  <data name="SettingsExperimental" xml:space="preserve"><value>試験的な機能</value></data>
+  <data name="SettingsFilePreview" xml:space="preserve"><value>ファイルプレビュー</value></data>
+  <data name="SettingsFilePreviewDescription" xml:space="preserve"><value>送信リストでスペースキーを押すと、外部ツールでファイルをプレビュー</value></data>
+  <data name="SettingsFilePreviewEnabled" xml:space="preserve"><value>ファイルプレビューを有効にする</value></data>
+  <data name="SettingsFilePreviewEnabledDescription" xml:space="preserve"><value>ファイルを選択してスペースキーを押すと、選択したツールでプレビュー</value></data>
+  <data name="SettingsFilePreviewProvider" xml:space="preserve"><value>プレビューツール</value></data>
+  <data name="SettingsFilePreviewProviderDescription" xml:space="preserve"><value>選択したツールを自動検出 · ＋ボタンでパスを上書き</value></data>
+  <data name="SettingsFilePreviewProviderPowerToysPeek" xml:space="preserve"><value>PowerToys Peek</value></data>
+  <data name="SettingsFilePreviewProviderQuickLook" xml:space="preserve"><value>QuickLook</value></data>
+  <data name="SettingsFilePreviewAddTool" xml:space="preserve"><value>上書きパスを追加</value></data>
+  <data name="SettingsFilePreviewToolPath" xml:space="preserve"><value>{tool} の上書きパス</value></data>
+  <data name="SettingsFilePreviewToolPathDescription" xml:space="preserve"><value>上書きパスを確認して保存 · この項目を削除すると自動検出に戻ります</value></data>
+  <data name="SettingsFilePreviewVerifyPath" xml:space="preserve"><value>パスを確認して保存</value></data>
+  <data name="SettingsFilePreviewAutoPathPlaceholder" xml:space="preserve"><value>上書きパスを入力</value></data>
+  <data name="SettingsFilePreviewAutoPathSaved" xml:space="preserve"><value>自動検出に戻しました</value></data>
+  <data name="SettingsFilePreviewPathSaved" xml:space="preserve"><value>上書きパスを保存しました</value></data>
+  <data name="SettingsFilePreviewPathExists" xml:space="preserve"><value>有効なパスです</value></data>
+  <data name="SettingsFilePreviewPathMissing" xml:space="preserve"><value>パスが無効か、ファイルが存在しません</value></data>
+  <data name="ReceiveCancelled" xml:space="preserve"><value>受信をキャンセルしました</value></data>
+  <data name="ReceivedMessage" xml:space="preserve"><value>メッセージを受信しました:</value></data>
+  <data name="ReceivedTextContent" xml:space="preserve"><value>受信したテキスト</value></data>
+  <data name="ReceiveFailed" xml:space="preserve"><value>受信に失敗しました</value></data>
+  <data name="ReceiveSaveDirectory" xml:space="preserve"><value>保存先</value></data>
+  <data name="ReceiveTitle" xml:space="preserve"><value>受信</value></data>
+  <data name="ReceivingContent" xml:space="preserve"><value>受信中…</value></data>
+  <data name="ReceivingPreparing" xml:space="preserve"><value>受信を準備中…</value></data>
+  <data name="RefreshDevices" xml:space="preserve"><value>近くのデバイスを更新</value></data>
+  <data name="Remove" xml:space="preserve"><value>削除</value></data>
+  <data name="RemoveFavoriteDevice" xml:space="preserve"><value>{device} をお気に入りから削除</value></data>
+  <data name="RemoveItem" xml:space="preserve"><value>{item} を削除</value></data>
+  <data name="Rename" xml:space="preserve"><value>名前を変更</value></data>
+  <data name="RenameIncomingFile" xml:space="preserve"><value>{file} の名前を変更</value></data>
+  <data name="RenameSuccess" xml:space="preserve"><value>名前を変更済み · {size}</value></data>
+  <data name="ResetReceiveOptions" xml:space="preserve"><value>ファイルの選択をリセット</value></data>
+  <data name="QuickActionsTitle" xml:space="preserve"><value>クイック操作</value></data>
+  <data name="QuickActionsCounter" xml:space="preserve"><value>連番</value></data>
+  <data name="QuickActionsRandom" xml:space="preserve"><value>ランダム</value></data>
+  <data name="QuickActionsPrefix" xml:space="preserve"><value>接頭辞</value></data>
+  <data name="QuickActionsPadZero" xml:space="preserve"><value>ゼロ埋め</value></data>
+  <data name="QuickActionsSortBeforeCount" xml:space="preserve"><value>先に名前順で並べ替え</value></data>
+  <data name="QuickActionsExample" xml:space="preserve"><value>例: {name}</value></data>
+  <data name="QuickActionsInvalidPrefix" xml:space="preserve"><value>接頭辞に使用できない文字が含まれています</value></data>
+  <data name="UndoIncomingFileRename" xml:space="preserve"><value>名前の変更を元に戻す</value></data>
+  <data name="Retry" xml:space="preserve"><value>再試行</value></data>
+  <data name="SameNetworkHint" xml:space="preserve"><value>両方のデバイスが同じローカルネットワークに接続されているか確認してください</value></data>
+  <data name="Save" xml:space="preserve"><value>保存</value></data>
+  <data name="SearchingDevices" xml:space="preserve"><value>近くのデバイスを検索中</value></data>
+  <data name="SelectContentFirst" xml:space="preserve"><value>先に送信する内容を選択してください</value></data>
+  <data name="SelectedItems" xml:space="preserve"><value>{count, plural, other {# 件}}選択済み · {size}</value></data>
+  <data name="SelectedIncomingFiles" xml:space="preserve"><value>{count, plural, other {# ファイル}}中 {selected, number} 件を選択</value></data>
+  <data name="SelectIncomingFile" xml:space="preserve"><value>{file} を選択</value></data>
+  <data name="SelectAllIncomingFiles" xml:space="preserve"><value>すべて選択</value></data>
+  <data name="DeselectIncomingFile" xml:space="preserve"><value>{file} の選択を解除</value></data>
+  <data name="DeselectAllIncomingFiles" xml:space="preserve"><value>すべての選択を解除</value></data>
+  <data name="ShowReceiveOptions" xml:space="preserve"><value>詳細</value></data>
+  <data name="HideReceiveOptions" xml:space="preserve"><value>折りたたむ</value></data>
+  <data name="SendCancelled" xml:space="preserve"><value>送信をキャンセルしました</value></data>
+  <data name="SendFailed" xml:space="preserve"><value>送信に失敗しました</value></data>
+  <data name="SendHint" xml:space="preserve"><value>送信内容を選んでから、受信先のデバイスを選択</value></data>
+  <data name="SendingPreparing" xml:space="preserve"><value>送信を準備中…</value></data>
+  <data name="SendingTitle" xml:space="preserve"><value>送信中</value></data>
+  <data name="SendingToDevice" xml:space="preserve"><value>{device} に送信中…</value></data>
+  <data name="SendingTransferring" xml:space="preserve"><value>転送中…</value></data>
+  <data name="SendingWaiting" xml:space="preserve"><value>応答を待っています…</value></data>
+  <data name="SendTextPlaceholder" xml:space="preserve"><value>送信するテキストを入力…</value></data>
+  <data name="SendTextTitle" xml:space="preserve"><value>テキストを送信</value></data>
+  <data name="SendTitle" xml:space="preserve"><value>送信</value></data>
+  <data name="SendToDevice" xml:space="preserve"><value>{device} に送信</value></data>
+  <data name="SentToDevice" xml:space="preserve"><value>{device} に送信しました</value></data>
+  <data name="SettingsAdvanced" xml:space="preserve"><value>詳細設定</value></data>
+  <data name="SettingsAdvancedDescription" xml:space="preserve"><value>デバイス情報、ネットワークインターフェイス、転送の安全性</value></data>
+  <data name="SettingsAbout" xml:space="preserve"><value>このアプリについて</value></data>
+  <data name="SettingsAboutCopyright" xml:space="preserve"><value>© {year} 無断転載を禁じます</value></data>
+  <data name="SettingsAboutRelationship" xml:space="preserve"><value>Tonarink は LocalSend プロトコルを独自に実装した非公式アプリです。LocalSend プロジェクトとの提携関係はなく、同プロジェクトの承認も受けていません。プロトコルの開発と文書化に取り組んだ Tien Do Nam 氏と LocalSend の貢献者の皆様に感謝します</value></data>
+  <data name="SettingsAboutFeedback" xml:space="preserve"><value>フィードバックを送信</value></data>
+  <data name="SettingsAboutViewLogs" xml:space="preserve"><value>ログを表示</value></data>
+  <data name="SettingsAboutGitHub" xml:space="preserve"><value>GitHub リポジトリ</value></data>
+  <data name="SettingsAboutIssues" xml:space="preserve"><value>問題を報告</value></data>
+  <data name="SettingsAboutLocalSend" xml:space="preserve"><value>LocalSend のサイト</value></data>
+  <data name="SettingsAboutThirdPartyLicenses" xml:space="preserve"><value>サードパーティーのライセンス</value></data>
+  <data name="SettingsAboutVersion" xml:space="preserve"><value>バージョン {version}</value></data>
+  <data name="SettingsAutoSave" xml:space="preserve"><value>自動保存</value></data>
+  <data name="SettingsAutoSaveDescription" xml:space="preserve"><value>確認なしで受信内容を承認して保存</value></data>
+  <data name="SettingsDeviceModel" xml:space="preserve"><value>デバイスのモデル</value></data>
+  <data name="SettingsDeviceModelDescription" xml:space="preserve"><value>他のデバイスに表示するモデル · 空欄の場合はこのパソコンの名前を使用</value></data>
+  <data name="SettingsDeviceName" xml:space="preserve"><value>デバイス名</value></data>
+  <data name="SettingsDeviceNameDescription" xml:space="preserve"><value>他のデバイスに表示する名前 · 保存してサーバーを開始または再起動すると反映</value></data>
+  <data name="SettingsDeviceType" xml:space="preserve"><value>デバイスの種類</value></data>
+  <data name="SettingsDeviceTypeDescription" xml:space="preserve"><value>他のデバイスに表示する種類を選択</value></data>
+  <data name="SettingsDiscoveryTimeout" xml:space="preserve"><value>デバイス検出のタイムアウト</value></data>
+  <data name="SettingsDiscoveryTimeoutDescription" xml:space="preserve"><value>各デバイスの応答を待つ時間（ミリ秒）</value></data>
+  <data name="SettingsEncryption" xml:space="preserve"><value>暗号化</value></data>
+  <data name="SettingsEncryptionDescription" xml:space="preserve"><value>HTTPS で転送を暗号化し、証明書でデバイスを識別</value></data>
+  <data name="SettingsEncryptionDisabledNotice" xml:space="preserve"><value>暗号化がオフです。近くのデバイスは HTTP で接続し、識別情報の確認も弱くなります。サーバーを再起動すると反映されます</value></data>
+  <data name="SettingsEncryptionDisabledTitle" xml:space="preserve"><value>暗号化が無効です</value></data>
+  <data name="SettingsFavoritesOnly" xml:space="preserve"><value>お気に入りからのみ自動受信</value></data>
+  <data name="SettingsFavoritesOnlyDescription" xml:space="preserve"><value>自動保存がオンのとき、お気に入りのデバイスからのみ自動で承認</value></data>
+  <data name="SettingsGeneral" xml:space="preserve"><value>一般</value></data>
+  <data name="SettingsLanguage" xml:space="preserve"><value>言語</value></data>
+  <data name="SettingsLanguageDescription" xml:space="preserve"><value>表示言語を選択、またはシステムに従う</value></data>
+  <data name="SettingsNeedRestart" xml:space="preserve"><value>設定を変更しました · サーバーを再起動すると反映</value></data>
+  <data name="SettingsInputsPending" xml:space="preserve"><value>未保存の変更は、サーバーの開始または再起動時に保存して反映</value></data>
+  <data name="SettingsApplyAndRestart" xml:space="preserve"><value>保存してサーバーを再起動</value></data>
+  <data name="SettingsApplyAndStart" xml:space="preserve"><value>保存してサーバーを開始</value></data>
+  <data name="SettingsPortInvalid" xml:space="preserve"><value>ポートは 1～65535 の整数で指定してください</value></data>
+  <data name="SettingsDiscoveryTimeoutInvalid" xml:space="preserve"><value>タイムアウトは 1～60000 ミリ秒の整数で指定してください</value></data>
+  <data name="SettingsMulticastInvalid" xml:space="preserve"><value>有効な IPv4 マルチキャストアドレスを入力してください（224.0.0.0～239.255.255.255）</value></data>
+  <data name="SettingsReceivePinInvalid" xml:space="preserve"><value>PIN は 32 文字以内です。保護が有効な場合は空欄にできません</value></data>
+  <data name="SettingsApplyFailed" xml:space="preserve"><value>サーバー設定を保存できませんでした: {error}</value></data>
+  <data name="SettingsNetwork" xml:space="preserve"><value>デバイスとネットワーク</value></data>
+  <data name="SettingsNetworkInterfaces" xml:space="preserve"><value>ネットワークインターフェイス</value></data>
+  <data name="SettingsNetworkInterfacesAll" xml:space="preserve"><value>すべて</value></data>
+  <data name="SettingsNetworkInterfacesBlacklist" xml:space="preserve"><value>ブロックリスト</value></data>
+  <data name="SettingsNetworkInterfacesEmpty" xml:space="preserve"><value>利用可能な IPv4 インターフェイスがありません</value></data>
+  <data name="SettingsNetworkInterfacesExample" xml:space="preserve"><value>アドレスパターンの例:</value></data>
+  <data name="SettingsNetworkInterfacesInfo" xml:space="preserve"><value>標準ではすべてのインターフェイスを使用 · 許可リストやブロックリストで絞り込み、サーバーを再起動すると反映</value></data>
+  <data name="SettingsNetworkInterfacesPattern" xml:space="preserve"><value>パターン {index}</value></data>
+  <data name="SettingsNetworkInterfacesPreview" xml:space="preserve"><value>インターフェイスのプレビュー</value></data>
+  <data name="SettingsNetworkInterfacesRemovePattern" xml:space="preserve"><value>パターンを削除</value></data>
+  <data name="SettingsNetworkInterfacesWhitelist" xml:space="preserve"><value>許可リスト</value></data>
+  <data name="SettingsPort" xml:space="preserve"><value>ポート</value></data>
+  <data name="SettingsPortDescription" xml:space="preserve"><value>デバイス検出とファイル転送に使用する UDP/TCP ポート</value></data>
+  <data name="SettingsPortWarning" xml:space="preserve"><value>カスタムポートはすべてのデバイスで一致させてください · 既定値: {port}</value></data>
+  <data name="SettingsMulticast" xml:space="preserve"><value>マルチキャストアドレス</value></data>
+  <data name="SettingsMulticastDescription" xml:space="preserve"><value>デバイス検出に使用する IPv4 マルチキャストグループ</value></data>
+  <data name="SettingsMulticastWarning" xml:space="preserve"><value>カスタムアドレスはすべてのデバイスで一致させてください · 既定値: {group}</value></data>
+  <data name="SettingsMinimizeToTray" xml:space="preserve"><value>閉じるときにトレイへ最小化</value></data>
+  <data name="SettingsMinimizeToTrayDescription" xml:space="preserve"><value>メインウィンドウを非表示にしてバックグラウンドで実行</value></data>
+  <data name="SettingsTrayClickOpensFlyout" xml:space="preserve"><value>トレイアイコンのクリック動作</value></data>
+  <data name="SettingsTrayClickOpensFlyoutDescription" xml:space="preserve"><value>トレイアイコンをクリックしたときに開く画面を選択</value></data>
+  <data name="SettingsTrayClickOpenPanel" xml:space="preserve"><value>トレイパネルを開く</value></data>
+  <data name="SettingsTrayClickOpenWindow" xml:space="preserve"><value>メインウィンドウを開く</value></data>
+  <data name="SettingsReceive" xml:space="preserve"><value>受信</value></data>
+  <data name="SettingsSend" xml:space="preserve"><value>送信</value></data>
+  <data name="SettingsExpandDragDrop" xml:space="preserve"><value>アプリ全体でドラッグ＆ドロップ</value></data>
+  <data name="SettingsExpandDragDropDescription" xml:space="preserve"><value>アプリ内のどこにでもファイルやフォルダーをドロップして送信リストに追加</value></data>
+  <data name="SettingsVerifyChecksumsOnReceive" xml:space="preserve"><value>ファイルのチェックサムを検証</value></data>
+  <data name="SettingsVerifyChecksumsOnReceiveDescription" xml:space="preserve"><value>送信者の SHA-256 チェックサムでファイルの完全性を確認</value></data>
+  <data name="SettingsVerifyChecksumsOnSend" xml:space="preserve"><value>ファイルのチェックサムを計算</value></data>
+  <data name="SettingsVerifyChecksumsOnSendDescription" xml:space="preserve"><value>送信前に SHA-256 を計算して受信者による完全性確認を可能にする</value></data>
+  <data name="SettingsReceivePin" xml:space="preserve"><value>受信 PIN</value></data>
+  <data name="SettingsReceivePinDescription" xml:space="preserve"><value>32 文字以内 · 保存してサーバーを開始または再起動すると反映</value></data>
+  <data name="SettingsReceivePinEnabled" xml:space="preserve"><value>PIN 保護を有効にする</value></data>
+  <data name="SettingsReceivePinEnabledDescription" xml:space="preserve"><value>送信者に PIN の入力を要求</value></data>
+  <data name="SettingsReceivePinProtection" xml:space="preserve"><value>PIN 保護</value></data>
+  <data name="SettingsReceivePinProtectionDescription" xml:space="preserve"><value>他のデバイスからの受信に PIN を要求</value></data>
+  <data name="SettingsSaveReceiveHistory" xml:space="preserve"><value>受信履歴を保存</value></data>
+  <data name="SettingsSaveReceiveHistoryDescription" xml:space="preserve"><value>受信ファイルの記録を残して後から簡単にアクセス</value></data>
+  <data name="SettingsRestartServer" xml:space="preserve"><value>サーバーを再起動</value></data>
+  <data name="SettingsSaveLocation" xml:space="preserve"><value>保存先</value></data>
+  <data name="SettingsServerOffline" xml:space="preserve"><value>サーバー</value></data>
+  <data name="SettingsServerRunning" xml:space="preserve"><value>サーバーは実行中です</value></data>
+  <data name="SettingsServerStopped" xml:space="preserve"><value>サーバーは停止しています</value></data>
+  <data name="SettingsStartServer" xml:space="preserve"><value>サーバーを開始</value></data>
+  <data name="SettingsStopServer" xml:space="preserve"><value>サーバーを停止</value></data>
+  <data name="SettingsStartWithWindows" xml:space="preserve"><value>サインイン時に起動</value></data>
+  <data name="SettingsStartWithWindowsDescription" xml:space="preserve"><value>Windows へのサインイン時に Tonarink を起動</value></data>
+  <data name="SettingsWindowsShareSuggestions" xml:space="preserve"><value>Windows の共有にお気に入りを表示</value></data>
+  <data name="SettingsWindowsShareSuggestionsDescription" xml:space="preserve"><value>お気に入りのデバイスをおすすめの連絡先として表示 · MSIX 版のみ</value></data>
+  <data name="SettingsNotifications" xml:space="preserve"><value>システム通知</value></data>
+  <data name="SettingsNotificationsDescription" xml:space="preserve"><value>受信リクエストと転送完了を Windows の通知で表示</value></data>
+  <data name="SettingsNotificationsEnabled" xml:space="preserve"><value>通知を有効にする</value></data>
+  <data name="SettingsNotificationsEnabledDescription" xml:space="preserve"><value>Tonarink の Windows 通知を許可</value></data>
+  <data name="SettingsNotificationsDefaultAction" xml:space="preserve"><value>転送完了の通知をクリックしたとき</value></data>
+  <data name="SettingsNotificationsDefaultActionDescription" xml:space="preserve"><value>ファイルを開く、または保存先のフォルダーで表示</value></data>
+  <data name="SettingsNotificationsDefaultOpenFile" xml:space="preserve"><value>ファイルを開く</value></data>
+  <data name="SettingsNotificationsDefaultShowInFolder" xml:space="preserve"><value>フォルダーで表示</value></data>
+  <data name="SettingsNotificationsTest" xml:space="preserve"><value>テスト通知</value></data>
+  <data name="SettingsNotificationsTestDescription" xml:space="preserve"><value>Windows で通知が許可されているか確認</value></data>
+  <data name="SettingsNotificationsSendTest" xml:space="preserve"><value>テスト通知を送信</value></data>
+  <data name="SettingsNotificationsTestTitle" xml:space="preserve"><value>Tonarink のテスト通知</value></data>
+  <data name="SettingsNotificationsTestMessage" xml:space="preserve"><value>システム通知は正常に動作しています</value></data>
+  <data name="SettingsNotificationsTestFailed" xml:space="preserve"><value>テスト通知を送信できませんでした · Windows の通知設定または notifications.log を確認してください</value></data>
+  <data name="ExplorerCommandTitle" xml:space="preserve"><value>Tonarink で送信</value></data>
+  <data name="SettingsExplorerContextMenu" xml:space="preserve"><value>エクスプローラーの右クリックメニュー</value></data>
+  <data name="SettingsExplorerContextMenuDescription" xml:space="preserve"><value>右クリックメニューに「Tonarink で送信」を追加 · Windows 11 の MSIX 版のみ</value></data>
+  <data name="SettingsExplorerFavorites" xml:space="preserve"><value>サブメニューにお気に入りを表示</value></data>
+  <data name="SettingsExplorerFavoritesDescription" xml:space="preserve"><value>お気に入りを選んで直接送信 · オフの場合は送信リストに追加のみ</value></data>
+  <data name="ExplorerCommandAddToList" xml:space="preserve"><value>送信リストに追加</value></data>
+  <data name="SettingsSendTo" xml:space="preserve"><value>エクスプローラーの「送る」メニュー</value></data>
+  <data name="SettingsSendToDescription" xml:space="preserve"><value>「送る」に Tonarink を追加し、選択したファイルを送信リストへ追加 · 非パッケージ版のみ</value></data>
+  <data name="SettingsSendToFailed" xml:space="preserve"><value>「送る」メニューを更新できませんでした: {error}</value></data>
+  <data name="SettingsAppExecutionAliases" xml:space="preserve"><value>アプリ実行エイリアス</value></data>
+  <data name="SettingsAppExecutionAliasesDescription" xml:space="preserve"><value>Windows の設定を開き、アプリ → アプリの詳細設定 → アプリ実行エイリアスで tonarink コマンドを管理 · MSIX 版のみ</value></data>
+  <data name="SettingsAppExecutionAliasesOpenFailed" xml:space="preserve"><value>Windows の設定を開けませんでした · 設定 → アプリ → アプリの詳細設定 → アプリ実行エイリアスへ進んでください</value></data>
+  <data name="StartupDisabledByPolicy" xml:space="preserve"><value>Windows のポリシーにより、サインイン時の起動が禁止されています</value></data>
+  <data name="StartupDisabledByUser" xml:space="preserve"><value>Windows のスタートアップ設定で Tonarink を有効にしてから再試行してください</value></data>
+  <data name="StartupFailed" xml:space="preserve"><value>スタートアップ設定を変更できませんでした: {error}</value></data>
+  <data name="TrayExit" xml:space="preserve"><value>終了</value></data>
+  <data name="TrayFromPeer" xml:space="preserve"><value>{peer} から</value></data>
+  <data name="TrayHistoryTab" xml:space="preserve"><value>履歴</value></data>
+  <data name="TrayNearbyTab" xml:space="preserve"><value>近くのデバイス</value></data>
+  <data name="TrayNoDevices" xml:space="preserve"><value>近くにデバイスがありません</value></data>
+  <data name="TrayOpen" xml:space="preserve"><value>Tonarink を開く</value></data>
+  <data name="TrayMenuOpen" xml:space="preserve"><value>開く</value></data>
+  <data name="TrayReportBug" xml:space="preserve"><value>不具合を報告</value></data>
+  <data name="TrayPinPanel" xml:space="preserve"><value>パネルを固定</value></data>
+  <data name="TrayUnpinPanel" xml:space="preserve"><value>パネルの固定を解除</value></data>
+  <data name="TrayDropToSend" xml:space="preserve"><value>{device} に送信</value></data>
+  <data name="TrayReceiveOff" xml:space="preserve"><value>オフ</value></data>
+  <data name="TrayReceiveOn" xml:space="preserve"><value>オン</value></data>
+  <data name="TrayReceiveService" xml:space="preserve"><value>受信サービス</value></data>
+  <data name="TrayToPeer" xml:space="preserve"><value>{peer} へ</value></data>
+  <data name="TrayTooltip" xml:space="preserve"><value>Tonarink</value></data>
+  <data name="TrayWaitingReceive" xml:space="preserve"><value>受信待機中</value></data>
+  <data name="WidgetAppClosed" xml:space="preserve"><value>アプリは終了しています</value></data>
+  <data name="WidgetAppClosedStatus" xml:space="preserve"><value>終了</value></data>
+  <data name="WidgetAppOpen" xml:space="preserve"><value>実行中</value></data>
+  <data name="WidgetHintAppClosed" xml:space="preserve"><value>アプリを開いてデバイスを検出し、ファイルを受信</value></data>
+  <data name="WidgetHintServerOff" xml:space="preserve"><value>クリックして受信を開始</value></data>
+  <data name="WidgetHintServerOn" xml:space="preserve"><value>受信の準備ができています</value></data>
+  <data name="WidgetHistoryCount" xml:space="preserve"><value>履歴 {count} 件</value></data>
+  <data name="WidgetNearbyCount" xml:space="preserve"><value>近くに {count} 台</value></data>
+  <data name="WidgetReceivingOff" xml:space="preserve"><value>受信はオフです</value></data>
+  <data name="WidgetServerOff" xml:space="preserve"><value>オフ</value></data>
+  <data name="WidgetServerOn" xml:space="preserve"><value>オン</value></data>
+  <data name="SettingsTheme" xml:space="preserve"><value>テーマ</value></data>
+  <data name="SettingsThemeDescription" xml:space="preserve"><value>ライト、ダーク、またはシステムに従う</value></data>
+  <data name="SettingsTitle" xml:space="preserve"><value>設定</value></data>
+  <data name="ShareTargetEmpty" xml:space="preserve"><value>共有された内容にアクセス可能なファイルやテキストがありません</value></data>
+  <data name="ShareTargetFailed" xml:space="preserve"><value>共有された内容を追加できませんでした: {error}</value></data>
+  <data name="ShareSuggestedDeviceOffline" xml:space="preserve"><value>{device} は現在オフラインです。共有内容は送信リストに残っています。再試行するか、別のデバイスを選んでください</value></data>
+  <data name="ShareSuggestedDeviceUnavailable" xml:space="preserve"><value>このデバイスはお気に入りに登録されていません。共有内容は送信リストに残っています</value></data>
+  <data name="ShareSuggestedDeviceConnecting" xml:space="preserve"><value>{device} を検索中です。しばらくお待ちください</value></data>
+  <data name="ShareSuggestedServiceUnavailable" xml:space="preserve"><value>ネットワークサービスが準備できていません。共有内容は送信リストに残っています。サービスを開始して再試行してください</value></data>
+  <data name="TargetDevice" xml:space="preserve"><value>送信先のデバイス</value></data>
+  <data name="TargetRequiresPin" xml:space="preserve"><value>受信先のデバイスには PIN が必要です</value></data>
+  <data name="Text" xml:space="preserve"><value>テキスト</value></data>
+  <data name="TextAvailableAfterAccept" xml:space="preserve"><value>承認すると全文を表示</value></data>
+  <data name="TextContent" xml:space="preserve"><value>テキストの内容</value></data>
+  <data name="TextMessage" xml:space="preserve"><value>テキストメッセージ</value></data>
+  <data name="TextReceived" xml:space="preserve"><value>テキストを受信しました</value></data>
+  <data name="ThemeDark" xml:space="preserve"><value>ダーク</value></data>
+  <data name="ThemeLight" xml:space="preserve"><value>ライト</value></data>
+  <data name="ThisDevice" xml:space="preserve"><value>このデバイス</value></data>
+  <data name="TransferCancelled" xml:space="preserve"><value>転送をキャンセルしました</value></data>
+  <data name="TransferComplete" xml:space="preserve"><value>転送完了</value></data>
+  <data name="TransferFailed" xml:space="preserve"><value>転送に失敗しました</value></data>
+  <data name="TransferPreparing" xml:space="preserve"><value>準備中</value></data>
+  <data name="TransferTransferring" xml:space="preserve"><value>転送中</value></data>
+  <data name="TransferWaiting" xml:space="preserve"><value>承認待ち</value></data>
+  <data name="WaitingForDevice" xml:space="preserve"><value>{device} の承認を待っています…</value></data>
+  <data name="WebShareAccepted" xml:space="preserve"><value>承認済み</value></data>
+  <data name="WebShareAutoAccept" xml:space="preserve"><value>リクエストを自動承認</value></data>
+  <data name="WebShareCopy" xml:space="preserve"><value>リンクをコピー</value></data>
+  <data name="WebShareEncryption" xml:space="preserve"><value>暗号化</value></data>
+  <data name="WebShareEncryptionHint" xml:space="preserve"><value>HTTPS はこのデバイスの証明書を使用するため、ブラウザーに信頼できないという警告が表示される場合があります</value></data>
+  <data name="WebShareNoRequests" xml:space="preserve"><value>リクエストはありません</value></data>
+  <data name="WebShareNoLinkAvailable" xml:space="preserve"><value>共有できるリンクがありません</value></data>
+  <data name="WebShareOpenLink" xml:space="preserve"><value>ブラウザーでこのリンクを開いてください:</value></data>
+  <data name="WebSharePinHint" xml:space="preserve"><value>PIN: {pin}</value></data>
+  <data name="WebSharePinTitle" xml:space="preserve"><value>PIN</value></data>
+  <data name="WebShareQr" xml:space="preserve"><value>QR コード</value></data>
+  <data name="WebShareQrTitle" xml:space="preserve"><value>QR コード</value></data>
+  <data name="WebShareRequests" xml:space="preserve"><value>リクエスト</value></data>
+  <data name="WebShareSystemShare" xml:space="preserve"><value>Windows でリンクを共有</value></data>
+  <data name="WebShareRequirePin" xml:space="preserve"><value>PIN を要求</value></data>
+  <data name="WebShareTitle" xml:space="preserve"><value>リンクで共有</value></data>
+  <data name="WebReceiveTitle" xml:space="preserve"><value>リンクで受信</value></data>
+  <data name="WebShareZoom" xml:space="preserve"><value>リンクを拡大表示</value></data>
+  <data name="WebShareZoomTitle" xml:space="preserve"><value>リンク</value></data>
+  <data name="WantsToSendMessage" xml:space="preserve"><value>メッセージを送信しようとしています:</value></data>
+  <data name="WindowUnavailable" xml:space="preserve"><value>現在のウィンドウを利用できません</value></data>
+  <data name="LanguageJapanese" xml:space="preserve"><value>日本語</value></data>
+  <data name="LanguageKorean" xml:space="preserve"><value>한국어</value></data>
+  <data name="LanguageFrench" xml:space="preserve"><value>Français</value></data>
+  <data name="LanguageSpanish" xml:space="preserve"><value>Español</value></data>
+</root>

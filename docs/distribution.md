@@ -59,11 +59,13 @@ the protected environment approves submission.
 
 ## Crowdin and Store languages
 
-The source language is `en-US`; `zh-CN` is currently downloaded by CI because the
-Windows app currently declares those two languages. To add another Store language:
+The source language is `en-US`. The Windows app supports `en-US`, `zh-CN`,
+`ja-JP`, `ko-KR`, `fr-FR`, and `es-ES`. Store listing copy is separate from app
+UI resources; CI currently downloads only the `zh-CN` listing. To add another
+Store listing language:
 
 1. Finish and review that locale in Crowdin.
-2. Add the matching app resource language and package manifest resource.
+2. Ensure the matching app resources and package manifest language are present.
 3. Remove or broaden `download_language: zh-CN` in the Crowdin workflow.
 4. Run `./tools/Test-StoreListing.ps1` and add the locale in Partner Center.
 

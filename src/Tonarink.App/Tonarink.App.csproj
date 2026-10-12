@@ -85,8 +85,8 @@
 
     <PropertyGroup Condition="'$(NativeAot)' == 'true'">
         <PublishAot>true</PublishAot>
-        <!-- LocaleProvider/IntlAccessor construct CultureInfo(locale). zh-CN and
-             en-US are required for Resw strings and must stay available. -->
+        <!-- LocaleProvider/IntlAccessor need culture data for every supported
+             locale, including plural rules and localized number formatting. -->
         <InvariantGlobalization>false</InvariantGlobalization>
         <SelfContained>true</SelfContained>
     </PropertyGroup>

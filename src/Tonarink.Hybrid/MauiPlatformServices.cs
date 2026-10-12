@@ -9,7 +9,7 @@ internal sealed class MauiPlatformServices : IPlatformServices
     private readonly ConcurrentDictionary<Guid, FileResult> _files = new();
     private readonly ImportedShareStore _imports = new(Path.Combine(FileSystem.Current.CacheDirectory, "shared"));
 
-    public PlatformCapabilities Capabilities { get; } = CreateCapabilities();
+    public PlatformCapabilities Capabilities => CreateCapabilities();
 
     public string DataDirectory => FileSystem.Current.AppDataDirectory;
     public string DownloadDirectory => GetDownloadDirectory();
@@ -39,7 +39,7 @@ internal sealed class MauiPlatformServices : IPlatformServices
     {
         var results = await FilePicker.Default.PickMultipleAsync(new PickOptions
         {
-            PickerTitle = "选择要发送的文件",
+            PickerTitle = MauiLanguage.Text("PickFilesTitle"),
         }).WaitAsync(cancellationToken);
         if (results is null)
             return [];
@@ -81,7 +81,7 @@ internal sealed class MauiPlatformServices : IPlatformServices
         if (item.NativePath is { Length: > 0 } path && File.Exists(path))
             return File.OpenRead(path);
         if (!_files.TryGetValue(item.Id, out var file))
-            throw new FileNotFoundException("所选文件已不在当前会话中。", item.Name);
+            throw new FileNotFoundException(MauiLanguage.Text("SelectedFileExpired"), item.Name);
         return await file.OpenReadAsync().WaitAsync(cancellationToken);
     }
 
@@ -101,7 +101,7 @@ internal sealed class MauiPlatformServices : IPlatformServices
         {
 #pragma warning disable CA1422, CS0618
             var downloads = Android.OS.Environment.GetExternalStoragePublicDirectory(Android.OS.Environment.DirectoryDownloads)?.AbsolutePath
-                ?? throw new IOException("Android public download directory is unavailable.");
+                ?? throw new IOException(MauiLanguage.Text("DownloadsUnavailable"));
 #pragma warning restore CA1422, CS0618
             var directory = Path.Combine(downloads, "Tonarink");
             Directory.CreateDirectory(directory);
@@ -118,12 +118,12 @@ internal sealed class MauiPlatformServices : IPlatformServices
         values.Put(Android.Provider.MediaStore.IMediaColumns.RelativePath, Path.Combine(Android.OS.Environment.DirectoryDownloads ?? "Download", "Tonarink"));
         values.Put(Android.Provider.MediaStore.IMediaColumns.IsPending, 1);
         var destination = resolver?.Insert(Android.Provider.MediaStore.Downloads.ExternalContentUri, values)
-            ?? throw new IOException("Android MediaStore could not create the download entry.");
+            ?? throw new IOException(MauiLanguage.Text("DownloadEntryCreateFailed"));
         try
         {
             await using var source = File.OpenRead(path);
             await using var target = resolver.OpenOutputStream(destination)
-                ?? throw new IOException("Android MediaStore could not open the download entry.");
+                ?? throw new IOException(MauiLanguage.Text("DownloadEntryOpenFailed"));
             await source.CopyToAsync(target, cancellationToken);
             values.Clear();
             values.Put(Android.Provider.MediaStore.IMediaColumns.IsPending, 0);
@@ -147,9 +147,9 @@ internal sealed class MauiPlatformServices : IPlatformServices
         var windows = OperatingSystem.IsWindows();
         var limitations = new List<string>();
         if (ios)
-            limitations.Add("iOS suspends arbitrary listening sockets after the app enters the background.");
+            limitations.Add(MauiLanguage.Text("IosBackgroundLimit"));
         if (windows)
-            limitations.Add("Windows Hybrid is a preview host; the production Windows client remains Tonarink.App.");
+            limitations.Add(MauiLanguage.Text("WindowsHybridLimit"));
         return new(DeviceInfo.Current.Platform.ToString(), true, true, android || mac || windows, true,
             android || ios || mac || windows, true, android || ios, limitations);
     }

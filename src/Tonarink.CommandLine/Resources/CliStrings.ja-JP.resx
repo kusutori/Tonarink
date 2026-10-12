@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <data name="Independent configuration/data directory" xml:space="preserve"><value>独立した設定・データディレクトリ</value></data>
+  <data name="Tonarink CLI: reuse the desktop app's server and saved settings" xml:space="preserve"><value>Tonarink CLI: デスクトップアプリのサーバーと保存済み設定を使用</value></data>
+  <data name="Tonarink standalone CLI: manage an independent background LocalSend service" xml:space="preserve"><value>Tonarink 独立 CLI: バックグラウンドの LocalSend サービスを管理</value></data>
+  <data name="Write progress and results as NDJSON" xml:space="preserve"><value>進行状況と結果を NDJSON で出力</value></data>
+  <data name="Cancel this command after N seconds (1-86400)" xml:space="preserve"><value>N 秒後にコマンドをキャンセル（1～86400）</value></data>
+  <data name="Only connect to an already running host" xml:space="preserve"><value>実行中のホストにのみ接続</value></data>
+  <data name="CLI output language: {0} (default: system)" xml:space="preserve"><value>CLI の表示言語: {0}（既定: system）</value></data>
+  <data name="Expected --language one of: {0}." xml:space="preserve"><value>--language は次のいずれかを指定してください: {0}</value></data>
+  <data name="Show server state without starting the host" xml:space="preserve"><value>ホストを起動せずにサーバーの状態を表示</value></data>
+  <data name="Refresh discovery and list nearby devices" xml:space="preserve"><value>デバイス検出を更新し、近くのデバイスを一覧表示</value></data>
+  <data name="List known devices" xml:space="preserve"><value>検出済みデバイスを一覧表示</value></data>
+  <data name="Discovery duration (default: devices 1, discover 5)" xml:space="preserve"><value>検出時間（既定: devices は 1 秒、discover は 5 秒）</value></data>
+  <data name="Send files, folders or text to a device" xml:space="preserve"><value>ファイル、フォルダー、テキストをデバイスに送信</value></data>
+  <data name="Device name, fingerprint, favorite or HTTP(S) IP address" xml:space="preserve"><value>デバイス名、フィンガープリント、お気に入り、または HTTP(S) IP アドレス</value></data>
+  <data name="Receiver PIN (may be visible in process listings)" xml:space="preserve"><value>受信側の PIN（プロセス一覧に表示される場合があります）</value></data>
+  <data name="Disable checksums for this transfer" xml:space="preserve"><value>この転送のチェックサムを無効にする</value></data>
+  <data name="Cancel a pending or active transfer" xml:space="preserve"><value>保留中または進行中の転送をキャンセル</value></data>
+  <data name="Inspect and handle incoming requests" xml:space="preserve"><value>受信リクエストを確認して処理</value></data>
+  <data name="List pending requests" xml:space="preserve"><value>保留中のリクエストを一覧表示</value></data>
+  <data name="Accept all items in an incoming request" xml:space="preserve"><value>受信リクエストのすべての項目を承認</value></data>
+  <data name="Decline an incoming request" xml:space="preserve"><value>受信リクエストを拒否</value></data>
+  <data name="Watch incoming requests until cancelled or the duration expires" xml:space="preserve"><value>キャンセルまたは指定時間まで受信リクエストを監視</value></data>
+  <data name="Accept incoming requests while watching" xml:space="preserve"><value>監視中に受信リクエストを承認</value></data>
+  <data name="Watch duration; omit to watch until Ctrl+C" xml:space="preserve"><value>監視時間 · 省略すると Ctrl+C まで監視</value></data>
+  <data name="Control the LocalSend server" xml:space="preserve"><value>LocalSend サーバーを操作</value></data>
+  <data name="Start the server" xml:space="preserve"><value>サーバーを開始</value></data>
+  <data name="Stop the server" xml:space="preserve"><value>サーバーを停止</value></data>
+  <data name="Restart the server (interrupts active transfers)" xml:space="preserve"><value>サーバーを再起動（進行中の転送は中断）</value></data>
+  <data name="Read or persist host settings" xml:space="preserve"><value>ホストの設定を読み取り、保存</value></data>
+  <data name="Read one setting" xml:space="preserve"><value>設定を 1 件取得</value></data>
+  <data name="List supported settings" xml:space="preserve"><value>対応する設定を一覧表示</value></data>
+  <data name="Setting key" xml:space="preserve"><value>設定キー</value></data>
+  <data name="Include the receiving PIN" xml:space="preserve"><value>受信 PIN を含める</value></data>
+  <data name="Validate and save one setting" xml:space="preserve"><value>設定を 1 件検証して保存</value></data>
+  <data name="Setting value; quote paths and empty strings" xml:space="preserve"><value>設定値 · パスや空文字列は引用符で囲む</value></data>
+  <data name="Restart using the saved settings" xml:space="preserve"><value>保存済みの設定で再起動</value></data>
+  <data name="Manage saved device identities" xml:space="preserve"><value>保存済みのデバイス識別情報を管理</value></data>
+  <data name="List saved favorites" xml:space="preserve"><value>お気に入りを一覧表示</value></data>
+  <data name="Probe and save a device" xml:space="preserve"><value>デバイスを検出して保存</value></data>
+  <data name="Device name, fingerprint or address" xml:space="preserve"><value>デバイス名、フィンガープリント、またはアドレス</value></data>
+  <data name="Remove a favorite" xml:space="preserve"><value>お気に入りを削除</value></data>
+  <data name="Complete saved fingerprint" xml:space="preserve"><value>保存済みの完全なフィンガープリント</value></data>
+  <data name="Manage receive history without deleting saved files" xml:space="preserve"><value>保存済みファイルを削除せずに受信履歴を管理</value></data>
+  <data name="List receive history" xml:space="preserve"><value>受信履歴を一覧表示</value></data>
+  <data name="Remove one history record" xml:space="preserve"><value>履歴を 1 件削除</value></data>
+  <data name="Clear history; saved files are retained" xml:space="preserve"><value>履歴を消去（保存済みファイルは保持）</value></data>
+  <data name="Manage browser sharing" xml:space="preserve"><value>ブラウザーでの共有を管理</value></data>
+  <data name="Share files, folders or text in a browser" xml:space="preserve"><value>ファイル、フォルダー、テキストをブラウザーで共有</value></data>
+  <data name="Receive uploads from a browser" xml:space="preserve"><value>ブラウザーからアップロードを受信</value></data>
+  <data name="Show browser sharing state and links" xml:space="preserve"><value>ブラウザー共有の状態とリンクを表示</value></data>
+  <data name="Stop browser sharing" xml:space="preserve"><value>ブラウザー共有を停止</value></data>
+  <data name="Approve a browser request" xml:space="preserve"><value>ブラウザーのリクエストを承認</value></data>
+  <data name="Reject a browser request" xml:space="preserve"><value>ブラウザーのリクエストを拒否</value></data>
+  <data name="Browser session ID" xml:space="preserve"><value>ブラウザーのセッション ID</value></data>
+  <data name="Control the desktop application" xml:space="preserve"><value>デスクトップアプリを操作</value></data>
+  <data name="Control the independent CLI host" xml:space="preserve"><value>独立 CLI のホストを操作</value></data>
+  <data name="Show the main window, a favorite device or a history entry" xml:space="preserve"><value>メインウィンドウ、お気に入り、または履歴を表示</value></data>
+  <data name="Open a saved device by fingerprint" xml:space="preserve"><value>フィンガープリントでお気に入りを開く</value></data>
+  <data name="Locate a receive history entry by UUID" xml:space="preserve"><value>UUID で受信履歴を表示</value></data>
+  <data name="Do not combine --favorite and --history." xml:space="preserve"><value>--favorite と --history は同時に指定できません</value></data>
+  <data name="Main window opened" xml:space="preserve"><value>メインウィンドウを開きました</value></data>
+  <data name="Exit the host and stop its services" xml:space="preserve"><value>ホストを終了してサービスを停止</value></data>
+  <data name="Host is exiting" xml:space="preserve"><value>ホストを終了しています</value></data>
+  <data name="Command cancelled or timed out" xml:space="preserve"><value>コマンドがキャンセルされたか、タイムアウトしました</value></data>
+  <data name="--{0} must be between 1 and 86400." xml:space="preserve"><value>--{0} は 1～86400 の範囲で指定してください</value></data>
+  <data name="UUID reported by the corresponding list or progress command" xml:space="preserve"><value>対応する一覧や進行状況コマンドに表示される UUID</value></data>
+  <data name="Files or folders; relative to the caller's working directory" xml:space="preserve"><value>ファイルやフォルダー · 呼び出し元の作業ディレクトリからの相対パス</value></data>
+  <data name="Send literal text; use '-' for redirected stdin" xml:space="preserve"><value>テキストを送信 · リダイレクトされた標準入力には '-' を指定</value></data>
+  <data name="Provide paths or --text TEXT." xml:space="preserve"><value>パスまたは --text TEXT を指定してください</value></data>
+  <data name="Do not combine paths with --text." xml:space="preserve"><value>パスと --text は同時に指定できません</value></data>
+  <data name="Confirm this action" xml:space="preserve"><value>この操作を確認</value></data>
+  <data name="This action requires --yes." xml:space="preserve"><value>この操作には --yes が必要です</value></data>
+  <data name="Receive destination for this invocation" xml:space="preserve"><value>今回の受信先</value></data>
+  <data name="Disable checksum verification" xml:space="preserve"><value>チェックサム検証を無効にする</value></data>
+  <data name="Approve browser requests automatically" xml:space="preserve"><value>ブラウザーのリクエストを自動承認</value></data>
+  <data name="Protect browser sharing with a PIN" xml:space="preserve"><value>ブラウザー共有を PIN で保護</value></data>
+  <data name="--text - requires redirected standard input." xml:space="preserve"><value>--text - にはリダイレクトされた標準入力が必要です</value></data>
+  <data name="Stdin text must not exceed 1 MiB of characters." xml:space="preserve"><value>標準入力のテキストは 1 Mi 文字以内で指定してください</value></data>
+  <data name="Host is not running" xml:space="preserve"><value>ホストは実行されていません</value></data>
+  <data name="Host is already stopped" xml:space="preserve"><value>ホストはすでに停止しています</value></data>
+  <data name="The host is not running; remove --no-start to start it." xml:space="preserve"><value>ホストは実行されていません · --no-start を外すと起動します</value></data>
+  <data name="Could not start the background app." xml:space="preserve"><value>バックグラウンドアプリを起動できませんでした</value></data>
+  <data name="Could not start the independent host." xml:space="preserve"><value>独立ホストを起動できませんでした</value></data>
+  <data name="Transfer cancelled" xml:space="preserve"><value>転送をキャンセルしました</value></data>
+  <data name="Transfer not found" xml:space="preserve"><value>転送が見つかりません</value></data>
+  <data name="Server startup failed" xml:space="preserve"><value>サーバーの起動に失敗しました</value></data>
+  <data name="The server did not become ready in time." xml:space="preserve"><value>サーバーの準備が時間内に完了しませんでした</value></data>
+  <data name="Unknown settings key: {0}" xml:space="preserve"><value>不明な設定キー: {0}</value></data>
+  <data name="Favorite saved: {0}" xml:space="preserve"><value>お気に入りを保存しました: {0}</value></data>
+  <data name="Favorite removed" xml:space="preserve"><value>お気に入りを削除しました</value></data>
+  <data name="History updated; saved files were not deleted" xml:space="preserve"><value>履歴を更新しました · 保存済みファイルは削除していません</value></data>
+  <data name="Browser request not found." xml:space="preserve"><value>ブラウザーのリクエストが見つかりません</value></data>
+  <data name="Browser share: {0}" xml:space="preserve"><value>ブラウザー共有: {0}</value></data>
+  <data name="The PIN is incorrect" xml:space="preserve"><value>PIN が違います</value></data>
+  <data name="The receiving device requires --pin PIN" xml:space="preserve"><value>受信側のデバイスには --pin PIN が必要です</value></data>
+  <data name="Too many PIN attempts; try again later" xml:space="preserve"><value>PIN の試行回数が多すぎます · しばらくしてからお試しください</value></data>
+  <data name="The receiving device is busy" xml:space="preserve"><value>受信側のデバイスは使用中です</value></data>
+  <data name="The receiving device declined the transfer" xml:space="preserve"><value>受信側のデバイスが転送を拒否しました</value></data>
+  <data name="Ambiguous device name; use a fingerprint or address." xml:space="preserve"><value>同名のデバイスが複数あります · フィンガープリントまたはアドレスを指定してください</value></data>
+  <data name="Ambiguous favorite name; use a fingerprint." xml:space="preserve"><value>同名のお気に入りが複数あります · フィンガープリントを指定してください</value></data>
+  <data name="The saved address belongs to a different device." xml:space="preserve"><value>保存済みのアドレスは別のデバイスのものです</value></data>
+  <data name="Use an HTTP(S) IP address and port, without paths, credentials or query parameters." xml:space="preserve"><value>HTTP(S) IP アドレスとポートを指定してください · パス、認証情報、クエリは含められません</value></data>
+  <data name="Device '{0}' was not found. Use tonarink discover or provide an IP address." xml:space="preserve"><value>デバイス「{0}」が見つかりません · tonarink discover を実行するか IP アドレスを指定してください</value></data>
+  <data name="No stdin text was supplied." xml:space="preserve"><value>標準入力にテキストがありません</value></data>
+  <data name="File or folder does not exist: {0}" xml:space="preserve"><value>ファイルまたはフォルダーが存在しません: {0}</value></data>
+  <data name="No files to send." xml:space="preserve"><value>送信するファイルがありません</value></data>
+  <data name="At most 10000 files may be sent in one transfer." xml:space="preserve"><value>1 回の転送で送信できるファイルは 10000 件までです</value></data>
+  <data name="Duplicate destination filenames; send the files separately or rename them." xml:space="preserve"><value>送信先のファイル名が重複しています · 別々に送信するか名前を変更してください</value></data>
+  <data name="Incoming {0}" xml:space="preserve"><value>受信リクエスト {0}</value></data>
+  <data name="Receive watch finished" xml:space="preserve"><value>受信の監視を終了しました</value></data>
+  <data name="Incoming request not found." xml:space="preserve"><value>受信リクエストが見つかりません</value></data>
+  <data name="Server is stopped." xml:space="preserve"><value>サーバーは停止しています</value></data>
+  <data name="Incoming request declined" xml:space="preserve"><value>受信リクエストを拒否しました</value></data>
+  <data name="Incoming request not found or already handled." xml:space="preserve"><value>受信リクエストが見つからないか、すでに処理されています</value></data>
+  <data name="Transfer {0}: {1}" xml:space="preserve"><value>転送 {0}: {1}</value></data>
+  <data name="Invalid path: {0}" xml:space="preserve"><value>無効なパス: {0}</value></data>
+  <data name="Command or response exceeds the 4 MiB limit." xml:space="preserve"><value>コマンドまたは応答が 4 MiB の上限を超えています</value></data>
+  <data name="Invalid CLI message length." xml:space="preserve"><value>CLI メッセージの長さが無効です</value></data>
+  <data name="Empty CLI message." xml:space="preserve"><value>CLI メッセージが空です</value></data>
+  <data name="Alias cannot be empty." xml:space="preserve"><value>デバイス名は空にできません</value></data>
+  <data name="Invalid device type." xml:space="preserve"><value>デバイスの種類が無効です</value></data>
+  <data name="Unsupported standalone setting: {0}. Run settings list for supported keys." xml:space="preserve"><value>独立版で非対応の設定: {0} · settings list で設定一覧を確認してください</value></data>
+  <data name="Invalid port/discovery timeout." xml:space="preserve"><value>ポートまたは検出タイムアウトが無効です</value></data>
+  <data name="An IPv4 multicast address is required." xml:space="preserve"><value>IPv4 マルチキャストアドレスが必要です</value></data>
+  <data name="PIN must be at most 32 characters and non-empty when enabled." xml:space="preserve"><value>PIN は 32 文字以内です · 保護が有効な場合は空欄にできません</value></data>
+  <data name="Download directory must be absolute." xml:space="preserve"><value>ダウンロード先は絶対パスで指定してください</value></data>
+  <data name="Expected true or false." xml:space="preserve"><value>true または false を指定してください</value></data>
+  <data name="Expected an integer between {0} and {1}." xml:space="preserve"><value>{0}～{1} の整数を指定してください</value></data>
+  <data name="Expected one of: {0}" xml:space="preserve"><value>次のいずれかを指定してください: {0}</value></data>
+  <data name="Server is already running" xml:space="preserve"><value>サーバーはすでに実行中です</value></data>
+  <data name="Server stopped" xml:space="preserve"><value>サーバーを停止しました</value></data>
+  <data name="Server restarted" xml:space="preserve"><value>サーバーを再起動しました</value></data>
+  <data name="Server started" xml:space="preserve"><value>サーバーを開始しました</value></data>
+  <data name="Setting saved; server-related changes apply after server restart" xml:space="preserve"><value>設定を保存しました · サーバー関連の変更は再起動後に反映されます</value></data>
+  <data name="Device has no usable endpoint." xml:space="preserve"><value>デバイスに利用可能な接続先がありません</value></data>
+  <data name="Device has no usable address." xml:space="preserve"><value>デバイスに利用可能なアドレスがありません</value></data>
+  <data name="Favorite fingerprint not found." xml:space="preserve"><value>お気に入りのフィンガープリントが見つかりません</value></data>
+  <data name="History entry not found." xml:space="preserve"><value>履歴が見つかりません</value></data>
+  <data name="Standalone CLI has no graphical window." xml:space="preserve"><value>独立 CLI には GUI ウィンドウがありません</value></data>
+  <data name="Unknown settings key: {0}. Run tonarink settings list." xml:space="preserve"><value>不明な設定キー: {0} · tonarink settings list を実行してください</value></data>
+  <data name="Multicast must be an IPv4 address between 224.0.0.0 and 239.255.255.255." xml:space="preserve"><value>マルチキャストは 224.0.0.0～239.255.255.255 の IPv4 アドレスで指定してください</value></data>
+  <data name="Invalid server settings: {0}" xml:space="preserve"><value>無効なサーバー設定: {0}</value></data>
+  <data name="The override file does not exist." xml:space="preserve"><value>上書き用のファイルが存在しません</value></data>
+  <data name="{0} cannot be empty." xml:space="preserve"><value>{0} は空にできません</value></data>
+  <data name="Invalid option value: {0}" xml:space="preserve"><value>無効なオプション値: {0}</value></data>
+  <data name="The app is still initializing." xml:space="preserve"><value>アプリはまだ初期化中です</value></data>
+  <data name="Timed out waiting for the server state change." xml:space="preserve"><value>サーバーの状態変更を待機中にタイムアウトしました</value></data>
+  <data name="The app dispatcher is unavailable." xml:space="preserve"><value>アプリのディスパッチャーを利用できません</value></data>
+  <data name="Close the current dialog before opening a device or history entry." xml:space="preserve"><value>デバイスや履歴を開く前に、現在のダイアログを閉じてください</value></data>
+  <data name="Stopped" xml:space="preserve"><value>停止済み</value></data>
+  <data name="Starting" xml:space="preserve"><value>開始中</value></data>
+  <data name="Running" xml:space="preserve"><value>実行中</value></data>
+  <data name="Stopping" xml:space="preserve"><value>停止中</value></data>
+  <data name="Faulted" xml:space="preserve"><value>エラー</value></data>
+  <data name="Completed" xml:space="preserve"><value>完了</value></data>
+  <data name="Cancelled" xml:space="preserve"><value>キャンセル済み</value></data>
+  <data name="Failed" xml:space="preserve"><value>失敗</value></data>
+  <data name="Pending" xml:space="preserve"><value>保留中</value></data>
+  <data name="Preparing" xml:space="preserve"><value>準備中</value></data>
+  <data name="WaitingForAcceptance" xml:space="preserve"><value>承認待ち</value></data>
+  <data name="Transferring" xml:space="preserve"><value>転送中</value></data>
+  <data name="Sending" xml:space="preserve"><value>送信中</value></data>
+  <data name="Receiving" xml:space="preserve"><value>受信中</value></data>
+  <data name="Send" xml:space="preserve"><value>送信</value></data>
+  <data name="Receive" xml:space="preserve"><value>受信</value></data>
+  <data name="Created" xml:space="preserve"><value>作成済み</value></data>
+  <data name="Disposed" xml:space="preserve"><value>破棄済み</value></data>
+  <data name="Show help and usage information" xml:space="preserve"><value>ヘルプと使用方法を表示</value></data>
+  <data name="Description:" xml:space="preserve"><value>説明:</value></data>
+  <data name="[command]" xml:space="preserve"><value>[コマンド]</value></data>
+  <data name="[options]" xml:space="preserve"><value>[オプション]</value></data>
+  <data name="Expected a UUID for {0}." xml:space="preserve"><value>{0} には UUID を指定してください</value></data>
+  <data name="Expected an integer for {0}." xml:space="preserve"><value>{0} には整数を指定してください</value></data>
+  <data name="Text:" xml:space="preserve"><value>テキスト:</value></data>
+  <data name="Open the app, add files, or locate a favorite or history entry" xml:space="preserve"><value>アプリを開く、ファイルを追加、またはお気に入りや履歴を表示</value></data>
+  <data name="Do not combine paths with --history." xml:space="preserve"><value>パスと --history は同時に指定できません</value></data>
+  <data name="This host does not support adding files to a graphical window." xml:space="preserve"><value>このホストは GUI ウィンドウへのファイル追加に対応していません</value></data>
+  <data name="Send To integration is only available in unpackaged builds." xml:space="preserve"><value>「送る」メニューへの追加は非パッケージ版でのみ利用できます</value></data>
+</root>

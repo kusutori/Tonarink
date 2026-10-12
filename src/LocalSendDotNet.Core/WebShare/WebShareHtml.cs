@@ -34,24 +34,26 @@ internal static class WebShareHtml
         <div id="files"></div>
         <script>
         const pinRequired = {{(pinRequired ? "true" : "false")}};
+        const s = {{WebShareUi.ToJson(ui)}};
+        const numbers = new Intl.NumberFormat(s.htmlLang, { maximumFractionDigits: 1 });
         function formatSize(bytes) {
-          if (bytes < 1024) return bytes + ' B';
-          if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
-          return (bytes / 1048576).toFixed(1) + ' MB';
+          if (bytes < 1024) return numbers.format(bytes) + ' B';
+          if (bytes < 1048576) return numbers.format(bytes / 1024) + ' KB';
+          return numbers.format(bytes / 1048576) + ' MB';
         }
         async function start() {
           const status = document.getElementById('status');
           const box = document.getElementById('files');
           let pin = '';
           if (pinRequired) {
-            pin = prompt('PIN') || '';
+            pin = prompt(s.pinPrompt) || '';
           }
-          status.textContent = '…';
+          status.textContent = s.waiting;
           const response = await fetch('/api/localsend/v2/prepare-download?pin=' + encodeURIComponent(pin), { method: 'POST' });
-          if (response.status === 401) { status.textContent = 'PIN'; return; }
-          if (response.status === 429) { status.textContent = 'PIN'; return; }
-          if (response.status === 403) { status.textContent = 'Denied'; return; }
-          if (!response.ok) { status.textContent = 'Error ' + response.status; return; }
+          if (response.status === 401) { status.textContent = s.incorrectPin; return; }
+          if (response.status === 429) { status.textContent = s.tooManyPinAttempts; return; }
+          if (response.status === 403) { status.textContent = s.declined; return; }
+          if (!response.ok) { status.textContent = s.requestFailed + response.status; return; }
           const data = await response.json();
           status.textContent = '';
           for (const file of data.files) {
@@ -69,7 +71,7 @@ internal static class WebShareHtml
             box.append(link);
           }
         }
-        start().catch(() => { document.getElementById('status').textContent = 'Error'; });
+        start().catch(() => { document.getElementById('status').textContent = s.requestFailed.trim(); });
         </script>
         </body>
         </html>
@@ -131,13 +133,13 @@ internal static class WebShareHtml
         }
 
         function withCount(template, count) {
-          return template.replace('{count}', String(count));
+          return template.replace('{count}', new Intl.NumberFormat(s.htmlLang).format(count));
         }
 
         async function upload(files) {
           if (!files.length) return;
           let pin = '';
-          if (pinRequired) pin = prompt('PIN') || '';
+          if (pinRequired) pin = prompt(s.pinPrompt) || '';
           pick.disabled = true;
           status.textContent = s.waiting;
           try {
@@ -175,7 +177,7 @@ internal static class WebShareHtml
               uploaded++;
             }
             status.textContent = uploaded
-              ? withCount(s.sentFiles, uploaded)
+              ? withCount(new Intl.PluralRules(s.htmlLang).select(uploaded) === 'one' ? s.sentFile : s.sentFiles, uploaded)
               : s.noneAccepted;
           } catch (error) {
             status.textContent = error instanceof Error ? error.message : s.uploadFailed;

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <data name="DeviceOffline" xml:space="preserve"><value>デバイスはオフラインです。更新して再試行してください</value></data>
+  <data name="InvalidAddress" xml:space="preserve"><value>アドレスが無効です。IP または IP:ポートを指定してください</value></data>
+  <data name="CannotConnect" xml:space="preserve"><value>このアドレスに接続できませんでした</value></data>
+  <data name="RequestExpired" xml:space="preserve"><value>受信リクエストは期限切れです</value></data>
+  <data name="NodeNotStarted" xml:space="preserve"><value>Tonarink ノードはまだ開始されていません</value></data>
+  <data name="ItemSummary" xml:space="preserve"><value>{0} 件</value></data>
+  <data name="SendCompleteTitle" xml:space="preserve"><value>送信完了</value></data>
+  <data name="SendCompleteBody" xml:space="preserve"><value>{0} に送信しました</value></data>
+  <data name="ReceiveCompleteTitle" xml:space="preserve"><value>受信完了</value></data>
+  <data name="ReceiveCompleteBody" xml:space="preserve"><value>{0} から受信しました</value></data>
+  <data name="IncomingTitle" xml:space="preserve"><value>受信リクエスト</value></data>
+  <data name="IncomingBody" xml:space="preserve"><value>{0} が {1} 件の項目を送信しようとしています</value></data>
+  <data name="AutoReceiveFailed" xml:space="preserve"><value>自動受信に失敗しました</value></data>
+  <data name="BackgroundReceive" xml:space="preserve"><value>バックグラウンド受信</value></data>
+  <data name="BackgroundReceiveDescription" xml:space="preserve"><value>Tonarink をバックグラウンドで実行してデバイスの検出と受信を続けます</value></data>
+  <data name="BackgroundReceiveStatus" xml:space="preserve"><value>バックグラウンドでデバイスを検出し、受信を待っています</value></data>
+  <data name="TransferChannel" xml:space="preserve"><value>転送</value></data>
+  <data name="SelectedFileExpired" xml:space="preserve"><value>選択したファイルはこのセッションでは利用できません</value></data>
+  <data name="StoragePermissionRequired" xml:space="preserve"><value>受信ファイルをダウンロード先に保存するにはストレージのアクセス許可が必要です</value></data>
+  <data name="NearbyPermissionRequired" xml:space="preserve"><value>ローカルネットワークのデバイスを検出して接続するには「付近のデバイス」の権限が必要です</value></data>
+  <data name="WifiUnavailable" xml:space="preserve"><value>Android の Wi-Fi サービスを利用できません</value></data>
+  <data name="MulticastLockUnavailable" xml:space="preserve"><value>Android のマルチキャストロックを作成できませんでした</value></data>
+  <data name="SharedFolderUnavailable" xml:space="preserve"><value>共有フォルダーを利用できません: {0}</value></data>
+  <data name="WebAccessRestricted" xml:space="preserve"><value>Tonarink:WebPassword または TONARINK_WEB_PASSWORD を設定するまで、Tonarink Web はローカルホストからのみアクセスできます</value></data>
+  <data name="ShareImportFailed" xml:space="preserve"><value>共有内容を Tonarink に取り込めませんでした</value></data>
+  <data name="DeviceMobile" xml:space="preserve"><value>モバイルデバイス</value></data>
+  <data name="DeviceWeb" xml:space="preserve"><value>Web デバイス</value></data>
+  <data name="DeviceHeadless" xml:space="preserve"><value>ヘッドレスデバイス</value></data>
+  <data name="DeviceServer" xml:space="preserve"><value>サーバー</value></data>
+  <data name="DeviceDesktop" xml:space="preserve"><value>パソコン</value></data>
+  <data name="PickFilesTitle" xml:space="preserve"><value>送信するファイルを選択</value></data>
+  <data name="BrowserHostLimits" xml:space="preserve"><value>このブラウザーはブラウザー内ではなく、Web サーバー上の LocalSend ノードを操作します</value></data>
+  <data name="BrowserPickFiles" xml:space="preserve"><value>Web のファイルはブラウザーのファイル選択で指定してください</value></data>
+  <data name="BrowserPickFolders" xml:space="preserve"><value>Web のフォルダーはブラウザーのファイル選択で指定してください</value></data>
+  <data name="BrowserShareUnavailable" xml:space="preserve"><value>Web ホストはシステムで共有されたファイルを取り込めません</value></data>
+  <data name="BrowserFileExpired" xml:space="preserve"><value>ブラウザーのファイルは現在のブラウザーセッションで読み取る必要があります</value></data>
+  <data name="BrowserClipboard" xml:space="preserve"><value>Web のクリップボードにはブラウザーの JavaScript からアクセスしてください</value></data>
+  <data name="IosBackgroundLimit" xml:space="preserve"><value>iOS はアプリがバックグラウンドに入ると、待ち受けソケットを一時停止します</value></data>
+  <data name="WindowsHybridLimit" xml:space="preserve"><value>Windows Hybrid はプレビュー版です。正式な Windows クライアントは Tonarink.App です</value></data>
+  <data name="BrowserSocketLimit" xml:space="preserve"><value>ブラウザー内では LocalSend の UDP マルチキャストや受信 TCP 接続を待ち受けできません</value></data>
+  <data name="BrowserNodeLimit" xml:space="preserve"><value>Web 版は実行中の Tonarink ノードに接続するか、ブラウザー共有を使用します</value></data>
+  <data name="NativeNodeUnsupported" xml:space="preserve"><value>{0} では完全な LocalSend ノードを直接実行できません</value></data>
+  <data name="AndroidActivityUnavailable" xml:space="preserve"><value>Android の画面を利用できません</value></data>
+  <data name="FolderOpenFailed" xml:space="preserve"><value>選択したフォルダーを開けませんでした</value></data>
+  <data name="IosViewUnavailable" xml:space="preserve"><value>iOS の画面を利用できません</value></data>
+  <data name="ContentResolverUnavailable" xml:space="preserve"><value>Android のコンテンツリゾルバーを利用できません</value></data>
+  <data name="WindowHandleUnavailable" xml:space="preserve"><value>Windows のウィンドウハンドルを取得できません</value></data>
+  <data name="DownloadsUnavailable" xml:space="preserve"><value>Android の共有ダウンロードフォルダーを利用できません</value></data>
+  <data name="DownloadEntryCreateFailed" xml:space="preserve"><value>Android のダウンロード項目を作成できませんでした</value></data>
+  <data name="DownloadEntryOpenFailed" xml:space="preserve"><value>Android のダウンロード項目を開けませんでした</value></data>
+  <data name="NotificationServiceUnavailable" xml:space="preserve"><value>Android の通知サービスを利用できません</value></data>
+</root>

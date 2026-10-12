@@ -9,9 +9,14 @@ public enum TonarinkTheme
 
 public enum TonarinkLanguage
 {
-    System,
-    SimplifiedChinese,
-    English,
+    // Persisted as an index by the Windows app; never reorder these values.
+    System = 0,
+    SimplifiedChinese = 1,
+    English = 2,
+    Japanese = 3,
+    Korean = 4,
+    French = 5,
+    Spanish = 6,
 }
 
 public enum TransferDirection
@@ -66,7 +71,7 @@ public sealed record PlatformCapabilities(
     bool CanUseSystemShare,
     IReadOnlyList<string> Limitations)
 {
-    public static PlatformCapabilities Browser { get; } = new(
+    public static PlatformCapabilities Browser => new(
         "Web",
         IsNative: false,
         CanRunLocalSendNode: false,
@@ -75,7 +80,7 @@ public sealed record PlatformCapabilities(
         CanPickFolders: false,
         CanUseClipboard: true,
         CanUseSystemShare: true,
-        ["浏览器沙箱不能监听 LocalSend 的 UDP 多播和入站 TCP 端口。", "Web 版将连接到一个正在运行的 Tonarink 节点，或使用浏览器分享模式。"]);
+        [AppText.Get("BrowserSocketLimit"), AppText.Get("BrowserNodeLimit")]);
 }
 
 public sealed record NearbyDevice(
@@ -85,7 +90,10 @@ public sealed record NearbyDevice(
     string DeviceType,
     string Address,
     int Port,
-    DateTimeOffset LastSeen);
+    DateTimeOffset LastSeen)
+{
+    public bool IsModelFallback { get; init; }
+}
 
 public sealed record ShareItem(
     Guid Id,
@@ -101,7 +109,11 @@ public sealed record IncomingOffer(
     string SenderAlias,
     string SenderModel,
     IReadOnlyList<ShareItem> Items,
-    DateTimeOffset ReceivedAt);
+    DateTimeOffset ReceivedAt)
+{
+    public string? SenderDeviceType { get; init; }
+    public bool IsSenderModelFallback { get; init; }
+}
 
 public sealed record TransferActivity(
     string Id,
@@ -113,6 +125,10 @@ public sealed record TransferActivity(
     long TotalBytes,
     DateTimeOffset UpdatedAt)
 {
+    // Keep count as data so a language change can update existing UI rows.
+    // Old persisted entries may only contain Summary and remain readable.
+    public int? ItemCount { get; init; }
+
     public double Progress => TotalBytes <= 0
         ? 0
         : Math.Clamp((double)BytesTransferred / TotalBytes, 0, 1);

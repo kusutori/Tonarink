@@ -21,7 +21,7 @@
                         <span class="file-icon"><FluentIcon Value="@TransferIcon(transfer.Direction)" /></span>
                         <span>
                             <strong>@transfer.PeerAlias</strong>
-                            <small>@transfer.Summary · @StatusText(transfer.Status)</small>
+                            <small>@TransferSummary(transfer) · @StatusText(transfer.Status)</small>
                             <FluentProgressBar Value="@((int)(transfer.Progress * 100))" Min="0" Max="100" />
                         </span>
                         <time>@transfer.UpdatedAt.ToLocalTime().ToString("g")</time>

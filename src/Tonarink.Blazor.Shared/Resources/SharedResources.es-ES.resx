@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <data name="AddText" xml:space="preserve"><value>Añadir texto</value></data>
+  <data name="AddTextDescription" xml:space="preserve"><value>Escribe un mensaje para enviar</value></data>
+  <data name="AddToQueue" xml:space="preserve"><value>Añadir a la lista de envío</value></data>
+  <data name="AdvertisedAs" xml:space="preserve"><value>Se anuncia como «{0}» en la red local</value></data>
+  <data name="Appearance" xml:space="preserve"><value>Apariencia</value></data>
+  <data name="AppearanceDescription" xml:space="preserve"><value>Tema e idioma de la interfaz</value></data>
+  <data name="AutoAccept" xml:space="preserve"><value>Recepción automática</value></data>
+  <data name="AutoAcceptDescription" xml:space="preserve"><value>Guardar solicitudes directamente en el directorio de descargas</value></data>
+  <data name="BackToReceive" xml:space="preserve"><value>Volver a recibir</value></data>
+  <data name="BackToReceivePage" xml:space="preserve"><value>Volver a recibir</value></data>
+  <data name="BrowserLimitationsDescription" xml:space="preserve"><value>Este navegador controla el nodo Tonarink que se ejecuta en el servidor</value></data>
+  <data name="BrowserLimitationsTitle" xml:space="preserve"><value>Limitaciones del navegador</value></data>
+  <data name="BrowserNotifications" xml:space="preserve"><value>Notificaciones del navegador</value></data>
+  <data name="BrowserNotificationsDescription" xml:space="preserve"><value>Mostrar notificaciones para solicitudes y transferencias completadas</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Cancelar</value></data>
+  <data name="CancelReceive" xml:space="preserve"><value>Cancelar recepción</value></data>
+  <data name="CancelTransfer" xml:space="preserve"><value>Cancelar transferencia</value></data>
+  <data name="ChooseWhatToReceive" xml:space="preserve"><value>Elegir qué recibir</value></data>
+  <data name="Clear" xml:space="preserve"><value>Vaciar</value></data>
+  <data name="Clipboard" xml:space="preserve"><value>Portapapeles</value></data>
+  <data name="Close" xml:space="preserve"><value>Cerrar</value></data>
+  <data name="Copy" xml:space="preserve"><value>Copiar</value></data>
+  <data name="CouldNotComplete" xml:space="preserve"><value>No se pudo completar</value></data>
+  <data name="CouldNotSave" xml:space="preserve"><value>No se pudo guardar</value></data>
+  <data name="Decline" xml:space="preserve"><value>Rechazar</value></data>
+  <data name="DeviceIdentity" xml:space="preserve"><value>Identidad del dispositivo</value></data>
+  <data name="DeviceIdentityDescription" xml:space="preserve"><value>Nombre visible para dispositivos cercanos y ubicación de archivos</value></data>
+  <data name="DeviceName" xml:space="preserve"><value>Nombre del dispositivo</value></data>
+  <data name="DeviceNameDescription" xml:space="preserve"><value>Nombre visible para dispositivos cercanos</value></data>
+  <data name="DeviceRequiresPin" xml:space="preserve"><value>El dispositivo destinatario requiere un PIN</value></data>
+  <data name="DownloadDirectory" xml:space="preserve"><value>Directorio de descargas</value></data>
+  <data name="DownloadDirectoryDescription" xml:space="preserve"><value>Los archivos recibidos se guardan aquí</value></data>
+  <data name="EnableNotifications" xml:space="preserve"><value>Activar notificaciones</value></data>
+  <data name="Files" xml:space="preserve"><value>Archivos</value></data>
+  <data name="Folder" xml:space="preserve"><value>Carpeta</value></data>
+  <data name="History" xml:space="preserve"><value>Historial</value></data>
+  <data name="HistoryDescription" xml:space="preserve"><value>Envíos y recepciones de esta sesión</value></data>
+  <data name="IncomingNotifyBody" xml:space="preserve"><value>{0} quiere enviar elementos: {1}</value></data>
+  <data name="IncomingRequest" xml:space="preserve"><value>Solicitud entrante</value></data>
+  <data name="IncomingRequests" xml:space="preserve"><value>Solicitudes entrantes</value></data>
+  <data name="IncomingRequestsDescription" xml:space="preserve"><value>Revisa y elige qué guardar</value></data>
+  <data name="IncomingTransfer" xml:space="preserve"><value>Transferencia entrante</value></data>
+  <data name="IncorrectPin" xml:space="preserve"><value>PIN incorrecto. Inténtalo de nuevo.</value></data>
+  <data name="InvalidAddress" xml:space="preserve"><value>Dirección no válida. Usa IP o IP:puerto.</value></data>
+  <data name="Items" xml:space="preserve"><value>elementos</value></data>
+  <data name="Language" xml:space="preserve"><value>Idioma</value></data>
+  <data name="LanguageChinese" xml:space="preserve"><value>简体中文</value></data>
+  <data name="LanguageDescription" xml:space="preserve"><value>Idioma de la interfaz compartida</value></data>
+  <data name="LanguageEnglish" xml:space="preserve"><value>English</value></data>
+  <data name="LanguageJapanese" xml:space="preserve"><value>日本語</value></data>
+  <data name="LanguageKorean" xml:space="preserve"><value>한국어</value></data>
+  <data name="LanguageFrench" xml:space="preserve"><value>Français</value></data>
+  <data name="LanguageSpanish" xml:space="preserve"><value>Español</value></data>
+  <data name="LanguageSystem" xml:space="preserve"><value>Sistema</value></data>
+  <data name="LookingForDevices" xml:space="preserve"><value>Buscando dispositivos cercanos</value></data>
+  <data name="Navigate" xml:space="preserve"><value>Navegación</value></data>
+  <data name="NearbyDevices" xml:space="preserve"><value>Dispositivos cercanos</value></data>
+  <data name="NearbyDevicesDescription" xml:space="preserve"><value>Elige un dispositivo para enviar la lista actual</value></data>
+  <data name="NoContentHint" xml:space="preserve"><value>Usa las cuatro acciones anteriores para añadir archivos, carpetas, texto o contenido del portapapeles</value></data>
+  <data name="NoContentSelected" xml:space="preserve"><value>No hay contenido seleccionado</value></data>
+  <data name="NodeRunning" xml:space="preserve"><value>Nodo en ejecución</value></data>
+  <data name="NodeStartFailed" xml:space="preserve"><value>Error al iniciar el nodo</value></data>
+  <data name="NodeStopped" xml:space="preserve"><value>Nodo detenido</value></data>
+  <data name="NoPendingRequests" xml:space="preserve"><value>No hay solicitudes pendientes</value></data>
+  <data name="NotConnected" xml:space="preserve"><value>Sin conexión</value></data>
+  <data name="NotificationPermissionDenied" xml:space="preserve"><value>El navegador no ha permitido las notificaciones</value></data>
+  <data name="NoTransfers" xml:space="preserve"><value>No hay transferencias</value></data>
+  <data name="NoTransfersHint" xml:space="preserve"><value>Los envíos y recepciones completados aparecerán aquí</value></data>
+  <data name="Optional" xml:space="preserve"><value>Opcional</value></data>
+  <data name="PageNotFound" xml:space="preserve"><value>Página no encontrada</value></data>
+  <data name="PageNotFoundDescription" xml:space="preserve"><value>Esta dirección no corresponde a ninguna página</value></data>
+  <data name="PendingRequestsHint" xml:space="preserve"><value>Las transferencias entrantes aparecerán aquí</value></data>
+  <data name="PinPlaceholder" xml:space="preserve"><value>Introduce el PIN del dispositivo destinatario</value></data>
+  <data name="PinRequired" xml:space="preserve"><value>Se requiere PIN</value></data>
+  <data name="PinRequiredDescription" xml:space="preserve"><value>El dispositivo destinatario requiere un PIN</value></data>
+  <data name="QueueSummary" xml:space="preserve"><value>Elementos: {0} · {1}</value></data>
+  <data name="ReadyToReceive" xml:space="preserve"><value>Listo para recibir</value></data>
+  <data name="ReadyToSend" xml:space="preserve"><value>Listo para enviar</value></data>
+  <data name="Receive" xml:space="preserve"><value>Recibir</value></data>
+  <data name="ReceiveDescription" xml:space="preserve"><value>Otros dispositivos LocalSend pueden detectar este dispositivo y enviarle contenido</value></data>
+  <data name="ReceiveNItems" xml:space="preserve"><value>Recibir elementos ({0})</value></data>
+  <data name="ReceivePin" xml:space="preserve"><value>PIN de recepción</value></data>
+  <data name="ReceivePinDescription" xml:space="preserve"><value>Déjalo vacío para desactivar. Los remitentes deben usar el nuevo PIN.</value></data>
+  <data name="ReceiveSection" xml:space="preserve"><value>Recepción</value></data>
+  <data name="ReceiveSectionDescription" xml:space="preserve"><value>Elegir cómo gestionar las transferencias entrantes</value></data>
+  <data name="RecentActivity" xml:space="preserve"><value>Actividad reciente</value></data>
+  <data name="RecentActivityDescription" xml:space="preserve"><value>Envíos y recepciones de esta sesión</value></data>
+  <data name="RefreshDevices" xml:space="preserve"><value>Actualizar dispositivos</value></data>
+  <data name="Remove" xml:space="preserve"><value>Quitar</value></data>
+  <data name="RequestExpired" xml:space="preserve"><value>Solicitud caducada</value></data>
+  <data name="RequestExpiredDescription" xml:space="preserve"><value>El remitente puede haber cancelado la solicitud</value></data>
+  <data name="SameNetworkHint" xml:space="preserve"><value>Comprueba que los dispositivos estén en la misma red local</value></data>
+  <data name="SelectAll" xml:space="preserve"><value>Seleccionar todo</value></data>
+  <data name="SelectNone" xml:space="preserve"><value>Deseleccionar todo</value></data>
+  <data name="Send" xml:space="preserve"><value>Enviar</value></data>
+  <data name="SendDescription" xml:space="preserve"><value>Elige archivos o texto y luego un dispositivo cercano</value></data>
+  <data name="SendFailed" xml:space="preserve"><value>Error de envío</value></data>
+  <data name="SendToAddress" xml:space="preserve"><value>Enviar a una dirección</value></data>
+  <data name="SendToKnownAddress" xml:space="preserve"><value>Enviar a una dirección conocida</value></data>
+  <data name="SendToKnownAddressDescription" xml:space="preserve"><value>Usa IP o IP:puerto si el dispositivo no aparece en la lista</value></data>
+  <data name="Settings" xml:space="preserve"><value>Configuración</value></data>
+  <data name="SettingsDescription" xml:space="preserve"><value>Preferencias de Tonarink guardadas en este dispositivo</value></data>
+  <data name="StatusCancelled" xml:space="preserve"><value>Cancelado</value></data>
+  <data name="StatusCompleted" xml:space="preserve"><value>Completado</value></data>
+  <data name="StatusFailed" xml:space="preserve"><value>Error</value></data>
+  <data name="StatusTransferring" xml:space="preserve"><value>Transfiriendo</value></data>
+  <data name="StatusWaiting" xml:space="preserve"><value>Esperando</value></data>
+  <data name="Text" xml:space="preserve"><value>Texto</value></data>
+  <data name="TextPlaceholder" xml:space="preserve"><value>Introduce el texto que quieres enviar…</value></data>
+  <data name="Theme" xml:space="preserve"><value>Tema</value></data>
+  <data name="ThemeDark" xml:space="preserve"><value>Oscuro</value></data>
+  <data name="ThemeDescription" xml:space="preserve"><value>Seguir el sistema o elegir una apariencia fija</value></data>
+  <data name="ThemeLight" xml:space="preserve"><value>Claro</value></data>
+  <data name="ThemeSystem" xml:space="preserve"><value>Sistema</value></data>
+  <data name="TooManyPinAttempts" xml:space="preserve"><value>Demasiados intentos de PIN. Inténtalo más tarde.</value></data>
+  <data name="ClipboardReadFailed" xml:space="preserve"><value>No se pudo leer el portapapeles</value></data>
+  <data name="ClipboardWriteFailed" xml:space="preserve"><value>No se pudo escribir en el portapapeles</value></data>
+  <data name="DeviceBusy" xml:space="preserve"><value>El dispositivo destinatario está ocupado</value></data>
+  <data name="TransferDeclined" xml:space="preserve"><value>El dispositivo destinatario rechazó la transferencia</value></data>
+  <data name="TransferCompleted" xml:space="preserve"><value>Transferencia completada</value></data>
+  <data name="ViewAll" xml:space="preserve"><value>Ver todo</value></data>
+  <data name="WaitingNearby" xml:space="preserve"><value>Esperando dispositivos cercanos</value></data>
+  <data name="WantsToSend" xml:space="preserve"><value>{0} quiere enviarte elementos: {1}</value></data>
+  <data name="Loading" xml:space="preserve"><value>Cargando…</value></data>
+  <data name="UnhandledError" xml:space="preserve"><value>Se produjo un error inesperado</value></data>
+  <data name="Reload" xml:space="preserve"><value>Recargar</value></data>
+  <data name="Retry" xml:space="preserve"><value>Reintentar</value></data>
+  <data name="Resume" xml:space="preserve"><value>Reanudar</value></data>
+  <data name="Dismiss" xml:space="preserve"><value>Cerrar</value></data>
+  <data name="ReconnectAttempt" xml:space="preserve"><value>Reconectando al servidor…</value></data>
+  <data name="ReconnectRetryPrefix" xml:space="preserve"><value>Error de reconexión. Próximo intento en:</value></data>
+  <data name="SecondsUnit" xml:space="preserve"><value>s</value></data>
+  <data name="ReconnectFailed" xml:space="preserve"><value>No se pudo reconectar. Inténtalo de nuevo o recarga la página.</value></data>
+  <data name="SessionPaused" xml:space="preserve"><value>El servidor ha pausado esta sesión.</value></data>
+  <data name="SessionResumeFailed" xml:space="preserve"><value>No se pudo reanudar la sesión. Inténtalo de nuevo o recarga la página.</value></data>
+  <data name="WebErrorTitle" xml:space="preserve"><value>Error</value></data>
+  <data name="WebErrorDescription" xml:space="preserve"><value>Se produjo un error al procesar tu solicitud.</value></data>
+  <data name="RequestId" xml:space="preserve"><value>ID de solicitud:</value></data>
+  <data name="DevelopmentMode" xml:space="preserve"><value>Modo de desarrollo</value></data>
+  <data name="DevelopmentDetails" xml:space="preserve"><value>El entorno Development muestra información detallada de los errores.</value></data>
+  <data name="DevelopmentWarning" xml:space="preserve"><value>No actives Development en aplicaciones desplegadas; puede exponer información sensible de las excepciones.</value></data>
+  <data name="DevelopmentInstructions" xml:space="preserve"><value>Para depuración local, establece ASPNETCORE_ENVIRONMENT en Development y reinicia la aplicación.</value></data>
+  <data name="WebDescription" xml:space="preserve"><value>Tonarink — un cliente no oficial para compartir archivos compatible con LocalSend</value></data>
+</root>

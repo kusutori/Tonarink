@@ -90,4 +90,17 @@
         </ProjectReference>
     </ItemGroup>
 
+    <ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios' Or $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">
+        <BundleResource Include="Platforms\Apple\Resources\**\InfoPlist.strings"
+                        LogicalName="%(RecursiveDir)%(Filename)%(Extension)"
+                        TargetPath="%(RecursiveDir)%(Filename)%(Extension)" />
+    </ItemGroup>
+
+    <ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">
+        <AndroidResource Remove="Platforms\Android\Resources\**\*.xml" />
+        <AndroidResource Include="Platforms\Android\Resources\**\*.xml"
+                         LogicalName="%(RecursiveDir)%(Filename)%(Extension)"
+                         TargetPath="%(RecursiveDir)%(Filename)%(Extension)" />
+    </ItemGroup>
+
 </Project>

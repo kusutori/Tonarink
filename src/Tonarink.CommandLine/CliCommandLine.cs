@@ -31,12 +31,12 @@ sealed class CliCommandLine
         Json = Flag(Root, "json", CliText.Get("Write progress and results as NDJSON"), true);
         Timeout = Seconds(Root, "timeout", CliText.Get("Cancel this command after N seconds (1-86400)"), true);
         NoStart = Flag(Root, "no-start", CliText.Get("Only connect to an already running host"), true);
-        Language = Text(Root, "language", CliText.Get("CLI output language: system, zh-CN or en-US (default: system)"));
+        Language = Text(Root, "language", CliText.Get("CLI output language: {0} (default: system)", CliText.SupportedLanguages));
         Language.Recursive = true;
         Language.Validators.Add(p =>
         {
             if (!CliText.IsSupported(p.GetValueOrDefault<string>()))
-                p.AddError(CliText.Get("Expected --language system, zh-CN or en-US."));
+                p.AddError(CliText.Get("Expected --language one of: {0}.", CliText.SupportedLanguages));
         });
         if (!integrated) Root.Options.Add(Profile);
         var commands = runtime is null ? null : new CliCommands(runtime);

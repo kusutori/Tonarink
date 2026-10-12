@@ -26,6 +26,10 @@
   <Resources>
     <Resource Language="en-us" />
     <Resource Language="zh-cn" />
+    <Resource Language="ja-jp" />
+    <Resource Language="ko-kr" />
+    <Resource Language="fr-fr" />
+    <Resource Language="es-es" />
   </Resources>
 
   <Applications>

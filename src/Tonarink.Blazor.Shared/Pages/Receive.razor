@@ -55,7 +55,7 @@
                     {
                         <a class="row-item interactive" href="@($"/receive/{offer.Id}")">
                             <span class="initial-avatar">@DeviceInitial(offer.SenderAlias)</span>
-                            <span><strong>@offer.SenderAlias</strong><small>@offer.SenderModel · @offer.Items.Count @T("Items")</small></span>
+                            <span><strong>@offer.SenderAlias</strong><small>@SenderModel(offer) · @AppText.Get("ItemSummary", AppState.Settings.Language, offer.Items.Count)</small></span>
                             <FluentIcon Value="@(new Icons.Regular.Size20.ChevronRight())" />
                         </a>
                     }
@@ -78,8 +78,8 @@
                     {
                         <div class="row-item">
                             <FluentIcon Value="@TransferIcon(transfer.Direction)" />
-                            <span><strong>@transfer.PeerAlias</strong><small>@transfer.Summary</small></span>
-                            <FluentBadge Appearance="BadgeAppearance.Outline">@transfer.Status</FluentBadge>
+                            <span><strong>@transfer.PeerAlias</strong><small>@TransferSummary(transfer)</small></span>
+                            <FluentBadge Appearance="BadgeAppearance.Outline">@TransferStatusText(transfer.Status)</FluentBadge>
                         </div>
                     }
                 </div>

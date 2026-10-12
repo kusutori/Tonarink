@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <data name="Independent configuration/data directory" xml:space="preserve"><value>Répertoire indépendant de configuration et de données</value></data>
+  <data name="Tonarink CLI: reuse the desktop app's server and saved settings" xml:space="preserve"><value>Tonarink CLI : utiliser le serveur et les paramètres de l’application de bureau</value></data>
+  <data name="Tonarink standalone CLI: manage an independent background LocalSend service" xml:space="preserve"><value>Tonarink CLI autonome : gérer un service LocalSend indépendant en arrière-plan</value></data>
+  <data name="Write progress and results as NDJSON" xml:space="preserve"><value>Écrire la progression et les résultats en NDJSON</value></data>
+  <data name="Cancel this command after N seconds (1-86400)" xml:space="preserve"><value>Annuler la commande après N secondes (1–86400)</value></data>
+  <data name="Only connect to an already running host" xml:space="preserve"><value>Se connecter uniquement à un hôte déjà lancé</value></data>
+  <data name="CLI output language: {0} (default: system)" xml:space="preserve"><value>Langue de sortie CLI : {0} (par défaut : system)</value></data>
+  <data name="Expected --language one of: {0}." xml:space="preserve"><value>Valeurs attendues pour --language : {0}</value></data>
+  <data name="Show server state without starting the host" xml:space="preserve"><value>Afficher l’état du serveur sans lancer l’hôte</value></data>
+  <data name="Refresh discovery and list nearby devices" xml:space="preserve"><value>Actualiser la détection et lister les appareils à proximité</value></data>
+  <data name="List known devices" xml:space="preserve"><value>Lister les appareils connus</value></data>
+  <data name="Discovery duration (default: devices 1, discover 5)" xml:space="preserve"><value>Durée de détection (par défaut : devices 1, discover 5)</value></data>
+  <data name="Send files, folders or text to a device" xml:space="preserve"><value>Envoyer des fichiers, dossiers ou du texte à un appareil</value></data>
+  <data name="Device name, fingerprint, favorite or HTTP(S) IP address" xml:space="preserve"><value>Nom d’appareil, empreinte, favori ou adresse IP HTTP(S)</value></data>
+  <data name="Receiver PIN (may be visible in process listings)" xml:space="preserve"><value>PIN du destinataire (peut apparaître dans la liste des processus)</value></data>
+  <data name="Disable checksums for this transfer" xml:space="preserve"><value>Désactiver les sommes de contrôle pour ce transfert</value></data>
+  <data name="Cancel a pending or active transfer" xml:space="preserve"><value>Annuler un transfert en attente ou en cours</value></data>
+  <data name="Inspect and handle incoming requests" xml:space="preserve"><value>Examiner et traiter les demandes entrantes</value></data>
+  <data name="List pending requests" xml:space="preserve"><value>Lister les demandes en attente</value></data>
+  <data name="Accept all items in an incoming request" xml:space="preserve"><value>Accepter tous les éléments d’une demande</value></data>
+  <data name="Decline an incoming request" xml:space="preserve"><value>Refuser une demande entrante</value></data>
+  <data name="Watch incoming requests until cancelled or the duration expires" xml:space="preserve"><value>Surveiller les demandes jusqu’à annulation ou expiration</value></data>
+  <data name="Accept incoming requests while watching" xml:space="preserve"><value>Accepter les demandes pendant la surveillance</value></data>
+  <data name="Watch duration; omit to watch until Ctrl+C" xml:space="preserve"><value>Durée de surveillance ; omettre pour attendre Ctrl+C</value></data>
+  <data name="Control the LocalSend server" xml:space="preserve"><value>Contrôler le serveur LocalSend</value></data>
+  <data name="Start the server" xml:space="preserve"><value>Démarrer le serveur</value></data>
+  <data name="Stop the server" xml:space="preserve"><value>Arrêter le serveur</value></data>
+  <data name="Restart the server (interrupts active transfers)" xml:space="preserve"><value>Redémarrer le serveur (interrompt les transferts)</value></data>
+  <data name="Read or persist host settings" xml:space="preserve"><value>Lire ou enregistrer les paramètres de l’hôte</value></data>
+  <data name="Read one setting" xml:space="preserve"><value>Lire un paramètre</value></data>
+  <data name="List supported settings" xml:space="preserve"><value>Lister les paramètres disponibles</value></data>
+  <data name="Setting key" xml:space="preserve"><value>Clé du paramètre</value></data>
+  <data name="Include the receiving PIN" xml:space="preserve"><value>Inclure le PIN de réception</value></data>
+  <data name="Validate and save one setting" xml:space="preserve"><value>Valider et enregistrer un paramètre</value></data>
+  <data name="Setting value; quote paths and empty strings" xml:space="preserve"><value>Valeur ; entourer les chemins et chaînes vides de guillemets</value></data>
+  <data name="Restart using the saved settings" xml:space="preserve"><value>Redémarrer avec les paramètres enregistrés</value></data>
+  <data name="Manage saved device identities" xml:space="preserve"><value>Gérer les identités d’appareils enregistrées</value></data>
+  <data name="List saved favorites" xml:space="preserve"><value>Lister les favoris enregistrés</value></data>
+  <data name="Probe and save a device" xml:space="preserve"><value>Détecter et enregistrer un appareil</value></data>
+  <data name="Device name, fingerprint or address" xml:space="preserve"><value>Nom, empreinte ou adresse de l’appareil</value></data>
+  <data name="Remove a favorite" xml:space="preserve"><value>Retirer un favori</value></data>
+  <data name="Complete saved fingerprint" xml:space="preserve"><value>Empreinte complète enregistrée</value></data>
+  <data name="Manage receive history without deleting saved files" xml:space="preserve"><value>Gérer l’historique sans supprimer les fichiers</value></data>
+  <data name="List receive history" xml:space="preserve"><value>Lister l’historique de réception</value></data>
+  <data name="Remove one history record" xml:space="preserve"><value>Retirer une entrée d’historique</value></data>
+  <data name="Clear history; saved files are retained" xml:space="preserve"><value>Vider l’historique ; conserver les fichiers</value></data>
+  <data name="Manage browser sharing" xml:space="preserve"><value>Gérer le partage par navigateur</value></data>
+  <data name="Share files, folders or text in a browser" xml:space="preserve"><value>Partager des fichiers, dossiers ou du texte dans un navigateur</value></data>
+  <data name="Receive uploads from a browser" xml:space="preserve"><value>Recevoir des fichiers depuis un navigateur</value></data>
+  <data name="Show browser sharing state and links" xml:space="preserve"><value>Afficher l’état et les liens du partage par navigateur</value></data>
+  <data name="Stop browser sharing" xml:space="preserve"><value>Arrêter le partage par navigateur</value></data>
+  <data name="Approve a browser request" xml:space="preserve"><value>Approuver une demande du navigateur</value></data>
+  <data name="Reject a browser request" xml:space="preserve"><value>Refuser une demande du navigateur</value></data>
+  <data name="Browser session ID" xml:space="preserve"><value>ID de session du navigateur</value></data>
+  <data name="Control the desktop application" xml:space="preserve"><value>Contrôler l’application de bureau</value></data>
+  <data name="Control the independent CLI host" xml:space="preserve"><value>Contrôler l’hôte CLI autonome</value></data>
+  <data name="Show the main window, a favorite device or a history entry" xml:space="preserve"><value>Afficher la fenêtre principale, un favori ou une entrée d’historique</value></data>
+  <data name="Open a saved device by fingerprint" xml:space="preserve"><value>Ouvrir un appareil favori par son empreinte</value></data>
+  <data name="Locate a receive history entry by UUID" xml:space="preserve"><value>Localiser une entrée d’historique par UUID</value></data>
+  <data name="Do not combine --favorite and --history." xml:space="preserve"><value>Ne pas combiner --favorite et --history</value></data>
+  <data name="Main window opened" xml:space="preserve"><value>Fenêtre principale ouverte</value></data>
+  <data name="Exit the host and stop its services" xml:space="preserve"><value>Quitter l’hôte et arrêter ses services</value></data>
+  <data name="Host is exiting" xml:space="preserve"><value>Fermeture de l’hôte</value></data>
+  <data name="Command cancelled or timed out" xml:space="preserve"><value>Commande annulée ou délai dépassé</value></data>
+  <data name="--{0} must be between 1 and 86400." xml:space="preserve"><value>--{0} doit être compris entre 1 et 86400</value></data>
+  <data name="UUID reported by the corresponding list or progress command" xml:space="preserve"><value>UUID fourni par la commande de liste ou de progression</value></data>
+  <data name="Files or folders; relative to the caller's working directory" xml:space="preserve"><value>Fichiers ou dossiers ; relatifs au répertoire de l’appelant</value></data>
+  <data name="Send literal text; use '-' for redirected stdin" xml:space="preserve"><value>Envoyer du texte ; utiliser '-' pour l’entrée redirigée</value></data>
+  <data name="Provide paths or --text TEXT." xml:space="preserve"><value>Fournir des chemins ou --text TEXT</value></data>
+  <data name="Do not combine paths with --text." xml:space="preserve"><value>Ne pas combiner des chemins avec --text</value></data>
+  <data name="Confirm this action" xml:space="preserve"><value>Confirmer cette action</value></data>
+  <data name="This action requires --yes." xml:space="preserve"><value>Cette action exige --yes</value></data>
+  <data name="Receive destination for this invocation" xml:space="preserve"><value>Destination de réception pour cet appel</value></data>
+  <data name="Disable checksum verification" xml:space="preserve"><value>Désactiver la vérification des sommes de contrôle</value></data>
+  <data name="Approve browser requests automatically" xml:space="preserve"><value>Approuver automatiquement les demandes du navigateur</value></data>
+  <data name="Protect browser sharing with a PIN" xml:space="preserve"><value>Protéger le partage par navigateur avec un PIN</value></data>
+  <data name="--text - requires redirected standard input." xml:space="preserve"><value>--text - exige une entrée standard redirigée</value></data>
+  <data name="Stdin text must not exceed 1 MiB of characters." xml:space="preserve"><value>Le texte d’entrée ne doit pas dépasser 1 Mi de caractères</value></data>
+  <data name="Host is not running" xml:space="preserve"><value>L’hôte n’est pas lancé</value></data>
+  <data name="Host is already stopped" xml:space="preserve"><value>L’hôte est déjà arrêté</value></data>
+  <data name="The host is not running; remove --no-start to start it." xml:space="preserve"><value>L’hôte n’est pas lancé ; retirer --no-start pour le démarrer</value></data>
+  <data name="Could not start the background app." xml:space="preserve"><value>Impossible de lancer l’application en arrière-plan</value></data>
+  <data name="Could not start the independent host." xml:space="preserve"><value>Impossible de lancer l’hôte autonome</value></data>
+  <data name="Transfer cancelled" xml:space="preserve"><value>Transfert annulé</value></data>
+  <data name="Transfer not found" xml:space="preserve"><value>Transfert introuvable</value></data>
+  <data name="Server startup failed" xml:space="preserve"><value>Échec du démarrage du serveur</value></data>
+  <data name="The server did not become ready in time." xml:space="preserve"><value>Le serveur n’est pas prêt dans le délai imparti</value></data>
+  <data name="Unknown settings key: {0}" xml:space="preserve"><value>Clé de paramètre inconnue : {0}</value></data>
+  <data name="Favorite saved: {0}" xml:space="preserve"><value>Favori enregistré : {0}</value></data>
+  <data name="Favorite removed" xml:space="preserve"><value>Favori retiré</value></data>
+  <data name="History updated; saved files were not deleted" xml:space="preserve"><value>Historique mis à jour ; les fichiers sont conservés</value></data>
+  <data name="Browser request not found." xml:space="preserve"><value>Demande du navigateur introuvable</value></data>
+  <data name="Browser share: {0}" xml:space="preserve"><value>Partage par navigateur : {0}</value></data>
+  <data name="The PIN is incorrect" xml:space="preserve"><value>Le PIN est incorrect</value></data>
+  <data name="The receiving device requires --pin PIN" xml:space="preserve"><value>L’appareil destinataire exige --pin PIN</value></data>
+  <data name="Too many PIN attempts; try again later" xml:space="preserve"><value>Trop de tentatives de PIN ; réessayez plus tard</value></data>
+  <data name="The receiving device is busy" xml:space="preserve"><value>L’appareil destinataire est occupé</value></data>
+  <data name="The receiving device declined the transfer" xml:space="preserve"><value>L’appareil destinataire a refusé le transfert</value></data>
+  <data name="Ambiguous device name; use a fingerprint or address." xml:space="preserve"><value>Nom d’appareil ambigu ; utiliser une empreinte ou une adresse</value></data>
+  <data name="Ambiguous favorite name; use a fingerprint." xml:space="preserve"><value>Nom de favori ambigu ; utiliser une empreinte</value></data>
+  <data name="The saved address belongs to a different device." xml:space="preserve"><value>L’adresse enregistrée appartient à un autre appareil</value></data>
+  <data name="Use an HTTP(S) IP address and port, without paths, credentials or query parameters." xml:space="preserve"><value>Utiliser une adresse IP HTTP(S) et un port, sans chemin, identifiants ni paramètres</value></data>
+  <data name="Device '{0}' was not found. Use tonarink discover or provide an IP address." xml:space="preserve"><value>Appareil « {0} » introuvable. Utiliser tonarink discover ou fournir une adresse IP.</value></data>
+  <data name="No stdin text was supplied." xml:space="preserve"><value>Aucun texte fourni sur l’entrée standard</value></data>
+  <data name="File or folder does not exist: {0}" xml:space="preserve"><value>Fichier ou dossier inexistant : {0}</value></data>
+  <data name="No files to send." xml:space="preserve"><value>Aucun fichier à envoyer</value></data>
+  <data name="At most 10000 files may be sent in one transfer." xml:space="preserve"><value>Un transfert peut contenir au maximum 10000 fichiers</value></data>
+  <data name="Duplicate destination filenames; send the files separately or rename them." xml:space="preserve"><value>Noms de destination en double ; envoyer séparément ou renommer</value></data>
+  <data name="Incoming {0}" xml:space="preserve"><value>Demande entrante {0}</value></data>
+  <data name="Receive watch finished" xml:space="preserve"><value>Surveillance des réceptions terminée</value></data>
+  <data name="Incoming request not found." xml:space="preserve"><value>Demande entrante introuvable</value></data>
+  <data name="Server is stopped." xml:space="preserve"><value>Le serveur est arrêté</value></data>
+  <data name="Incoming request declined" xml:space="preserve"><value>Demande entrante refusée</value></data>
+  <data name="Incoming request not found or already handled." xml:space="preserve"><value>Demande introuvable ou déjà traitée</value></data>
+  <data name="Transfer {0}: {1}" xml:space="preserve"><value>Transfert {0} : {1}</value></data>
+  <data name="Invalid path: {0}" xml:space="preserve"><value>Chemin invalide : {0}</value></data>
+  <data name="Command or response exceeds the 4 MiB limit." xml:space="preserve"><value>La commande ou la réponse dépasse la limite de 4 MiB</value></data>
+  <data name="Invalid CLI message length." xml:space="preserve"><value>Longueur de message CLI invalide</value></data>
+  <data name="Empty CLI message." xml:space="preserve"><value>Message CLI vide</value></data>
+  <data name="Alias cannot be empty." xml:space="preserve"><value>Le nom ne peut pas être vide</value></data>
+  <data name="Invalid device type." xml:space="preserve"><value>Type d’appareil invalide</value></data>
+  <data name="Unsupported standalone setting: {0}. Run settings list for supported keys." xml:space="preserve"><value>Paramètre autonome non pris en charge : {0}. Consulter settings list.</value></data>
+  <data name="Invalid port/discovery timeout." xml:space="preserve"><value>Port ou délai de détection invalide</value></data>
+  <data name="An IPv4 multicast address is required." xml:space="preserve"><value>Une adresse multicast IPv4 est requise</value></data>
+  <data name="PIN must be at most 32 characters and non-empty when enabled." xml:space="preserve"><value>Le PIN doit comporter au plus 32 caractères et ne peut pas être vide si activé</value></data>
+  <data name="Download directory must be absolute." xml:space="preserve"><value>Le répertoire de téléchargement doit être un chemin absolu</value></data>
+  <data name="Expected true or false." xml:space="preserve"><value>Valeur attendue : true ou false</value></data>
+  <data name="Expected an integer between {0} and {1}." xml:space="preserve"><value>Un entier entre {0} et {1} est attendu</value></data>
+  <data name="Expected one of: {0}" xml:space="preserve"><value>Valeurs attendues : {0}</value></data>
+  <data name="Server is already running" xml:space="preserve"><value>Le serveur est déjà lancé</value></data>
+  <data name="Server stopped" xml:space="preserve"><value>Serveur arrêté</value></data>
+  <data name="Server restarted" xml:space="preserve"><value>Serveur redémarré</value></data>
+  <data name="Server started" xml:space="preserve"><value>Serveur démarré</value></data>
+  <data name="Setting saved; server-related changes apply after server restart" xml:space="preserve"><value>Paramètre enregistré ; les changements du serveur s’appliquent après redémarrage</value></data>
+  <data name="Device has no usable endpoint." xml:space="preserve"><value>Aucun point de connexion utilisable pour cet appareil</value></data>
+  <data name="Device has no usable address." xml:space="preserve"><value>Aucune adresse utilisable pour cet appareil</value></data>
+  <data name="Favorite fingerprint not found." xml:space="preserve"><value>Empreinte du favori introuvable</value></data>
+  <data name="History entry not found." xml:space="preserve"><value>Entrée d’historique introuvable</value></data>
+  <data name="Standalone CLI has no graphical window." xml:space="preserve"><value>La CLI autonome n’a pas de fenêtre graphique</value></data>
+  <data name="Unknown settings key: {0}. Run tonarink settings list." xml:space="preserve"><value>Clé inconnue : {0}. Exécuter tonarink settings list.</value></data>
+  <data name="Multicast must be an IPv4 address between 224.0.0.0 and 239.255.255.255." xml:space="preserve"><value>L’adresse multicast IPv4 doit être comprise entre 224.0.0.0 et 239.255.255.255</value></data>
+  <data name="Invalid server settings: {0}" xml:space="preserve"><value>Paramètres du serveur invalides : {0}</value></data>
+  <data name="The override file does not exist." xml:space="preserve"><value>Le fichier personnalisé n’existe pas</value></data>
+  <data name="{0} cannot be empty." xml:space="preserve"><value>{0} ne peut pas être vide</value></data>
+  <data name="Invalid option value: {0}" xml:space="preserve"><value>Valeur d’option invalide : {0}</value></data>
+  <data name="The app is still initializing." xml:space="preserve"><value>L’application est encore en cours d’initialisation</value></data>
+  <data name="Timed out waiting for the server state change." xml:space="preserve"><value>Délai dépassé en attendant le changement d’état du serveur</value></data>
+  <data name="The app dispatcher is unavailable." xml:space="preserve"><value>Le répartiteur de l’application est indisponible</value></data>
+  <data name="Close the current dialog before opening a device or history entry." xml:space="preserve"><value>Fermer la boîte de dialogue avant d’ouvrir un appareil ou une entrée d’historique</value></data>
+  <data name="Stopped" xml:space="preserve"><value>Arrêté</value></data>
+  <data name="Starting" xml:space="preserve"><value>Démarrage</value></data>
+  <data name="Running" xml:space="preserve"><value>En cours d’exécution</value></data>
+  <data name="Stopping" xml:space="preserve"><value>Arrêt en cours</value></data>
+  <data name="Faulted" xml:space="preserve"><value>En erreur</value></data>
+  <data name="Completed" xml:space="preserve"><value>Terminé</value></data>
+  <data name="Cancelled" xml:space="preserve"><value>Annulé</value></data>
+  <data name="Failed" xml:space="preserve"><value>Échec</value></data>
+  <data name="Pending" xml:space="preserve"><value>En attente</value></data>
+  <data name="Preparing" xml:space="preserve"><value>Préparation</value></data>
+  <data name="WaitingForAcceptance" xml:space="preserve"><value>En attente d’acceptation</value></data>
+  <data name="Transferring" xml:space="preserve"><value>Transfert en cours</value></data>
+  <data name="Sending" xml:space="preserve"><value>Envoi en cours</value></data>
+  <data name="Receiving" xml:space="preserve"><value>Réception en cours</value></data>
+  <data name="Send" xml:space="preserve"><value>Envoi</value></data>
+  <data name="Receive" xml:space="preserve"><value>Réception</value></data>
+  <data name="Created" xml:space="preserve"><value>Créé</value></data>
+  <data name="Disposed" xml:space="preserve"><value>Libéré</value></data>
+  <data name="Show help and usage information" xml:space="preserve"><value>Afficher l’aide et les instructions</value></data>
+  <data name="Description:" xml:space="preserve"><value>Description :</value></data>
+  <data name="[command]" xml:space="preserve"><value>[commande]</value></data>
+  <data name="[options]" xml:space="preserve"><value>[options]</value></data>
+  <data name="Expected a UUID for {0}." xml:space="preserve"><value>Un UUID est attendu pour {0}</value></data>
+  <data name="Expected an integer for {0}." xml:space="preserve"><value>Un entier est attendu pour {0}</value></data>
+  <data name="Text:" xml:space="preserve"><value>Texte :</value></data>
+  <data name="Open the app, add files, or locate a favorite or history entry" xml:space="preserve"><value>Ouvrir l’application, ajouter des fichiers ou localiser un favori ou une entrée d’historique</value></data>
+  <data name="Do not combine paths with --history." xml:space="preserve"><value>Ne pas combiner des chemins avec --history</value></data>
+  <data name="This host does not support adding files to a graphical window." xml:space="preserve"><value>Cet hôte ne permet pas d’ajouter des fichiers à une fenêtre graphique</value></data>
+  <data name="Send To integration is only available in unpackaged builds." xml:space="preserve"><value>L’intégration à Envoyer vers est réservée aux versions non empaquetées</value></data>
+</root>

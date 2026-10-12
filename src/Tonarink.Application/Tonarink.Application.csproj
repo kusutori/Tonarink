@@ -5,6 +5,14 @@
     <Features>$(Features);runtime-async=on</Features>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <NeutralLanguage>en-US</NeutralLanguage>
   </PropertyGroup>
 
+  <ItemGroup>
+    <!-- Keep localized backend notifications available in single-file/AOT hosts. -->
+    <EmbeddedResource Update="Resources/UserMessages.*.resx">
+      <WithCulture>false</WithCulture>
+      <LogicalName>Tonarink.Application.Resources.%(Filename).resources</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
 </Project>

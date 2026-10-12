@@ -60,7 +60,8 @@ public sealed class ShareViewController : SLComposeServiceViewController
         catch (Exception exception)
         {
             System.Diagnostics.Debug.WriteLine($"Tonarink share extension failed: {exception}");
-            ExtensionContext?.CancelRequest(new NSError(new NSString("Tonarink.ShareExtension"), 1));
+            ExtensionContext?.CancelRequest(new NSError(new NSString("Tonarink.ShareExtension"), 1,
+                NSDictionary.FromObjectAndKey(new NSString(AppText.Get("ShareImportFailed")), NSError.LocalizedDescriptionKey)));
         }
     }
 

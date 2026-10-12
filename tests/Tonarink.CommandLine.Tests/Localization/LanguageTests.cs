@@ -28,7 +28,7 @@ public sealed class LanguageTests
     [TestMethod]
     public void SystemLanguage_UnsupportedCultureFallsBackToEnglish()
     {
-        using var caller = CliText.UseCulture(CultureInfo.GetCultureInfo("ja-JP"));
+        using var caller = CliText.UseCulture(CultureInfo.GetCultureInfo("de-DE"));
         using var language = CliText.UseLanguage("system");
         Assert.AreEqual("en-US", CultureInfo.CurrentUICulture.Name);
         Assert.AreEqual("Transfer cancelled", CliText.Get("Transfer cancelled"));

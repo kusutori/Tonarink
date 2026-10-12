@@ -3,11 +3,11 @@ using System.Text.Json;
 
 namespace Tonarink.Web;
 
-internal sealed class BrowserPlatformServices : IPlatformServices
+internal sealed class BrowserPlatformServices(IServiceProvider services) : IPlatformServices
 {
-    public PlatformCapabilities Capabilities { get; } = new(
+    public PlatformCapabilities Capabilities => new(
         "Web Host", false, true, true, true, false, true, true,
-        ["浏览器页面控制 Web 服务器所在设备上的 LocalSend 节点，而不是浏览器沙箱本身。"]);
+        [Text("BrowserHostLimits")]);
     public string DataDirectory => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Tonarink", "Web");
     public string DownloadDirectory => Path.Combine(DataDirectory, "downloads");
     public string DefaultAlias => Environment.MachineName;
@@ -34,28 +34,31 @@ internal sealed class BrowserPlatformServices : IPlatformServices
     }
 
     public Task<IReadOnlyList<ShareItem>> PickFilesAsync(CancellationToken cancellationToken = default) =>
-        Task.FromException<IReadOnlyList<ShareItem>>(new PlatformNotSupportedException("Web 文件选择由浏览器 InputFile 组件提供。"));
+        Task.FromException<IReadOnlyList<ShareItem>>(new PlatformNotSupportedException(Text("BrowserPickFiles")));
 
     public Task<IReadOnlyList<ShareItem>> PickFoldersAsync(CancellationToken cancellationToken = default) =>
-        Task.FromException<IReadOnlyList<ShareItem>>(new PlatformNotSupportedException("Web 文件夹选择由浏览器文件选择提供。"));
+        Task.FromException<IReadOnlyList<ShareItem>>(new PlatformNotSupportedException(Text("BrowserPickFolders")));
 
     public Task<ShareItem> ImportSharedFileAsync(string fileName, Stream source, string contentType, CancellationToken cancellationToken = default) =>
-        Task.FromException<ShareItem>(new PlatformNotSupportedException("Web 宿主不导入系统分享文件。"));
+        Task.FromException<ShareItem>(new PlatformNotSupportedException(Text("BrowserShareUnavailable")));
 
     public void ReleaseShareItem(ShareItem item) { }
 
     public void ReleaseUnreferencedShareItems(IReadOnlyList<ShareItem> stillHeld) { }
 
     public ValueTask<Stream> OpenReadAsync(ShareItem item, CancellationToken cancellationToken = default) =>
-        ValueTask.FromException<Stream>(new PlatformNotSupportedException("浏览器文件流必须在当前浏览器会话中读取。"));
+        ValueTask.FromException<Stream>(new PlatformNotSupportedException(Text("BrowserFileExpired")));
 
     public Task<string?> ReadClipboardTextAsync(CancellationToken cancellationToken = default) =>
-        Task.FromException<string?>(new PlatformNotSupportedException("Web 剪贴板需要通过浏览器 JavaScript 互操作访问。"));
+        Task.FromException<string?>(new PlatformNotSupportedException(Text("BrowserClipboard")));
 
     public Task WriteClipboardTextAsync(string text, CancellationToken cancellationToken = default) =>
-        Task.FromException(new PlatformNotSupportedException("Web 剪贴板需要通过浏览器 JavaScript 互操作访问。"));
+        Task.FromException(new PlatformNotSupportedException(Text("BrowserClipboard")));
 
     public Task NotifyAsync(string title, string message, CancellationToken cancellationToken = default) => Task.CompletedTask;
 
     public Task PublishReceivedFileAsync(string path, string contentType, CancellationToken cancellationToken = default) => Task.CompletedTask;
+
+    private string Text(string key) => AppText.Get(key,
+        services.GetRequiredService<TonarinkAppState>().Settings.Language);
 }

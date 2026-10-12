@@ -15,7 +15,7 @@ dependencies.
 Implemented so far:
 
 - a shared responsive receive/send/incoming/history/settings UI with runtime
-  Chinese/English and light/dark/system appearance;
+  English, Simplified Chinese, Japanese, Korean, French, and Spanish, plus light/dark/system appearance;
 - a real LocalSend node in the Blazor Server host, protected by loopback-only
   access unless an explicit Web password is configured;
 - PWA metadata, browser file streams, clipboard access, notifications, PIN
@@ -114,7 +114,7 @@ matching App Group provisioning profiles.
 
 Both mobile targets support file selection, clipboard text, LocalSend PIN
 retry, partial acceptance, cancellation, notifications, persisted settings,
-runtime Chinese/English switching, and explicit light/dark/system appearance.
+runtime switching between the six supported languages, and explicit light/dark/system appearance.
 
 ## Local build
 

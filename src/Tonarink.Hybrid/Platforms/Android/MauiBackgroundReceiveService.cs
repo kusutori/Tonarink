@@ -2,6 +2,7 @@ using Android.App;
 using Android.Content;
 using Android.Content.PM;
 using Android.OS;
+using Tonarink.Application;
 
 namespace Tonarink.Hybrid;
 
@@ -12,6 +13,8 @@ public sealed class MauiBackgroundReceiveService : Service
 {
     private const string ChannelId = "tonarink.background-receive";
     private const int NotificationId = 17041;
+    private TonarinkAppState? _state;
+    private string? _notificationLocale;
 
     public static void Start()
     {
@@ -25,8 +28,30 @@ public sealed class MauiBackgroundReceiveService : Service
 
     public override StartCommandResult OnStartCommand(Intent? intent, StartCommandFlags flags, int startId)
     {
+        if (_state is null)
+        {
+            _state = IPlatformApplication.Current?.Services.GetService<TonarinkAppState>();
+            if (_state is not null) _state.Changed += OnStateChanged;
+        }
+        _notificationLocale = MauiLanguage.Locale;
         StartForeground(NotificationId, CreateNotification());
         return StartCommandResult.Sticky;
+    }
+
+    public override void OnDestroy()
+    {
+        if (_state is not null) _state.Changed -= OnStateChanged;
+        _state = null;
+        base.OnDestroy();
+    }
+
+    private void OnStateChanged()
+    {
+        var locale = MauiLanguage.Locale;
+        if (locale == _notificationLocale) return;
+        _notificationLocale = locale;
+        var manager = (NotificationManager?)GetSystemService(NotificationService);
+        manager?.Notify(NotificationId, CreateNotification());
     }
 
     public override Android.OS.IBinder? OnBind(Intent? intent) => null;
@@ -34,13 +59,13 @@ public sealed class MauiBackgroundReceiveService : Service
     private Notification CreateNotification()
     {
         var manager = (NotificationManager?)GetSystemService(NotificationService)
-            ?? throw new InvalidOperationException("Android notification service is unavailable.");
+            ?? throw new InvalidOperationException(MauiLanguage.Text("NotificationServiceUnavailable"));
         Notification.Builder builder;
         if (OperatingSystem.IsAndroidVersionAtLeast(26))
         {
-            var channel = new NotificationChannel(ChannelId, "后台接收", NotificationImportance.Low)
+            var channel = new NotificationChannel(ChannelId, MauiLanguage.Text("BackgroundReceive"), NotificationImportance.Low)
             {
-                Description = "保持 Tonarink 在后台发现设备并接收传输请求。",
+                Description = MauiLanguage.Text("BackgroundReceiveDescription"),
             };
             channel.SetShowBadge(false);
             manager.CreateNotificationChannel(channel);
@@ -59,7 +84,7 @@ public sealed class MauiBackgroundReceiveService : Service
         builder
             .SetSmallIcon(Android.Resource.Drawable.StatSysDownload)
             .SetContentTitle("Tonarink")
-            .SetContentText("正在后台发现设备并等待接收")
+            .SetContentText(MauiLanguage.Text("BackgroundReceiveStatus"))
             .SetCategory(Notification.CategoryService)
             .SetOngoing(true)
             .SetOnlyAlertOnce(true)

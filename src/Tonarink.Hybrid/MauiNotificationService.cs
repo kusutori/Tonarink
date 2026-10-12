@@ -37,7 +37,7 @@ internal static class MauiNotificationService
         Android.App.Notification.Builder builder;
         if (OperatingSystem.IsAndroidVersionAtLeast(26))
         {
-            manager.CreateNotificationChannel(new Android.App.NotificationChannel(channelId, "传输", Android.App.NotificationImportance.Default));
+            manager.CreateNotificationChannel(new Android.App.NotificationChannel(channelId, MauiLanguage.Text("TransferChannel"), Android.App.NotificationImportance.Default));
             builder = new Android.App.Notification.Builder(context, channelId);
         }
         else

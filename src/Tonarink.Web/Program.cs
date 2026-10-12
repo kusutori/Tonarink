@@ -22,6 +22,8 @@ builder.Services.Configure<RequestLocalizationOptions>(options =>
     options.DefaultRequestCulture = new(AppLanguages.DefaultCulture);
     options.SupportedCultures = cultures;
     options.SupportedUICultures = cultures;
+    for (var index = 0; index < options.RequestCultureProviders.Count; index++)
+        options.RequestCultureProviders[index] = new SupportedLocaleRequestCultureProvider(options.RequestCultureProviders[index]);
 });
 
 var app = builder.Build();

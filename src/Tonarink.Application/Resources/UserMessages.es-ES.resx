@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <data name="DeviceOffline" xml:space="preserve"><value>El dispositivo está desconectado. Actualiza e inténtalo de nuevo.</value></data>
+  <data name="InvalidAddress" xml:space="preserve"><value>Dirección no válida. Usa IP o IP:puerto.</value></data>
+  <data name="CannotConnect" xml:space="preserve"><value>No se pudo conectar a esta dirección.</value></data>
+  <data name="RequestExpired" xml:space="preserve"><value>La solicitud entrante ha caducado.</value></data>
+  <data name="NodeNotStarted" xml:space="preserve"><value>El nodo Tonarink no se ha iniciado.</value></data>
+  <data name="ItemSummary" xml:space="preserve"><value>Elementos: {0}</value></data>
+  <data name="SendCompleteTitle" xml:space="preserve"><value>Envío completado</value></data>
+  <data name="SendCompleteBody" xml:space="preserve"><value>Enviado correctamente a {0}</value></data>
+  <data name="ReceiveCompleteTitle" xml:space="preserve"><value>Recepción completada</value></data>
+  <data name="ReceiveCompleteBody" xml:space="preserve"><value>Contenido recibido de {0}</value></data>
+  <data name="IncomingTitle" xml:space="preserve"><value>Transferencia entrante</value></data>
+  <data name="IncomingBody" xml:space="preserve"><value>{0} quiere enviar contenido. Elementos: {1}</value></data>
+  <data name="AutoReceiveFailed" xml:space="preserve"><value>Error de recepción automática</value></data>
+  <data name="BackgroundReceive" xml:space="preserve"><value>Recepción en segundo plano</value></data>
+  <data name="BackgroundReceiveDescription" xml:space="preserve"><value>Mantener la detección de dispositivos y recepción de solicitudes en segundo plano.</value></data>
+  <data name="BackgroundReceiveStatus" xml:space="preserve"><value>Detectando dispositivos y esperando recepción en segundo plano</value></data>
+  <data name="TransferChannel" xml:space="preserve"><value>Transferencias</value></data>
+  <data name="SelectedFileExpired" xml:space="preserve"><value>El archivo seleccionado ya no está disponible en esta sesión.</value></data>
+  <data name="StoragePermissionRequired" xml:space="preserve"><value>Se requiere permiso de almacenamiento para guardar archivos en Descargas.</value></data>
+  <data name="NearbyPermissionRequired" xml:space="preserve"><value>Se requiere el permiso Dispositivos cercanos para detectar y conectar dispositivos de la red local.</value></data>
+  <data name="WifiUnavailable" xml:space="preserve"><value>El servicio Wi-Fi de Android no está disponible.</value></data>
+  <data name="MulticastLockUnavailable" xml:space="preserve"><value>No se pudo crear el bloqueo de multidifusión de Android.</value></data>
+  <data name="SharedFolderUnavailable" xml:space="preserve"><value>La carpeta compartida ya no está disponible: {0}</value></data>
+  <data name="WebAccessRestricted" xml:space="preserve"><value>Tonarink Web está limitado a localhost hasta configurar Tonarink:WebPassword o TONARINK_WEB_PASSWORD.</value></data>
+  <data name="ShareImportFailed" xml:space="preserve"><value>No se pudo importar el contenido compartido en Tonarink.</value></data>
+  <data name="DeviceMobile" xml:space="preserve"><value>Dispositivo móvil</value></data>
+  <data name="DeviceWeb" xml:space="preserve"><value>Dispositivo web</value></data>
+  <data name="DeviceHeadless" xml:space="preserve"><value>Dispositivo sin pantalla</value></data>
+  <data name="DeviceServer" xml:space="preserve"><value>Servidor</value></data>
+  <data name="DeviceDesktop" xml:space="preserve"><value>Ordenador</value></data>
+  <data name="PickFilesTitle" xml:space="preserve"><value>Elegir archivos para enviar</value></data>
+  <data name="BrowserHostLimits" xml:space="preserve"><value>Este navegador controla el nodo LocalSend del servidor web, no uno dentro del navegador.</value></data>
+  <data name="BrowserPickFiles" xml:space="preserve"><value>Elige archivos web con el selector del navegador.</value></data>
+  <data name="BrowserPickFolders" xml:space="preserve"><value>Elige carpetas web con el selector del navegador.</value></data>
+  <data name="BrowserShareUnavailable" xml:space="preserve"><value>El servidor web no puede importar archivos compartidos por el sistema.</value></data>
+  <data name="BrowserFileExpired" xml:space="preserve"><value>Los archivos del navegador deben leerse en la sesión actual.</value></data>
+  <data name="BrowserClipboard" xml:space="preserve"><value>El portapapeles web requiere acceso mediante JavaScript del navegador.</value></data>
+  <data name="IosBackgroundLimit" xml:space="preserve"><value>iOS suspende los sockets de escucha cuando la aplicación pasa a segundo plano.</value></data>
+  <data name="WindowsHybridLimit" xml:space="preserve"><value>Windows Hybrid es una versión de vista previa; el cliente principal de Windows es Tonarink.App.</value></data>
+  <data name="BrowserSocketLimit" xml:space="preserve"><value>El navegador no puede escuchar multidifusión UDP de LocalSend ni conexiones TCP entrantes.</value></data>
+  <data name="BrowserNodeLimit" xml:space="preserve"><value>La aplicación web se conecta a un nodo Tonarink activo o usa el uso compartido en navegador.</value></data>
+  <data name="NativeNodeUnsupported" xml:space="preserve"><value>{0} no puede ejecutar directamente un nodo LocalSend completo.</value></data>
+  <data name="AndroidActivityUnavailable" xml:space="preserve"><value>La actividad de Android no está disponible.</value></data>
+  <data name="FolderOpenFailed" xml:space="preserve"><value>No se pudo abrir la carpeta seleccionada.</value></data>
+  <data name="IosViewUnavailable" xml:space="preserve"><value>El controlador de vista de iOS no está disponible.</value></data>
+  <data name="ContentResolverUnavailable" xml:space="preserve"><value>El proveedor de acceso al contenido de Android no está disponible.</value></data>
+  <data name="WindowHandleUnavailable" xml:space="preserve"><value>El identificador de ventana de Windows no está disponible.</value></data>
+  <data name="DownloadsUnavailable" xml:space="preserve"><value>El directorio público de descargas de Android no está disponible.</value></data>
+  <data name="DownloadEntryCreateFailed" xml:space="preserve"><value>No se pudo crear la entrada de descarga de Android.</value></data>
+  <data name="DownloadEntryOpenFailed" xml:space="preserve"><value>No se pudo abrir la entrada de descarga de Android.</value></data>
+  <data name="NotificationServiceUnavailable" xml:space="preserve"><value>El servicio de notificaciones de Android no está disponible.</value></data>
+</root>

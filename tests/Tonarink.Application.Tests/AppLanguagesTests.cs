@@ -16,7 +16,7 @@ public sealed class AppLanguagesTests
 
     [TestMethod]
     public void MatchFallsBackToEnglish() =>
-        Assert.AreEqual(AppLanguages.English, AppLanguages.Match("ja-JP"));
+        Assert.AreEqual(AppLanguages.English, AppLanguages.Match("de-DE"));
 
     [TestMethod]
     public void FormatReplacesNamedPlaceholders() =>

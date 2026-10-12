@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <data name="DeviceOffline" xml:space="preserve"><value>目标设备已离线，请刷新后重试</value></data>
+  <data name="InvalidAddress" xml:space="preserve"><value>目标地址无效，请使用 IP 或 IP:端口</value></data>
+  <data name="CannotConnect" xml:space="preserve"><value>无法连接到该地址</value></data>
+  <data name="RequestExpired" xml:space="preserve"><value>接收请求已失效</value></data>
+  <data name="NodeNotStarted" xml:space="preserve"><value>Tonarink 节点尚未启动</value></data>
+  <data name="ItemSummary" xml:space="preserve"><value>{0} 项</value></data>
+  <data name="SendCompleteTitle" xml:space="preserve"><value>发送完成</value></data>
+  <data name="SendCompleteBody" xml:space="preserve"><value>已成功发送给 {0}</value></data>
+  <data name="ReceiveCompleteTitle" xml:space="preserve"><value>接收完成</value></data>
+  <data name="ReceiveCompleteBody" xml:space="preserve"><value>已接收来自 {0} 的内容</value></data>
+  <data name="IncomingTitle" xml:space="preserve"><value>收到发送请求</value></data>
+  <data name="IncomingBody" xml:space="preserve"><value>{0} 想要发送 {1} 项内容</value></data>
+  <data name="AutoReceiveFailed" xml:space="preserve"><value>自动接收失败</value></data>
+  <data name="BackgroundReceive" xml:space="preserve"><value>后台接收</value></data>
+  <data name="BackgroundReceiveDescription" xml:space="preserve"><value>保持 Tonarink 在后台发现设备并接收传输请求</value></data>
+  <data name="BackgroundReceiveStatus" xml:space="preserve"><value>正在后台发现设备并等待接收</value></data>
+  <data name="TransferChannel" xml:space="preserve"><value>传输</value></data>
+  <data name="SelectedFileExpired" xml:space="preserve"><value>所选文件已不在当前会话中</value></data>
+  <data name="StoragePermissionRequired" xml:space="preserve"><value>需要存储权限才能把收到的文件保存到下载目录</value></data>
+  <data name="NearbyPermissionRequired" xml:space="preserve"><value>需要“附近的设备”权限才能发现和连接局域网设备</value></data>
+  <data name="WifiUnavailable" xml:space="preserve"><value>无法访问 Android Wi-Fi 服务</value></data>
+  <data name="MulticastLockUnavailable" xml:space="preserve"><value>无法创建 Android 多播锁</value></data>
+  <data name="SharedFolderUnavailable" xml:space="preserve"><value>共享文件夹已不可用：{0}</value></data>
+  <data name="WebAccessRestricted" xml:space="preserve"><value>配置 Tonarink:WebPassword 或 TONARINK_WEB_PASSWORD 前，Tonarink Web 仅允许本机访问</value></data>
+  <data name="ShareImportFailed" xml:space="preserve"><value>无法将共享内容导入 Tonarink</value></data>
+  <data name="DeviceMobile" xml:space="preserve"><value>移动设备</value></data>
+  <data name="DeviceWeb" xml:space="preserve"><value>网页设备</value></data>
+  <data name="DeviceHeadless" xml:space="preserve"><value>无界面设备</value></data>
+  <data name="DeviceServer" xml:space="preserve"><value>服务器</value></data>
+  <data name="DeviceDesktop" xml:space="preserve"><value>桌面设备</value></data>
+  <data name="PickFilesTitle" xml:space="preserve"><value>选择要发送的文件</value></data>
+  <data name="BrowserHostLimits" xml:space="preserve"><value>浏览器页面控制 Web 服务器所在设备上的 LocalSend 节点，而不是浏览器沙箱本身</value></data>
+  <data name="BrowserPickFiles" xml:space="preserve"><value>Web 文件选择由浏览器 InputFile 组件提供</value></data>
+  <data name="BrowserPickFolders" xml:space="preserve"><value>Web 文件夹选择由浏览器文件选择提供</value></data>
+  <data name="BrowserShareUnavailable" xml:space="preserve"><value>Web 宿主不导入系统分享文件</value></data>
+  <data name="BrowserFileExpired" xml:space="preserve"><value>浏览器文件流必须在当前浏览器会话中读取</value></data>
+  <data name="BrowserClipboard" xml:space="preserve"><value>Web 剪贴板需要通过浏览器 JavaScript 互操作访问</value></data>
+  <data name="IosBackgroundLimit" xml:space="preserve"><value>iOS 会在应用进入后台后暂停监听套接字</value></data>
+  <data name="WindowsHybridLimit" xml:space="preserve"><value>Windows Hybrid 为预览宿主，正式 Windows 客户端为 Tonarink.App</value></data>
+  <data name="BrowserSocketLimit" xml:space="preserve"><value>浏览器沙箱不能监听 LocalSend 的 UDP 多播和入站 TCP 端口</value></data>
+  <data name="BrowserNodeLimit" xml:space="preserve"><value>Web 版将连接到一个正在运行的 Tonarink 节点，或使用浏览器分享模式</value></data>
+  <data name="NativeNodeUnsupported" xml:space="preserve"><value>{0} 当前不能直接运行完整 LocalSend 节点</value></data>
+  <data name="AndroidActivityUnavailable" xml:space="preserve"><value>无法访问 Android 界面</value></data>
+  <data name="FolderOpenFailed" xml:space="preserve"><value>无法打开所选文件夹</value></data>
+  <data name="IosViewUnavailable" xml:space="preserve"><value>无法访问 iOS 界面</value></data>
+  <data name="ContentResolverUnavailable" xml:space="preserve"><value>无法访问 Android 内容解析器</value></data>
+  <data name="WindowHandleUnavailable" xml:space="preserve"><value>无法获取 Windows 窗口句柄</value></data>
+  <data name="DownloadsUnavailable" xml:space="preserve"><value>无法访问 Android 公共下载目录</value></data>
+  <data name="DownloadEntryCreateFailed" xml:space="preserve"><value>无法创建 Android 下载条目</value></data>
+  <data name="DownloadEntryOpenFailed" xml:space="preserve"><value>无法打开 Android 下载条目</value></data>
+  <data name="NotificationServiceUnavailable" xml:space="preserve"><value>无法访问 Android 通知服务</value></data>
+</root>

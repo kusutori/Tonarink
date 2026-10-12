@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Net;
 using System.Text.Json.Serialization;
 using LocalSendDotNet;
+using Tonarink.Application;
 
 namespace Tonarink.Cli;
 
@@ -71,7 +72,7 @@ sealed record StandaloneSettings
             "pin-enabled" => this with { PinEnabled = Boolean(value) },
             "receive-pin" => this with { ReceivePin = value.Trim() },
             "auto-save" => this with { AutoSave = Choice(value, ["off", "favorites", "on"]) },
-            "language" => this with { Language = Choice(value, ["en-US", "zh-CN"]) },
+            "language" => this with { Language = Choice(value, [.. AppLanguages.ExplicitCultures]) },
             _ => throw new CliException(CliText.Get("Unsupported standalone setting: {0}. Run settings list for supported keys.", key)),
         };
         next.Validate();
@@ -84,7 +85,7 @@ sealed record StandaloneSettings
         if (!IPAddress.TryParse(Multicast, out var multicast) || multicast.AddressFamily != System.Net.Sockets.AddressFamily.InterNetwork
             || multicast.GetAddressBytes()[0] is < 224 or > 239) throw new CliException(CliText.Get("An IPv4 multicast address is required."));
         if (ReceivePin.Length > 32 || (PinEnabled && ReceivePin.Length == 0)) throw new CliException(CliText.Get("PIN must be at most 32 characters and non-empty when enabled."));
-        _ = Choice(AutoSave, ["off", "favorites", "on"]); _ = Choice(Language, ["en-US", "zh-CN"]);
+        _ = Choice(AutoSave, ["off", "favorites", "on"]); _ = Choice(Language, [.. AppLanguages.ExplicitCultures]);
         if (!Enum.IsDefined(DeviceType)) throw new CliException(CliText.Get("Invalid device type."));
         if (!Path.IsPathFullyQualified(DownloadDirectory)) throw new CliException(CliText.Get("Download directory must be absolute."));
     }

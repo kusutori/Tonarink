@@ -1,5 +1,7 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="@Tonarink.Application.AppLanguages.Resolve(AppState.Settings.Language, System.Globalization.CultureInfo.CurrentUICulture.Name)">
+
+@inject Tonarink.Application.TonarinkAppState AppState
 
 <head>
     <meta charset="utf-8" />
@@ -20,9 +22,10 @@
 
 <body>
     <Tonarink.Blazor.Shared.Routes @rendermode="InteractiveServer" />
-    <ReconnectModal />
-    <script src="@Assets["_framework/blazor.web.js"]"></script>
+    <ReconnectModal @rendermode="InteractiveServer" />
     <script src="tonarink.js"></script>
+    <script src="@Assets["_content/Tonarink.Blazor.Shared/localization.js"]"></script>
+    <script src="@Assets["_framework/blazor.web.js"]"></script>
     <script>navigator.serviceWorker?.register('/service-worker.js');</script>
 </body>
 

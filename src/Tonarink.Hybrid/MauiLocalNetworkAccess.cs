@@ -15,7 +15,7 @@ public sealed class MauiLocalNetworkAccess : IDisposable
             if (storageStatus != PermissionStatus.Granted)
                 storageStatus = await Permissions.RequestAsync<LegacyStorageWritePermission>();
             if (storageStatus != PermissionStatus.Granted)
-                throw new UnauthorizedAccessException("需要存储权限才能把收到的文件保存到下载目录。");
+                throw new UnauthorizedAccessException(MauiLanguage.Text("StoragePermissionRequired"));
         }
 
         if (OperatingSystem.IsAndroidVersionAtLeast(33))
@@ -24,15 +24,15 @@ public sealed class MauiLocalNetworkAccess : IDisposable
             if (status != PermissionStatus.Granted)
                 status = await Permissions.RequestAsync<NearbyWifiDevicesPermission>();
             if (status != PermissionStatus.Granted)
-                throw new UnauthorizedAccessException("需要“附近的设备”权限才能发现和连接局域网设备。");
+                throw new UnauthorizedAccessException(MauiLanguage.Text("NearbyPermissionRequired"));
         }
 
         if (_multicastLock is null)
         {
             var manager = (Android.Net.Wifi.WifiManager?)Android.App.Application.Context.GetSystemService(Android.Content.Context.WifiService)
-                ?? throw new InvalidOperationException("无法访问 Android Wi-Fi 服务。");
+                ?? throw new InvalidOperationException(MauiLanguage.Text("WifiUnavailable"));
             var multicastLock = manager.CreateMulticastLock("Tonarink.LocalSend")
-                ?? throw new InvalidOperationException("无法创建 Android 多播锁。");
+                ?? throw new InvalidOperationException(MauiLanguage.Text("MulticastLockUnavailable"));
             multicastLock.SetReferenceCounted(false);
             multicastLock.Acquire();
             _multicastLock = multicastLock;

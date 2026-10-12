@@ -1,4 +1,4 @@
-@inject IStringLocalizer<SharedResources> Loc
+@inherits StatefulComponentBase
 
 <Router AppAssembly="typeof(Routes).Assembly">
     <Found Context="routeData">
@@ -8,11 +8,11 @@
     <NotFound>
         <LayoutView Layout="typeof(MainLayout)">
             <div class="page">
-                <EmptyState Title="@Loc["PageNotFound"]"
-                            Description="@Loc["PageNotFoundDescription"]">
+                <EmptyState Title="@T("PageNotFound")"
+                            Description="@T("PageNotFoundDescription")">
                     <Icon><FluentIcon Value="@(new Icons.Regular.Size32.QuestionCircle())" /></Icon>
                     <ChildContent>
-                        <FluentButton Appearance="ButtonAppearance.Primary" Href="/">@Loc["BackToReceivePage"]</FluentButton>
+                        <FluentButton Appearance="ButtonAppearance.Primary" Href="/">@T("BackToReceivePage")</FluentButton>
                     </ChildContent>
                 </EmptyState>
             </div>

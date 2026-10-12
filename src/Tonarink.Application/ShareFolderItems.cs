@@ -7,7 +7,7 @@ public static class ShareFolderItems
         ArgumentException.ThrowIfNullOrWhiteSpace(folderPath);
         var folder = new DirectoryInfo(folderPath);
         if (!folder.Exists)
-            throw new DirectoryNotFoundException($"The shared folder is no longer available: {folderPath}");
+            throw new DirectoryNotFoundException(AppText.Get("SharedFolderUnavailable", folderPath));
 
         return folder.EnumerateFiles("*", SearchOption.AllDirectories)
             .Select(file =>

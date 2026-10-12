@@ -83,8 +83,8 @@ public sealed class CapabilityOnlyRuntime : ITonarinkRuntime
     public ValueTask DisposeAsync() => ValueTask.CompletedTask;
 
     private Task Unsupported() => Task.FromException(new PlatformNotSupportedException(
-        $"{_capabilities.PlatformName} 当前不能直接运行完整 LocalSend 节点。"));
+        AppText.Get("NativeNodeUnsupported", _capabilities.PlatformName)));
 
     private Task<T> Unsupported<T>() => Task.FromException<T>(new PlatformNotSupportedException(
-        $"{_capabilities.PlatformName} 当前不能直接运行完整 LocalSend 节点。"));
+        AppText.Get("NativeNodeUnsupported", _capabilities.PlatformName)));
 }

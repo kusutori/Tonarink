@@ -7,12 +7,12 @@
     <NeutralLanguage>en-US</NeutralLanguage>
   </PropertyGroup>
   <ItemGroup>
-    <!-- Keep both locales in the common assembly. Native AOT doesn't include
+    <!-- Keep all locales in the common assembly. Native AOT doesn't include
          this project reference's satellite DLL in its compiler inputs; the
          standalone executable must remain independently distributable. -->
-    <EmbeddedResource Update="Resources/CliStrings.zh-CN.resx">
+    <EmbeddedResource Update="Resources/CliStrings.*.resx">
       <WithCulture>false</WithCulture>
-      <LogicalName>Tonarink.CommandLine.Resources.CliStrings.zh-CN.resources</LogicalName>
+      <LogicalName>Tonarink.CommandLine.Resources.%(Filename).resources</LogicalName>
     </EmbeddedResource>
     <PackageReference Include="System.CommandLine" />
     <ProjectReference Include="../LocalSendDotNet.Core/LocalSendDotNet.Core.csproj" />

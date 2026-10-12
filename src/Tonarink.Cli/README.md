@@ -36,7 +36,7 @@ Commands that need a service start a background host automatically. `server stop
 
 Settings and identity are separate from the desktop app, in `%LocalAppData%\Tonarink.Cli` on Windows. Use `--profile DIRECTORY` to isolate them further. When running alongside the GUI, configure another listening port with `tonarink-cli settings set port 53318` before starting the CLI server.
 
-Help and messages support English and Simplified Chinese. Use `--json` for machine-readable results and `--language en-US`, `zh-CN`, or `system` to select the language for one invocation.
+Help and messages support English, Simplified Chinese, Japanese, Korean, French, and Spanish. Use `--json` for machine-readable results and `--language en-US`, `zh-CN`, `ja-JP`, `ko-KR`, `fr-FR`, `es-ES`, or `system` to select the language for one invocation. Browser sharing uses its separately saved `language` setting.
 
 See the [full command reference](https://github.com/kusutori/Tonarink/blob/main/docs/cli.md). The integrated desktop alias is `tonarink`; the independently distributed tool is **`tonarink-cli`**. `app open` and desktop integration settings are not available in the standalone tool.
 

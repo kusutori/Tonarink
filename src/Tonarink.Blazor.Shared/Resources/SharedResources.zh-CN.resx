@@ -53,6 +53,10 @@
   <data name="LanguageChinese" xml:space="preserve"><value>简体中文</value></data>
   <data name="LanguageDescription" xml:space="preserve"><value>共享界面的显示语言</value></data>
   <data name="LanguageEnglish" xml:space="preserve"><value>English</value></data>
+  <data name="LanguageJapanese" xml:space="preserve"><value>日本語</value></data>
+  <data name="LanguageKorean" xml:space="preserve"><value>한국어</value></data>
+  <data name="LanguageFrench" xml:space="preserve"><value>Français</value></data>
+  <data name="LanguageSpanish" xml:space="preserve"><value>Español</value></data>
   <data name="LanguageSystem" xml:space="preserve"><value>跟随系统</value></data>
   <data name="LookingForDevices" xml:space="preserve"><value>正在寻找附近设备</value></data>
   <data name="Navigate" xml:space="preserve"><value>导航</value></data>
@@ -123,4 +127,24 @@
   <data name="ViewAll" xml:space="preserve"><value>查看全部</value></data>
   <data name="WaitingNearby" xml:space="preserve"><value>等待附近设备</value></data>
   <data name="WantsToSend" xml:space="preserve"><value>{0} 想要发送给你 {1} 项内容</value></data>
+  <data name="Loading" xml:space="preserve"><value>正在加载…</value></data>
+  <data name="UnhandledError" xml:space="preserve"><value>发生了意外错误</value></data>
+  <data name="Reload" xml:space="preserve"><value>重新加载</value></data>
+  <data name="Retry" xml:space="preserve"><value>重试</value></data>
+  <data name="Resume" xml:space="preserve"><value>恢复</value></data>
+  <data name="Dismiss" xml:space="preserve"><value>关闭</value></data>
+  <data name="ReconnectAttempt" xml:space="preserve"><value>正在重新连接服务器…</value></data>
+  <data name="ReconnectRetryPrefix" xml:space="preserve"><value>重连失败，距离下次尝试：</value></data>
+  <data name="SecondsUnit" xml:space="preserve"><value>秒</value></data>
+  <data name="ReconnectFailed" xml:space="preserve"><value>无法重新连接，请重试或重新加载页面</value></data>
+  <data name="SessionPaused" xml:space="preserve"><value>服务器已暂停当前会话</value></data>
+  <data name="SessionResumeFailed" xml:space="preserve"><value>无法恢复会话，请重试或重新加载页面</value></data>
+  <data name="WebErrorTitle" xml:space="preserve"><value>错误</value></data>
+  <data name="WebErrorDescription" xml:space="preserve"><value>处理请求时发生错误</value></data>
+  <data name="RequestId" xml:space="preserve"><value>请求 ID：</value></data>
+  <data name="DevelopmentMode" xml:space="preserve"><value>开发模式</value></data>
+  <data name="DevelopmentDetails" xml:space="preserve"><value>Development 环境会显示更详细的错误信息</value></data>
+  <data name="DevelopmentWarning" xml:space="preserve"><value>不要在已部署的应用中启用 Development 环境，这可能向用户暴露异常中的敏感信息</value></data>
+  <data name="DevelopmentInstructions" xml:space="preserve"><value>本地调试时，可将 ASPNETCORE_ENVIRONMENT 设置为 Development 并重启应用</value></data>
+  <data name="WebDescription" xml:space="preserve"><value>Tonarink — 兼容 LocalSend 的非官方文件分享客户端</value></data>
 </root>

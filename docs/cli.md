@@ -58,17 +58,19 @@ Get-Content .\message.txt -Raw | tonarink send --target "我的手机" --text -
 
 ### 命令行语言
 
-帮助、参数校验、操作结果和传输状态支持简体中文与英语，默认跟随调用者的系统语言；中文系统使用简体中文，其他语言回退到英语。用 `--language zh-CN`、`--language en-US` 或 `--language system` 覆盖本次调用。
+帮助、参数校验、操作结果和传输状态支持简体中文、英语、日语、韩语、法语和西班牙语，默认跟随调用者的系统语言；同语言的地区变体匹配到对应资源，不支持的语言回退到英语。用 `--language zh-CN`、`en-US`、`ja-JP`、`ko-KR`、`fr-FR`、`es-ES` 或 `system` 覆盖本次调用。
 
 ```powershell
 tonarink --language zh-CN --help
 tonarink server stop --language en-US
 tonarink --language zh-CN status --json
+tonarink-cli --language ja-JP --help
+tonarink-cli --language fr-FR server --help
 ```
 
 此选项不会修改 GUI 或浏览器分享的语言设置（`settings set language`），也不会影响其他并发命令的语言。JSON 的 `message` 会本地化，字段名、状态值、设置键和退出码保持不变；脚本应读取 `data` 和退出码，不依赖 `message`。底层网络、系统和第三方异常保留原始诊断信息。
 
-文案集中在共用命令库的 `Resources/CliStrings*.resx` 中，中英文资源均嵌入共用库，Native AOT 独立版只分发 EXE 也能使用两种语言。命令帮助仍由 `System.CommandLine` 生成，仅补齐库中未翻译的帮助标签。
+文案集中在共用命令库的 `Resources/CliStrings*.resx` 中，六种语言资源均嵌入共用库，不依赖该库的语言卫星 DLL。命令帮助仍由 `System.CommandLine` 生成，仅补齐库中未翻译的帮助标签；CLI 的 Native AOT 分发配置保持不变。
 
 独立版默认使用 `%LocalAppData%\Tonarink.Cli`，通过全局 `--profile 目录` 可隔离多个配置、身份和后台宿主，不会读写 GUI 的配置。不同宿主不能监听同一端口；与 GUI 同时运行时，可先执行 `settings set port 53318` 再启动独立服务器。
 
@@ -166,7 +168,7 @@ tonarink settings set network-allowlist "192.168.1.*,10.0.0.*" --restart
 
 `explorer-favorites` 控制 MSIX 版资源管理器右键菜单中的收藏设备子菜单，需要同时启用 `explorer-menu`；选择收藏设备会直接发送本次选中的项目，详见[资源管理器收藏设备菜单](explorer-favorites.md)。
 
-独立版只支持服务器、传输和存储相关设置，不包含主题、托盘、系统通知和预览等 GUI 设置。运行 `settings list` 获取当前宿主支持的键；独立版 `language` 支持 `zh-CN` / `en-US`，用于浏览器分享页面。
+独立版只支持服务器、传输和存储相关设置，不包含主题、托盘、系统通知和预览等 GUI 设置。运行 `settings list` 获取当前宿主支持的键。独立版 `language` 支持六种明确的语言标签，用于浏览器分享页面；主 App 还支持 `system` 跟随系统。持久设置与本次命令的 `--language` 相互独立。
 
 | 设置键 | 可用值 |
 | --- | --- |
@@ -174,7 +176,7 @@ tonarink settings set network-allowlist "192.168.1.*,10.0.0.*" --restart
 | `device-type` | `Desktop`, `Mobile`, `Server`, `Headless`, `Web` |
 | `download-directory` | 保存目录，可使用相对路径及环境变量 |
 | `theme` | `system`, `light`, `dark` |
-| `language` | `system`, `zh-CN`, `en-US` |
+| `language` | `zh-CN`, `en-US`, `ja-JP`, `ko-KR`, `fr-FR`, `es-ES`；主 App 另支持 `system` |
 | `auto-save` | `off`, `favorites`, `on` |
 | `tray-click` | `panel`, `window` |
 | `notification-action` | `file`, `folder` |

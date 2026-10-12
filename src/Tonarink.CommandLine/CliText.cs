@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Resources;
+using Tonarink.Application;
 
 namespace Tonarink.Cli;
 
@@ -8,15 +9,25 @@ namespace Tonarink.Cli;
 static class CliText
 {
     private static readonly ResourceManager Resources = new("Tonarink.CommandLine.Resources.CliStrings", typeof(CliText).Assembly);
-    private static readonly ResourceManager Chinese = new("Tonarink.CommandLine.Resources.CliStrings.zh-CN", typeof(CliText).Assembly);
+    private static readonly IReadOnlyDictionary<string, ResourceManager> Translations =
+        AppLanguages.ExplicitCultures.Where(locale => locale != AppLanguages.English)
+            .ToDictionary(locale => locale,
+                locale => new ResourceManager($"Tonarink.CommandLine.Resources.CliStrings.{locale}", typeof(CliText).Assembly),
+                StringComparer.OrdinalIgnoreCase);
 
-    public static string Get(string source) =>
-        (CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "zh" ? Chinese : Resources)
-            .GetString(source, CultureInfo.InvariantCulture) ?? source;
+    public static string SupportedLanguages => "system, " + string.Join(", ", AppLanguages.ExplicitCultures);
+
+    public static string Get(string source)
+    {
+        var locale = AppLanguages.Match(CultureInfo.CurrentUICulture.Name);
+        var resources = Translations.TryGetValue(locale, out var translation) ? translation : Resources;
+        return resources.GetString(source, CultureInfo.InvariantCulture)
+               ?? Resources.GetString(source, CultureInfo.InvariantCulture) ?? source;
+    }
     public static string Get(string source, params object?[] arguments) => string.Format(CultureInfo.CurrentCulture, Get(source), arguments);
 
-    // System.CommandLine 2.0's Simplified Chinese resources leave these help
-    // labels in English. Translate labels in its generated output, not layout.
+    // Fill untranslated labels in library-generated help without replacing
+    // System.CommandLine's help layout or translating command identifiers.
     public static string LibraryHelp(string help) => help
         .Replace("Description:", Get("Description:"), StringComparison.Ordinal)
         .Replace("[command]", Get("[command]"), StringComparison.Ordinal)
@@ -24,14 +35,13 @@ static class CliText
 
     public static bool IsSupported(string? language) => language is null
         || language.Equals("system", StringComparison.OrdinalIgnoreCase)
-        || language.Equals("zh-CN", StringComparison.OrdinalIgnoreCase)
-        || language.Equals("en-US", StringComparison.OrdinalIgnoreCase);
+        || AppLanguages.ExplicitCultures.Contains(language, StringComparer.OrdinalIgnoreCase);
 
     public static IDisposable UseLanguage(string? language)
     {
-        var culture = language?.Equals("zh-CN", StringComparison.OrdinalIgnoreCase) == true ? "zh-CN"
-            : language?.Equals("en-US", StringComparison.OrdinalIgnoreCase) == true ? "en-US"
-            : CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "zh" ? "zh-CN" : "en-US";
+        var culture = AppLanguages.Match(string.IsNullOrWhiteSpace(language)
+            || language.Equals("system", StringComparison.OrdinalIgnoreCase)
+                ? CultureInfo.CurrentUICulture.Name : language);
         return UseCulture(CultureInfo.GetCultureInfo(culture));
     }
 

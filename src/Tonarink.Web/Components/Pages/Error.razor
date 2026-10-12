@@ -1,27 +1,26 @@
 ﻿@page "/Error"
 @using System.Diagnostics
+@inherits Tonarink.Blazor.Shared.StatefulComponentBase
 
-<PageTitle>Error</PageTitle>
+<PageTitle>@T("WebErrorTitle")</PageTitle>
 
-<h1 class="text-danger">Error.</h1>
-<h2 class="text-danger">An error occurred while processing your request.</h2>
+<h1 class="text-danger">@T("WebErrorTitle")</h1>
+<h2 class="text-danger">@T("WebErrorDescription")</h2>
 
 @if (ShowRequestId)
 {
     <p>
-        <strong>Request ID:</strong> <code>@RequestId</code>
+        <strong>@T("RequestId")</strong> <code>@RequestId</code>
     </p>
 }
 
-<h3>Development Mode</h3>
+<h3>@T("DevelopmentMode")</h3>
 <p>
-    Swapping to <strong>Development</strong> environment will display more detailed information about the error that occurred.
+    @T("DevelopmentDetails")
 </p>
 <p>
-    <strong>The Development environment shouldn't be enabled for deployed applications.</strong>
-    It can result in displaying sensitive information from exceptions to end users.
-    For local debugging, enable the <strong>Development</strong> environment by setting the <strong>ASPNETCORE_ENVIRONMENT</strong> environment variable to <strong>Development</strong>
-    and restarting the app.
+    <strong>@T("DevelopmentWarning")</strong>
+    @T("DevelopmentInstructions")
 </p>
 
 @code{
@@ -31,6 +30,9 @@
     private string? RequestId { get; set; }
     private bool ShowRequestId => !string.IsNullOrEmpty(RequestId);
 
-    protected override void OnInitialized() =>
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
         RequestId = Activity.Current?.Id ?? HttpContext?.TraceIdentifier;
+    }
 }

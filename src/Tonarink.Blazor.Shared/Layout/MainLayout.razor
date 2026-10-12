@@ -63,6 +63,13 @@
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender) await ApplyAppThemeAsync();
+        try
+        {
+            await JS.InvokeVoidAsync("tonarink.setLanguage",
+                AppLanguages.Resolve(AppState.Settings.Language, System.Globalization.CultureInfo.CurrentUICulture.Name));
+        }
+        catch (InvalidOperationException) { }
+        catch (JSDisconnectedException) { }
     }
 
     protected override void OnAppStateChanged()
@@ -91,7 +98,7 @@
             foreach (var offer in AppState.IncomingOffers.Where(offer => _notifiedOffers.Add(offer.Id)))
                 await JS.InvokeVoidAsync("tonarink.notify", T("IncomingTransfer"), T("IncomingNotifyBody", offer.SenderAlias, offer.Items.Count));
             foreach (var transfer in AppState.Transfers.Where(transfer => transfer.Status == TransferStatus.Completed && _notifiedTransfers.Add(transfer.Id)))
-                await JS.InvokeVoidAsync("tonarink.notify", T("TransferCompleted"), transfer.Summary);
+                await JS.InvokeVoidAsync("tonarink.notify", T("TransferCompleted"), TransferSummary(transfer));
         }
         catch (InvalidOperationException) { }
         catch (JSDisconnectedException) { }

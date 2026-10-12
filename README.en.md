@@ -55,6 +55,8 @@
 - Integrate with Windows Share, File Explorer context menus, notifications,
   taskbar progress, the system tray, and Windows 11 materials.
 - Switch between light and dark themes and change language at runtime.
+- The app, CLI, and Web/Hybrid UI support English, Simplified Chinese, Japanese, Korean,
+  French, and Spanish, with a system-language option.
 - Use the integrated or independent [`Tonarink CLI`](docs/cli.md) for discovery,
   transfers, server control, and settings management.
 - Choose a signed MSIX package or a portable Native AOT build for x64 and ARM64.

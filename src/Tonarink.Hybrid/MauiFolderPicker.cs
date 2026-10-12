@@ -13,7 +13,7 @@ internal static class MauiFolderPicker
     {
 #if ANDROID
         var activity = Platform.CurrentActivity
-            ?? throw new InvalidOperationException("Android activity is unavailable.");
+            ?? throw new InvalidOperationException(MauiLanguage.Text("AndroidActivityUnavailable"));
         var pending = new TaskCompletionSource<Android.Net.Uri?>(TaskCreationOptions.RunContinuationsAsynchronously);
         Pending = pending;
         var intent = new Android.Content.Intent(Android.Content.Intent.ActionOpenDocumentTree);
@@ -34,7 +34,7 @@ internal static class MauiFolderPicker
         }
 
         var documentId = Android.Provider.DocumentsContract.GetTreeDocumentId(uri)
-            ?? throw new IOException("Android could not open the selected folder.");
+            ?? throw new IOException(MauiLanguage.Text("FolderOpenFailed"));
         var folderName = QueryDisplayName(activity, uri, documentId) ?? "folder";
         var items = new List<ShareItem>();
         await ImportDocumentTreeAsync(activity, uri, documentId, folderName, store, items, cancellationToken).ConfigureAwait(false);
@@ -45,7 +45,7 @@ internal static class MauiFolderPicker
         picker.DidPickDocumentAtUrls += (_, args) => pending.TrySetResult(args.Urls.FirstOrDefault());
         picker.WasCancelled += (_, _) => pending.TrySetResult(null);
         var controller = Platform.GetCurrentUIViewController()
-            ?? throw new InvalidOperationException("iOS view controller is unavailable.");
+            ?? throw new InvalidOperationException(MauiLanguage.Text("IosViewUnavailable"));
         controller.PresentViewController(picker, true, null);
         var url = await pending.Task.WaitAsync(cancellationToken).ConfigureAwait(false);
         if (url?.Path is not { Length: > 0 } path)
@@ -83,7 +83,7 @@ internal static class MauiFolderPicker
         CancellationToken cancellationToken)
     {
         var resolver = activity.ContentResolver
-            ?? throw new IOException("Android content resolver is unavailable.");
+            ?? throw new IOException(MauiLanguage.Text("ContentResolverUnavailable"));
         var children = Android.Provider.DocumentsContract.BuildChildDocumentsUriUsingTree(treeUri, documentId);
         if (children is null)
             return;
@@ -148,7 +148,7 @@ internal static class MauiFolderPicker
         };
         picker.FileTypeFilter.Add("*");
         var window = Microsoft.Maui.Controls.Application.Current?.Windows.FirstOrDefault()?.Handler?.PlatformView as Microsoft.UI.Xaml.Window
-            ?? throw new InvalidOperationException("Windows window handle is unavailable.");
+            ?? throw new InvalidOperationException(MauiLanguage.Text("WindowHandleUnavailable"));
         WinRT.Interop.InitializeWithWindow.Initialize(picker, WinRT.Interop.WindowNative.GetWindowHandle(window));
         var folder = await picker.PickSingleFolderAsync();
         return folder?.Path;
