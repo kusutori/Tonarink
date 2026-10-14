@@ -362,7 +362,8 @@ sealed class SettingsPage : Component<SettingsPageProps>
             SettingsCard(
                 header: t.Message(new("App", "SettingsAutoReturnAfterReceive")),
                 description: t.Message(new("App", "SettingsAutoReturnAfterReceiveDescription")),
-                headerIcon: HeaderGlyph(AppIcons.Home),
+                headerIcon: AnimatedButtons.SettingsAutoReturnIcon(Props.Settings.AutoReturnAfterReceive)
+                    .WithKey("settings-auto-return-icon"),
                 isClickEnabled: false,
                 isActionIconVisible: false,
                 content:

@@ -9,6 +9,9 @@ public static class AnimatedButtons
     public static Element SettingsHistoryIcon(bool trigger, double iconSize = 24) =>
         AnimatedSettingsToggleIcon.Create(SettingsToggleIconKind.History, trigger, iconSize);
 
+    public static Element SettingsAutoReturnIcon(bool isOn, double iconSize = 24) =>
+        AnimatedSettingsToggleIcon.Create(SettingsToggleIconKind.AutoReturn, isOn, iconSize);
+
     public static Element SettingsStartupIcon(bool trigger, double iconSize = 24) =>
         AnimatedSettingsToggleIcon.Create(SettingsToggleIconKind.Startup, trigger, iconSize);
 

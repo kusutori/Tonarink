@@ -24,6 +24,7 @@ enum SettingsToggleIconKind
     Preview,
     Rename,
     ExecutionAlias,
+    AutoReturn,
 }
 
 static class AnimatedSettingsToggleIcon
@@ -65,6 +66,7 @@ static class AnimatedSettingsToggleIcon
                         SettingsToggleIconKind.Preview => state == "Off" ? "\uED1A" : "\uE890",
                         SettingsToggleIconKind.Rename => AppIcons.Rename,
                         SettingsToggleIconKind.ExecutionAlias => AppIcons.ExecutionAlias,
+                        SettingsToggleIconKind.AutoReturn => AppIcons.Home,
                     },
                 };
 
@@ -89,5 +91,6 @@ static class AnimatedSettingsToggleIcon
         SettingsToggleIconKind.Preview => new Tonarink.SettingsPreviewToggleIcon(),
         SettingsToggleIconKind.Rename => new Tonarink.SettingsRenameFocusIcon(),
         SettingsToggleIconKind.ExecutionAlias => new Tonarink.SettingsExecutionAliasIcon(),
+        SettingsToggleIconKind.AutoReturn => new Tonarink.SettingsAutoReturnToggleIcon(),
     };
 }
