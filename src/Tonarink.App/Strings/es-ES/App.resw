@@ -342,6 +342,8 @@
   <data name="SettingsReceivePinProtectionDescription" xml:space="preserve"><value>Exigir un PIN antes de recibir contenido</value></data>
   <data name="SettingsSaveReceiveHistory" xml:space="preserve"><value>Conservar historial de recepción</value></data>
   <data name="SettingsAutoReturnAfterReceive" xml:space="preserve"><value>Volver a la pantalla principal tras recibir</value></data>
+  <data name="SettingsShowReceiveBadge" xml:space="preserve"><value>Mostrar distintivo de recepción</value></data>
+  <data name="SettingsShowReceiveBadgeDescription" xml:space="preserve"><value>Mostrar en el icono de la barra de tareas el número de archivos seleccionados para recibir, solo en la versión MSIX</value></data>
   <data name="SettingsAutoReturnAfterReceiveDescription" xml:space="preserve"><value>Cerrar la pantalla de transferencia al recibir archivos correctamente; mantener el texto visible para leerlo y copiarlo</value></data>
   <data name="SettingsSaveReceiveHistoryDescription" xml:space="preserve"><value>Guardar un registro de los archivos recibidos para acceder fácilmente</value></data>
   <data name="SettingsRestartServer" xml:space="preserve"><value>Reiniciar servidor</value></data>

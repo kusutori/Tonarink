@@ -76,6 +76,14 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
 
         UseEffect(() => UpdateTaskbarProgress(window, taskbarProgress), taskbarProgress);
         UseEffect(() => () => ClearTaskbarProgress(window));
+        var receiveBadgeCount = !IsTextTransfer(request.Items)
+                                && view.State is TransferState.Preparing
+                                    or TransferState.WaitingForAcceptance
+                                    or TransferState.Transferring
+            ? (uint)selectedItemIds.Count
+            : 0;
+        UseEffect(() => TaskbarReceiveBadge.SetCount(receiveBadgeCount), receiveBadgeCount);
+        UseEffect(() => () => TaskbarReceiveBadge.Clear());
         UseEffect(() =>
         {
             WidgetAppHost.SetIncoming(new WidgetTransferInfo(

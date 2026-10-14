@@ -346,6 +346,8 @@
   <data name="SettingsReceivePinProtectionDescription" xml:space="preserve"><value>Require a PIN before other devices can send content</value></data>
   <data name="SettingsSaveReceiveHistory" xml:space="preserve"><value>Keep receive history</value></data>
   <data name="SettingsAutoReturnAfterReceive" xml:space="preserve"><value>Return to the main view after receiving</value></data>
+  <data name="SettingsShowReceiveBadge" xml:space="preserve"><value>Show receive count badge</value></data>
+  <data name="SettingsShowReceiveBadgeDescription" xml:space="preserve"><value>Show the number of files selected for receiving on the taskbar icon, available only in MSIX installations</value></data>
   <data name="SettingsAutoReturnAfterReceiveDescription" xml:space="preserve"><value>Close the transfer view after files are received successfully; keep text open for reading and copying</value></data>
   <data name="SettingsSaveReceiveHistoryDescription" xml:space="preserve"><value>Keep a record of received files for easy access</value></data>
   <data name="SettingsRestartServer" xml:space="preserve"><value>Restart server</value></data>

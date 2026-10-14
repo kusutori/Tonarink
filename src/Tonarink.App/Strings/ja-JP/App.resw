@@ -342,6 +342,8 @@
   <data name="SettingsReceivePinProtectionDescription" xml:space="preserve"><value>他のデバイスからの受信に PIN を要求</value></data>
   <data name="SettingsSaveReceiveHistory" xml:space="preserve"><value>受信履歴を保存</value></data>
   <data name="SettingsAutoReturnAfterReceive" xml:space="preserve"><value>受信完了後にメイン画面に戻る</value></data>
+  <data name="SettingsShowReceiveBadge" xml:space="preserve"><value>受信数バッジを表示</value></data>
+  <data name="SettingsShowReceiveBadgeDescription" xml:space="preserve"><value>受信対象として選択したファイル数をタスクバーアイコンに表示（MSIX インストール版のみ）</value></data>
   <data name="SettingsAutoReturnAfterReceiveDescription" xml:space="preserve"><value>ファイルの受信が成功したら転送画面を閉じる（テキストは閲覧・コピーできるよう表示を保持）</value></data>
   <data name="SettingsSaveReceiveHistoryDescription" xml:space="preserve"><value>受信ファイルの記録を残して後から簡単にアクセス</value></data>
   <data name="SettingsRestartServer" xml:space="preserve"><value>サーバーを再起動</value></data>

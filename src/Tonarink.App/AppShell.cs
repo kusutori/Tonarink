@@ -34,6 +34,8 @@ sealed class AppShell : Component
         });
 
         UseEffect(() => AppSettingsStore.Save(settings), settings);
+        UseEffect(() => TaskbarReceiveBadge.SetEnabled(settings.ShowReceiveBadge), settings.ShowReceiveBadge);
+        UseEffect(() => () => TaskbarReceiveBadge.Clear());
         UseEffect(() =>
         {
             if (AppPlatform.HasPackageIdentity()) return;

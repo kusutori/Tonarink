@@ -346,6 +346,8 @@
   <data name="SettingsReceivePinProtectionDescription" xml:space="preserve"><value>要求发送方输入 PIN 后才能传输内容</value></data>
   <data name="SettingsSaveReceiveHistory" xml:space="preserve"><value>记录接收历史</value></data>
   <data name="SettingsAutoReturnAfterReceive" xml:space="preserve"><value>接收完成后自动返回主界面</value></data>
+  <data name="SettingsShowReceiveBadge" xml:space="preserve"><value>显示接收数量徽标</value></data>
+  <data name="SettingsShowReceiveBadgeDescription" xml:space="preserve"><value>在任务栏图标上显示所选接收文件的数量，仅限 MSIX 安装版</value></data>
   <data name="SettingsAutoReturnAfterReceiveDescription" xml:space="preserve"><value>文件接收成功后关闭传输界面；文本仍保留供查看和复制</value></data>
   <data name="SettingsSaveReceiveHistoryDescription" xml:space="preserve"><value>记录已接收的文件，方便查看和打开</value></data>
   <data name="SettingsRestartServer" xml:space="preserve"><value>重启服务器</value></data>

@@ -373,6 +373,19 @@ sealed class SettingsPage : Component<SettingsPageProps>
                     .AutomationId("Settings.Receive.AutoReturn")
                     .HelpText(t.Message(new("App", "SettingsAutoReturnAfterReceiveDescription")))),
             SettingsCard(
+                header: t.Message(new("App", "SettingsShowReceiveBadge")),
+                description: t.Message(new("App", "SettingsShowReceiveBadgeDescription")),
+                headerIcon: HeaderGlyph(AppIcons.Badge),
+                isClickEnabled: false,
+                isActionIconVisible: false,
+                content:
+                ToggleSwitch(Props.Settings.ShowReceiveBadge, value =>
+                        Props.UpdateSettings(settings => settings with { ShowReceiveBadge = value }))
+                    .AutomationName(t.Message(new("App", "SettingsShowReceiveBadge")))
+                    .AutomationId("Settings.Receive.Badge")
+                    .HelpText(t.Message(new("App", "SettingsShowReceiveBadgeDescription")))
+                    .IsEnabled(AppPlatform.HasPackageIdentity())),
+            SettingsCard(
                 header: t.Message(new("App", "SettingsSaveReceiveHistory")),
                 description: t.Message(new("App", "SettingsSaveReceiveHistoryDescription")),
                 headerIcon: AnimatedButtons.SettingsHistoryIcon(Props.Settings.SaveReceiveHistory)

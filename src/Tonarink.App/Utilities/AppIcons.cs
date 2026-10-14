@@ -7,6 +7,7 @@ namespace Tonarink.Utilities;
 static class AppIcons
 {
     public const string Accept = "\uE8FB";
+    public const string Badge = "\uEC1B";
     public const string Cancel = "\uE711";
     public const string Checksum = "\uF32A";
     public const string Contact = "\uE716";
