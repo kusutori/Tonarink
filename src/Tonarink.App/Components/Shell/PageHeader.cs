@@ -3,10 +3,6 @@ using Microsoft.UI.Reactor.Core;
 using Microsoft.UI.Reactor.Localization;
 using Microsoft.UI.Reactor.Navigation;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Automation;
-using Microsoft.UI.Xaml.Automation.Peers;
-using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media;
 using Windows.UI.Text;
 using static Microsoft.UI.Reactor.Factories;
 
@@ -30,7 +26,6 @@ sealed class PageHeader : Component<PageHeaderProps>
         new(new PageHeaderRightSlot { Invalidate = static () => { } });
 
     private const double TitleFontSize = 28;
-    private const double TitleLineHeight = 36;
     private static readonly FontWeight TitleWeight = new(700);
 
     public override Element Render()
@@ -38,7 +33,6 @@ sealed class PageHeader : Component<PageHeaderProps>
         var t = UseIntl();
         var navigation = Props.Navigation;
         var route = Props.Route;
-        var layoutHandler = UseRef<EventHandler<object>?>();
         var (title, parentRoute, parentTitle) = CrumbLabels(t, route);
         var parentKey = parentRoute is { } parent ? $"{parent}|{parentTitle}" : "";
         var items = UseMemo<BreadcrumbBarItemData[]>(
@@ -61,27 +55,7 @@ sealed class PageHeader : Component<PageHeaderProps>
             .Set(static breadcrumb =>
             {
                 breadcrumb.Resources["BreadcrumbBarItemFontWeight"] = TitleWeight;
-                breadcrumb.Resources["BreadcrumbBarChevronPadding"] = new Thickness(8, 0, 8, 0);
-            })
-            .OnMountAdd(element =>
-            {
-                if (element is not BreadcrumbBar breadcrumb)
-                    return;
-
-                EventHandler<object> handler = (_, _) => ApplyHeadingMetrics(breadcrumb);
-                layoutHandler.Current = handler;
-                breadcrumb.LayoutUpdated += handler;
-                handler(breadcrumb, EventArgs.Empty);
-            })
-            .OnUnmountAdd(element =>
-            {
-                if (element is not BreadcrumbBar breadcrumb)
-                    return;
-                if (layoutHandler.Current is not { } handler)
-                    return;
-
-                breadcrumb.LayoutUpdated -= handler;
-                layoutHandler.Current = null;
+                breadcrumb.Resources["BreadcrumbBarChevronPadding"] = new Thickness(8, 4, 8, 0);
             })
             .AutomationName(title)
             .MinHeight(AppLayout.PageHeaderRowMinHeight)
@@ -136,62 +110,4 @@ sealed class PageHeader : Component<PageHeaderProps>
             AppRoute.Receive => (t.Message(new("App", "ReceiveTitle")), null, null),
         };
 
-    private static void ApplyHeadingMetrics(DependencyObject root)
-    {
-        foreach (var presenter in FindAll<ContentPresenter>(root))
-        {
-            if (presenter.Name is not (
-                "PART_ItemContentPresenter" or
-                "PART_LastItemContentPresenter" or
-                "PART_EllipsisDropDownItemContentPresenter"))
-                continue;
-
-            presenter.FontSize = TitleFontSize;
-            presenter.FontWeight = TitleWeight;
-            presenter.LineHeight = TitleLineHeight;
-            presenter.Padding = new Thickness(0);
-        }
-
-        foreach (var item in FindAll<BreadcrumbBarItem>(root))
-        {
-            item.FontSize = TitleFontSize;
-            item.FontWeight = TitleWeight;
-            item.Padding = new Thickness(0);
-            if (FindNamed<Button>(item, "PART_ItemButton") is { } button)
-                button.Padding = new Thickness(0);
-            if (FindNamed<ContentPresenter>(item, "PART_LastItemContentPresenter") is
-                { Visibility: Visibility.Visible })
-                AutomationProperties.SetHeadingLevel(item, AutomationHeadingLevel.Level1);
-        }
-    }
-
-    private static T? FindNamed<T>(DependencyObject root, string name)
-        where T : FrameworkElement
-    {
-        foreach (var match in FindAll<T>(root))
-        {
-            if (match.Name == name)
-                return match;
-        }
-
-        return null;
-    }
-
-    private static List<T> FindAll<T>(DependencyObject root)
-        where T : class
-    {
-        var results = new List<T>();
-        Collect(root, results);
-        return results;
-
-        static void Collect(DependencyObject node, List<T> found)
-        {
-            if (node is T match)
-                found.Add(match);
-
-            var count = VisualTreeHelper.GetChildrenCount(node);
-            for (var index = 0; index < count; index++)
-                Collect(VisualTreeHelper.GetChild(node, index), found);
-        }
-    }
 }
