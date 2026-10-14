@@ -71,7 +71,7 @@ union IncomingTransferViewState(
             InitialText(request.Items));
 
     private static string? InitialText(IReadOnlyList<IncomingItem> items) =>
-        items.Count == 1 && IsText(items[0]) ? items[0].Preview : null;
+        IsTextTransfer(items) ? items[0].Preview : null;
 }
 
 union IncomingTransferAction(

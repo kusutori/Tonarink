@@ -29,6 +29,7 @@ static class AppIcons
     public const string Folder = "\uE8B7";
     public const string History = "\uE81C";
     public const string HistorySettings = "\uE81C";
+    public const string Home = "\uE80F";
     public const string IpAddress = "\uF272";
     public const string Language = "\uF2B7";
     public const string Link = "\uE71B";

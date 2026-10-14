@@ -28,6 +28,7 @@ sealed class TransferOverlayHost : Component<TransferOverlayHostProps>
                         Props.Settings.DownloadDirectory,
                         Props.Settings.SaveReceiveHistory,
                         Props.Settings.VerifyChecksumsOnReceive,
+                        Props.Settings.AutoReturnAfterReceive,
                         Props.Theme,
                         Props.DismissIncoming))
                     .WithKey(incoming.RequestId.ToString("N")),

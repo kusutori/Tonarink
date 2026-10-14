@@ -345,6 +345,8 @@
   <data name="SettingsReceivePinProtection" xml:space="preserve"><value>PIN 保护</value></data>
   <data name="SettingsReceivePinProtectionDescription" xml:space="preserve"><value>要求发送方输入 PIN 后才能传输内容</value></data>
   <data name="SettingsSaveReceiveHistory" xml:space="preserve"><value>记录接收历史</value></data>
+  <data name="SettingsAutoReturnAfterReceive" xml:space="preserve"><value>接收完成后自动返回主界面</value></data>
+  <data name="SettingsAutoReturnAfterReceiveDescription" xml:space="preserve"><value>文件接收成功后关闭传输界面；文本仍保留供查看和复制</value></data>
   <data name="SettingsSaveReceiveHistoryDescription" xml:space="preserve"><value>记录已接收的文件，方便查看和打开</value></data>
   <data name="SettingsRestartServer" xml:space="preserve"><value>重启服务器</value></data>
   <data name="SettingsSaveLocation" xml:space="preserve"><value>保存位置</value></data>

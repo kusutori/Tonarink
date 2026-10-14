@@ -56,6 +56,7 @@ sealed record AppSettings(
     public IReadOnlyList<FilePreviewProvider>? PreviewProviders { get; init; }
     public bool ShowInSendToMenu { get; init; }
     public bool ShowFavoriteDevicesInExplorerMenu { get; init; }
+    public bool AutoReturnAfterReceive { get; init; }
 
     public static readonly AppSettings Default = new(
         Alias: string.IsNullOrWhiteSpace(Environment.UserName) ? Environment.MachineName : Environment.UserName,

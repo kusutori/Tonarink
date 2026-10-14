@@ -22,6 +22,7 @@ sealed record IncomingTransferOverlayProps(
     string DownloadDirectory,
     bool SaveReceiveHistory,
     bool VerifyChecksums,
+    bool AutoReturnAfterReceive,
     ElementTheme Theme,
     Action<Guid> Dismiss);
 
@@ -196,7 +197,7 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
             },
             t.Locale,
             canEdit));
-        var showText = request.Items.Count == 1 && IsText(request.Items[0]);
+        var showText = IsTextTransfer(request.Items);
         var verificationButton = VerificationButton(
             t,
             () => setShowVerification(true),
@@ -513,6 +514,9 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                     status,
                     receivedText,
                     isError));
+                // Keep received text visible for reading/copying, and retain failure/cancellation feedback.
+                if (state == TransferState.Completed && !showText && Props.AutoReturnAfterReceive && alive.Current)
+                    Props.Dismiss(request.RequestId);
             }
             catch (Exception exception)
             {

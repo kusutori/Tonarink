@@ -66,6 +66,9 @@ static class TransferOverlayVisuals
     public static bool IsText(IncomingItem item) =>
         item.ContentType.StartsWith("text/", StringComparison.OrdinalIgnoreCase);
 
+    public static bool IsTextTransfer(IReadOnlyList<IncomingItem> items) =>
+        items is [var item] && IsText(item);
+
     public static string IncomingSummary(IntlAccessor t, IReadOnlyList<IncomingItem> items) =>
         items switch
         {

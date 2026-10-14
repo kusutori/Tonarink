@@ -360,6 +360,18 @@ sealed class SettingsPage : Component<SettingsPageProps>
                     () => _ = PickDownloadDirectoryAsync(),
                     label: t.Message(new("App", "Change")))),
             SettingsCard(
+                header: t.Message(new("App", "SettingsAutoReturnAfterReceive")),
+                description: t.Message(new("App", "SettingsAutoReturnAfterReceiveDescription")),
+                headerIcon: HeaderGlyph(AppIcons.Home),
+                isClickEnabled: false,
+                isActionIconVisible: false,
+                content:
+                ToggleSwitch(Props.Settings.AutoReturnAfterReceive, value =>
+                        Props.UpdateSettings(settings => settings with { AutoReturnAfterReceive = value }))
+                    .AutomationName(t.Message(new("App", "SettingsAutoReturnAfterReceive")))
+                    .AutomationId("Settings.Receive.AutoReturn")
+                    .HelpText(t.Message(new("App", "SettingsAutoReturnAfterReceiveDescription")))),
+            SettingsCard(
                 header: t.Message(new("App", "SettingsSaveReceiveHistory")),
                 description: t.Message(new("App", "SettingsSaveReceiveHistoryDescription")),
                 headerIcon: AnimatedButtons.SettingsHistoryIcon(Props.Settings.SaveReceiveHistory)

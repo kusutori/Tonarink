@@ -104,6 +104,7 @@ sealed class AppSettingsFile
     public string? PowerToysPeekExecutablePath { get; set; }
     public string? QuickLookExecutablePath { get; set; }
     public bool? SaveReceiveHistory { get; set; }
+    public bool? AutoReturnAfterReceive { get; set; }
     public bool? VerifyChecksumsOnReceive { get; set; }
     public bool? ReceivePinEnabled { get; set; }
     public string? ReceivePin { get; set; }
@@ -144,6 +145,7 @@ sealed class AppSettingsFile
         PowerToysPeekExecutablePath = settings.PowerToysPeekExecutablePath,
         QuickLookExecutablePath = settings.QuickLookExecutablePath,
         SaveReceiveHistory = settings.SaveReceiveHistory,
+        AutoReturnAfterReceive = settings.AutoReturnAfterReceive,
         VerifyChecksumsOnReceive = settings.VerifyChecksumsOnReceive,
         ReceivePinEnabled = settings.ReceivePinEnabled,
         ReceivePin = settings.ReceivePin,
@@ -211,6 +213,7 @@ sealed class AppSettingsFile
                 ? defaults.QuickLookExecutablePath
                 : QuickLookExecutablePath.Trim().Trim('"'),
             SaveReceiveHistory = SaveReceiveHistory ?? defaults.SaveReceiveHistory,
+            AutoReturnAfterReceive = AutoReturnAfterReceive ?? defaults.AutoReturnAfterReceive,
             VerifyChecksumsOnReceive = VerifyChecksumsOnReceive ?? defaults.VerifyChecksumsOnReceive,
             ReceivePinEnabled = ReceivePinEnabled ?? defaults.ReceivePinEnabled,
             ReceivePin = string.IsNullOrWhiteSpace(ReceivePin) ? defaults.ReceivePin : ReceivePin.Trim(),

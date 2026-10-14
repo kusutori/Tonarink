@@ -24,7 +24,8 @@ sealed class IncomingTransferCoordinator(
                 AutoSaveMode.Favorites => FavoriteDeviceStore.Contains(request.Sender.Fingerprint),
                 AutoSaveMode.Off => false,
             };
-            if (autoAccept)
+            // Text is read in the overlay, so it must not take the silent file-saving path.
+            if (autoAccept && !TransferOverlayVisuals.IsTextTransfer(request.Items))
             {
                 _ = AcceptAsync(
                     node,
