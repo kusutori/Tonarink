@@ -372,7 +372,8 @@ sealed class SettingsPage : Component<SettingsPageProps>
             SettingsCard(
                 header: t.Message(new("App", "SettingsShowReceiveBadge")),
                 description: t.Message(new("App", "SettingsShowReceiveBadgeDescription")),
-                headerIcon: HeaderGlyph(AppIcons.Badge),
+                headerIcon: AnimatedButtons.SettingsReceiveBadgeIcon(Props.Settings.ShowReceiveBadge)
+                    .WithKey("settings-receive-badge-icon"),
                 isClickEnabled: false,
                 isActionIconVisible: false,
                 content:

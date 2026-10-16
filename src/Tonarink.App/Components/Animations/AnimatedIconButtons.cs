@@ -12,6 +12,9 @@ public static class AnimatedButtons
     public static Element SettingsAutoReturnIcon(bool isOn, double iconSize = 24) =>
         AnimatedSettingsToggleIcon.Create(SettingsToggleIconKind.AutoReturn, isOn, iconSize);
 
+    public static Element SettingsReceiveBadgeIcon(bool isOn, double iconSize = 24) =>
+        AnimatedSettingsToggleIcon.Create(SettingsToggleIconKind.ReceiveBadge, isOn, iconSize);
+
     public static Element SettingsStartupIcon(bool trigger, double iconSize = 24) =>
         AnimatedSettingsToggleIcon.Create(SettingsToggleIconKind.Startup, trigger, iconSize);
 

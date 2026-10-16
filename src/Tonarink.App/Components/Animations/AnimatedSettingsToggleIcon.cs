@@ -25,6 +25,7 @@ enum SettingsToggleIconKind
     Rename,
     ExecutionAlias,
     AutoReturn,
+    ReceiveBadge,
 }
 
 static class AnimatedSettingsToggleIcon
@@ -67,6 +68,7 @@ static class AnimatedSettingsToggleIcon
                         SettingsToggleIconKind.Rename => AppIcons.Rename,
                         SettingsToggleIconKind.ExecutionAlias => AppIcons.ExecutionAlias,
                         SettingsToggleIconKind.AutoReturn => AppIcons.Home,
+                        SettingsToggleIconKind.ReceiveBadge => AppIcons.Badge,
                     },
                 };
 
@@ -92,5 +94,6 @@ static class AnimatedSettingsToggleIcon
         SettingsToggleIconKind.Rename => new Tonarink.SettingsRenameFocusIcon(),
         SettingsToggleIconKind.ExecutionAlias => new Tonarink.SettingsExecutionAliasIcon(),
         SettingsToggleIconKind.AutoReturn => new Tonarink.SettingsAutoReturnToggleIcon(),
+        SettingsToggleIconKind.ReceiveBadge => new Tonarink.SettingsReceiveBadgeToggleIcon(),
     };
 }
