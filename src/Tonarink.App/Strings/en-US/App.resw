@@ -465,4 +465,36 @@
   <data name="WebShareZoomTitle" xml:space="preserve"><value>Link</value></data>
   <data name="WantsToSendMessage" xml:space="preserve"><value>Wants to send you a message:</value></data>
   <data name="WindowUnavailable" xml:space="preserve"><value>The current window is unavailable</value></data>
+  <data name="HistoryFilterTitle" xml:space="preserve"><value>Filter and sort</value></data>
+  <data name="HistoryFilterSearch" xml:space="preserve"><value>Search</value></data>
+  <data name="HistoryFilterSearchPlaceholder" xml:space="preserve"><value>Search file name, sender or path</value></data>
+  <data name="HistoryFilterFileType" xml:space="preserve"><value>File type</value></data>
+  <data name="HistoryFilterTypeAll" xml:space="preserve"><value>All types</value></data>
+  <data name="HistoryFilterTypeDocuments" xml:space="preserve"><value>Documents and text</value></data>
+  <data name="HistoryFilterTypeImages" xml:space="preserve"><value>Images</value></data>
+  <data name="HistoryFilterTypeVideos" xml:space="preserve"><value>Videos</value></data>
+  <data name="HistoryFilterTypeAudio" xml:space="preserve"><value>Audio</value></data>
+  <data name="HistoryFilterTypeArchives" xml:space="preserve"><value>Archives</value></data>
+  <data name="HistoryFilterTypeOther" xml:space="preserve"><value>Other files</value></data>
+  <data name="HistoryFilterTime" xml:space="preserve"><value>Received</value></data>
+  <data name="HistoryFilterTimeAll" xml:space="preserve"><value>Any time</value></data>
+  <data name="HistoryFilterTimeToday" xml:space="preserve"><value>Today</value></data>
+  <data name="HistoryFilterTimeWeek" xml:space="preserve"><value>Last 7 days</value></data>
+  <data name="HistoryFilterTimeMonth" xml:space="preserve"><value>Last 30 days</value></data>
+  <data name="HistoryFilterTimeCustom" xml:space="preserve"><value>Custom dates</value></data>
+  <data name="HistoryFilterFrom" xml:space="preserve"><value>Start date</value></data>
+  <data name="HistoryFilterTo" xml:space="preserve"><value>End date</value></data>
+  <data name="HistoryFilterAnyDate" xml:space="preserve"><value>Any date</value></data>
+  <data name="HistoryFilterInvalidRange" xml:space="preserve"><value>End date cannot be before start date</value></data>
+  <data name="HistoryFilterSort" xml:space="preserve"><value>Sort by</value></data>
+  <data name="HistoryFilterSortNewest" xml:space="preserve"><value>Newest first</value></data>
+  <data name="HistoryFilterSortOldest" xml:space="preserve"><value>Oldest first</value></data>
+  <data name="HistoryFilterSortNameAscending" xml:space="preserve"><value>File name: A–Z</value></data>
+  <data name="HistoryFilterSortNameDescending" xml:space="preserve"><value>File name: Z–A</value></data>
+  <data name="HistoryFilterSortSizeAscending" xml:space="preserve"><value>Size: smallest first</value></data>
+  <data name="HistoryFilterSortSizeDescending" xml:space="preserve"><value>Size: largest first</value></data>
+  <data name="HistoryFilterReset" xml:space="preserve"><value>Reset filters and sorting</value></data>
+  <data name="HistoryFilterApply" xml:space="preserve"><value>Apply</value></data>
+  <data name="HistoryNoMatches" xml:space="preserve"><value>No records match your filters</value></data>
+  <data name="HistoryFilterResults" xml:space="preserve"><value>Showing {visible, number} of {total, plural, one {# record} other {# records}}</value></data>
 </root>

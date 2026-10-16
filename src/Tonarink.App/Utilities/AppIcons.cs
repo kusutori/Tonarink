@@ -26,6 +26,7 @@ static class AppIcons
     public const string FavoriteList = "\uE728";
     public const string FavoriteOutline = "\uEB51";
     public const string FavoriteIndicator = "\uEC61";
+    public const string Filter = "\uE71C";
     public const string Fingerprint = "\uE756";
     public const string Folder = "\uE8B7";
     public const string History = "\uE81C";

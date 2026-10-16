@@ -465,4 +465,36 @@
   <data name="LanguageKorean" xml:space="preserve"><value>한국어</value></data>
   <data name="LanguageFrench" xml:space="preserve"><value>Français</value></data>
   <data name="LanguageSpanish" xml:space="preserve"><value>Español</value></data>
+  <data name="HistoryFilterTitle" xml:space="preserve"><value>Filtrar y ordenar</value></data>
+  <data name="HistoryFilterSearch" xml:space="preserve"><value>Buscar</value></data>
+  <data name="HistoryFilterSearchPlaceholder" xml:space="preserve"><value>Buscar por nombre, remitente o ruta</value></data>
+  <data name="HistoryFilterFileType" xml:space="preserve"><value>Tipo de archivo</value></data>
+  <data name="HistoryFilterTypeAll" xml:space="preserve"><value>Todos los tipos</value></data>
+  <data name="HistoryFilterTypeDocuments" xml:space="preserve"><value>Documentos y texto</value></data>
+  <data name="HistoryFilterTypeImages" xml:space="preserve"><value>Imágenes</value></data>
+  <data name="HistoryFilterTypeVideos" xml:space="preserve"><value>Vídeos</value></data>
+  <data name="HistoryFilterTypeAudio" xml:space="preserve"><value>Audio</value></data>
+  <data name="HistoryFilterTypeArchives" xml:space="preserve"><value>Archivos comprimidos</value></data>
+  <data name="HistoryFilterTypeOther" xml:space="preserve"><value>Otros archivos</value></data>
+  <data name="HistoryFilterTime" xml:space="preserve"><value>Fecha de recepción</value></data>
+  <data name="HistoryFilterTimeAll" xml:space="preserve"><value>Cualquier fecha</value></data>
+  <data name="HistoryFilterTimeToday" xml:space="preserve"><value>Hoy</value></data>
+  <data name="HistoryFilterTimeWeek" xml:space="preserve"><value>Últimos 7 días</value></data>
+  <data name="HistoryFilterTimeMonth" xml:space="preserve"><value>Últimos 30 días</value></data>
+  <data name="HistoryFilterTimeCustom" xml:space="preserve"><value>Periodo personalizado</value></data>
+  <data name="HistoryFilterFrom" xml:space="preserve"><value>Fecha de inicio</value></data>
+  <data name="HistoryFilterTo" xml:space="preserve"><value>Fecha de fin</value></data>
+  <data name="HistoryFilterAnyDate" xml:space="preserve"><value>Sin límite</value></data>
+  <data name="HistoryFilterInvalidRange" xml:space="preserve"><value>La fecha de fin no puede ser anterior a la de inicio</value></data>
+  <data name="HistoryFilterSort" xml:space="preserve"><value>Ordenar por</value></data>
+  <data name="HistoryFilterSortNewest" xml:space="preserve"><value>Más recientes primero</value></data>
+  <data name="HistoryFilterSortOldest" xml:space="preserve"><value>Más antiguos primero</value></data>
+  <data name="HistoryFilterSortNameAscending" xml:space="preserve"><value>Nombre de archivo: A–Z</value></data>
+  <data name="HistoryFilterSortNameDescending" xml:space="preserve"><value>Nombre de archivo: Z–A</value></data>
+  <data name="HistoryFilterSortSizeAscending" xml:space="preserve"><value>Tamaño: de menor a mayor</value></data>
+  <data name="HistoryFilterSortSizeDescending" xml:space="preserve"><value>Tamaño: de mayor a menor</value></data>
+  <data name="HistoryFilterReset" xml:space="preserve"><value>Restablecer filtros y orden</value></data>
+  <data name="HistoryFilterApply" xml:space="preserve"><value>Aplicar</value></data>
+  <data name="HistoryNoMatches" xml:space="preserve"><value>No hay registros que coincidan con los filtros</value></data>
+  <data name="HistoryFilterResults" xml:space="preserve"><value>{visible, number} de {total, plural, one {# registro} other {# registros}}</value></data>
 </root>

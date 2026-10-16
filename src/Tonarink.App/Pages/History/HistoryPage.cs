@@ -36,6 +36,14 @@ sealed class HistoryPage : Component<HistoryPageProps>
         var (infoEntry, setInfoEntry) = UseState<ReceiveHistoryEntry?>(null);
         var (confirmClear, setConfirmClear) = UseState(false);
         var (deleteShakeVersion, setDeleteShakeVersion) = UseState(0);
+        var (filter, setFilter) = UseState(HistoryFilter.Default);
+        var today = DateOnly.FromDateTime(DateTime.Today);
+        var visibleEntries = UseMemo(() => filter.FilterEntries(entries, today), entries, filter, today);
+        var headerRight = UseContext(PageHeader.RightSlot);
+        headerRight.Owner = AppRoute.History;
+        headerRight.Build = () => Component<HistoryFilterButton, HistoryFilterButtonProps>(new(filter, setFilter))
+            .WithKey("history-filter");
+        UseEffect(() => headerRight.Invalidate(), filter, t.Locale);
         var entryCommands = new HistoryEntryCommands(
             UseCommand(UseMemo(() => new Command<ReceiveHistoryEntry>
                 {
@@ -114,18 +122,18 @@ sealed class HistoryPage : Component<HistoryPageProps>
             Wrap = FlexWrap.Wrap
         };
 
-        Element list = entries switch
+        Element list = visibleEntries switch
         {
             [] => ScrollView(
-                    Caption(t.Message(new("App", "HistoryEmpty")))
+                    Caption(t.Message(new("App", entries.Count == 0 ? "HistoryEmpty" : "HistoryNoMatches")))
                         .Foreground(Theme.SecondaryText))
                 .HorizontalContentAlignment(HorizontalAlignment.Stretch),
             _ => (LazyVStack(
-                    entries,
+                    visibleEntries,
                     static entry => entry.Id.ToString("N"),
                     (entry, index) =>
                     HistoryRow(entry, t, entryCommands)
-                        .PositionInSet(index + 1, entries.Count)) with
+                        .PositionInSet(index + 1, visibleEntries.Count)) with
                 {
                     Spacing = 8,
                 })
@@ -136,6 +144,16 @@ sealed class HistoryPage : Component<HistoryPageProps>
         return Border(
                 FlexColumn(
                         actions,
+                        filter.IsActive
+                            ? HStack(8,
+                                Caption(t.Message(new("App", "HistoryFilterResults"),
+                                        ("visible", visibleEntries.Count), ("total", entries.Count)))
+                                    .Foreground(Theme.SecondaryText)
+                                    .LiveRegion(AutomationLiveSetting.Polite),
+                                Button(t.Message(new("App", "HistoryFilterReset")), () => setFilter(HistoryFilter.Default))
+                                    .SubtleButton()
+                                    .AutomationId("History.Filter.Clear"))
+                            : null,
                         list.Flex(grow: 1, basis: 0),
                         (ContentDialog(
                                 t.Message(new("App", "HistoryDeleteAllConfirm")),
