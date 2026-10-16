@@ -34,7 +34,7 @@ sealed class AnimatedDeleteButton : Component<AnimatedDeleteButtonProps>
 
         UseEffect(() =>
         {
-            UpdateForeground(playback);
+            RefreshForeground(playback);
         }, Props.Critical, Props.IsEnabled);
 
         UseEffect(() =>
@@ -144,14 +144,14 @@ sealed class AnimatedDeleteButton : Component<AnimatedDeleteButtonProps>
             var source = new Tonarink.DeleteIcon();
             playback.Player = player;
             playback.Source = source;
-            UpdateForeground(playback);
+            RefreshForeground(playback);
             player.Loaded += (_, _) =>
             {
-                UpdateForeground(playback);
+                RefreshForeground(playback);
                 if (playback.IsHovered && !playback.ReduceMotion)
                     PlayHover(playback);
             };
-            player.ActualThemeChanged += (_, _) => UpdateForeground(playback);
+            player.ActualThemeChanged += (_, _) => RefreshForeground(playback);
             player.Source = source;
             player.SetProgress(0);
             BindCompositionCenterPoint(player);
@@ -228,37 +228,10 @@ sealed class AnimatedDeleteButton : Component<AnimatedDeleteButtonProps>
         visual.CenterPoint = Vector3.Zero;
     }
 
-    private static void UpdateForeground(
-        AnimatedVisualPlayer player,
-        Tonarink.DeleteIcon source,
-        bool critical)
-    {
-        if (critical
-            && Microsoft.UI.Xaml.Application.Current.Resources.TryGetValue(
-                "SystemFillColorCritical",
-                out var resource)
-            && resource is Windows.UI.Color criticalColor)
-        {
-            source.Foreground = criticalColor;
-            return;
-        }
-
-        var theme = player.ActualTheme;
-        if (theme == ElementTheme.Default
-            && player.XamlRoot?.Content is FrameworkElement root)
-        {
-            theme = root.ActualTheme;
-        }
-
-        source.Foreground = theme == ElementTheme.Dark
-            ? Microsoft.UI.Colors.White
-            : Microsoft.UI.Colors.Black;
-    }
-
-    private static void UpdateForeground(DeleteButtonPlayback playback)
+    private static void RefreshForeground(DeleteButtonPlayback playback)
     {
         if (playback.Player is { } player && playback.Source is { } source)
-            UpdateForeground(player, source, playback.UseCriticalForeground);
+            AnimatedIconForeground.Apply(player, source, critical: playback.UseCriticalForeground);
     }
 
     private sealed class DeleteButtonPlayback

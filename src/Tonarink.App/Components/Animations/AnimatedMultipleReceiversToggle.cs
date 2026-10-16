@@ -2,10 +2,7 @@ using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Core;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
 using static Microsoft.UI.Reactor.Factories;
-using XamlToggleButton = Microsoft.UI.Xaml.Controls.Primitives.ToggleButton;
 
 namespace Tonarink.Components.Animations;
 
@@ -44,7 +41,7 @@ sealed class AnimatedMultipleReceiversToggle : Component<AnimatedMultipleReceive
                 && playback.Source is { } source)
             {
                 button.DispatcherQueue.TryEnqueue(() =>
-                    UpdateForeground(button, source, Props.IsChecked));
+                    AnimatedIconForeground.Apply(button, source, button, playback.IsChecked));
             }
 
             PlayToggleTransition(playback, Props.IsChecked);
@@ -56,20 +53,29 @@ sealed class AnimatedMultipleReceiversToggle : Component<AnimatedMultipleReceive
             .Size(44, 40)
             .Padding(0, 0)
             .IsEnabled(Props.IsEnabled)
+            .OnPointerEntered((_, _) => { if (Props.IsEnabled) PlayHover(playback); })
+            .OnPointerExited((_, _) => RestoreRestPosition(playback))
+            .OnPointerCanceled((_, _) => RestoreRestPosition(playback))
+            .OnPointerCaptureLost((_, _) => RestoreRestPosition(playback))
             .OnMountAdd(element =>
             {
-                if (element is not XamlToggleButton button)
+                if (element is not Control button)
                     return;
 
                 playback.Button = button;
-                AttachPointerHandlers(button, playback);
                 button.DispatcherQueue.TryEnqueue(() =>
                 {
                     if (playback.Source is { } source)
-                        UpdateForeground(button, source, Props.IsChecked);
+                        AnimatedIconForeground.Apply(button, source, button, playback.IsChecked);
                 });
             })
-            .OnUnmountAdd(_ => DetachPointerHandlers(playback));
+            .OnUnmountAdd(_ =>
+            {
+                playback.Button = null;
+                playback.AnimationVersion++;
+                playback.Player?.Stop();
+                playback.HoverExpanded = false;
+            });
         var icon = (AnimatedVisualPlayer() with { AutoPlay = false })
             .Size(24, 24)
             .Opacity(Props.IsEnabled ? 1 : 0.36)
@@ -83,14 +89,14 @@ sealed class AnimatedMultipleReceiversToggle : Component<AnimatedMultipleReceive
                     return;
 
                 var source = new Tonarink.MultipleReceiversIcon();
-                UpdateForeground(playback.Button, player, source, playback.IsChecked);
+                AnimatedIconForeground.Apply(player, source, playback.Button, playback.IsChecked);
                 player.Loaded += (_, _) =>
                 {
-                    UpdateForeground(playback.Button, player, source, playback.IsChecked);
+                    AnimatedIconForeground.Apply(player, source, playback.Button, playback.IsChecked);
                     player.SetProgress(playback.IsChecked ? OnRestProgress : OffRestProgress);
                 };
                 player.ActualThemeChanged += (_, _) =>
-                    UpdateForeground(playback.Button, player, source, playback.IsChecked);
+                    AnimatedIconForeground.Apply(player, source, playback.Button, playback.IsChecked);
                 player.Source = source;
                 player.SetProgress(playback.IsChecked ? OnRestProgress : OffRestProgress);
                 playback.Source = source;
@@ -110,31 +116,6 @@ sealed class AnimatedMultipleReceiversToggle : Component<AnimatedMultipleReceive
             rows: [GridSize.Auto],
             toggle,
             icon);
-    }
-
-    private static void AttachPointerHandlers(
-        XamlToggleButton button,
-        MultipleReceiversPlayback playback)
-    {
-        PointerEventHandler entered = (_, _) => PlayHover(playback);
-        PointerEventHandler exited = (_, _) => RestoreRestPosition(playback);
-
-        button.AddHandler(UIElement.PointerEnteredEvent, entered, handledEventsToo: true);
-        button.AddHandler(UIElement.PointerExitedEvent, exited, handledEventsToo: true);
-        playback.DetachPointerHandlers = () =>
-        {
-            button.RemoveHandler(UIElement.PointerEnteredEvent, entered);
-            button.RemoveHandler(UIElement.PointerExitedEvent, exited);
-        };
-    }
-
-    private static void DetachPointerHandlers(MultipleReceiversPlayback playback)
-    {
-        playback.DetachPointerHandlers?.Invoke();
-        playback.DetachPointerHandlers = null;
-        playback.Button = null;
-        playback.Player?.Stop();
-        playback.HoverExpanded = false;
     }
 
     private static void PlayHover(MultipleReceiversPlayback playback)
@@ -208,36 +189,6 @@ sealed class AnimatedMultipleReceiversToggle : Component<AnimatedMultipleReceive
             player.SetProgress(settledProgress);
     }
 
-    private static void UpdateForeground(
-        XamlToggleButton button,
-        Tonarink.MultipleReceiversIcon source,
-        bool isChecked) => UpdateForeground(button, button, source, isChecked);
-
-    private static void UpdateForeground(
-        XamlToggleButton? button,
-        FrameworkElement element,
-        Tonarink.MultipleReceiversIcon source,
-        bool isChecked)
-    {
-        if (!isChecked && button?.Foreground is SolidColorBrush brush)
-        {
-            source.Foreground = brush.Color;
-            return;
-        }
-
-        var theme = button?.ActualTheme ?? element.ActualTheme;
-        if (theme == ElementTheme.Default
-            && element.XamlRoot?.Content is FrameworkElement root)
-        {
-            theme = root.ActualTheme;
-        }
-
-        // The selected accent background needs the opposite foreground in
-        // light and dark themes; the animation is an overlay, not button content.
-        source.Foreground = (theme == ElementTheme.Dark) != isChecked
-            ? Microsoft.UI.Colors.White
-            : Microsoft.UI.Colors.Black;
-    }
 
     private sealed class MultipleReceiversPlayback
     {
@@ -245,7 +196,7 @@ sealed class AnimatedMultipleReceiversToggle : Component<AnimatedMultipleReceive
 
         public Tonarink.MultipleReceiversIcon? Source { get; set; }
 
-        public XamlToggleButton? Button { get; set; }
+        public Control? Button { get; set; }
 
         public bool IsChecked { get; set; }
 
@@ -255,6 +206,5 @@ sealed class AnimatedMultipleReceiversToggle : Component<AnimatedMultipleReceive
 
         public int AnimationVersion { get; set; }
 
-        public Action? DetachPointerHandlers { get; set; }
     }
 }

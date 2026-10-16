@@ -2,7 +2,6 @@ using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Core;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.AnimatedVisuals;
 using static Microsoft.UI.Reactor.Factories;
 
 namespace Tonarink.Components.Animations;
@@ -41,13 +40,13 @@ sealed class AnimatedUndoRedoButton : Component<AnimatedUndoRedoButtonProps>
                         return;
 
                     var source = CreateSource(Props.Kind);
-                    UpdateForeground(player, source);
+                    AnimatedIconForeground.Apply(player, source.Visual);
                     player.Loaded += (_, _) =>
                     {
-                        UpdateForeground(player, source);
+                        AnimatedIconForeground.Apply(player, source.Visual);
                         player.SetProgress(0);
                     };
-                    player.ActualThemeChanged += (_, _) => UpdateForeground(player, source);
+                    player.ActualThemeChanged += (_, _) => AnimatedIconForeground.Apply(player, source.Visual);
                     player.Source = source.Visual;
                     player.SetProgress(0);
                     playback.Player = player;
@@ -95,33 +94,12 @@ sealed class AnimatedUndoRedoButton : Component<AnimatedUndoRedoButtonProps>
         UndoRedoIconKind.Redo => new Tonarink.RedoFlowIcon(),
     };
 
-    private static void UpdateForeground(AnimatedVisualPlayer player, UndoRedoIconSource source)
-    {
-        var theme = player.ActualTheme;
-        if (theme == ElementTheme.Default
-            && player.XamlRoot?.Content is FrameworkElement root)
-        {
-            theme = root.ActualTheme;
-        }
-
-        var color = theme == ElementTheme.Dark
-            ? Microsoft.UI.Colors.White
-            : Microsoft.UI.Colors.Black;
-        source.SetForeground(color);
-    }
-
     private union UndoRedoIconSource(Tonarink.UndoFlowIcon, Tonarink.RedoFlowIcon)
     {
-        public IAnimatedVisualSource Visual => this switch
+        public IAnimatedVisualSource2 Visual => this switch
         {
             Tonarink.UndoFlowIcon undo => undo,
             Tonarink.RedoFlowIcon redo => redo,
-        };
-
-        public void SetForeground(Windows.UI.Color color) => _ = this switch
-        {
-            Tonarink.UndoFlowIcon undo => undo.Foreground = color,
-            Tonarink.RedoFlowIcon redo => redo.Foreground = color,
         };
     }
 

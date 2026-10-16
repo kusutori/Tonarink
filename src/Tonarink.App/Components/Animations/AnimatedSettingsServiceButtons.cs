@@ -2,7 +2,6 @@ using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Core;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media;
 using static Microsoft.UI.Reactor.Factories;
 using XamlButton = Microsoft.UI.Xaml.Controls.Button;
 
@@ -99,7 +98,7 @@ sealed class AnimatedSettingsServiceButtons : Component<AnimatedSettingsServiceB
                 mountedButton.DispatcherQueue.TryEnqueue(() =>
                 {
                     if (playback.Source is { } source)
-                        UpdateForeground(mountedButton, source);
+                        AnimatedIconForeground.Apply(mountedButton, source, mountedButton);
                 });
             })
             .OnUnmountAdd(_ => playback.Button = null);
@@ -117,16 +116,16 @@ sealed class AnimatedSettingsServiceButtons : Component<AnimatedSettingsServiceB
                     return;
 
                 var source = new Tonarink.SettingsServiceActionIcon();
-                UpdateForeground(playback.Button, player, source);
+                AnimatedIconForeground.Apply(player, source, playback.Button);
                 player.Loaded += (_, _) =>
                 {
-                    UpdateForeground(playback.Button, player, source);
+                    AnimatedIconForeground.Apply(player, source, playback.Button);
                     player.SetProgress(playback.IsOnline ? RefreshRestProgress : PlayRestProgress);
                     if (playback.IsStarting && !playback.ReduceMotion)
                         EnsureStartingSpin(playback);
                 };
                 player.ActualThemeChanged += (_, _) =>
-                    UpdateForeground(playback.Button, player, source);
+                    AnimatedIconForeground.Apply(player, source, playback.Button);
                 player.Source = source;
                 player.SetProgress(playback.IsOnline ? RefreshRestProgress : PlayRestProgress);
                 playback.Source = source;
@@ -172,7 +171,7 @@ sealed class AnimatedSettingsServiceButtons : Component<AnimatedSettingsServiceB
                 mountedButton.DispatcherQueue.TryEnqueue(() =>
                 {
                     if (playback.Source is { } source)
-                        UpdateForeground(mountedButton, source);
+                        AnimatedIconForeground.Apply(mountedButton, source, mountedButton);
                 });
             })
             .OnUnmountAdd(_ => playback.Button = null);
@@ -190,10 +189,10 @@ sealed class AnimatedSettingsServiceButtons : Component<AnimatedSettingsServiceB
                     return;
 
                 var source = new Tonarink.SettingsStopIcon();
-                UpdateForeground(playback.Button, player, source);
-                player.Loaded += (_, _) => UpdateForeground(playback.Button, player, source);
+                AnimatedIconForeground.Apply(player, source, playback.Button);
+                player.Loaded += (_, _) => AnimatedIconForeground.Apply(player, source, playback.Button);
                 player.ActualThemeChanged += (_, _) =>
-                    UpdateForeground(playback.Button, player, source);
+                    AnimatedIconForeground.Apply(player, source, playback.Button);
                 player.Source = source;
                 player.SetProgress(0);
                 playback.Source = source;
@@ -342,48 +341,6 @@ sealed class AnimatedSettingsServiceButtons : Component<AnimatedSettingsServiceB
         if (version == playback.AnimationVersion && playback.Player == player)
             player.SetProgress(0);
     }
-
-    private static void UpdateForeground(
-        XamlButton button,
-        ServiceIconSource source)
-    {
-        if (button.Foreground is SolidColorBrush brush)
-            SetForeground(source, brush.Color);
-    }
-
-    private static void UpdateForeground(
-        XamlButton? button,
-        AnimatedVisualPlayer player,
-        ServiceIconSource source)
-    {
-        if (button?.Foreground is SolidColorBrush brush)
-        {
-            SetForeground(source, brush.Color);
-            return;
-        }
-
-        var theme = player.ActualTheme;
-        if (theme == ElementTheme.Default
-            && player.XamlRoot?.Content is FrameworkElement root)
-        {
-            theme = root.ActualTheme;
-        }
-
-        SetForeground(
-            source,
-            theme == ElementTheme.Dark
-                ? Microsoft.UI.Colors.White
-                : Microsoft.UI.Colors.Black);
-    }
-
-    private static void SetForeground(ServiceIconSource source, Windows.UI.Color color) => _ = source switch
-    {
-        Tonarink.SettingsServiceActionIcon action => action.Foreground = color,
-        Tonarink.SettingsStopIcon stop => stop.Foreground = color,
-    };
-
-    private union ServiceIconSource(Tonarink.SettingsServiceActionIcon, Tonarink.SettingsStopIcon);
-
     private sealed class ServiceActionPlayback
     {
         public AnimatedVisualPlayer? Player { get; set; }

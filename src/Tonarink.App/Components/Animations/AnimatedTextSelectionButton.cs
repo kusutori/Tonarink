@@ -31,13 +31,13 @@ sealed class AnimatedTextSelectionButton : Component<AnimatedTextSelectionButton
                             return;
 
                         var source = new Tonarink.EditWritingIcon();
-                        UpdateForeground(player, source);
+                        AnimatedIconForeground.Apply(player, source);
                         player.Loaded += (_, _) =>
                         {
-                            UpdateForeground(player, source);
+                            AnimatedIconForeground.Apply(player, source);
                             player.SetProgress(0);
                         };
-                        player.ActualThemeChanged += (_, _) => UpdateForeground(player, source);
+                        player.ActualThemeChanged += (_, _) => AnimatedIconForeground.Apply(player, source);
                         player.Source = source;
                         player.SetProgress(0);
                         playerRef.Current = player;
@@ -67,19 +67,4 @@ sealed class AnimatedTextSelectionButton : Component<AnimatedTextSelectionButton
             .IsEnabled(Props.IsEnabled);
     }
 
-    private static void UpdateForeground(
-        AnimatedVisualPlayer player,
-        Tonarink.EditWritingIcon source)
-    {
-        var theme = player.ActualTheme;
-        if (theme == ElementTheme.Default
-            && player.XamlRoot?.Content is FrameworkElement root)
-        {
-            theme = root.ActualTheme;
-        }
-
-        source.Foreground = theme == ElementTheme.Dark
-            ? Microsoft.UI.Colors.White
-            : Microsoft.UI.Colors.Black;
-    }
 }

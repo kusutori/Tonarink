@@ -12,8 +12,6 @@ sealed record JumpListLabels(
 static class JumpListService
 {
     private const int ItemsPerGroup = 5;
-    private const string FavoritePrefix = "tonarink-jump:favorite:";
-    private const string HistoryPrefix = "tonarink-jump:history:";
     private static readonly string RemovedItemsPath = Path.Combine(
         AppPlatform.DataDirectory,
         "jump-list-removed.txt");
@@ -39,8 +37,7 @@ static class JumpListService
                          .OrderBy(static favorite => favorite.Name, StringComparer.CurrentCultureIgnoreCase))
             {
                 var arguments = AppDeepLinks.ForFavorite(favorite.Fingerprint);
-                if (WasRemoved(arguments) || WasRemoved("app open --favorite " + favorite.Fingerprint)
-                    || WasRemoved(FavoritePrefix + favorite.Fingerprint))
+                if (WasRemoved(arguments))
                     continue;
 
                 jumpList.Items.Add(CreateItem(
@@ -58,8 +55,7 @@ static class JumpListService
                          .Where(static entry => File.Exists(entry.Path) || Directory.Exists(entry.Path)))
             {
                 var arguments = AppDeepLinks.ForHistory(entry.Id);
-                if (WasRemoved(arguments) || WasRemoved("app open --history " + entry.Id.ToString("D"))
-                    || WasRemoved(HistoryPrefix + entry.Id.ToString("N")))
+                if (WasRemoved(arguments))
                     continue;
 
                 jumpList.Items.Add(CreateItem(

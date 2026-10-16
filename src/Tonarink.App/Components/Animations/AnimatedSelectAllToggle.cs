@@ -2,9 +2,7 @@ using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Core;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media;
 using static Microsoft.UI.Reactor.Factories;
-using XamlToggleButton = Microsoft.UI.Xaml.Controls.Primitives.ToggleButton;
 
 namespace Tonarink.Components.Animations;
 
@@ -42,7 +40,7 @@ sealed class AnimatedSelectAllToggle : Component<AnimatedSelectAllToggleProps>
             if (playback.Button is { } button && playback.Source is { } source)
             {
                 button.DispatcherQueue.TryEnqueue(() =>
-                    UpdateForeground(button, source, Props.CheckedState));
+                    AnimatedIconForeground.Apply(button, source, button, playback.CheckedState is true));
             }
 
             PlayStateTransition(playback, previousState, Props.CheckedState);
@@ -59,14 +57,14 @@ sealed class AnimatedSelectAllToggle : Component<AnimatedSelectAllToggleProps>
             .IsEnabled(Props.IsEnabled)
             .OnMountAdd(element =>
             {
-                if (element is not XamlToggleButton button)
+                if (element is not Control button)
                     return;
 
                 playback.Button = button;
                 button.DispatcherQueue.TryEnqueue(() =>
                 {
                     if (playback.Source is { } source)
-                        UpdateForeground(button, source, playback.CheckedState);
+                        AnimatedIconForeground.Apply(button, source, button, playback.CheckedState is true);
                 });
             })
             .OnUnmountAdd(_ =>
@@ -89,14 +87,14 @@ sealed class AnimatedSelectAllToggle : Component<AnimatedSelectAllToggleProps>
                     return;
 
                 var source = new Tonarink.SelectAllToggleIcon();
-                UpdateForeground(playback.Button, player, source, playback.CheckedState);
+                AnimatedIconForeground.Apply(player, source, playback.Button, playback.CheckedState is true);
                 player.Loaded += (_, _) =>
                 {
-                    UpdateForeground(playback.Button, player, source, playback.CheckedState);
+                    AnimatedIconForeground.Apply(player, source, playback.Button, playback.CheckedState is true);
                     player.SetProgress(RestProgress(playback.CheckedState));
                 };
                 player.ActualThemeChanged += (_, _) =>
-                    UpdateForeground(playback.Button, player, source, playback.CheckedState);
+                    AnimatedIconForeground.Apply(player, source, playback.Button, playback.CheckedState is true);
                 player.Source = source;
                 player.SetProgress(RestProgress(playback.CheckedState));
                 playback.Source = source;
@@ -176,50 +174,6 @@ sealed class AnimatedSelectAllToggle : Component<AnimatedSelectAllToggleProps>
             player.SetProgress(settledProgress);
     }
 
-    private static void UpdateForeground(
-        XamlToggleButton button,
-        Tonarink.SelectAllToggleIcon source,
-        bool? checkedState)
-    {
-        if (checkedState is true)
-        {
-            source.Foreground = Microsoft.UI.Colors.Black;
-            return;
-        }
-
-        if (button.Foreground is SolidColorBrush brush)
-            source.Foreground = brush.Color;
-    }
-
-    private static void UpdateForeground(
-        XamlToggleButton? button,
-        AnimatedVisualPlayer player,
-        Tonarink.SelectAllToggleIcon source,
-        bool? checkedState)
-    {
-        if (checkedState is true)
-        {
-            source.Foreground = Microsoft.UI.Colors.Black;
-            return;
-        }
-
-        if (button?.Foreground is SolidColorBrush brush)
-        {
-            source.Foreground = brush.Color;
-            return;
-        }
-
-        var theme = player.ActualTheme;
-        if (theme == ElementTheme.Default
-            && player.XamlRoot?.Content is FrameworkElement root)
-        {
-            theme = root.ActualTheme;
-        }
-
-        source.Foreground = theme == ElementTheme.Dark
-            ? Microsoft.UI.Colors.White
-            : Microsoft.UI.Colors.Black;
-    }
 
     private sealed class SelectAllPlayback
     {
@@ -227,7 +181,7 @@ sealed class AnimatedSelectAllToggle : Component<AnimatedSelectAllToggleProps>
 
         public Tonarink.SelectAllToggleIcon? Source { get; set; }
 
-        public XamlToggleButton? Button { get; set; }
+        public Control? Button { get; set; }
 
         public bool? CheckedState { get; set; }
 

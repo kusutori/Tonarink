@@ -13,20 +13,6 @@ static class AppCommandActivation
     public static bool HasPending => !Pending.IsEmpty;
     public static bool TryDequeue(out Func<Task>? invocation) => Pending.TryDequeue(out invocation);
 
-    // Compatibility is confined to the activation boundary. CLI aliases keep
-    // System.CommandLine syntax; new jump-list entries carry deep links.
-    public static string[] NormalizeLegacyArguments(string[] arguments)
-    {
-        if (arguments.Length != 1) return arguments;
-        const string favorite = "tonarink-jump:favorite:";
-        const string history = "tonarink-jump:history:";
-        if (arguments[0].StartsWith(favorite, StringComparison.Ordinal))
-            return ["app", "open", "--favorite", arguments[0][favorite.Length..]];
-        if (arguments[0].StartsWith(history, StringComparison.Ordinal))
-            return ["app", "open", "--history", arguments[0][history.Length..]];
-        return arguments;
-    }
-
     public static void EnqueueLaunch(string? arguments)
     {
         if (string.IsNullOrWhiteSpace(arguments)) return;
@@ -39,8 +25,7 @@ static class AppCommandActivation
                     AppDiagnostics.Report("Launch command failed", new CliException(response.Message ?? "Command failed", response.ExitCode));
                 return ValueTask.CompletedTask;
             }, reportProgress: static _ => { });
-        var legacy = NormalizeLegacyArguments([arguments]);
-        var parsed = legacy.Length == 1 ? model.Root.Parse(arguments) : model.Root.Parse(legacy);
+        var parsed = model.Root.Parse(arguments);
         // Internal startup flags and platform activation protocols are not CLI commands.
         if (!model.IsBusinessInvocation(parsed)) return;
         if (parsed.Errors.Count > 0)

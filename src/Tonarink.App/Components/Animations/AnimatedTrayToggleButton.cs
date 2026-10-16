@@ -2,10 +2,7 @@ using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Core;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.AnimatedVisuals;
-using Microsoft.UI.Xaml.Media;
 using static Microsoft.UI.Reactor.Factories;
-using XamlToggleButton = Microsoft.UI.Xaml.Controls.Primitives.ToggleButton;
 
 namespace Tonarink.Components.Animations;
 
@@ -55,7 +52,7 @@ sealed class AnimatedTrayToggleButton : Component<AnimatedTrayToggleButtonProps>
             {
                 var source = playback.Source.Value;
                 button.DispatcherQueue.TryEnqueue(() =>
-                    UpdateForeground(button, source, Props.IsChecked));
+                    AnimatedIconForeground.Apply(button, source.Visual, button, playback.IsChecked));
             }
 
             PlayToggleTransition(playback, Props.Kind, Props.IsChecked);
@@ -69,14 +66,14 @@ sealed class AnimatedTrayToggleButton : Component<AnimatedTrayToggleButtonProps>
             .IsEnabled(Props.IsEnabled)
             .OnMountAdd(element =>
             {
-                if (element is not XamlToggleButton button)
+                if (element is not Control button)
                     return;
 
                 playback.Button = button;
                 button.DispatcherQueue.TryEnqueue(() =>
                 {
                     if (playback.Source.HasValue)
-                        UpdateForeground(button, playback.Source.Value, Props.IsChecked);
+                        AnimatedIconForeground.Apply(button, playback.Source.Value.Visual, button, playback.IsChecked);
                 });
             })
             .OnUnmountAdd(_ =>
@@ -98,14 +95,14 @@ sealed class AnimatedTrayToggleButton : Component<AnimatedTrayToggleButtonProps>
                     return;
 
                 var source = CreateSource(Props.Kind);
-                UpdateForeground(playback.Button, player, source, playback.IsChecked);
+                AnimatedIconForeground.Apply(player, source.Visual, playback.Button, playback.IsChecked);
                 player.Loaded += (_, _) =>
                 {
-                    UpdateForeground(playback.Button, player, source, playback.IsChecked);
+                    AnimatedIconForeground.Apply(player, source.Visual, playback.Button, playback.IsChecked);
                     player.SetProgress(RestProgress(Props.Kind, playback.IsChecked));
                 };
                 player.ActualThemeChanged += (_, _) =>
-                    UpdateForeground(playback.Button, player, source, playback.IsChecked);
+                    AnimatedIconForeground.Apply(player, source.Visual, playback.Button, playback.IsChecked);
                 player.Source = source.Visual;
                 player.SetProgress(RestProgress(Props.Kind, playback.IsChecked));
                 playback.Source = source;
@@ -191,69 +188,12 @@ sealed class AnimatedTrayToggleButton : Component<AnimatedTrayToggleButtonProps>
         if (version == playback.AnimationVersion && playback.Player == player)
             player.SetProgress(settledProgress);
     }
-
-    private static void UpdateForeground(
-        XamlToggleButton button,
-        TrayToggleIconSource source,
-        bool isChecked)
-    {
-        if (isChecked)
-        {
-            SetForeground(source, Microsoft.UI.Colors.Black);
-            return;
-        }
-
-        if (button.Foreground is SolidColorBrush brush)
-            SetForeground(source, brush.Color);
-    }
-
-    private static void UpdateForeground(
-        XamlToggleButton? button,
-        AnimatedVisualPlayer player,
-        TrayToggleIconSource source,
-        bool isChecked)
-    {
-        if (isChecked)
-        {
-            SetForeground(source, Microsoft.UI.Colors.Black);
-            return;
-        }
-
-        if (button?.Foreground is SolidColorBrush brush)
-        {
-            SetForeground(source, brush.Color);
-            return;
-        }
-
-        var theme = player.ActualTheme;
-        if (theme == ElementTheme.Default
-            && player.XamlRoot?.Content is FrameworkElement root)
-        {
-            theme = root.ActualTheme;
-        }
-
-        SetForeground(
-            source,
-            theme == ElementTheme.Dark
-                ? Microsoft.UI.Colors.White
-                : Microsoft.UI.Colors.Black);
-    }
-
-    private static void SetForeground(TrayToggleIconSource source, Windows.UI.Color color) =>
-        source.SetForeground(color);
-
     private union TrayToggleIconSource(Tonarink.TrayServiceToggleIcon, Tonarink.TrayPinToggleIcon)
     {
-        public IAnimatedVisualSource Visual => this switch
+        public IAnimatedVisualSource2 Visual => this switch
         {
             Tonarink.TrayServiceToggleIcon service => service,
             Tonarink.TrayPinToggleIcon pin => pin,
-        };
-
-        public void SetForeground(Windows.UI.Color color) => _ = this switch
-        {
-            Tonarink.TrayServiceToggleIcon service => service.Foreground = color,
-            Tonarink.TrayPinToggleIcon pin => pin.Foreground = color,
         };
     }
 
@@ -263,7 +203,7 @@ sealed class AnimatedTrayToggleButton : Component<AnimatedTrayToggleButtonProps>
 
         public TrayToggleIconSource? Source { get; set; }
 
-        public XamlToggleButton? Button { get; set; }
+        public Control? Button { get; set; }
 
         public bool IsChecked { get; set; }
 

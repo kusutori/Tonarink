@@ -77,14 +77,14 @@ sealed class AnimatedAddressTargetButton : Component<AnimatedAddressTargetButton
                         return;
 
                     var source = new Tonarink.AddressTargetIcon();
-                    UpdateForeground(player, source);
+                    AnimatedIconForeground.Apply(player, source);
                     player.Loaded += (_, _) =>
                     {
-                        UpdateForeground(player, source);
+                        AnimatedIconForeground.Apply(player, source);
                         player.SetProgress(
                             separatedRef.Current ? SeparatedProgress : HitProgress);
                     };
-                    player.ActualThemeChanged += (_, _) => UpdateForeground(player, source);
+                    player.ActualThemeChanged += (_, _) => AnimatedIconForeground.Apply(player, source);
                     player.Source = source;
                     player.SetProgress(
                         separatedRef.Current ? SeparatedProgress : HitProgress);
@@ -105,19 +105,4 @@ sealed class AnimatedAddressTargetButton : Component<AnimatedAddressTargetButton
             .IsEnabled(Props.IsEnabled);
     }
 
-    private static void UpdateForeground(
-        AnimatedVisualPlayer player,
-        Tonarink.AddressTargetIcon source)
-    {
-        var theme = player.ActualTheme;
-        if (theme == ElementTheme.Default
-            && player.XamlRoot?.Content is FrameworkElement root)
-        {
-            theme = root.ActualTheme;
-        }
-
-        source.Foreground = theme == ElementTheme.Dark
-            ? Microsoft.UI.Colors.White
-            : Microsoft.UI.Colors.Black;
-    }
 }

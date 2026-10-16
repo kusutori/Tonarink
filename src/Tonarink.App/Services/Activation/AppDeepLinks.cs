@@ -31,9 +31,9 @@ static class AppDeepLinks
     }
 
     public static string ForFavorite(string fingerprint) =>
-        "tonarink://send?favorite=" + Uri.EscapeDataString(fingerprint);
+        "tonarink:///send?favorite=" + Uri.EscapeDataString(fingerprint);
 
-    public static string ForHistory(Guid id) => "tonarink://history?id=" + id.ToString("D");
+    public static string ForHistory(Guid id) => "tonarink:///history?id=" + id.ToString("D");
 
     public static AppNavigationRequest Resolve(string value) =>
         TryResolve(value, out var request) ? request!
@@ -44,15 +44,11 @@ static class AppDeepLinks
         request = null;
         if (!Uri.TryCreate(text, UriKind.Absolute, out var uri)
             || !uri.Scheme.Equals("tonarink", StringComparison.OrdinalIgnoreCase)
-            || uri.UserInfo.Length != 0 || !uri.IsDefaultPort || uri.Fragment.Length != 0) return false;
-
-        // Existing jump lists use tonarink://history (history is the authority).
-        // Also accept path-form tonarink:///history; Reactor matches paths, not hosts.
-        var path = uri.Host.Length == 0 ? uri.AbsolutePath
-            : "/" + uri.Host + (uri.AbsolutePath == "/" ? "" : uri.AbsolutePath);
+            || uri.Host.Length != 0 || uri.UserInfo.Length != 0
+            || !uri.IsDefaultPort || uri.Fragment.Length != 0) return false;
         try
         {
-            var result = Routes.Resolve(new UriBuilder(uri) { Host = "app", Path = path }.Uri);
+            var result = Routes.Resolve(uri);
             if (!result.Matched) return false;
             var target = result.Routes[^1];
             if (!HasValidQuery(uri, target.Route)) return false;

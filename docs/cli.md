@@ -142,7 +142,7 @@ tonarink-cli app quit --yes           # 完全退出后台宿主
 
 已停止的服务器会在执行需要联网的命令（例如 `send`、`discover`）时自动启动。Ctrl+C 只取消当前前台命令，并不退出后台宿主。
 
-集成版 `app open --favorite` 跳转到发送页，打开收藏列表并优先显示该设备；`app open --history` 跳转到接收历史并打开记录详情，两者不能同时使用。CLI 与托盘、深度链接共用导航入口；Windows 跳转列表使用 `tonarink://` 地址，旧版跳转列表命令及参数仍兼容。地址格式见 [应用深度链接](deep-links.md)。
+集成版 `app open --favorite` 跳转到发送页，打开收藏列表并优先显示该设备；`app open --history` 跳转到接收历史并打开记录详情，两者不能同时使用。CLI 与托盘、深度链接共用导航入口；Windows 跳转列表使用 `tonarink:///` 路径地址。地址及返回栈行为见 [应用深度链接](deep-links.md)。
 
 集成版 `app open <路径...>` 将文件或文件夹加入发送列表并显示发送页，不会自动发送；相对路径按调用者的工作目录解析，多项路径分别传入。可以搭配 `--favorite`，但不能搭配 `--history`。未打包版也可直接运行 `Tonarink.exe app open -- <路径...>`，无需注册执行别名；资源管理器的[“发送到”集成](send-to.md)复用此入口。
 

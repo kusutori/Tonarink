@@ -35,13 +35,13 @@ sealed class AnimatedAddButton : Component<AnimatedAddButtonProps>
                     return;
 
                 var source = new Tonarink.AddRippleIcon();
-                UpdateForeground(player, source);
+                AnimatedIconForeground.Apply(player, source);
                 player.Loaded += (_, _) =>
                 {
-                    UpdateForeground(player, source);
+                    AnimatedIconForeground.Apply(player, source);
                     player.SetProgress(0);
                 };
-                player.ActualThemeChanged += (_, _) => UpdateForeground(player, source);
+                player.ActualThemeChanged += (_, _) => AnimatedIconForeground.Apply(player, source);
                 player.Source = source;
                 player.SetProgress(0);
                 playerRef.Current = player;
@@ -105,19 +105,4 @@ sealed class AnimatedAddButton : Component<AnimatedAddButtonProps>
         }
     }
 
-    private static void UpdateForeground(
-        AnimatedVisualPlayer player,
-        Tonarink.AddRippleIcon source)
-    {
-        var theme = player.ActualTheme;
-        if (theme == ElementTheme.Default
-            && player.XamlRoot?.Content is FrameworkElement root)
-        {
-            theme = root.ActualTheme;
-        }
-
-        source.Foreground = theme == ElementTheme.Dark
-            ? Microsoft.UI.Colors.White
-            : Microsoft.UI.Colors.Black;
-    }
 }

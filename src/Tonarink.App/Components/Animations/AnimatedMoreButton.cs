@@ -31,13 +31,13 @@ sealed class AnimatedMoreButton : Component<AnimatedMoreButtonProps>
                         return;
 
                     var source = new Tonarink.MoreTriangleIcon();
-                    UpdateForeground(player, source);
+                    AnimatedIconForeground.Apply(player, source);
                     player.Loaded += (_, _) =>
                     {
-                        UpdateForeground(player, source);
+                        AnimatedIconForeground.Apply(player, source);
                         player.SetProgress(0);
                     };
-                    player.ActualThemeChanged += (_, _) => UpdateForeground(player, source);
+                    player.ActualThemeChanged += (_, _) => AnimatedIconForeground.Apply(player, source);
                     player.Source = source;
                     player.SetProgress(0);
                     playerRef.Current = player;
@@ -71,19 +71,4 @@ sealed class AnimatedMoreButton : Component<AnimatedMoreButtonProps>
             .WithFlyout(Props.Flyout);
     }
 
-    private static void UpdateForeground(
-        AnimatedVisualPlayer player,
-        Tonarink.MoreTriangleIcon source)
-    {
-        var theme = player.ActualTheme;
-        if (theme == ElementTheme.Default
-            && player.XamlRoot?.Content is FrameworkElement root)
-        {
-            theme = root.ActualTheme;
-        }
-
-        source.Foreground = theme == ElementTheme.Dark
-            ? Microsoft.UI.Colors.White
-            : Microsoft.UI.Colors.Black;
-    }
 }
