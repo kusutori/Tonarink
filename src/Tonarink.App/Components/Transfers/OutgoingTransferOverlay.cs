@@ -35,6 +35,8 @@ sealed class OutgoingTransferOverlay : Component<OutgoingTransferOverlayProps>
         var (pin, setPin) = UseState(string.Empty);
         var focusTrap = this.UseFocusTrap(
             !showVerification && !(connectedAnimationReady && transfer.PinPrompt is not null));
+        var (cancelRef, requestCancelFocus) = this.UseElementFocus();
+        var (closeRef, requestCloseFocus) = this.UseElementFocus();
         var receiverCardRef = UseRef<FrameworkElement?>();
         var connectedAnimationKey = DeviceConnectedKey(transfer.Receiver.Fingerprint);
         var taskbarProgress = new TaskbarTransferProgress(
@@ -105,7 +107,8 @@ sealed class OutgoingTransferOverlay : Component<OutgoingTransferOverlayProps>
                                 TextBlock(t.Message(new("App", "Cancel")))),
                             transfer.Cancel)
                         .AutomationName(t.Message(new("App", "CancelCurrentSend")))
-                        .OnMountAdd(element => element.Focus(FocusState.Programmatic))
+                        .Ref(cancelRef)
+                        .OnMountAdd(_ => requestCancelFocus())
                         .MinWidth(120)
                     : Button(
                             HStack(8,
@@ -113,7 +116,8 @@ sealed class OutgoingTransferOverlay : Component<OutgoingTransferOverlayProps>
                                 TextBlock(t.Message(new("App", "Close")))),
                             CloseOverlay)
                         .AutomationName(t.Message(new("App", "Close")))
-                        .OnMountAdd(element => element.Focus(FocusState.Programmatic))
+                        .Ref(closeRef)
+                        .OnMountAdd(_ => requestCloseFocus())
                         .MinWidth(120))
                 .HAlign(HorizontalAlignment.Center))
             .MaxWidth(AppLayout.OverlayStatusMaxWidth)

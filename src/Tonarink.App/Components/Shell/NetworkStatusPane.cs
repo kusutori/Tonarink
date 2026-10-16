@@ -113,9 +113,9 @@ sealed class NetworkStatusPane : Component<NetworkStatusPaneProps>
                 return;
 
             var source = new Tonarink.NetworkStatusIcon();
-            UpdateNetworkIconForeground(player, source);
-            player.Loaded += (_, _) => UpdateNetworkIconForeground(player, source);
-            player.ActualThemeChanged += (_, _) => UpdateNetworkIconForeground(player, source);
+            AnimatedIconForeground.Apply(player, source);
+            player.Loaded += (_, _) => AnimatedIconForeground.Apply(player, source);
+            player.ActualThemeChanged += (_, _) => AnimatedIconForeground.Apply(player, source);
             player.Source = source;
             var playback = playbackRef.Current = new NetworkIconPlayback { Player = player };
             SetNetworkIconState(playback, state, reduceMotion);
@@ -249,22 +249,6 @@ sealed class NetworkStatusPane : Component<NetworkStatusPaneProps>
         playback.Generation++;
         playback.Animation = NetworkIconAnimation.None;
         player.Stop();
-    }
-
-    private static void UpdateNetworkIconForeground(
-        AnimatedVisualPlayer player,
-        Tonarink.NetworkStatusIcon source)
-    {
-        var theme = player.ActualTheme;
-        if (theme == ElementTheme.Default
-            && player.XamlRoot?.Content is FrameworkElement root)
-        {
-            theme = root.ActualTheme;
-        }
-
-        source.Foreground = theme == ElementTheme.Dark
-            ? Microsoft.UI.Colors.White
-            : Microsoft.UI.Colors.Black;
     }
 
     private sealed class NetworkIconPlayback

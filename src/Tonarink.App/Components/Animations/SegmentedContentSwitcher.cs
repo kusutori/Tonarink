@@ -4,7 +4,6 @@ using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Core;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Hosting;
-using Windows.UI.ViewManagement;
 using static Microsoft.UI.Reactor.Factories;
 
 namespace Tonarink.Components.Animations;
@@ -26,6 +25,7 @@ sealed class SegmentedContentSwitcher : Component<SegmentedContentSwitcherProps>
 
     public override Element Render()
     {
+        var reduceMotion = UseReducedMotion();
         var selectedIndex = Math.Clamp(Props.SelectedIndex, 0, 1);
         var previousIndex = UseRef(selectedIndex);
         var generation = UseRef(0);
@@ -46,17 +46,29 @@ sealed class SegmentedContentSwitcher : Component<SegmentedContentSwitcherProps>
         UseEffect(() =>
         {
             var outgoingIndex = previousIndex.Current;
+            previousIndex.Current = selectedIndex;
+
+            if (reduceMotion)
+            {
+                // Invalidate a running batch before settling both mounted pages.
+                generation.Current++;
+                if (firstRef.Current is { } first)
+                    ResetPage(first, visible: selectedIndex == 0);
+                if (secondRef.Current is { } second)
+                    ResetPage(second, visible: selectedIndex == 1);
+                return;
+            }
+
             if (outgoingIndex == selectedIndex)
                 return;
 
-            previousIndex.Current = selectedIndex;
             var outgoing = outgoingIndex == 0 ? firstRef.Current : secondRef.Current;
             var incoming = selectedIndex == 0 ? firstRef.Current : secondRef.Current;
             if (outgoing is null || incoming is null)
                 return;
 
             Animate(outgoing, incoming, selectedIndex > outgoingIndex ? 1 : -1, ++generation.Current);
-        }, selectedIndex);
+        }, selectedIndex, reduceMotion);
 
         return Grid(
                 columns: [GridSize.Star()],
@@ -92,13 +104,6 @@ sealed class SegmentedContentSwitcher : Component<SegmentedContentSwitcherProps>
 
         void Animate(FrameworkElement outgoing, FrameworkElement incoming, int direction, int animationGeneration)
         {
-            if (!AnimationsEnabled())
-            {
-                ResetPage(outgoing, visible: false);
-                ResetPage(incoming, visible: true);
-                return;
-            }
-
             outgoing.Visibility = Visibility.Visible;
             incoming.Visibility = Visibility.Visible;
 
@@ -198,18 +203,5 @@ sealed class SegmentedContentSwitcher : Component<SegmentedContentSwitcherProps>
     {
         visual.StopAnimation(nameof(visual.Offset));
         visual.StopAnimation(nameof(visual.Opacity));
-    }
-
-    private static bool AnimationsEnabled()
-    {
-        try
-        {
-            return new UISettings().AnimationsEnabled;
-        }
-        catch (Exception exception)
-        {
-            AppDiagnostics.Report("Could not read the Windows animation preference", exception);
-            return false;
-        }
     }
 }

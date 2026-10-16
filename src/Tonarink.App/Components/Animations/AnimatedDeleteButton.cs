@@ -29,6 +29,7 @@ sealed class AnimatedDeleteButton : Component<AnimatedDeleteButtonProps>
         var playbackRef = UseRef<DeleteButtonPlayback?>();
         var playback = playbackRef.Current ??= new DeleteButtonPlayback();
         var previousShakeVersionRef = UseRef(Props.ShakeVersion);
+        var shouldShake = Props.ShakeVersion > previousShakeVersionRef.Current;
         playback.UseCriticalForeground = Props.Critical && Props.IsEnabled;
         playback.ReduceMotion = reduceMotion;
 
@@ -39,17 +40,29 @@ sealed class AnimatedDeleteButton : Component<AnimatedDeleteButtonProps>
 
         UseEffect(() =>
         {
-            var shouldShake = Props.ShakeVersion > previousShakeVersionRef.Current;
             previousShakeVersionRef.Current = Props.ShakeVersion;
             if (!shouldShake)
                 return;
 
             CloseImmediately(playback);
-            if (!reduceMotion)
-                PlayShake(playback);
-        }, Props.ShakeVersion, reduceMotion);
+        }, Props.ShakeVersion);
 
+        // Keyframes targets Composition's RotationAngle (radians), not degrees.
         var player = DeleteIcon(playback, Props.IsEnabled, Props.IconSize)
+            .Keyframes("delete-shake", (Props.ShakeVersion, reduceMotion), keyframes => shouldShake && !reduceMotion
+                ? keyframes
+                    .Duration(340)
+                    .At(0f, rotation: 0)
+                    .At(0.16f, rotation: float.DegreesToRadians(-7))
+                    .At(0.34f, rotation: float.DegreesToRadians(6))
+                    .At(0.52f, rotation: float.DegreesToRadians(-4))
+                    .At(0.70f, rotation: float.DegreesToRadians(3))
+                    .At(0.86f, rotation: float.DegreesToRadians(-1.5f))
+                    .At(1f, rotation: 0)
+                : keyframes
+                    .Duration(1)
+                    .At(0f, rotation: 0)
+                    .At(1f, rotation: 0))
             .HAlign(HorizontalAlignment.Center)
             .VAlign(VerticalAlignment.Center);
         Element content = Props.Label is null
@@ -187,27 +200,6 @@ sealed class AnimatedDeleteButton : Component<AnimatedDeleteButtonProps>
 
         player.Stop();
         player.SetProgress(0);
-    }
-
-    private static void PlayShake(DeleteButtonPlayback playback)
-    {
-        if (playback.Player is not { } player)
-            return;
-
-        var visual = ElementCompositionPreview.GetElementVisual(player);
-        visual.StopAnimation(nameof(visual.RotationAngleInDegrees));
-        visual.RotationAngleInDegrees = 0;
-
-        var animation = visual.Compositor.CreateScalarKeyFrameAnimation();
-        animation.InsertKeyFrame(0, 0);
-        animation.InsertKeyFrame(0.16f, -7);
-        animation.InsertKeyFrame(0.34f, 6);
-        animation.InsertKeyFrame(0.52f, -4);
-        animation.InsertKeyFrame(0.70f, 3);
-        animation.InsertKeyFrame(0.86f, -1.5f);
-        animation.InsertKeyFrame(1, 0);
-        animation.Duration = TimeSpan.FromMilliseconds(340);
-        visual.StartAnimation(nameof(visual.RotationAngleInDegrees), animation);
     }
 
     private static void BindCompositionCenterPoint(FrameworkElement element)

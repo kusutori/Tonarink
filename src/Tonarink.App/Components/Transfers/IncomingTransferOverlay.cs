@@ -60,6 +60,9 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
         var (folderError, setFolderError) = UseState<string?>(null);
         var focusTrap = this.UseFocusTrap(
             !showVerification && !showQuickActions && renameItemId is null);
+        var (acceptRef, requestAcceptFocus) = this.UseElementFocus();
+        var (cancelRef, requestCancelFocus) = this.UseElementFocus();
+        var (closeRef, requestCloseFocus) = this.UseElementFocus();
         var cancellationRef = UseRef<CancellationTokenSource?>();
         var fileCardRef = UseRef<FrameworkElement?>();
         var fileOptionsDesiredRef = UseRef(false);
@@ -414,9 +417,11 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                             () => _ = AcceptAsync())
                         .AutomationName(t.Message(new("App", "Accept")))
                         .IsEnabled(!isPending && (showText || selectedItemIds.Count > 0))
-                        .OnMountAdd(element => element.Focus(FocusState.Programmatic))
                         .MinWidth(120)
-                        .AccentButton())
+                        .AccentButton()
+                        .Ref(acceptRef)
+                        // Style application replaces OnMount; append focus afterwards.
+                        .OnMountAdd(_ => requestAcceptFocus()))
                 .HAlign(HorizontalAlignment.Center);
 
         Element ReceivingActions() =>
@@ -437,7 +442,8 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                                 TextBlock(t.Message(new("App", "Cancel")))),
                             CancelReceive)
                         .AutomationName(t.Message(new("App", "Cancel")))
-                        .OnMountAdd(element => element.Focus(FocusState.Programmatic))
+                        .Ref(cancelRef)
+                        .OnMountAdd(_ => requestCancelFocus())
                         .MinWidth(120)
                         .HAlign(HorizontalAlignment.Center))
                 .MaxWidth(AppLayout.OverlayIncomingActionsMaxWidth)
@@ -455,7 +461,8 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                                 TextBlock(t.Message(new("App", "Close")))),
                             () => Props.Dismiss(request.RequestId))
                         .AutomationName(t.Message(new("App", "Close")))
-                        .OnMountAdd(element => element.Focus(FocusState.Programmatic))
+                        .Ref(closeRef)
+                        .OnMountAdd(_ => requestCloseFocus())
                         .MinWidth(120)
                         .HAlign(HorizontalAlignment.Center))
                 .HAlign(HorizontalAlignment.Center);
