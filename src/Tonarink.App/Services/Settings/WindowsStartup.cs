@@ -90,7 +90,7 @@ static class WindowsStartup
                 case StartupTaskState.Disabled:
                     throw new StartupDisabledException("StartupFailed");
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(state), state, "Unknown startup task state.");
+                    throw new InvalidOperationException($"Unknown startup task state: {state}.");
             }
         }
 

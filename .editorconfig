@@ -1,0 +1,73 @@
+# Build-enforced rules are warning level below. Directory.Build.props turns
+# warnings into errors; suggestions are editor guidance only.
+# Rule rationale and rollout policy: docs/code-quality.md.
+root = true
+
+[*]
+charset = utf-8
+indent_style = space
+indent_size = 4
+insert_final_newline = true
+trim_trailing_whitespace = true
+# Existing checkouts use mixed line endings. Do not force a repository-wide
+# newline rewrite as part of introducing analyzers.
+
+[*.{json,jsonc,yml,yaml,props,targets,csproj,slnx,resw,appxmanifest}]
+indent_size = 2
+
+[src/Tonarink.{App,ExplorerCommand,WidgetProvider}/*.csproj]
+indent_size = 4
+
+[*.md]
+indent_size = 2
+trim_trailing_whitespace = false
+
+[*.cs]
+dotnet_sort_system_directives_first = true
+dotnet_separate_import_directive_groups = false
+csharp_new_line_before_open_brace = all
+csharp_preserve_single_line_blocks = true
+csharp_preserve_single_line_statements = true
+
+# Established conventions, checked by the build (not just the editor).
+csharp_style_namespace_declarations = file_scoped:warning
+csharp_using_directive_placement = outside_namespace:warning
+csharp_preferred_modifier_order = public,private,protected,internal,file,static,extern,new,virtual,abstract,sealed,override,readonly,unsafe,required,volatile,async:warning
+dotnet_diagnostic.IDE0161.severity = warning
+dotnet_diagnostic.IDE0065.severity = warning
+dotnet_diagnostic.IDE0036.severity = warning
+
+# Interfaces use IPascalCase. Do not impose new field/async-method naming rules.
+dotnet_naming_rule.interfaces_have_i_prefix.symbols = interfaces
+dotnet_naming_rule.interfaces_have_i_prefix.style = i_pascal_case
+dotnet_naming_rule.interfaces_have_i_prefix.severity = warning
+dotnet_naming_symbols.interfaces.applicable_kinds = interface
+dotnet_naming_symbols.interfaces.applicable_accessibilities = *
+dotnet_naming_style.i_pascal_case.required_prefix = I
+dotnet_naming_style.i_pascal_case.capitalization = pascal_case
+dotnet_diagnostic.IDE1006.severity = warning
+
+# Explicit correctness baseline. Keep the SDK's other default rules enabled;
+# do not bulk-enable/disable whole analyzer categories.
+dotnet_diagnostic.CA2012.severity = warning
+dotnet_diagnostic.CA2018.severity = warning
+dotnet_diagnostic.CA2021.severity = warning
+dotnet_diagnostic.CA2200.severity = warning
+dotnet_diagnostic.CA2208.severity = warning
+dotnet_diagnostic.CA2241.severity = warning
+dotnet_diagnostic.CA2242.severity = warning
+
+# Exhaustive switches remain compiler-enforced. CS8524 is separately suppressed
+# in Directory.Build.props for unnamed numeric enum values, not named members.
+dotnet_diagnostic.CS8509.severity = warning
+
+# Recognize generated code without suppressing compiler diagnostics or
+# excluding any handwritten source from analysis.
+[*.{g,g.i,generated,designer}.cs]
+generated_code = true
+
+[**/obj/**/*.cs]
+generated_code = true
+
+[**/bin/**/*.cs]
+generated_code = true
