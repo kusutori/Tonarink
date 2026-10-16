@@ -207,7 +207,7 @@ sealed class TrayMenuHost : IDisposable
             {
                 Label = host._intl.Message(new("App", "NavSettings")),
                 Icon = new FontIconData(AppIcons.Settings),
-                Execute = () => host.Navigate(new(AppRoute.Settings)),
+                Execute = () => host.Navigate(AppDeepLinks.Resolve("tonarink://settings")),
             });
             var reportBug = UseCommand(new Command
             {

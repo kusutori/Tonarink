@@ -188,6 +188,7 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
 
         var activations = context.UseShellActivations(
             navigation,
+            navigationCoordinator,
             nodeSession,
             windowController.Restore,
             token => AppNavigationDialogs.PrepareAsync(window?.NativeWindow?.Content?.XamlRoot,

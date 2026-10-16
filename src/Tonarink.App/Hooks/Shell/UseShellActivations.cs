@@ -18,6 +18,7 @@ static class ShellActivationHooks
     public static ShellActivationState UseShellActivations(
         this RenderContext context,
         NavigationHandle<AppRoute> navigation,
+        ShellNavigationCoordinator navigationCoordinator,
         LocalSendNodeSession nodeSession,
         Action restoreWindow,
         Func<CancellationToken, Task> prepareNavigation,
@@ -83,7 +84,9 @@ static class ShellActivationHooks
                     if (request.Payload is { } payload) PublishSharePayload(payload);
                     setNavigationFavoriteFingerprint(fingerprint);
                     setNavigationHistoryId(request.History);
-                    if (navigation.CurrentRoute != route)
+                    if (request.Navigation is { } state)
+                        navigationCoordinator.ApplyDeepLink(state);
+                    else if (navigation.CurrentRoute != route)
                     {
                         if (AppNavigation.IsDetail(route)) navigation.Navigate(route, AppNavigation.DrillIn);
                         else navigation.Navigate(route);

@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Globalization;
 using Microsoft.UI.Reactor;
+using Microsoft.UI.Reactor.Navigation;
 using Tonarink.Cli;
 
 namespace Tonarink.Services.Activation;
@@ -10,8 +11,10 @@ namespace Tonarink.Services.Activation;
 sealed record AppNavigationRequest(AppRoute? Route = null, string? Favorite = null, Guid? History = null,
     ShareTargetPayload? Payload = null)
 {
-    public static AppNavigationRequest ForFavorite(string fingerprint) => new(AppRoute.Send, Favorite: fingerprint);
-    public static AppNavigationRequest ForHistory(Guid id) => new(AppRoute.History, History: id);
+    public NavigationState<AppRoute>? Navigation { get; init; }
+
+    public static AppNavigationRequest ForFavorite(string fingerprint) => AppDeepLinks.Resolve(AppDeepLinks.ForFavorite(fingerprint));
+    public static AppNavigationRequest ForHistory(Guid id) => AppDeepLinks.Resolve(AppDeepLinks.ForHistory(id));
 }
 
 static class AppNavigationService

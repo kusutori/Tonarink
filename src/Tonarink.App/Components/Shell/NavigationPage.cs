@@ -29,6 +29,24 @@ sealed class ShellNavigationCoordinator(NavigationHandle<AppRoute> navigation) :
     private bool _draining;
     private bool _disposed;
 
+    public void ApplyDeepLink(NavigationState<AppRoute> state)
+    {
+        if (_disposed) return;
+        if (_transitioning || _draining)
+        {
+            _pending = new(state.Current, NavigationMode.Reset, state);
+            return;
+        }
+
+        // Navigate once through Reactor's leave/enter lifecycle before restoring
+        // the synthetic stack. SetState alone bypasses the leaving-page guard.
+        if (navigation.CurrentRoute != state.Current
+            && !navigation.Navigate(state.Current,
+                AppNavigation.IsDetail(state.Current) ? AppNavigation.DrillIn : null))
+            return;
+        navigation.SetState(state);
+    }
+
     public void OnNavigatingFrom(NavigatingFromContext context)
     {
         if (_disposed || context.IsCancelled)
@@ -65,8 +83,14 @@ sealed class ShellNavigationCoordinator(NavigationHandle<AppRoute> navigation) :
                 _draining = false;
                 var pending = _pending;
                 _pending = null;
-                if (_disposed || pending is null || pending.Route == navigation.CurrentRoute)
+                if (_disposed || pending is null)
                     return;
+                if (pending.State is { } state)
+                {
+                    ApplyDeepLink(state);
+                    return;
+                }
+                if (pending.Route == navigation.CurrentRoute) return;
 
                 Action navigate = pending.Mode switch
                 {
@@ -92,5 +116,6 @@ sealed class ShellNavigationCoordinator(NavigationHandle<AppRoute> navigation) :
         _pending = null;
     }
 
-    private sealed record PendingNavigation(AppRoute Route, NavigationMode Mode);
+    private sealed record PendingNavigation(AppRoute Route, NavigationMode Mode,
+        NavigationState<AppRoute>? State = null);
 }
