@@ -39,11 +39,6 @@ sealed class HistoryPage : Component<HistoryPageProps>
         var (filter, setFilter) = UseState(HistoryFilter.Default);
         var today = DateOnly.FromDateTime(DateTime.Today);
         var visibleEntries = UseMemo(() => filter.FilterEntries(entries, today), entries, filter, today);
-        var headerRight = UseContext(PageHeader.RightSlot);
-        headerRight.Owner = AppRoute.History;
-        headerRight.Build = () => Component<HistoryFilterButton, HistoryFilterButtonProps>(new(filter, setFilter))
-            .WithKey("history-filter");
-        UseEffect(() => headerRight.Invalidate(), filter, t.Locale);
         var entryCommands = new HistoryEntryCommands(
             UseCommand(UseMemo(() => new Command<ReceiveHistoryEntry>
                 {
@@ -102,7 +97,7 @@ sealed class HistoryPage : Component<HistoryPageProps>
                 setInfoEntry(entry);
         }, Props.NavigationHistoryId, entries);
 
-        var actions = FlexRow(
+        var fileActions = FlexRow(
                 AnimatedButtons.OpenFolder(
                     t.Message(new("App", "HistoryOpenDirectory")),
                     OpenDownloadDirectory,
@@ -121,6 +116,24 @@ sealed class HistoryPage : Component<HistoryPageProps>
             ColumnGap = 8,
             Wrap = FlexWrap.Wrap
         };
+
+        var filterActions = HStack(8,
+                Button(Icon(AppIcons.Undo).AccessibilityHidden(), () => setFilter(HistoryFilter.Default))
+                    .Size(40, 40)
+                    .Padding(0, 0)
+                    .AutomationName(t.Message(new("App", "HistoryFilterReset")))
+                    .ToolTip(t.Message(new("App", "HistoryFilterReset")))
+                    .AutomationId("History.Filter.Clear")
+                    .IsEnabled(filter.IsActive),
+                Component<HistoryFilterButton, HistoryFilterButtonProps>(new(filter, setFilter))
+                    // Named styles in preview.16 apply only on mount.
+                    .WithKey(filter.IsActive ? "history-filter-active" : "history-filter-inactive"));
+
+        var actions = Grid(
+            columns: [GridSize.Star(), GridSize.Auto],
+            rows: [GridSize.Auto],
+            fileActions.VAlign(VerticalAlignment.Center).Margin(right: 12).Grid(column: 0),
+            filterActions.VAlign(VerticalAlignment.Center).Grid(column: 1));
 
         Element list = visibleEntries switch
         {
@@ -145,14 +158,10 @@ sealed class HistoryPage : Component<HistoryPageProps>
                 FlexColumn(
                         actions,
                         filter.IsActive
-                            ? HStack(8,
-                                Caption(t.Message(new("App", "HistoryFilterResults"),
-                                        ("visible", visibleEntries.Count), ("total", entries.Count)))
-                                    .Foreground(Theme.SecondaryText)
-                                    .LiveRegion(AutomationLiveSetting.Polite),
-                                Button(t.Message(new("App", "HistoryFilterReset")), () => setFilter(HistoryFilter.Default))
-                                    .SubtleButton()
-                                    .AutomationId("History.Filter.Clear"))
+                            ? Caption(t.Message(new("App", "HistoryFilterResults"),
+                                    ("visible", visibleEntries.Count), ("total", entries.Count)))
+                                .Foreground(Theme.SecondaryText)
+                                .LiveRegion(AutomationLiveSetting.Polite)
                             : null,
                         list.Flex(grow: 1, basis: 0),
                         (ContentDialog(

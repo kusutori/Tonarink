@@ -53,16 +53,26 @@ sealed class HistoryFilterButton : Component<HistoryFilterButtonProps>
                     .AutomationId("History.Filter.Time")),
             draft.TimeRange == HistoryTimeRange.Custom
                 ? VStack(8,
-                    Field(Message("HistoryFilterFrom"),
-                        CalendarDatePicker(ToPickerDate(draft.From), value => setDraft(draft with { From = ToDate(value) }))
-                            .PlaceholderText(Message("HistoryFilterAnyDate"))
-                            .AutomationName(Message("HistoryFilterFrom"))
-                            .AutomationId("History.Filter.From")),
-                    Field(Message("HistoryFilterTo"),
-                        CalendarDatePicker(ToPickerDate(draft.To), value => setDraft(draft with { To = ToDate(value) }))
-                            .PlaceholderText(Message("HistoryFilterAnyDate"))
-                            .AutomationName(Message("HistoryFilterTo"))
-                            .AutomationId("History.Filter.To")),
+                    Grid(
+                        columns: [GridSize.Star(), GridSize.Star()],
+                        rows: [GridSize.Auto],
+                        Field(Message("HistoryFilterFrom"),
+                            CalendarDatePicker(ToPickerDate(draft.From), value => setDraft(draft with { From = ToDate(value) }))
+                                .MinWidth(0)
+                                .PlaceholderText(Message("HistoryFilterAnyDate"))
+                                .AutomationName(Message("HistoryFilterFrom"))
+                                .AutomationId("History.Filter.From"))
+                            .MinWidth(0)
+                            .Margin(right: 8)
+                            .Grid(column: 0),
+                        Field(Message("HistoryFilterTo"),
+                            CalendarDatePicker(ToPickerDate(draft.To), value => setDraft(draft with { To = ToDate(value) }))
+                                .MinWidth(0)
+                                .PlaceholderText(Message("HistoryFilterAnyDate"))
+                                .AutomationName(Message("HistoryFilterTo"))
+                                .AutomationId("History.Filter.To"))
+                            .MinWidth(0)
+                            .Grid(column: 1)),
                     draft.IsValid ? null : Caption(Message("HistoryFilterInvalidRange"))
                         .Foreground(Theme.SystemCritical)
                         .TextWrapping(TextWrapping.WrapWholeWords))
@@ -81,19 +91,15 @@ sealed class HistoryFilterButton : Component<HistoryFilterButtonProps>
                 ScrollView(fields)
                     .MaxHeight(400)
                     .HorizontalContentAlignment(HorizontalAlignment.Stretch),
-                Button(Message("HistoryFilterReset"), () => setDraft(HistoryFilter.Default))
-                    .SubtleButton()
-                    .AutomationName(Message("HistoryFilterReset"))
-                    .HAlign(HorizontalAlignment.Left)
-                    .AutomationId("History.Filter.Reset"),
                 Grid(
                     columns: [GridSize.Star(), GridSize.Star()],
                     rows: [GridSize.Auto],
                     Button(Message("HistoryFilterApply"), () =>
                         {
                             if (!draft.IsValid) return;
-                            Props.Apply(draft.Normalize());
+                            var next = draft.Normalize();
                             Close();
+                            Props.Apply(next);
                         })
                         .AccentButton()
                         .AutomationName(Message("HistoryFilterApply"))
