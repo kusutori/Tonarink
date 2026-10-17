@@ -231,7 +231,7 @@
                           PrivateAssets="all" />
         <!-- Local experiment; do not publish this package reference. -->
         <PackageReference Include="Microsoft.UI.Reactor"
-                          VersionOverride="0.1.0-preview.16-templates.1" />
+                          VersionOverride="0.1.0-preview.16-templates.2" />
         <PackageReference Include="Microsoft.UI.Reactor.Advanced" />
         <PackageReference Include="Net.Codecrete.QrCodeGenerator" />
         <ProjectReference Include="..\LocalSendDotNet.Core\LocalSendDotNet.Core.csproj" />

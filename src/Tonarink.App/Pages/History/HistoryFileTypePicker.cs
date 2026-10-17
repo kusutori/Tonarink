@@ -5,12 +5,12 @@ using CommunityToolkit.WinUI.Controls;
 using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Core;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
+using static Microsoft.UI.Reactor.Factories;
 using static Tonarink.Controls.TokenizingTextBoxElement;
-using XamlControl = Microsoft.UI.Xaml.Controls.Control;
+using Xaml = Microsoft.UI.Xaml.Controls;
 using XamlTokenizingTextBox = CommunityToolkit.WinUI.Controls.TokenizingTextBox;
 
 namespace Tonarink.Pages.History;
@@ -107,18 +107,18 @@ sealed class HistoryFileTypePicker : Component<HistoryFileTypePickerProps>
         // Reuse the template, not its visuals: containers may realize/recycle it
         // independently, with WinUI supplying their current DataContext.
         private readonly DeclarativeDataTemplate _template = Templates.Data(static () =>
-            Factories.HStack(6,
-                Factories.Icon(Factories.FontIcon(string.Empty, "Segoe Fluent Icons", 16))
-                    .Set(static icon => icon.SetBinding(FontIcon.GlyphProperty, new Binding
+            HStack(6,
+                Icon(FontIcon(string.Empty, "Segoe Fluent Icons", 16))
+                    .Bind(Xaml.FontIcon.GlyphProperty, new Binding
                     {
                         Path = new PropertyPath(nameof(FileTypeToken.Glyph)),
-                    })),
-                Factories.TextBlock(string.Empty)
+                    }),
+                TextBlock(string.Empty)
                     .VAlign(VerticalAlignment.Center)
-                    .Set(static text => text.SetBinding(TextBlock.TextProperty, new Binding
+                    .Bind(Xaml.TextBlock.TextProperty, new Binding
                     {
                         Path = new PropertyPath(nameof(FileTypeToken.Label)),
-                    }))));
+                    })));
 
         public DataTemplate Template => _template.Template;
         public TokenizingTextBox? Control { get; private set; }
@@ -134,7 +134,7 @@ sealed class HistoryFileTypePicker : Component<HistoryFileTypePickerProps>
                 // Reactor does not currently expose a ContextRequested modifier.
                 control.ContextRequested += ControlContextRequested;
                 _enabledChangedToken = control.RegisterPropertyChangedCallback(
-                    XamlControl.IsEnabledProperty, (_, _) => QueueCounterTheme());
+                    Xaml.Control.IsEnabledProperty, (_, _) => QueueCounterTheme());
             }
 
             if (control.IsLoaded)
@@ -148,7 +148,7 @@ sealed class HistoryFileTypePicker : Component<HistoryFileTypePickerProps>
 
             control.Loaded -= ControlLoaded;
             control.ContextRequested -= ControlContextRequested;
-            control.UnregisterPropertyChangedCallback(XamlControl.IsEnabledProperty, _enabledChangedToken);
+            control.UnregisterPropertyChangedCallback(Xaml.Control.IsEnabledProperty, _enabledChangedToken);
             if (ReferenceEquals(control.TokenItemTemplate, Template))
                 control.ClearValue(XamlTokenizingTextBox.TokenItemTemplateProperty);
             if (ReferenceEquals(control.SuggestedItemTemplate, Template))
@@ -181,10 +181,10 @@ sealed class HistoryFileTypePicker : Component<HistoryFileTypePickerProps>
                 // WCT 8.2 creates [Remove, Select all] for token containers and
                 // [Select all] for the picker itself, with hard-coded English text.
                 // Change only those labels, retaining the toolkit's click handlers.
-                if (current is TokenizingTextBoxItem { ContextFlyout: MenuFlyout menu })
+                if (current is TokenizingTextBoxItem { ContextFlyout: Xaml.MenuFlyout menu })
                 {
-                    if (menu.Items.Count == 2 && menu.Items[0] is MenuFlyoutItem remove
-                        && menu.Items[1] is MenuFlyoutItem selectAll)
+                    if (menu.Items.Count == 2 && menu.Items[0] is Xaml.MenuFlyoutItem remove
+                        && menu.Items[1] is Xaml.MenuFlyoutItem selectAll)
                     {
                         remove.Text = removeText;
                         selectAll.Text = selectAllText;
@@ -194,8 +194,8 @@ sealed class HistoryFileTypePicker : Component<HistoryFileTypePickerProps>
 
                 if (ReferenceEquals(current, owner))
                 {
-                    if (owner.ContextFlyout is MenuFlyout { Items.Count: 1 } menuFlyout
-                        && menuFlyout.Items[0] is MenuFlyoutItem selectAll)
+                    if (owner.ContextFlyout is Xaml.MenuFlyout { Items.Count: 1 } menuFlyout
+                        && menuFlyout.Items[0] is Xaml.MenuFlyoutItem selectAll)
                         selectAll.Text = selectAllText;
                     return;
                 }
@@ -218,9 +218,9 @@ sealed class HistoryFileTypePicker : Component<HistoryFileTypePickerProps>
                     // fetched from Application.Resources on every count change.
                     // Repair only this documented template part, after its handlers
                     // finish, using the element's actual theme rather than the app's.
-                    var counter = owner.FindDescendant<TextBlock>(static text =>
+                    var counter = owner.FindDescendant<Xaml.TextBlock>(static text =>
                         text.Name == "PART_TokensCounter" && text.Visibility == Visibility.Visible);
-                    counter?.SetThemeResourceBinding(TextBlock.ForegroundProperty,
+                    counter?.SetThemeResourceBinding(Xaml.TextBlock.ForegroundProperty,
                         !owner.IsEnabled ? "TextFillColorDisabledBrush"
                         : Items.Count >= Options.Length ? "SystemFillColorCriticalBrush"
                         : "TextFillColorSecondaryBrush");
@@ -256,14 +256,14 @@ sealed class HistoryFileTypePicker : Component<HistoryFileTypePickerProps>
             });
         }
 
-        private static AutoSuggestBox? FindInput(DependencyObject? source, TokenizingTextBox owner)
+        private static Xaml.AutoSuggestBox? FindInput(DependencyObject? source, TokenizingTextBox owner)
         {
-            AutoSuggestBox? input = null;
+            Xaml.AutoSuggestBox? input = null;
             for (var current = source; current is not null; current = VisualTreeHelper.GetParent(current))
             {
                 if (ReferenceEquals(current, owner))
                     return input;
-                if (current is AutoSuggestBox suggestBox)
+                if (current is Xaml.AutoSuggestBox suggestBox)
                     input = suggestBox;
             }
 
