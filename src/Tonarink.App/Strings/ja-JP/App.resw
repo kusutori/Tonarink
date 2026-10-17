@@ -245,6 +245,7 @@
   <data name="SelectedItems" xml:space="preserve"><value>{count, plural, other {# 件}}選択済み · {size}</value></data>
   <data name="SelectedIncomingFiles" xml:space="preserve"><value>{count, plural, other {# ファイル}}中 {selected, number} 件を選択</value></data>
   <data name="SelectIncomingFile" xml:space="preserve"><value>{file} を選択</value></data>
+  <data name="SelectAll" xml:space="preserve"><value>すべて選択</value></data>
   <data name="SelectAllIncomingFiles" xml:space="preserve"><value>すべて選択</value></data>
   <data name="DeselectIncomingFile" xml:space="preserve"><value>{file} の選択を解除</value></data>
   <data name="DeselectAllIncomingFiles" xml:space="preserve"><value>すべての選択を解除</value></data>

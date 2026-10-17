@@ -249,6 +249,7 @@
   <data name="SelectedItems" xml:space="preserve"><value>已选择 {count, plural, other {# 项}} · {size}</value></data>
   <data name="SelectedIncomingFiles" xml:space="preserve"><value>已选择 {selected, number}/{count, plural, other {# 个文件}}</value></data>
   <data name="SelectIncomingFile" xml:space="preserve"><value>选择 {file}</value></data>
+  <data name="SelectAll" xml:space="preserve"><value>全选</value></data>
   <data name="SelectAllIncomingFiles" xml:space="preserve"><value>全选</value></data>
   <data name="DeselectIncomingFile" xml:space="preserve"><value>取消选择 {file}</value></data>
   <data name="DeselectAllIncomingFiles" xml:space="preserve"><value>取消全选</value></data>

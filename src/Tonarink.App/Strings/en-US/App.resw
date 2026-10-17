@@ -249,6 +249,7 @@
   <data name="SelectedItems" xml:space="preserve"><value>{count, plural, one {# item} other {# items}} selected · {size}</value></data>
   <data name="SelectedIncomingFiles" xml:space="preserve"><value>{selected, number} of {count, plural, one {# file} other {# files}} selected</value></data>
   <data name="SelectIncomingFile" xml:space="preserve"><value>Select {file}</value></data>
+  <data name="SelectAll" xml:space="preserve"><value>Select all</value></data>
   <data name="SelectAllIncomingFiles" xml:space="preserve"><value>Select all</value></data>
   <data name="DeselectIncomingFile" xml:space="preserve"><value>Deselect {file}</value></data>
   <data name="DeselectAllIncomingFiles" xml:space="preserve"><value>Deselect all</value></data>

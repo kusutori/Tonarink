@@ -245,6 +245,7 @@
   <data name="SelectedItems" xml:space="preserve"><value>{count, plural, one {# élément sélectionné} other {# éléments sélectionnés}} · {size}</value></data>
   <data name="SelectedIncomingFiles" xml:space="preserve"><value>Fichiers sélectionnés : {selected, number} sur {count, plural, one {# fichier} other {# fichiers}}</value></data>
   <data name="SelectIncomingFile" xml:space="preserve"><value>Sélectionner {file}</value></data>
+  <data name="SelectAll" xml:space="preserve"><value>Tout sélectionner</value></data>
   <data name="SelectAllIncomingFiles" xml:space="preserve"><value>Tout sélectionner</value></data>
   <data name="DeselectIncomingFile" xml:space="preserve"><value>Désélectionner {file}</value></data>
   <data name="DeselectAllIncomingFiles" xml:space="preserve"><value>Tout désélectionner</value></data>

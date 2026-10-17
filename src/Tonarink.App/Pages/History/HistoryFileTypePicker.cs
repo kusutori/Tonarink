@@ -25,7 +25,7 @@ sealed class HistoryFileTypePicker : Component<HistoryFileTypePickerProps>
         var t = UseIntl();
         var state = UseMemo(() => new PickerState(Enum.GetValues<FileTypeGlyphKind>()
             .Select(kind => new FileTypeToken(kind, t.Message(new("App", LabelKey(kind)))))
-            .ToArray()), t.Locale);
+            .ToArray(), t.Message(new("App", "Remove")), t.Message(new("App", "SelectAll"))), t.Locale);
         state.Changed = Props.Changed;
         UseEffect(() => () => state.DetachControl(), state);
         UseEffect(() => state.Sync(Props.Selected), Props.Selected, state);
@@ -48,7 +48,12 @@ sealed class HistoryFileTypePicker : Component<HistoryFileTypePickerProps>
             .AutomationName(t.Message(new("App", "HistoryFilterFileType")))
             .AutomationId("History.Filter.FileType")
             .MinWidth(0)
-            .OnGotFocus((_, args) => state.OpenSuggestions(args.OriginalSource))
+            .OnGotFocus((_, args) =>
+            {
+                state.LocalizeContextMenu(args.OriginalSource);
+                state.OpenSuggestions(args.OriginalSource);
+            })
+            .OnRightTapped((_, args) => state.LocalizeContextMenu(args.OriginalSource))
             // A second click should reopen suggestions after Escape, even if
             // the input already has focus and therefore raises no GotFocus.
             .OnPointerReleased((_, args) => state.OpenSuggestions(args.OriginalSource))
@@ -86,7 +91,7 @@ sealed class HistoryFileTypePicker : Component<HistoryFileTypePickerProps>
         FileTypeGlyphKind.Clipboard => "HistoryFilterTypeClipboard",
     };
 
-    private sealed class PickerState(FileTypeToken[] options)
+    private sealed class PickerState(FileTypeToken[] options, string removeText, string selectAllText)
     {
         private int _selectionVersion;
         private bool _counterThemeQueued;
@@ -131,6 +136,8 @@ sealed class HistoryFileTypePicker : Component<HistoryFileTypePickerProps>
                 DetachControl();
                 Control = control;
                 control.Loaded += ControlLoaded;
+                // Reactor does not currently expose a ContextRequested modifier.
+                control.ContextRequested += ControlContextRequested;
                 _enabledChangedToken = control.RegisterPropertyChangedCallback(
                     XamlControl.IsEnabledProperty, (_, _) => QueueCounterTheme());
             }
@@ -145,11 +152,50 @@ sealed class HistoryFileTypePicker : Component<HistoryFileTypePickerProps>
                 return;
 
             control.Loaded -= ControlLoaded;
+            control.ContextRequested -= ControlContextRequested;
             control.UnregisterPropertyChangedCallback(XamlControl.IsEnabledProperty, _enabledChangedToken);
             Control = null;
         }
 
-        private void ControlLoaded(object sender, RoutedEventArgs args) => QueueCounterTheme();
+        private void ControlLoaded(object sender, RoutedEventArgs args)
+        {
+            LocalizeContextMenu(sender);
+            QueueCounterTheme();
+        }
+
+        private void ControlContextRequested(UIElement sender, ContextRequestedEventArgs args) =>
+            LocalizeContextMenu(args.OriginalSource);
+
+        public void LocalizeContextMenu(object source)
+        {
+            if (Control is not { } owner)
+                return;
+
+            for (var current = source as DependencyObject; current is not null; current = VisualTreeHelper.GetParent(current))
+            {
+                // WCT 8.2 creates [Remove, Select all] for token containers and
+                // [Select all] for the picker itself, with hard-coded English text.
+                // Change only those labels, retaining the toolkit's click handlers.
+                if (current is TokenizingTextBoxItem { ContextFlyout: MenuFlyout menu })
+                {
+                    if (menu.Items.Count == 2 && menu.Items[0] is MenuFlyoutItem remove
+                        && menu.Items[1] is MenuFlyoutItem selectAll)
+                    {
+                        remove.Text = removeText;
+                        selectAll.Text = selectAllText;
+                    }
+                    return;
+                }
+
+                if (ReferenceEquals(current, owner))
+                {
+                    if (owner.ContextFlyout is MenuFlyout { Items.Count: 1 } menuFlyout
+                        && menuFlyout.Items[0] is MenuFlyoutItem selectAll)
+                        selectAll.Text = selectAllText;
+                    return;
+                }
+            }
+        }
 
         private void QueueCounterTheme()
         {
