@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
+using CommunityToolkit.WinUI;
 using CommunityToolkit.WinUI.Controls;
 using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Core;
@@ -9,6 +10,7 @@ using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using static Tonarink.Controls.TokenizingTextBoxElement;
+using XamlControl = Microsoft.UI.Xaml.Controls.Control;
 
 namespace Tonarink.Pages.History;
 
@@ -25,6 +27,7 @@ sealed class HistoryFileTypePicker : Component<HistoryFileTypePickerProps>
             .Select(kind => new FileTypeToken(kind, t.Message(new("App", LabelKey(kind)))))
             .ToArray()), t.Locale);
         state.Changed = Props.Changed;
+        UseEffect(() => () => state.DetachControl(), state);
         UseEffect(() => state.Sync(Props.Selected), Props.Selected, state);
 
         return (TokenizingTextBox(
@@ -51,14 +54,14 @@ sealed class HistoryFileTypePicker : Component<HistoryFileTypePickerProps>
             .OnPointerReleased((_, args) => state.OpenSuggestions(args.OriginalSource))
             .Set(control =>
             {
-                state.Control = control;
+                state.AttachControl(control);
                 // The generated wrapper doesn't surface DataTemplate properties.
                 if (!ReferenceEquals(control.TokenItemTemplate, state.Template))
                     control.TokenItemTemplate = state.Template;
                 if (!ReferenceEquals(control.SuggestedItemTemplate, state.Template))
                     control.SuggestedItemTemplate = state.Template;
             })
-            .OnUnmountAdd(_ => state.Control = null);
+            .OnUnmountAdd(_ => state.DetachControl());
     }
 
     private static string LabelKey(FileTypeGlyphKind kind) => kind switch
@@ -85,6 +88,10 @@ sealed class HistoryFileTypePicker : Component<HistoryFileTypePickerProps>
 
     private sealed class PickerState(FileTypeToken[] options)
     {
+        private int _selectionVersion;
+        private bool _counterThemeQueued;
+        private long _enabledChangedToken;
+
         public FileTypeToken[] Options { get; } = options;
         // Keep the same notifying sources throughout a mounted picker's lifetime.
         // ListViewBase and the toolkit's editor manage their own native containers.
@@ -114,8 +121,61 @@ sealed class HistoryFileTypePicker : Component<HistoryFileTypePickerProps>
             content.Children.Add(label);
             return content;
         });
-        public TokenizingTextBox? Control { get; set; }
+        public TokenizingTextBox? Control { get; private set; }
         public Action<ImmutableHashSet<FileTypeGlyphKind>>? Changed { get; set; }
+
+        public void AttachControl(TokenizingTextBox control)
+        {
+            if (!ReferenceEquals(Control, control))
+            {
+                DetachControl();
+                Control = control;
+                control.Loaded += ControlLoaded;
+                _enabledChangedToken = control.RegisterPropertyChangedCallback(
+                    XamlControl.IsEnabledProperty, (_, _) => QueueCounterTheme());
+            }
+
+            if (control.IsLoaded)
+                QueueCounterTheme();
+        }
+
+        public void DetachControl()
+        {
+            if (Control is not { } control)
+                return;
+
+            control.Loaded -= ControlLoaded;
+            control.UnregisterPropertyChangedCallback(XamlControl.IsEnabledProperty, _enabledChangedToken);
+            Control = null;
+        }
+
+        private void ControlLoaded(object sender, RoutedEventArgs args) => QueueCounterTheme();
+
+        private void QueueCounterTheme()
+        {
+            if (_counterThemeQueued || Control is not { } owner)
+                return;
+
+            _counterThemeQueued = true;
+            if (!owner.DispatcherQueue.TryEnqueue(() =>
+                {
+                    _counterThemeQueued = false;
+                    if (!ReferenceEquals(Control, owner) || !owner.IsLoaded)
+                        return;
+
+                    // WCT 8.2 overwrites the counter's ThemeResource with a brush
+                    // fetched from Application.Resources on every count change.
+                    // Repair only this documented template part, after its handlers
+                    // finish, using the element's actual theme rather than the app's.
+                    var counter = owner.FindDescendant<TextBlock>(static text =>
+                        text.Name == "PART_TokensCounter" && text.Visibility == Visibility.Visible);
+                    counter?.SetThemeResourceBinding(TextBlock.ForegroundProperty,
+                        !owner.IsEnabled ? "TextFillColorDisabledBrush"
+                        : Items.Count >= Options.Length ? "SystemFillColorCriticalBrush"
+                        : "TextFillColorSecondaryBrush");
+                }))
+                _counterThemeQueued = false;
+        }
 
         public void OpenSuggestions(object source)
         {
@@ -129,11 +189,14 @@ sealed class HistoryFileTypePicker : Component<HistoryFileTypePickerProps>
             if (input is null)
                 return;
 
+            var selectionVersion = _selectionVersion;
+
             // Let the native input finish handling focus/tap before opening.
             // Recheck focus so a queued callback cannot reopen a closed flyout.
             owner.DispatcherQueue.TryEnqueue(() =>
             {
-                if (!ReferenceEquals(Control, owner) || owner.XamlRoot is not { } root
+                if (selectionVersion != _selectionVersion
+                    || !ReferenceEquals(Control, owner) || owner.XamlRoot is not { } root
                     || !ReferenceEquals(FindInput(FocusManager.GetFocusedElement(root) as DependencyObject, owner), input))
                     return;
 
@@ -182,6 +245,12 @@ sealed class HistoryFileTypePicker : Component<HistoryFileTypePickerProps>
 
         public void SelectionChanged()
         {
+            // Native token submission restores editor focus before raising this
+            // event. Invalidate any open queued by that focus change: otherwise
+            // it can reopen the popup immediately after submission closes it.
+            _selectionVersion++;
+            QueueCounterTheme();
+
             // Suggestion submission bypasses TokenItemAdding in the toolkit.
             // Defensively reject duplicates here as well as hiding them below.
             var selected = ImmutableHashSet.CreateBuilder<FileTypeGlyphKind>();
@@ -201,12 +270,25 @@ sealed class HistoryFileTypePicker : Component<HistoryFileTypePickerProps>
             var query = Control?.Text?.Trim() ?? "";
             var matching = Options.Where(option => !Items.Contains(option)
                 && option.Label.Contains(query, StringComparison.CurrentCultureIgnoreCase)).ToArray();
-            if (Suggestions.SequenceEqual(matching))
-                return;
+            // Keep surviving suggestion containers alive. Clear() raises Reset
+            // and briefly empties the popup on every token add/remove. Establish
+            // the new prefix first so a nonempty result never passes through an
+            // artificial empty state, even when the query changes completely.
+            for (var index = 0; index < matching.Length; index++)
+            {
+                var option = matching[index];
+                if (index < Suggestions.Count && ReferenceEquals(Suggestions[index], option))
+                    continue;
 
-            Suggestions.Clear();
-            foreach (var option in matching)
-                Suggestions.Add(option);
+                var previousIndex = Suggestions.IndexOf(option);
+                if (previousIndex >= 0)
+                    Suggestions.Move(previousIndex, index);
+                else
+                    Suggestions.Insert(index, option);
+            }
+
+            while (Suggestions.Count > matching.Length)
+                Suggestions.RemoveAt(Suggestions.Count - 1);
         }
     }
 }

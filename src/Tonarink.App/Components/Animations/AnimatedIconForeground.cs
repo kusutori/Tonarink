@@ -1,6 +1,7 @@
 using Microsoft.UI.Reactor.Core;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Media;
 using Windows.UI;
 
@@ -18,17 +19,27 @@ static class AnimatedIconForeground
             theme = root.ActualTheme;
         var isDark = theme == ElementTheme.Dark;
 
+        if (owner is ToggleButton)
+        {
+            // The animation overlays the button instead of living in its
+            // ContentPresenter. Resolve the same state resource on the native
+            // button, where WinUI honors local themes and resource overrides.
+            // Bind both states so unchecking cannot retain the accent foreground.
+            owner.SetThemeResourceBinding(Control.ForegroundProperty,
+                isChecked ? "ToggleButtonForegroundChecked" : "ToggleButtonForeground");
+        }
+
         Color color;
         if (critical && Microsoft.UI.Xaml.Application.Current.Resources.TryGetValue("SystemFillColorCritical", out var resource)
             && resource is Color criticalColor)
             color = criticalColor;
-        else if (isChecked)
-            // The overlay is not the template's ContentPresenter, so the native
-            // button's Foreground can still be its unchecked color in light mode.
-            color = ThemeRef.Resolve("ToggleButtonForegroundChecked", isDark) is SolidColorBrush selected
-                ? selected.Color : isDark ? Microsoft.UI.Colors.Black : Microsoft.UI.Colors.White;
-        else if (owner?.Foreground is SolidColorBrush foreground)
+        else if (owner?.Foreground is SolidColorBrush foreground && (!isChecked || owner is ToggleButton))
             color = foreground.Color;
+        else if (isChecked)
+            // Before the button is mounted, fall back to the semantic accent
+            // text brush. Loaded reapplies the element-scoped native resolution.
+            color = ThemeRef.Resolve("TextOnAccentFillColorPrimaryBrush", isDark) is SolidColorBrush selected
+                ? selected.Color : isDark ? Microsoft.UI.Colors.Black : Microsoft.UI.Colors.White;
         else
             color = isDark ? Microsoft.UI.Colors.White : Microsoft.UI.Colors.Black;
 
