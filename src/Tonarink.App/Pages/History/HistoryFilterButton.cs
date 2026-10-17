@@ -11,7 +11,6 @@ sealed record HistoryFilterButtonProps(HistoryFilter Filter, Action<HistoryFilte
 
 sealed class HistoryFilterButton : Component<HistoryFilterButtonProps>
 {
-    private static readonly HistoryFileType[] FileTypes = Enum.GetValues<HistoryFileType>();
     private static readonly HistoryTimeRange[] TimeRanges = Enum.GetValues<HistoryTimeRange>();
     private static readonly HistorySortOrder[] SortOrders = Enum.GetValues<HistorySortOrder>();
 
@@ -36,13 +35,8 @@ sealed class HistoryFilterButton : Component<HistoryFilterButtonProps>
                     .AutomationName(Message("HistoryFilterSearch"))
                     .AutomationId("History.Filter.Search")),
             Field(Message("HistoryFilterFileType"),
-                ComboBox(FileTypes.Select(TypeLabel).ToArray(), Array.IndexOf(FileTypes, draft.FileType), index =>
-                    {
-                        if ((uint)index < (uint)FileTypes.Length)
-                            setDraft(draft with { FileType = FileTypes[index] });
-                    })
-                    .AutomationName(Message("HistoryFilterFileType"))
-                    .AutomationId("History.Filter.FileType")),
+                Component<HistoryFileTypePicker, HistoryFileTypePickerProps>(
+                    new(draft.FileTypes, types => setDraft(draft with { FileTypes = types })))),
             Field(Message("HistoryFilterTime"),
                 ComboBox(TimeRanges.Select(TimeLabel).ToArray(), Array.IndexOf(TimeRanges, draft.TimeRange), index =>
                     {
@@ -121,17 +115,6 @@ sealed class HistoryFilterButton : Component<HistoryFilterButtonProps>
             .OnUnmountAdd(_ => flyoutRef.Current = null);
 
         string Message(string key) => t.Message(new("App", key));
-
-        string TypeLabel(HistoryFileType type) => Message(type switch
-        {
-            HistoryFileType.All => "HistoryFilterTypeAll",
-            HistoryFileType.Document => "HistoryFilterTypeDocuments",
-            HistoryFileType.Image => "HistoryFilterTypeImages",
-            HistoryFileType.Video => "HistoryFilterTypeVideos",
-            HistoryFileType.Audio => "HistoryFilterTypeAudio",
-            HistoryFileType.Archive => "HistoryFilterTypeArchives",
-            HistoryFileType.Other => "HistoryFilterTypeOther",
-        });
 
         string TimeLabel(HistoryTimeRange range) => Message(range switch
         {

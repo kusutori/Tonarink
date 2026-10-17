@@ -469,13 +469,25 @@
   <data name="HistoryFilterSearch" xml:space="preserve"><value>検索</value></data>
   <data name="HistoryFilterSearchPlaceholder" xml:space="preserve"><value>ファイル名、送信者、パスを検索</value></data>
   <data name="HistoryFilterFileType" xml:space="preserve"><value>ファイルの種類</value></data>
-  <data name="HistoryFilterTypeAll" xml:space="preserve"><value>すべての種類</value></data>
-  <data name="HistoryFilterTypeDocuments" xml:space="preserve"><value>ドキュメントとテキスト</value></data>
+  <data name="HistoryFilterTypeAll" xml:space="preserve"><value>種類を選択（未選択はすべて）</value></data>
+  <data name="HistoryFilterTypeDocuments" xml:space="preserve"><value>ドキュメント</value></data>
   <data name="HistoryFilterTypeImages" xml:space="preserve"><value>画像</value></data>
   <data name="HistoryFilterTypeVideos" xml:space="preserve"><value>動画</value></data>
   <data name="HistoryFilterTypeAudio" xml:space="preserve"><value>音声</value></data>
   <data name="HistoryFilterTypeArchives" xml:space="preserve"><value>圧縮ファイル</value></data>
-  <data name="HistoryFilterTypeOther" xml:space="preserve"><value>その他のファイル</value></data>
+  <data name="HistoryFilterTypeFolders" xml:space="preserve"><value>フォルダー</value></data>
+  <data name="HistoryFilterTypePdf" xml:space="preserve"><value>PDF</value></data>
+  <data name="HistoryFilterTypeText" xml:space="preserve"><value>テキストファイル</value></data>
+  <data name="HistoryFilterTypeEmail" xml:space="preserve"><value>メール</value></data>
+  <data name="HistoryFilterTypeCalendar" xml:space="preserve"><value>カレンダー</value></data>
+  <data name="HistoryFilterTypeOfflineMaps" xml:space="preserve"><value>オフライン地図</value></data>
+  <data name="HistoryFilterTypeDatabases" xml:space="preserve"><value>データベース</value></data>
+  <data name="HistoryFilterTypeFonts" xml:space="preserve"><value>フォント</value></data>
+  <data name="HistoryFilterTypeEbooks" xml:space="preserve"><value>電子書籍</value></data>
+  <data name="HistoryFilterTypeContacts" xml:space="preserve"><value>連絡先</value></data>
+  <data name="HistoryFilterTypeSubtitles" xml:space="preserve"><value>字幕</value></data>
+  <data name="HistoryFilterTypeTextMessages" xml:space="preserve"><value>テキストメッセージ</value></data>
+  <data name="HistoryFilterTypeClipboard" xml:space="preserve"><value>クリップボード</value></data>
   <data name="HistoryFilterTime" xml:space="preserve"><value>受信日時</value></data>
   <data name="HistoryFilterTimeAll" xml:space="preserve"><value>すべての期間</value></data>
   <data name="HistoryFilterTimeToday" xml:space="preserve"><value>今日</value></data>

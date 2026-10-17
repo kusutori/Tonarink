@@ -469,13 +469,25 @@
   <data name="HistoryFilterSearch" xml:space="preserve"><value>Search</value></data>
   <data name="HistoryFilterSearchPlaceholder" xml:space="preserve"><value>Search file name, sender or path</value></data>
   <data name="HistoryFilterFileType" xml:space="preserve"><value>File type</value></data>
-  <data name="HistoryFilterTypeAll" xml:space="preserve"><value>All types</value></data>
-  <data name="HistoryFilterTypeDocuments" xml:space="preserve"><value>Documents and text</value></data>
+  <data name="HistoryFilterTypeAll" xml:space="preserve"><value>Select types (empty means all)</value></data>
+  <data name="HistoryFilterTypeDocuments" xml:space="preserve"><value>Documents</value></data>
   <data name="HistoryFilterTypeImages" xml:space="preserve"><value>Images</value></data>
   <data name="HistoryFilterTypeVideos" xml:space="preserve"><value>Videos</value></data>
   <data name="HistoryFilterTypeAudio" xml:space="preserve"><value>Audio</value></data>
   <data name="HistoryFilterTypeArchives" xml:space="preserve"><value>Archives</value></data>
-  <data name="HistoryFilterTypeOther" xml:space="preserve"><value>Other files</value></data>
+  <data name="HistoryFilterTypeFolders" xml:space="preserve"><value>Folders</value></data>
+  <data name="HistoryFilterTypePdf" xml:space="preserve"><value>PDF</value></data>
+  <data name="HistoryFilterTypeText" xml:space="preserve"><value>Text files</value></data>
+  <data name="HistoryFilterTypeEmail" xml:space="preserve"><value>Email</value></data>
+  <data name="HistoryFilterTypeCalendar" xml:space="preserve"><value>Calendars</value></data>
+  <data name="HistoryFilterTypeOfflineMaps" xml:space="preserve"><value>Offline maps</value></data>
+  <data name="HistoryFilterTypeDatabases" xml:space="preserve"><value>Databases</value></data>
+  <data name="HistoryFilterTypeFonts" xml:space="preserve"><value>Fonts</value></data>
+  <data name="HistoryFilterTypeEbooks" xml:space="preserve"><value>E-books</value></data>
+  <data name="HistoryFilterTypeContacts" xml:space="preserve"><value>Contacts</value></data>
+  <data name="HistoryFilterTypeSubtitles" xml:space="preserve"><value>Subtitles</value></data>
+  <data name="HistoryFilterTypeTextMessages" xml:space="preserve"><value>Text messages</value></data>
+  <data name="HistoryFilterTypeClipboard" xml:space="preserve"><value>Clipboard</value></data>
   <data name="HistoryFilterTime" xml:space="preserve"><value>Received</value></data>
   <data name="HistoryFilterTimeAll" xml:space="preserve"><value>Any time</value></data>
   <data name="HistoryFilterTimeToday" xml:space="preserve"><value>Today</value></data>

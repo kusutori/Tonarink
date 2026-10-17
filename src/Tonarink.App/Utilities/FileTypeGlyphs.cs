@@ -106,8 +106,10 @@ static class FileTypeGlyphs
 
     public static string ForFileName(string? fileName) => ForKind(KindForFileName(fileName));
 
-    public static string ForPath(string path) =>
-        ForKind(Directory.Exists(path) ? FileTypeGlyphKind.Folder : KindForFileName(path));
+    public static string ForPath(string path) => ForKind(KindForPath(path));
+
+    public static FileTypeGlyphKind KindForPath(string path) =>
+        Directory.Exists(path) ? FileTypeGlyphKind.Folder : KindForFileName(path);
 
     public static string ForSendItem(Pages.Send.SelectedSendItemKind kind, string? fileName) =>
         ForKind(KindForSendItem(kind, fileName));

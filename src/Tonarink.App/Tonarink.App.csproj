@@ -220,6 +220,7 @@
     <ItemGroup>
         <PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" />
         <PackageReference Include="CommunityToolkit.WinUI.Controls.Segmented" />
+        <PackageReference Include="CommunityToolkit.WinUI.Controls.TokenizingTextBox" />
         <PackageReference Include="LottieGen.MsBuild"
                           GeneratePathProperty="true"
                           PrivateAssets="all" />
@@ -244,16 +245,27 @@
         <_WinAppRuntimeArchitecture>x64</_WinAppRuntimeArchitecture>
         <_WinAppRuntimeArchitecture Condition="'$(RuntimeIdentifier)' == 'win-x86' Or '$(Platform)' == 'X86' Or '$(Platform)' == 'x86'">x86</_WinAppRuntimeArchitecture>
         <_WinAppRuntimeArchitecture Condition="'$(RuntimeIdentifier)' == 'win-arm64' Or '$(Platform)' == 'ARM64' Or '$(Platform)' == 'arm64'">arm64</_WinAppRuntimeArchitecture>
-        <_WinAppRuntimeMsix>$(PkgMicrosoft_WindowsAppSDK_Runtime)\tools\MSIX\win10-$(_WinAppRuntimeArchitecture)\Microsoft.WindowsAppRuntime.2.msix</_WinAppRuntimeMsix>
-        <_WinAppRuntimeInsightsResource>$(BaseIntermediateOutputPath)winappruntime\$(_WinAppRuntimeArchitecture)\Microsoft.WindowsAppRuntime.Insights.Resource.dll</_WinAppRuntimeInsightsResource>
+        <_WinAppRuntimeMsixDirectory>$(PkgMicrosoft_WindowsAppSDK_Runtime)\tools\MSIX\win10-$(_WinAppRuntimeArchitecture)</_WinAppRuntimeMsixDirectory>
+        <_WinAppRuntimePackageVersion>$([System.IO.Path]::GetFileName('$(PkgMicrosoft_WindowsAppSDK_Runtime)'))</_WinAppRuntimePackageVersion>
+        <_WinAppRuntimeInsightsResource>$(BaseIntermediateOutputPath)winappruntime\$(_WinAppRuntimePackageVersion)\$(_WinAppRuntimeArchitecture)\Microsoft.WindowsAppRuntime.Insights.Resource.dll</_WinAppRuntimeInsightsResource>
     </PropertyGroup>
+
+    <!-- Self-contained builds don't import WinAppSDKPackageName. Resolve the
+         aggregate framework package from the SDK payload, excluding auxiliary
+         packages; stable and experimental channels use different file names. -->
+    <ItemGroup Condition="'$(WindowsAppSDKSelfContained)' == 'true'">
+        <_WinAppRuntimeMsix Include="$(_WinAppRuntimeMsixDirectory)\Microsoft.WindowsAppRuntime.*.msix"
+                            Exclude="$(_WinAppRuntimeMsixDirectory)\Microsoft.WindowsAppRuntime.DDLM.*.msix;$(_WinAppRuntimeMsixDirectory)\Microsoft.WindowsAppRuntime.Main.*.msix;$(_WinAppRuntimeMsixDirectory)\Microsoft.WindowsAppRuntime.Singleton.*.msix" />
+    </ItemGroup>
 
     <Target Name="_PrepareWinAppRuntimeInsightsResource"
             BeforeTargets="AssignTargetPaths"
-            Inputs="$(_WinAppRuntimeMsix)"
+            Inputs="@(_WinAppRuntimeMsix)"
             Outputs="$(_WinAppRuntimeInsightsResource)"
             Condition="'$(WindowsAppSDKSelfContained)' == 'true'">
-        <Exec Command="powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File &quot;$(MSBuildThisFileDirectory)..\..\tools\Extract-ZipEntry.ps1&quot; -Source &quot;$(_WinAppRuntimeMsix)&quot; -Entry &quot;Microsoft.WindowsAppRuntime.Insights.Resource.dll&quot; -Destination &quot;$(_WinAppRuntimeInsightsResource)&quot;" />
+        <Error Condition="'@(_WinAppRuntimeMsix->Count())' != '1'"
+               Text="Expected one Windows App Runtime framework MSIX in '$(_WinAppRuntimeMsixDirectory)', found @(_WinAppRuntimeMsix->Count()). Restore the matching runtime package." />
+        <Exec Command="powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File &quot;$(MSBuildThisFileDirectory)..\..\tools\Extract-ZipEntry.ps1&quot; -Source &quot;@(_WinAppRuntimeMsix)&quot; -Entry &quot;Microsoft.WindowsAppRuntime.Insights.Resource.dll&quot; -Destination &quot;$(_WinAppRuntimeInsightsResource)&quot;" />
     </Target>
 
     <ItemGroup Condition="'$(WindowsAppSDKSelfContained)' == 'true'">
