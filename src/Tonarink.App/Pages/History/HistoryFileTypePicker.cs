@@ -11,6 +11,7 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using static Tonarink.Controls.TokenizingTextBoxElement;
 using XamlControl = Microsoft.UI.Xaml.Controls.Control;
+using XamlTokenizingTextBox = CommunityToolkit.WinUI.Controls.TokenizingTextBox;
 
 namespace Tonarink.Pages.History;
 
@@ -27,7 +28,7 @@ sealed class HistoryFileTypePicker : Component<HistoryFileTypePickerProps>
             .Select(kind => new FileTypeToken(kind, t.Message(new("App", LabelKey(kind)))))
             .ToArray(), t.Message(new("App", "Remove")), t.Message(new("App", "SelectAll"))), t.Locale);
         state.Changed = Props.Changed;
-        UseEffect(() => () => state.DetachControl(), state);
+        UseEffect(() => () => state.Dispose(), state);
         UseEffect(() => state.Sync(Props.Selected), Props.Selected, state);
 
         return (TokenizingTextBox(
@@ -91,7 +92,7 @@ sealed class HistoryFileTypePicker : Component<HistoryFileTypePickerProps>
         FileTypeGlyphKind.Clipboard => "HistoryFilterTypeClipboard",
     };
 
-    private sealed class PickerState(FileTypeToken[] options, string removeText, string selectAllText)
+    private sealed class PickerState(FileTypeToken[] options, string removeText, string selectAllText) : IDisposable
     {
         private int _selectionVersion;
         private bool _counterThemeQueued;
@@ -105,27 +106,21 @@ sealed class HistoryFileTypePicker : Component<HistoryFileTypePickerProps>
         // WASDK 2.5 Experimental creates each template visual directly from C#.
         // Reuse the template, not its visuals: containers may realize/recycle it
         // independently, with WinUI supplying their current DataContext.
-        public DataTemplate Template { get; } = new(static () =>
-        {
-            var icon = new FontIcon
-            {
-                FontFamily = new FontFamily("Segoe Fluent Icons"),
-                FontSize = 16,
-            };
-            icon.SetBinding(FontIcon.GlyphProperty, new Binding
-            {
-                Path = new PropertyPath(nameof(FileTypeToken.Glyph)),
-            });
-            var label = new TextBlock { VerticalAlignment = VerticalAlignment.Center };
-            label.SetBinding(TextBlock.TextProperty, new Binding
-            {
-                Path = new PropertyPath(nameof(FileTypeToken.Label)),
-            });
-            var content = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6 };
-            content.Children.Add(icon);
-            content.Children.Add(label);
-            return content;
-        });
+        private readonly DeclarativeDataTemplate _template = Templates.Data(static () =>
+            Factories.HStack(6,
+                Factories.Icon(Factories.FontIcon(string.Empty, "Segoe Fluent Icons", 16))
+                    .Set(static icon => icon.SetBinding(FontIcon.GlyphProperty, new Binding
+                    {
+                        Path = new PropertyPath(nameof(FileTypeToken.Glyph)),
+                    })),
+                Factories.TextBlock(string.Empty)
+                    .VAlign(VerticalAlignment.Center)
+                    .Set(static text => text.SetBinding(TextBlock.TextProperty, new Binding
+                    {
+                        Path = new PropertyPath(nameof(FileTypeToken.Label)),
+                    }))));
+
+        public DataTemplate Template => _template.Template;
         public TokenizingTextBox? Control { get; private set; }
         public Action<ImmutableHashSet<FileTypeGlyphKind>>? Changed { get; set; }
 
@@ -154,7 +149,17 @@ sealed class HistoryFileTypePicker : Component<HistoryFileTypePickerProps>
             control.Loaded -= ControlLoaded;
             control.ContextRequested -= ControlContextRequested;
             control.UnregisterPropertyChangedCallback(XamlControl.IsEnabledProperty, _enabledChangedToken);
+            if (ReferenceEquals(control.TokenItemTemplate, Template))
+                control.ClearValue(XamlTokenizingTextBox.TokenItemTemplateProperty);
+            if (ReferenceEquals(control.SuggestedItemTemplate, Template))
+                control.ClearValue(XamlTokenizingTextBox.SuggestedItemTemplateProperty);
             Control = null;
+        }
+
+        public void Dispose()
+        {
+            DetachControl();
+            _template.Dispose();
         }
 
         private void ControlLoaded(object sender, RoutedEventArgs args)
