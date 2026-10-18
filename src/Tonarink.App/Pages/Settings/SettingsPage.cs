@@ -187,6 +187,18 @@ sealed class SettingsPage : Component<SettingsPageProps>
                     .DropDownOpened(() =>
                         setLanguageAnimationVersion(languageAnimationVersion + 1))
                     .MinWidth(180)),
+            SettingsCard(
+                header: t.Message(new("App", "SettingsUseTopNavigationWhenNarrow")),
+                description: t.Message(new("App", "SettingsUseTopNavigationWhenNarrowDescription")),
+                headerIcon: HeaderGlyph("\uE8A4"),
+                isClickEnabled: false,
+                isActionIconVisible: false,
+                content:
+                ToggleSwitch(Props.Settings.UseTopNavigationWhenNarrow, value =>
+                        Props.UpdateSettings(settings => settings with { UseTopNavigationWhenNarrow = value }))
+                    .AutomationName(t.Message(new("App", "SettingsUseTopNavigationWhenNarrow")))
+                    .AutomationId("Settings.Navigation.TopWhenNarrow")
+                    .HelpText(t.Message(new("App", "SettingsUseTopNavigationWhenNarrowDescription")))),
             SettingsExpander(
                     content:
                     ToggleSwitch(

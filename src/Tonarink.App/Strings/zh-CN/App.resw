@@ -299,6 +299,8 @@
   <data name="SettingsGeneral" xml:space="preserve"><value>通用</value></data>
   <data name="SettingsLanguage" xml:space="preserve"><value>语言</value></data>
   <data name="SettingsLanguageDescription" xml:space="preserve"><value>选择界面语言或跟随系统</value></data>
+  <data name="SettingsUseTopNavigationWhenNarrow" xml:space="preserve"><value>窄窗口使用顶部导航栏</value></data>
+  <data name="SettingsUseTopNavigationWhenNarrowDescription" xml:space="preserve"><value>窗口较窄时在顶部显示导航项，而不是折叠侧边导航栏</value></data>
   <data name="SettingsNeedRestart" xml:space="preserve"><value>设置已更改，重启服务器后生效</value></data>
   <data name="SettingsInputsPending" xml:space="preserve"><value>有未保存的更改，启动或重启服务器时保存并应用</value></data>
   <data name="SettingsApplyAndRestart" xml:space="preserve"><value>保存并重启服务器</value></data>

@@ -299,6 +299,8 @@
   <data name="SettingsGeneral" xml:space="preserve"><value>General</value></data>
   <data name="SettingsLanguage" xml:space="preserve"><value>Language</value></data>
   <data name="SettingsLanguageDescription" xml:space="preserve"><value>Choose the interface language or use system settings</value></data>
+  <data name="SettingsUseTopNavigationWhenNarrow" xml:space="preserve"><value>Use top navigation in narrow windows</value></data>
+  <data name="SettingsUseTopNavigationWhenNarrowDescription" xml:space="preserve"><value>Show navigation items at the top instead of collapsing the side navigation when the window is narrow</value></data>
   <data name="SettingsNeedRestart" xml:space="preserve"><value>Settings changed; restart the server to apply</value></data>
   <data name="SettingsInputsPending" xml:space="preserve"><value>Unsaved changes will be saved and applied when you start or restart the server</value></data>
   <data name="SettingsApplyAndRestart" xml:space="preserve"><value>Save and restart server</value></data>

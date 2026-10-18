@@ -136,8 +136,10 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
     {
         var t = context.UseIntl();
         var window = context.UseWindow();
-        var useTitleBarPaneToggle = !context.UseBreakpoint(AppLayout.CompactBreakpoint);
+        var isNarrowWindow = !context.UseBreakpoint(AppLayout.CompactBreakpoint);
         var settings = Props.Settings;
+        var useTopNavigation = settings.UseTopNavigationWhenNarrow && isNarrowWindow;
+        var useTitleBarPaneToggle = isNarrowWindow && !useTopNavigation;
         var settingsRef = context.UseRef(settings);
         settingsRef.Current = settings;
         var contentTheme = AppTheme.ToElementTheme(settings.ThemeIndex);
@@ -349,14 +351,16 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
                     ],
                     content)
                 .WithNavigation(navigation, RouteTag, ParseRoute)
-                .PaneDisplayMode(NavigationViewPaneDisplayMode.Auto)
+                .PaneDisplayMode(useTopNavigation
+                    ? NavigationViewPaneDisplayMode.Top
+                    : NavigationViewPaneDisplayMode.Auto)
                 .CompactModeThresholdWidth(AppLayout.CompactBreakpoint)
                 .ExpandedModeThresholdWidth(AppLayout.ExpandedBreakpoint)
                 .OpenPaneLength(AppLayout.NavigationOpenPaneLength)
                 .CompactPaneLength(AppLayout.NavigationCompactPaneLength)
                 .PaneFooter(paneStatus)
                 .PaneOpenChanged(setNavigationPaneOpen)
-                .PaneToggleButtonVisible(!useTitleBarPaneToggle)
+                .PaneToggleButtonVisible(!useTitleBarPaneToggle && !useTopNavigation)
                 .Landmark(AutomationLandmarkType.Navigation)
                 .AutomationName(t.Message(new("App", "MainNavigation")))
                 .AlwaysShowHeader()

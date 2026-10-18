@@ -295,6 +295,8 @@
   <data name="SettingsGeneral" xml:space="preserve"><value>一般</value></data>
   <data name="SettingsLanguage" xml:space="preserve"><value>言語</value></data>
   <data name="SettingsLanguageDescription" xml:space="preserve"><value>表示言語を選択、またはシステムに従う</value></data>
+  <data name="SettingsUseTopNavigationWhenNarrow" xml:space="preserve"><value>ウィンドウが狭いときは上部ナビゲーションを使用</value></data>
+  <data name="SettingsUseTopNavigationWhenNarrowDescription" xml:space="preserve"><value>ウィンドウが狭いときはサイドナビゲーションを折りたたむ代わりに上部に項目を表示</value></data>
   <data name="SettingsNeedRestart" xml:space="preserve"><value>設定を変更しました · サーバーを再起動すると反映</value></data>
   <data name="SettingsInputsPending" xml:space="preserve"><value>未保存の変更は、サーバーの開始または再起動時に保存して反映</value></data>
   <data name="SettingsApplyAndRestart" xml:space="preserve"><value>保存してサーバーを再起動</value></data>

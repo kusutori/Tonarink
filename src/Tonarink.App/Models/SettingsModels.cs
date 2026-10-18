@@ -58,6 +58,7 @@ sealed record AppSettings(
     public bool ShowFavoriteDevicesInExplorerMenu { get; init; }
     public bool AutoReturnAfterReceive { get; init; }
     public bool ShowReceiveBadge { get; init; } = true;
+    public bool UseTopNavigationWhenNarrow { get; init; }
 
     public static readonly AppSettings Default = new(
         Alias: string.IsNullOrWhiteSpace(Environment.UserName) ? Environment.MachineName : Environment.UserName,

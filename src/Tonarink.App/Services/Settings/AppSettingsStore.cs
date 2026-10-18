@@ -86,6 +86,7 @@ sealed class AppSettingsFile
     public int? ThemeIndex { get; set; }
     public int? LanguageIndex { get; set; }
     public string? Language { get; set; }
+    public bool? UseTopNavigationWhenNarrow { get; set; }
     public bool? MinimizeToTray { get; set; }
     public bool? TrayClickOpensFlyout { get; set; }
     public bool? StartWithWindows { get; set; }
@@ -130,6 +131,7 @@ sealed class AppSettingsFile
         ThemeIndex = settings.ThemeIndex,
         LanguageIndex = settings.LanguageIndex,
         Language = AppLanguages.ToStoredCulture(settings.LanguageIndex),
+        UseTopNavigationWhenNarrow = settings.UseTopNavigationWhenNarrow,
         MinimizeToTray = settings.MinimizeToTray,
         TrayClickOpensFlyout = settings.TrayClickOpensFlyout,
         StartWithWindows = settings.StartWithWindows,
@@ -183,6 +185,7 @@ sealed class AppSettingsFile
             LanguageIndex = LanguageIndex is { } language && AppLanguages.IsValidIndex(language)
                 ? language
                 : defaults.LanguageIndex,
+            UseTopNavigationWhenNarrow = UseTopNavigationWhenNarrow ?? defaults.UseTopNavigationWhenNarrow,
             MinimizeToTray = MinimizeToTray ?? defaults.MinimizeToTray,
             TrayClickOpensFlyout = TrayClickOpensFlyout ?? defaults.TrayClickOpensFlyout,
             StartWithWindows = StartWithWindows ?? defaults.StartWithWindows,

@@ -295,6 +295,8 @@
   <data name="SettingsGeneral" xml:space="preserve"><value>Général</value></data>
   <data name="SettingsLanguage" xml:space="preserve"><value>Langue</value></data>
   <data name="SettingsLanguageDescription" xml:space="preserve"><value>Choisir la langue de l’interface ou utiliser les paramètres système</value></data>
+  <data name="SettingsUseTopNavigationWhenNarrow" xml:space="preserve"><value>Navigation en haut dans les fenêtres étroites</value></data>
+  <data name="SettingsUseTopNavigationWhenNarrowDescription" xml:space="preserve"><value>Afficher les éléments de navigation en haut plutôt que de réduire la navigation latérale lorsque la fenêtre est étroite</value></data>
   <data name="SettingsNeedRestart" xml:space="preserve"><value>Paramètres modifiés ; redémarrer le serveur pour appliquer</value></data>
   <data name="SettingsInputsPending" xml:space="preserve"><value>Les modifications seront enregistrées et appliquées au démarrage ou au redémarrage du serveur</value></data>
   <data name="SettingsApplyAndRestart" xml:space="preserve"><value>Enregistrer et redémarrer le serveur</value></data>
