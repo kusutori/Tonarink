@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>LocalSendDotNet.Core.FSharp</AssemblyName>
+    <RootNamespace>LocalSendDotNet.FSharp</RootNamespace>
+    <IsPackable>false</IsPackable>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="FSharp.Core" />
+    <PackageReference Include="FsToolkit.ErrorHandling" />
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Domain.fs" />
+    <Compile Include="Configuration.fs" />
+    <Compile Include="Sources.fs" />
+    <Compile Include="Protocol.fs" />
+    <Compile Include="Identity.fs" />
+    <Compile Include="Storage.fs" />
+    <Compile Include="Infrastructure.fs" />
+    <Compile Include="HttpTransport.fs" />
+    <Compile Include="ReceiveSessions.fs" />
+    <Compile Include="Discovery.fs" />
+    <Compile Include="WebShare.fs" />
+    <Compile Include="WebSharePage.fs" />
+    <Compile Include="Server.fs" />
+    <Compile Include="Node.fs" />
+    <Compile Include="examples/Receive.fs" Condition="'$(CompileExamples)' == 'true'" />
+  </ItemGroup>
+</Project>
