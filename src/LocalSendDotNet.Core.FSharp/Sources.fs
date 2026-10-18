@@ -1,5 +1,7 @@
 namespace LocalSendDotNet.FSharp
 
+open LocalSendDotNet.Resources
+
 open System
 open System.IO
 open System.Text
@@ -20,15 +22,15 @@ module ContentTypes =
 [<RequireQualifiedAccess>]
 module SendItems =
     let file path =
-        if String.IsNullOrWhiteSpace path then invalidArg (nameof path) "A source path is required."
+        if String.IsNullOrWhiteSpace path then invalidArg (nameof path) (CoreText.SourcePathRequired)
         let name = Path.GetFileName path
         SendItem.File { Path = path; FileName = name; ContentType = ContentTypes.forFileName name }
 
     let text value = SendItem.Text(value, "message.txt")
 
     let stream name length openRead =
-        if String.IsNullOrWhiteSpace name then invalidArg (nameof name) "A filename is required."
-        if length < 0L then invalidArg (nameof length) "Length cannot be negative."
+        if String.IsNullOrWhiteSpace name then invalidArg (nameof name) (CoreText.FileNameRequired)
+        if length < 0L then invalidArg (nameof length) (CoreText.LengthNonnegative)
         SendItem.Stream { FileName = name; Length = length; OpenRead = openRead; ContentType = ContentTypes.forFileName name }
 
     let fileName = function
@@ -57,7 +59,7 @@ module SendItems =
             let! stream = source.OpenRead ct
             if not stream.CanRead then
                 stream.Dispose()
-                invalidOp "The stream factory returned a non-readable stream."
+                invalidOp (CoreText.StreamUnreadable)
             return stream
     }
 

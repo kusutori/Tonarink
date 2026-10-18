@@ -1,5 +1,7 @@
 namespace LocalSendDotNet.FSharp
 
+open LocalSendDotNet.Resources
+
 open System
 open System.IO
 open System.Net
@@ -23,7 +25,7 @@ type internal Server(options: NodeOptions, identity: DeviceIdentity, local: Loca
 
     let remote (context: HttpContext) =
         match context.Connection.RemoteIpAddress with
-        | null -> invalidOp "HTTP request has no source address."
+        | null -> invalidOp (CoreText.RemoteAddressMissing)
         | address -> if address.IsIPv4MappedToIPv6 then address.MapToIPv4() else address
 
     let json (context: HttpContext) status (bytes: byte array) = task {
@@ -40,7 +42,7 @@ type internal Server(options: NodeOptions, identity: DeviceIdentity, local: Loca
 
     let body limit (context: HttpContext) = task {
         if context.Request.ContentLength.HasValue && context.Request.ContentLength.Value > limit then
-            return Error "Request body is too large."
+            return Error (CoreText.RequestTooLarge)
         else
             use output = new MemoryStream()
             let buffer = Array.zeroCreate<byte> 16384
@@ -50,19 +52,19 @@ type internal Server(options: NodeOptions, identity: DeviceIdentity, local: Loca
                 if read = 0 then finished <- true
                 elif int64 read > limit - output.Length then tooLarge <- true
                 else output.Write(buffer, 0, read)
-            return if tooLarge then Error "Request body is too large." else Ok(output.ToArray())
+            return if tooLarge then Error (CoreText.RequestTooLarge) else Ok(output.ToArray())
     }
 
     let peerIdentity (context: HttpContext) (peer: PeerInfo) = task {
         match peer.Fingerprint |> Option.bind (Fingerprint.create >> Result.toOption) with
-        | None -> return Error "Missing peer fingerprint."
+        | None -> return Error (CoreText.PeerFingerprintMissing)
         | Some fingerprint ->
             if options.EnableHttps then
                 let! certificate = context.Connection.GetClientCertificateAsync context.RequestAborted
                 match certificate with
-                | null -> return Error "A client certificate is required."
+                | null -> return Error (CoreText.ClientCertificateRequired)
                 | certificate when IdentityStore.validatePeer (Some fingerprint) certificate -> return Ok fingerprint
-                | _ -> return Error "Client certificate fingerprint mismatch."
+                | _ -> return Error (CoreText.ClientFingerprintMismatch)
             else return Ok fingerprint
     }
 
@@ -76,18 +78,18 @@ type internal Server(options: NodeOptions, identity: DeviceIdentity, local: Loca
     let prepareResponse context = function
         | PrepareResult.Accepted acceptance -> json context 200 (Wire.encodeAcceptance acceptance)
         | PrepareResult.NoContent -> task { context.Response.StatusCode <- 204 }
-        | PrepareResult.Declined -> error context 403 "Transfer declined."
-        | PrepareResult.Busy -> error context 429 "Maximum concurrent transfers reached."
-        | PrepareResult.TimedOut -> error context 408 "Receiver decision timed out."
+        | PrepareResult.Declined -> error context 403 (CoreText.TransferDeclined)
+        | PrepareResult.Busy -> error context 409 (CoreText.TransferBusy)
+        | PrepareResult.TimedOut -> error context 408 (CoreText.DecisionTimedOut)
         | PrepareResult.InvalidDestination message -> error context 400 message
 
     let webError context = function
-        | WebShareError.Inactive -> error context 404 "No active share."
-        | WebShareError.PinRequired -> error context 401 "PIN required or invalid."
-        | WebShareError.PinRateLimited -> error context 429 "Too many PIN attempts."
-        | WebShareError.Declined -> error context 403 "Transfer declined."
-        | WebShareError.TimedOut -> error context 408 "Receiver decision timed out."
-        | WebShareError.Capacity -> error context 429 "Maximum browser sessions reached."
+        | WebShareError.Inactive -> error context 404 (CoreText.NoActiveShare)
+        | WebShareError.PinRequired -> error context 401 (CoreText.WebPinRequired)
+        | WebShareError.PinRateLimited -> error context 429 (CoreText.WebPinRateLimited)
+        | WebShareError.Declined -> error context 403 (CoreText.TransferDeclined)
+        | WebShareError.TimedOut -> error context 408 (CoreText.DecisionTimedOut)
+        | WebShareError.Capacity -> error context 409 (CoreText.TransferBusy)
 
     let register (context: HttpContext) = task {
         let! payload = body 65536L context
@@ -115,7 +117,7 @@ type internal Server(options: NodeOptions, identity: DeviceIdentity, local: Loca
         | Ok bytes ->
             match Wire.decodeOffer bytes with
             | Error message -> do! error context 400 message
-            | Ok offer when not (filesWithinLimits offer.Files) -> do! error context 413 "Incoming transfer exceeds configured limits."
+            | Ok offer when not (filesWithinLimits offer.Files) -> do! error context 413 (CoreText.TransferLimitExceeded)
             | Ok offer ->
                 let address = remote context
                 let! trusted = peerIdentity context offer.Info
@@ -123,8 +125,9 @@ type internal Server(options: NodeOptions, identity: DeviceIdentity, local: Loca
                 | Error message -> do! error context 403 message
                 | Ok fingerprint ->
                     match pinGuard.Check(options.ReceivePin, query "pin" context, address) with
-                    | PinAuthorization.Required _ -> do! error context 401 "PIN required or invalid."
-                    | PinAuthorization.RateLimited -> do! error context 429 "Too many PIN attempts."
+                    | PinAuthorization.Required invalid ->
+                        do! error context 401 (if invalid then CoreText.PeerPinInvalid else CoreText.PeerPinRequired)
+                    | PinAuthorization.RateLimited -> do! error context 429 (CoreText.RateLimited)
                     | PinAuthorization.Allowed ->
                         match Wire.toDevice address fingerprint offer.Info with
                         | Error message -> do! error context 400 message
@@ -143,11 +146,12 @@ type internal Server(options: NodeOptions, identity: DeviceIdentity, local: Loca
             let! result = sessions.Upload(session, file, token, remote context, context.Request.Body, length, context.RequestAborted)
             match result with
             | Ok () -> context.Response.StatusCode <- 200
-            | Error UploadError.NotFound -> do! error context 404 "Unknown or expired session."
-            | Error UploadError.Forbidden -> do! error context 403 "Invalid upload credentials."
-            | Error UploadError.Busy -> do! error context 429 "Maximum concurrent uploads reached."
-            | Error(UploadError.Failed message) -> do! error context 400 message
-        | _ -> do! error context 400 "Missing upload credentials."
+            | Error UploadError.NotFound -> do! error context 404 (CoreText.SessionExpired)
+            | Error UploadError.Forbidden -> do! error context 403 (CoreText.UploadCredentialsInvalid)
+            | Error UploadError.Busy -> do! error context 409 (CoreText.TransferBusy)
+            | Error(UploadError.Failed(code, message)) ->
+                do! error context (if code = FailureCode.ChecksumMismatch then 422 else 400) message
+        | _ -> do! error context 400 (CoreText.UploadCredentialsMissing)
     }
 
     let prepareWebUpload (context: HttpContext) = task {
@@ -160,13 +164,13 @@ type internal Server(options: NodeOptions, identity: DeviceIdentity, local: Loca
             | Ok bytes ->
                 match Wire.decodeWebOffer bytes with
                 | Error message -> do! error context 400 message
-                | Ok files when not (filesWithinLimits files) -> do! error context 413 "Incoming transfer exceeds configured limits."
+                | Ok files when not (filesWithinLimits files) -> do! error context 413 (CoreText.TransferLimitExceeded)
                 | Ok files ->
                     let address = remote context
                     let userAgent = context.Request.Headers.UserAgent.ToString()
                     let fingerprint = SHA256.HashData(Encoding.UTF8.GetBytes($"{address}|{userAgent}")) |> Convert.ToHexString |> Fingerprint.ofCertificate
                     let endpoint = DeviceEndpoint.create address 1 Protocol.Http |> Result.defaultWith invalidOp
-                    let device = { Alias = "Web browser"; Version = Wire.version; Model = Some userAgent; DeviceType = DeviceType.Web
+                    let device = { Alias = (CoreText.WebBrowser); Version = Wire.version; Model = Some userAgent; DeviceType = DeviceType.Web
                                    Fingerprint = fingerprint; SupportsDownload = false; Endpoints = [endpoint]; LastSeen = DateTimeOffset.UtcNow }
                     let! result = sessions.Prepare(device, files, address, false, automatic, context.RequestAborted)
                     do! prepareResponse context result
@@ -185,7 +189,7 @@ type internal Server(options: NodeOptions, identity: DeviceIdentity, local: Loca
                 // RFC 5987 avoids raw filenames injecting response headers.
                 context.Response.Headers.ContentDisposition <- $"attachment; filename*=UTF-8''{Uri.EscapeDataString metadata.FileName}"
                 do! stream.CopyToAsync(context.Response.Body, context.RequestAborted)
-        | _ -> do! error context 400 "Missing download credentials."
+        | _ -> do! error context 400 (CoreText.DownloadCredentialsMissing)
     }
 
     let dispatch (context: HttpContext) = task {
@@ -197,7 +201,7 @@ type internal Server(options: NodeOptions, identity: DeviceIdentity, local: Loca
         | "POST", "/api/localsend/v2/upload" -> do! upload context
         | "POST", "/api/localsend/v2/cancel" ->
             match query "sessionId" context |> Option.bind (SessionId.create >> Result.toOption) with
-            | None -> do! error context 400 "Missing session ID."
+            | None -> do! error context 400 (CoreText.SessionIdMissing)
             | Some session ->
                 let! cancelled = onCancel session (remote context)
                 context.Response.StatusCode <- if cancelled then 200 else 404

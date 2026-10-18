@@ -97,7 +97,6 @@
   <data name="Browser share: {0}" xml:space="preserve"><value>브라우저 공유: {0}</value></data>
   <data name="The PIN is incorrect" xml:space="preserve"><value>PIN이 올바르지 않습니다</value></data>
   <data name="The receiving device requires --pin PIN" xml:space="preserve"><value>수신 기기에 --pin PIN이 필요합니다</value></data>
-  <data name="Too many PIN attempts; try again later" xml:space="preserve"><value>PIN 입력 횟수가 너무 많습니다. 나중에 다시 시도하세요</value></data>
   <data name="The receiving device is busy" xml:space="preserve"><value>수신 기기가 사용 중입니다</value></data>
   <data name="The receiving device declined the transfer" xml:space="preserve"><value>수신 기기가 전송을 거절했습니다</value></data>
   <data name="Ambiguous device name; use a fingerprint or address." xml:space="preserve"><value>같은 이름의 기기가 여러 개입니다. 지문 또는 주소를 사용하세요</value></data>

@@ -1,5 +1,7 @@
 namespace LocalSendDotNet.FSharp
 
+open LocalSendDotNet.Resources
+
 open System
 open System.Net
 open System.Threading
@@ -46,7 +48,7 @@ type internal WebShareService(options: NodeOptions, changes: BroadcastHub<WebSha
     member _.Snapshot = lock gate snapshot
 
     member _.Start(items: SendItem list, shareOptions: WebShareOptions) =
-        if items.IsEmpty then invalidArg (nameof items) "A download share needs at least one item."
+        if items.IsEmpty then invalidArg (nameof items) (CoreText.AtLeastOneItem)
         let entries = items |> List.map (fun item ->
             let file = { Id = FileId.fresh(); FileName = SendItems.fileName item; Size = SendItems.length item; ContentType = SendItems.contentType item }
             file.Id, (file, item))

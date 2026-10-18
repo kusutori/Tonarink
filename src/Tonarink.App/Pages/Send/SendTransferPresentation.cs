@@ -44,7 +44,7 @@ static class SendTransferPresentation
                 requestedBytes,
                 failed.Failure.Message,
                 IsError: true),
-            OutgoingTransferResult.PinRequired or OutgoingTransferResult.PinRateLimited
+            OutgoingTransferResult.PinRequired or OutgoingTransferResult.RateLimited
                 or OutgoingTransferResult.PeerBusy or OutgoingTransferResult.Declined => new TransferUiState.Active(
                 TransferState.Failed,
                 deviceAlias,

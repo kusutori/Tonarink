@@ -138,7 +138,7 @@ public union RuntimeSendResult(
     RuntimeSendResult.Completed,
     RuntimeSendResult.Cancelled,
     RuntimeSendResult.PinRequired,
-    RuntimeSendResult.PinRateLimited,
+    RuntimeSendResult.RateLimited,
     RuntimeSendResult.PeerBusy,
     RuntimeSendResult.Declined,
     RuntimeSendResult.Failed)
@@ -146,7 +146,7 @@ public union RuntimeSendResult(
     public sealed record Completed;
     public sealed record Cancelled;
     public sealed record PinRequired(bool InvalidPin);
-    public sealed record PinRateLimited;
+    public sealed record RateLimited;
     public sealed record PeerBusy;
     public sealed record Declined;
     public sealed record Failed(string Message);

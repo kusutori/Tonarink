@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <data name="AtLeastOneItem" xml:space="preserve"><value>Se requiere al menos un elemento</value></data>
+  <data name="PeerCertificateMissing" xml:space="preserve"><value>El dispositivo remoto no proporcionó un certificado TLS</value></data>
+  <data name="PeerIdentityInvalid" xml:space="preserve"><value>Falló la verificación de identidad TLS del dispositivo remoto</value></data>
+  <data name="PeerFingerprintMissing" xml:space="preserve"><value>El dispositivo remoto no proporcionó una huella de identidad</value></data>
+  <data name="PeerFingerprintMismatch" xml:space="preserve"><value>La huella anunciada no coincide con el certificado TLS</value></data>
+  <data name="PeerRegisterFingerprintMismatch" xml:space="preserve"><value>La huella de registro no coincide con la identidad de confianza</value></data>
+  <data name="InfoResponseEmpty" xml:space="preserve"><value>El dispositivo remoto devolvió información vacía</value></data>
+  <data name="RegisterResponseEmpty" xml:space="preserve"><value>El dispositivo remoto devolvió una respuesta de registro vacía</value></data>
+  <data name="PrepareResponseEmpty" xml:space="preserve"><value>El dispositivo remoto devolvió una respuesta de preparación vacía</value></data>
+  <data name="SourceLengthChanged" xml:space="preserve"><value>El tamaño del origen cambió antes o durante la subida</value></data>
+  <data name="SourceLengthChangedNamed" xml:space="preserve"><value>El tamaño del origen cambió antes de la subida: {0}</value></data>
+  <data name="StreamFactoryNull" xml:space="preserve"><value>La fábrica de flujos devolvió null</value></data>
+  <data name="StreamUnreadable" xml:space="preserve"><value>La fábrica devolvió un flujo que no se puede leer</value></data>
+  <data name="SourcePathRequired" xml:space="preserve"><value>Se requiere una ruta de origen</value></data>
+  <data name="FileNameRequired" xml:space="preserve"><value>Se requiere un nombre de archivo</value></data>
+  <data name="LengthNonnegative" xml:space="preserve"><value>La longitud no puede ser negativa</value></data>
+  <data name="InvalidSourceSize" xml:space="preserve"><value>El tamaño del origen no es válido o supera el intervalo admitido</value></data>
+  <data name="PeerEndpointMissing" xml:space="preserve"><value>El dispositivo no tiene una dirección de conexión válida</value></data>
+  <data name="NodeNotRunning" xml:space="preserve"><value>Inicia el nodo antes de realizar operaciones de red</value></data>
+  <data name="NodeCannotRestart" xml:space="preserve"><value>Un nodo detenido no se puede reiniciar; crea una nueva instancia</value></data>
+  <data name="IdentityNotLoaded" xml:space="preserve"><value>La identidad local no está cargada</value></data>
+  <data name="RequestMissing" xml:space="preserve"><value>La solicitud entrante ya no existe</value></data>
+  <data name="SelectionUnknown" xml:space="preserve"><value>La selección contiene un elemento que no pertenece a esta solicitud</value></data>
+  <data name="TargetNameUnknown" xml:space="preserve"><value>Los nombres de destino contienen un elemento que no pertenece a esta solicitud</value></data>
+  <data name="DecisionAlreadyMade" xml:space="preserve"><value>Esta solicitud ya se ha procesado</value></data>
+  <data name="TransferBusy" xml:space="preserve"><value>El destinatario está ocupado con otra transferencia</value></data>
+  <data name="TransferDeclined" xml:space="preserve"><value>El destinatario rechazó la transferencia</value></data>
+  <data name="DecisionTimedOut" xml:space="preserve"><value>Se agotó el tiempo de espera de la decisión de recepción</value></data>
+  <data name="TransferExpired" xml:space="preserve"><value>El remitente no terminó la transferencia aceptada dentro del plazo</value></data>
+  <data name="TransferCancelled" xml:space="preserve"><value>La transferencia se canceló</value></data>
+  <data name="BodyTooLong" xml:space="preserve"><value>El contenido subido supera el tamaño declarado</value></data>
+  <data name="BodyTooShort" xml:space="preserve"><value>El contenido subido es menor que el tamaño declarado</value></data>
+  <data name="LengthMismatch" xml:space="preserve"><value>La longitud no coincide: se esperaba {0}, se recibió {1}</value></data>
+  <data name="ContentLengthMismatch" xml:space="preserve"><value>Content-Length no coincide con el tamaño de archivo ofrecido</value></data>
+  <data name="ChecksumMismatch" xml:space="preserve"><value>Falló la verificación SHA-256 del contenido subido</value></data>
+  <data name="InvalidFilename" xml:space="preserve"><value>Una parte del nombre de archivo entrante no es segura</value></data>
+  <data name="InvalidFilenameNamed" xml:space="preserve"><value>Parte no segura del nombre de archivo entrante: {0}</value></data>
+  <data name="UnsafePath" xml:space="preserve"><value>La ruta entrante no es segura</value></data>
+  <data name="UnsafePathNamed" xml:space="preserve"><value>Ruta entrante no segura: {0}</value></data>
+  <data name="PathEscapes" xml:space="preserve"><value>La ruta entrante sale del directorio de destino</value></data>
+  <data name="PathEscapesNamed" xml:space="preserve"><value>La ruta entrante sale del destino: {0}</value></data>
+  <data name="PathLinked" xml:space="preserve"><value>El destino atraviesa un directorio enlazado</value></data>
+  <data name="PathLinkedNamed" xml:space="preserve"><value>La ruta entrante atraviesa un directorio enlazado: {0}</value></data>
+  <data name="ParentMissing" xml:space="preserve"><value>El destino no tiene un directorio principal</value></data>
+  <data name="IdentityIncomplete" xml:space="preserve"><value>La identidad en «{0}» está incompleta. Restaura o elimina ambos archivos PEM</value></data>
+  <data name="IdentityLoadFailed" xml:space="preserve"><value>No se pudo cargar la identidad de «{0}»</value></data>
+  <data name="IdentityReadFailed" xml:space="preserve"><value>No se pudo leer la identidad local</value></data>
+  <data name="IdentityAccessDenied" xml:space="preserve"><value>No se pudo acceder a la identidad local</value></data>
+  <data name="IdentityPrivateKeyMissing" xml:space="preserve"><value>El certificado no tiene su clave privada correspondiente</value></data>
+  <data name="PortUnavailable" xml:space="preserve"><value>El puerto TCP {0} no está disponible. Elige otro puerto o detén el proceso que lo utiliza</value></data>
+  <data name="DiscoveryStartFailed" xml:space="preserve"><value>No se pudo iniciar la detección de LocalSend en el puerto UDP {0}</value></data>
+  <data name="DiscoveryInterfaceMissing" xml:space="preserve"><value>No hay ninguna interfaz IPv4 disponible</value></data>
+  <data name="DiscoveryMembershipFailed" xml:space="preserve"><value>Ninguna interfaz IPv4 pudo unirse al grupo de multidifusión</value></data>
+  <data name="PeerPinRequired" xml:space="preserve"><value>El dispositivo remoto requiere un PIN</value></data>
+  <data name="PeerPinInvalid" xml:space="preserve"><value>El dispositivo remoto rechazó el PIN</value></data>
+  <data name="RateLimited" xml:space="preserve"><value>Demasiadas solicitudes; inténtalo más tarde</value></data>
+  <data name="WebPinRequired" xml:space="preserve"><value>Falta el PIN del recurso web o no es correcto</value></data>
+  <data name="WebPinRateLimited" xml:space="preserve"><value>Demasiados intentos de PIN incorrectos para el recurso web</value></data>
+  <data name="NoActiveShare" xml:space="preserve"><value>No hay ningún recurso web activo</value></data>
+  <data name="WebBrowser" xml:space="preserve"><value>Navegador web</value></data>
+  <data name="UnknownDevice" xml:space="preserve"><value>Desconocido</value></data>
+  <data name="Browser" xml:space="preserve"><value>Navegador</value></data>
+  <data name="RemoteAddressMissing" xml:space="preserve"><value>La solicitud HTTP no tiene dirección de origen</value></data>
+  <data name="RequestTooLarge" xml:space="preserve"><value>El cuerpo de la solicitud supera el límite configurado</value></data>
+  <data name="InvalidFileMetadata" xml:space="preserve"><value>Los metadatos del archivo no son válidos</value></data>
+  <data name="InvalidSenderMetadata" xml:space="preserve"><value>Los metadatos del remitente no son válidos</value></data>
+  <data name="TransferLimitExceeded" xml:space="preserve"><value>La transferencia entrante supera los límites configurados</value></data>
+  <data name="ClientFingerprintMismatch" xml:space="preserve"><value>La huella del certificado del cliente no coincide</value></data>
+  <data name="ClientCertificateRequired" xml:space="preserve"><value>Se requiere un certificado del cliente</value></data>
+  <data name="UploadCredentialsMissing" xml:space="preserve"><value>Faltan las credenciales de subida</value></data>
+  <data name="DownloadCredentialsMissing" xml:space="preserve"><value>Faltan las credenciales de descarga</value></data>
+  <data name="SessionIdMissing" xml:space="preserve"><value>Falta el identificador de sesión</value></data>
+  <data name="SessionExpired" xml:space="preserve"><value>La sesión es desconocida o ha caducado</value></data>
+  <data name="UploadCredentialsInvalid" xml:space="preserve"><value>El token de subida, la dirección de origen o el identificador de archivo no es válido</value></data>
+  <data name="ExpectedJsonObject" xml:space="preserve"><value>Se esperaba un objeto JSON</value></data>
+  <data name="FieldStringRequired" xml:space="preserve"><value>«{0}» debe ser una cadena</value></data>
+  <data name="FieldRequired" xml:space="preserve"><value>Se requiere «{0}»</value></data>
+  <data name="FieldIntegerRequired" xml:space="preserve"><value>«{0}» debe ser un entero</value></data>
+  <data name="FieldBooleanRequired" xml:space="preserve"><value>«{0}» debe ser un booleano</value></data>
+  <data name="PeerPortInvalid" xml:space="preserve"><value>El puerto del dispositivo remoto no es válido</value></data>
+  <data name="ProtocolUnsupported" xml:space="preserve"><value>El protocolo del dispositivo remoto no es compatible</value></data>
+  <data name="TimestampInvalid" xml:space="preserve"><value>La marca de tiempo «{0}» no es válida</value></data>
+  <data name="FileIdMismatch" xml:space="preserve"><value>La clave y el identificador del archivo no coinciden</value></data>
+  <data name="MissingInfo" xml:space="preserve"><value>Falta la información del dispositivo</value></data>
+  <data name="MissingFiles" xml:space="preserve"><value>Faltan los metadatos del archivo</value></data>
+  <data name="FilesObject" xml:space="preserve"><value>Los metadatos del archivo deben ser un objeto JSON</value></data>
+  <data name="FilesArray" xml:space="preserve"><value>Los metadatos del archivo deben ser un array JSON</value></data>
+  <data name="DuplicateFileId" xml:space="preserve"><value>Identificador de archivo duplicado</value></data>
+  <data name="DuplicateTokenId" xml:space="preserve"><value>Clave del token de subida duplicada</value></data>
+  <data name="FileIdBlank" xml:space="preserve"><value>El identificador de archivo no puede estar vacío</value></data>
+  <data name="SessionIdBlank" xml:space="preserve"><value>El identificador de sesión no puede estar vacío</value></data>
+  <data name="UploadTokenBlank" xml:space="preserve"><value>El token de subida no puede estar vacío</value></data>
+  <data name="FingerprintBlank" xml:space="preserve"><value>La huella no puede estar vacía</value></data>
+  <data name="EndpointAddressMissing" xml:space="preserve"><value>Una dirección de conexión requiere una dirección IP</value></data>
+  <data name="PortRange" xml:space="preserve"><value>El puerto debe estar entre 1 y 65535</value></data>
+  <data name="CannotBlank" xml:space="preserve"><value>No puede estar vacío</value></data>
+  <data name="MustPositive" xml:space="preserve"><value>Debe ser positivo</value></data>
+  <data name="TimeoutPositive" xml:space="preserve"><value>El tiempo de espera debe ser positivo o infinito</value></data>
+  <data name="ExpirationGreater" xml:space="preserve"><value>La caducidad del dispositivo debe superar el intervalo de anuncios</value></data>
+  <data name="MulticastIPv4" xml:space="preserve"><value>La dirección de multidifusión debe ser IPv4</value></data>
+  <data name="PinBlank" xml:space="preserve"><value>Un PIN configurado no puede estar vacío</value></data>
+  <data name="ProbeNotVerified" xml:space="preserve"><value>La sonda no verificó una identidad TLS</value></data>
+  <data name="PeerNotTrusted" xml:space="preserve"><value>El anfitrión no confió en este dispositivo</value></data>
+  <data name="WebRequestTimedOut" xml:space="preserve"><value>Se agotó el tiempo de la solicitud de recurso web</value></data>
+  <data name="IdentityLoadGeneric" xml:space="preserve"><value>No se pudo cargar la identidad local</value></data>
+  <data name="InvalidJson" xml:space="preserve"><value>La solicitud JSON no es válida</value></data>
+  <data name="WebPinPrompt" xml:space="preserve"><value>Introduce el PIN</value></data>
+  <data name="WebPick" xml:space="preserve"><value>Elegir archivos para subir</value></data>
+  <data name="WebWaiting" xml:space="preserve"><value>Esperando a Tonarink…</value></data>
+  <data name="WebIncorrectPin" xml:space="preserve"><value>PIN incorrecto</value></data>
+  <data name="WebDeclined" xml:space="preserve"><value>El destinatario rechazó la solicitud</value></data>
+  <data name="WebTimedOut" xml:space="preserve"><value>Se agotó el tiempo de la solicitud</value></data>
+  <data name="WebTooLarge" xml:space="preserve"><value>La selección es demasiado grande</value></data>
+  <data name="WebRequestFailed" xml:space="preserve"><value>Error de solicitud: </value></data>
+  <data name="WebUploading" xml:space="preserve"><value>Subiendo</value></data>
+  <data name="WebSentFiles" xml:space="preserve"><value>{count} archivos enviados</value></data>
+  <data name="WebSentFile" xml:space="preserve"><value>{count} archivo enviado</value></data>
+  <data name="WebNoneAccepted" xml:space="preserve"><value>No se aceptó ningún archivo</value></data>
+  <data name="WebUploadFailed" xml:space="preserve"><value>Error de subida</value></data>
+  <data name="HttpHeaderTooLarge" xml:space="preserve"><value>La cabecera HTTP es demasiado grande</value></data>
+  <data name="HttpRequestLineInvalid" xml:space="preserve"><value>La línea de solicitud HTTP no es válida</value></data>
+  <data name="HttpHeaderInvalid" xml:space="preserve"><value>La cabecera HTTP no es válida</value></data>
+  <data name="HttpContentLengthInvalid" xml:space="preserve"><value>El Content-Length HTTP no es válido</value></data>
+  <data name="HttpChunkSizeInvalid" xml:space="preserve"><value>El tamaño del fragmento HTTP no es válido</value></data>
+  <data name="HttpChunkShort" xml:space="preserve"><value>El fragmento HTTP terminó antes de alcanzar el tamaño declarado</value></data>
+  <data name="HttpBodyTruncated" xml:space="preserve"><value>El cuerpo HTTP fragmentado terminó de forma inesperada</value></data>
+  <data name="HttpChunkLineTooLong" xml:space="preserve"><value>La línea del fragmento HTTP es demasiado larga</value></data>
+  <data name="HttpChunkTerminatorMissing" xml:space="preserve"><value>Falta el terminador del fragmento HTTP</value></data>
+</root>

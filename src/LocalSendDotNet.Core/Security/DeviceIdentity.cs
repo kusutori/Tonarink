@@ -33,7 +33,7 @@ internal static class DeviceIdentityStore
         var certificateExists = File.Exists(certificatePath);
         var keyExists = File.Exists(keyPath);
         if (certificateExists != keyExists)
-            throw new IdentityLoadException($"The LocalSend identity in '{dataDirectory}' is incomplete. Restore or remove both identity PEM files.");
+            throw new IdentityLoadException(CoreText.IdentityIncomplete(dataDirectory));
 
         if (certificateExists)
         {
@@ -43,12 +43,12 @@ internal static class DeviceIdentityStore
                 var keyPem = await File.ReadAllTextAsync(keyPath, cancellationToken).ConfigureAwait(false);
                 using var loaded = X509Certificate2.CreateFromPem(certificatePem, keyPem);
                 if (!loaded.HasPrivateKey)
-                    throw new CryptographicException("The certificate does not have its matching private key.");
+                    throw new CryptographicException(CoreText.IdentityPrivateKeyMissing);
                 return new DeviceIdentity(X509CertificateLoader.LoadPkcs12(loaded.Export(X509ContentType.Pkcs12), null));
             }
             catch (Exception exception) when (exception is CryptographicException or IOException or UnauthorizedAccessException)
             {
-                throw new IdentityLoadException($"The LocalSend identity in '{dataDirectory}' could not be loaded.", exception);
+                throw new IdentityLoadException(CoreText.IdentityLoadFailed(dataDirectory), exception);
             }
         }
 

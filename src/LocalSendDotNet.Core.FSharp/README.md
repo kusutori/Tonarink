@@ -1,7 +1,8 @@
 # LocalSendDotNet.Core.FSharp
 
 An independent, experimental F# implementation of the LocalSend v2.2 Core,
-included in `Tonarink.slnx`. It does not reference the C# Core. Production App,
+included in `Tonarink.slnx`. It does not reference the C# Core; only the shared
+`LocalSendDotNet.Resources` text catalog is reused. Production App,
 CLI and other hosts continue to use their existing C# implementation.
 
 ## Design
@@ -20,6 +21,10 @@ CLI and other hosts continue to use their existing C# implementation.
   never executes inside a metadata mailbox or lock.
 - Explicit `System.Text.Json` readers/writers preserve protocol field names and
   avoid reflection serialization of F# unions.
+- Core-owned diagnostics and browser UI share six-language `.resx` resources
+  with the C# implementation. HTTP 409 means peer busy; HTTP 429 produces
+  `SendOutcome.RateLimited` without guessing a PIN-specific cause or inspecting
+  translated text. SHA-256 failures retain their typed failure code.
 - `task` integrates directly with ASP.NET Core, HttpClient and stream APIs.
   `use`/`use!` and `IAsyncDisposable` express resource ownership. This project
   deliberately does not introduce a generic effect interpreter or custom monad

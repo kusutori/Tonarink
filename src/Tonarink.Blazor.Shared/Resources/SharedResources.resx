@@ -118,7 +118,7 @@
   <data name="ThemeDescription" xml:space="preserve"><value>Follow the system or use a fixed appearance</value></data>
   <data name="ThemeLight" xml:space="preserve"><value>Light</value></data>
   <data name="ThemeSystem" xml:space="preserve"><value>System</value></data>
-  <data name="TooManyPinAttempts" xml:space="preserve"><value>Too many PIN attempts. Try again later.</value></data>
+  <data name="TooManyRequests" xml:space="preserve"><value>Too many requests; try again later.</value></data>
   <data name="ClipboardReadFailed" xml:space="preserve"><value>Could not read the clipboard.</value></data>
   <data name="ClipboardWriteFailed" xml:space="preserve"><value>Could not write to the clipboard.</value></data>
   <data name="DeviceBusy" xml:space="preserve"><value>The receiving device is busy.</value></data>

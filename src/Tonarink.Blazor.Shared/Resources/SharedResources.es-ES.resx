@@ -116,7 +116,7 @@
   <data name="ThemeDescription" xml:space="preserve"><value>Seguir el sistema o elegir una apariencia fija</value></data>
   <data name="ThemeLight" xml:space="preserve"><value>Claro</value></data>
   <data name="ThemeSystem" xml:space="preserve"><value>Sistema</value></data>
-  <data name="TooManyPinAttempts" xml:space="preserve"><value>Demasiados intentos de PIN. Inténtalo más tarde.</value></data>
+  <data name="TooManyRequests" xml:space="preserve"><value>Demasiadas solicitudes; inténtalo más tarde</value></data>
   <data name="ClipboardReadFailed" xml:space="preserve"><value>No se pudo leer el portapapeles</value></data>
   <data name="ClipboardWriteFailed" xml:space="preserve"><value>No se pudo escribir en el portapapeles</value></data>
   <data name="DeviceBusy" xml:space="preserve"><value>El dispositivo destinatario está ocupado</value></data>

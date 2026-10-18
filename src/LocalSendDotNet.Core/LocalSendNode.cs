@@ -77,7 +77,7 @@ public sealed class LocalSendNode : IAsyncDisposable
             if (_started)
                 return;
             if (_stopped)
-                throw new InvalidOperationException("A stopped LocalSendNode cannot be restarted; create a new node instance.");
+                throw new InvalidOperationException(CoreText.NodeCannotRestart);
             SetState(LocalSendNodeState.Starting);
             try
             {
@@ -302,7 +302,7 @@ public sealed class LocalSendNode : IAsyncDisposable
         try { response = await _client!.RegisterAsync(endpoint, fingerprint, CreateLocalInfo(), cancellationToken).ConfigureAwait(false); }
         catch (HttpRequestException exception) when (ClassifyFailure(exception, string.Empty) == TransferFailureCodes.PeerIdentity)
         {
-            throw new PeerIdentityException("The peer failed TLS identity validation.", exception);
+            throw new PeerIdentityException(CoreText.PeerIdentityInvalid, exception);
         }
         var device = new LocalSendDevice(response.Alias, response.Version, response.DeviceModel,
             V2ProtocolAdapter.ParseDeviceType(response.DeviceType), fingerprint, response.Download, [endpoint], DateTimeOffset.UtcNow);
@@ -375,10 +375,10 @@ public sealed class LocalSendNode : IAsyncDisposable
         ArgumentNullException.ThrowIfNull(device);
         ArgumentNullException.ThrowIfNull(items);
         if (items.Count == 0)
-            throw new ArgumentException("At least one item is required.", nameof(items));
+            throw new ArgumentException(CoreText.AtLeastOneItem, nameof(items));
         options ??= new SendOptions();
         var endpoint = device.Endpoints.OrderByDescending(static x => x.Protocol == LocalSendProtocol.Https).FirstOrDefault()
-            ?? throw new LocalSendException("The device has no usable v2 endpoint.");
+            ?? throw new LocalSendException(CoreText.PeerEndpointMissing);
         var transferId = Guid.NewGuid();
         cancellationToken.ThrowIfCancellationRequested();
         using var linked = CancellationTokenSource.CreateLinkedTokenSource(_lifetime.Token);
@@ -432,7 +432,7 @@ public sealed class LocalSendNode : IAsyncDisposable
                     continue;
                 await using var source = await item.OpenReadAsync(linked.Token).ConfigureAwait(false);
                 if (source.CanSeek && source.Length != length)
-                    throw new IOException($"The source length changed before upload: {item.FileName}.");
+                    throw new IOException(CoreText.SourceLengthChangedNamed(item.FileName));
                 await using var tracked = new ProgressReadStream(source, current => progress?.Report(new(
                     transferId, id, TransferDirection.Send, TransferState.Transferring, completedBytes + current, totalBytes)));
                 await _client.UploadAsync(endpoint, device.Fingerprint, prepared.SessionId, id, token, tracked, length, item.ContentType, linked.Token).ConfigureAwait(false);
@@ -446,9 +446,9 @@ public sealed class LocalSendNode : IAsyncDisposable
         {
             return new SendOutcome.PinRequired(transferId, exception.InvalidPin);
         }
-        catch (PinRateLimitedException)
+        catch (RateLimitedException)
         {
-            return new SendOutcome.PinRateLimited(transferId);
+            return new SendOutcome.RateLimited(transferId);
         }
         catch (PeerBusyException)
         {
@@ -504,13 +504,13 @@ public sealed class LocalSendNode : IAsyncDisposable
     {
         EnsureStarted();
         if (!_pending.TryGetValue(requestId, out var session))
-            throw new LocalSendException("The incoming request no longer exists.");
+            throw new LocalSendException(CoreText.RequestMissing);
         options ??= new AcceptTransferOptions();
         var knownIds = session.PublicRequest.Items.Select(static item => item.Id).ToHashSet(StringComparer.Ordinal);
         if (options.AcceptedItemIds?.Any(id => !knownIds.Contains(id)) == true)
-            throw new ArgumentException("AcceptedItemIds contains an item that is not part of this request.", nameof(options));
+            throw new ArgumentException(CoreText.SelectionUnknown, nameof(options));
         if (options.TargetFileNames?.Keys.Any(id => !knownIds.Contains(id)) == true)
-            throw new ArgumentException("TargetFileNames contains an item that is not part of this request.", nameof(options));
+            throw new ArgumentException(CoreText.TargetNameUnknown, nameof(options));
         session.Progress = progress;
         session.Decision.TrySetResult(new(true, options));
         try
@@ -533,12 +533,12 @@ public sealed class LocalSendNode : IAsyncDisposable
         EnsureStarted();
         cancellationToken.ThrowIfCancellationRequested();
         if (!_pending.TryGetValue(requestId, out var session))
-            throw new LocalSendException("The incoming request no longer exists.");
+            throw new LocalSendException(CoreText.RequestMissing);
         session.Decision.TrySetResult(new(false, null));
         return Task.CompletedTask;
     }
 
-    private DeviceInfoDto CreateLocalInfo(bool announce = false) => _protocol.CreateDeviceInfo(_identity ?? throw new InvalidOperationException("Identity is not loaded."), _options, announce);
+    private DeviceInfoDto CreateLocalInfo(bool announce = false) => _protocol.CreateDeviceInfo(_identity ?? throw new InvalidOperationException(CoreText.IdentityNotLoaded), _options, announce);
 
     private async Task StartDiscoveryAsync(CancellationToken cancellationToken)
     {
@@ -671,7 +671,7 @@ public sealed class LocalSendNode : IAsyncDisposable
         CancellationToken requestCancellation)
     {
         if (!await _transferSlots.WaitAsync(0, requestCancellation).ConfigureAwait(false))
-            return new(HttpStatusCode.TooManyRequests, Message: "The receiver is handling the maximum number of transfers");
+            return new(HttpStatusCode.Conflict, Message: CoreText.TransferBusy);
         var requestId = Guid.NewGuid();
         var sessionId = Guid.NewGuid().ToString("N");
         var transferId = Guid.NewGuid();
@@ -708,7 +708,7 @@ public sealed class LocalSendNode : IAsyncDisposable
             {
                 _pending.TryRemove(requestId, out _);
                 _transferSlots.Release();
-                return new(HttpStatusCode.RequestTimeout, Message: "Incoming transfer decision timed out");
+                return new(HttpStatusCode.RequestTimeout, Message: CoreText.DecisionTimedOut);
             }
             _pending.TryRemove(requestId, out _);
         }
@@ -716,7 +716,7 @@ public sealed class LocalSendNode : IAsyncDisposable
         {
             _transferSlots.Release();
             session.Completion.TrySetResult(new ReceiveOutcome.Cancelled(transferId, []));
-            return new(HttpStatusCode.Forbidden, Message: "Transfer declined");
+            return new(HttpStatusCode.Forbidden, Message: CoreText.TransferDeclined);
         }
 
         var selected = decision.Options!.AcceptedItemIds is null
@@ -773,14 +773,14 @@ public sealed class LocalSendNode : IAsyncDisposable
         if (!_incomingSessions.TryGetValue(sessionId, out var session) || !session.RemoteAddress.Equals(remote))
             return HttpStatusCode.NotFound;
         if (!await _uploadSlots.WaitAsync(0, requestCancellation).ConfigureAwait(false))
-            return HttpStatusCode.TooManyRequests;
+            return HttpStatusCode.Conflict;
         try
         {
             if (!session.TryConsumeToken(fileId, token) || !session.Request.Files.TryGetValue(fileId, out var file))
                 return HttpStatusCode.Forbidden;
             if (contentLength is not null && contentLength != file.Size)
             {
-                session.Fail(TransferFailureCodes.LengthMismatch, $"Expected {file.Size} bytes but the request declared {contentLength}.", fileId);
+                session.Fail(TransferFailureCodes.LengthMismatch, CoreText.LengthMismatch(file.Size, contentLength), fileId);
                 return HttpStatusCode.BadRequest;
             }
 
@@ -802,7 +802,7 @@ public sealed class LocalSendNode : IAsyncDisposable
                         if (read == 0) break;
                         written += read;
                         if (written > file.Size)
-                            throw new LocalSendException("Uploaded content exceeded the declared size.");
+                            throw new IncomingContentException(TransferFailureCodes.LengthMismatch, CoreText.BodyTooLong);
                         sha256?.AppendData(buffer, 0, read);
                         await output.WriteAsync(buffer.AsMemory(0, read), linked.Token).ConfigureAwait(false);
                         session.ReportProgress(fileId, written);
@@ -810,9 +810,9 @@ public sealed class LocalSendNode : IAsyncDisposable
                     await output.FlushAsync(linked.Token).ConfigureAwait(false);
                 }
                 if (written != file.Size)
-                    throw new LocalSendException($"Uploaded content length mismatch: expected {file.Size}, received {written}.");
+                    throw new IncomingContentException(TransferFailureCodes.LengthMismatch, CoreText.LengthMismatch(file.Size, written));
                 if (sha256 is not null && !MatchesSha256(sha256.GetHashAndReset(), file.Sha256!))
-                    throw new LocalSendException("Uploaded content failed SHA-256 verification.");
+                    throw new IncomingContentException(TransferFailureCodes.ChecksumMismatch, CoreText.ChecksumMismatch);
                 File.Move(temporary, destination);
                 RestoreTimestamps(destination, file.Metadata);
                 session.FileCompleted(fileId, file.FileName, written, destination);
@@ -827,8 +827,9 @@ public sealed class LocalSendNode : IAsyncDisposable
             catch (Exception exception)
             {
                 TryDelete(temporary);
-                session.Fail(exception.Message.Contains("SHA-256", StringComparison.Ordinal) ? TransferFailureCodes.ChecksumMismatch : TransferFailureCodes.ReceiveFailed, exception.Message, fileId);
-                return HttpStatusCode.BadRequest;
+                var code = exception is IncomingContentException contentError ? contentError.Code : TransferFailureCodes.ReceiveFailed;
+                session.Fail(code, exception.Message, fileId);
+                return code == TransferFailureCodes.ChecksumMismatch ? HttpStatusCode.UnprocessableEntity : HttpStatusCode.BadRequest;
             }
         }
         finally { _uploadSlots.Release(); }
@@ -868,7 +869,7 @@ public sealed class LocalSendNode : IAsyncDisposable
             if (await Task.WhenAny(session.Completion.Task, timeout).ConfigureAwait(false) == timeout && !_lifetime.IsCancellationRequested)
             {
                 await session.Cancellation.CancelAsync().ConfigureAwait(false);
-                session.Fail(TransferFailureCodes.TransferTimeout, "The sender did not finish the accepted transfer before its timeout.");
+                session.Fail(TransferFailureCodes.TransferTimeout, CoreText.TransferExpired);
             }
         }
         catch (OperationCanceledException) when (_lifetime.IsCancellationRequested)
@@ -1022,7 +1023,7 @@ public sealed class LocalSendNode : IAsyncDisposable
     private void EnsureStarted()
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
-        if (!_started || State != LocalSendNodeState.Running) throw new InvalidOperationException("The LocalSend node is not running.");
+        if (!_started || State != LocalSendNodeState.Running) throw new InvalidOperationException(CoreText.NodeNotRunning);
     }
 
     /// <summary>Stops the node and releases identities, sockets, channels, and synchronization resources.</summary>

@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <data name="AtLeastOneItem" xml:space="preserve"><value>항목이 하나 이상 필요합니다</value></data>
+  <data name="PeerCertificateMissing" xml:space="preserve"><value>상대 기기가 TLS 인증서를 제공하지 않았습니다</value></data>
+  <data name="PeerIdentityInvalid" xml:space="preserve"><value>상대 기기의 TLS ID 검증에 실패했습니다</value></data>
+  <data name="PeerFingerprintMissing" xml:space="preserve"><value>상대 기기가 ID 지문을 제공하지 않았습니다</value></data>
+  <data name="PeerFingerprintMismatch" xml:space="preserve"><value>알려진 지문이 TLS 인증서와 일치하지 않습니다</value></data>
+  <data name="PeerRegisterFingerprintMismatch" xml:space="preserve"><value>등록 지문이 신뢰하는 ID와 일치하지 않습니다</value></data>
+  <data name="InfoResponseEmpty" xml:space="preserve"><value>상대 기기가 빈 기기 정보를 반환했습니다</value></data>
+  <data name="RegisterResponseEmpty" xml:space="preserve"><value>상대 기기가 빈 등록 응답을 반환했습니다</value></data>
+  <data name="PrepareResponseEmpty" xml:space="preserve"><value>상대 기기가 빈 업로드 준비 응답을 반환했습니다</value></data>
+  <data name="SourceLengthChanged" xml:space="preserve"><value>업로드 전이나 도중에 원본 크기가 변경되었습니다</value></data>
+  <data name="SourceLengthChangedNamed" xml:space="preserve"><value>업로드 전에 원본 크기가 변경되었습니다: {0}</value></data>
+  <data name="StreamFactoryNull" xml:space="preserve"><value>스트림 팩터리가 null을 반환했습니다</value></data>
+  <data name="StreamUnreadable" xml:space="preserve"><value>스트림 팩터리가 읽을 수 없는 스트림을 반환했습니다</value></data>
+  <data name="SourcePathRequired" xml:space="preserve"><value>원본 경로가 필요합니다</value></data>
+  <data name="FileNameRequired" xml:space="preserve"><value>파일 이름이 필요합니다</value></data>
+  <data name="LengthNonnegative" xml:space="preserve"><value>길이는 음수일 수 없습니다</value></data>
+  <data name="InvalidSourceSize" xml:space="preserve"><value>원본 크기가 잘못되었거나 지원 범위를 초과합니다</value></data>
+  <data name="PeerEndpointMissing" xml:space="preserve"><value>기기에 사용 가능한 연결 주소가 없습니다</value></data>
+  <data name="NodeNotRunning" xml:space="preserve"><value>네트워크 작업 전에 노드를 시작하세요</value></data>
+  <data name="NodeCannotRestart" xml:space="preserve"><value>중지된 노드는 다시 시작할 수 없습니다. 새 인스턴스를 만드세요</value></data>
+  <data name="IdentityNotLoaded" xml:space="preserve"><value>로컬 ID가 로드되지 않았습니다</value></data>
+  <data name="RequestMissing" xml:space="preserve"><value>수신 요청이 더 이상 존재하지 않습니다</value></data>
+  <data name="SelectionUnknown" xml:space="preserve"><value>선택 항목에 이 요청에 속하지 않는 항목이 있습니다</value></data>
+  <data name="TargetNameUnknown" xml:space="preserve"><value>대상 파일 이름에 이 요청에 속하지 않는 항목이 있습니다</value></data>
+  <data name="DecisionAlreadyMade" xml:space="preserve"><value>이 요청은 이미 처리되었습니다</value></data>
+  <data name="TransferBusy" xml:space="preserve"><value>수신자가 다른 전송으로 사용 중입니다</value></data>
+  <data name="TransferDeclined" xml:space="preserve"><value>수신자가 전송을 거절했습니다</value></data>
+  <data name="DecisionTimedOut" xml:space="preserve"><value>수신 승인 대기 시간이 초과되었습니다</value></data>
+  <data name="TransferExpired" xml:space="preserve"><value>송신자가 승인된 전송을 제한 시간 내에 완료하지 않았습니다</value></data>
+  <data name="TransferCancelled" xml:space="preserve"><value>전송이 취소되었습니다</value></data>
+  <data name="BodyTooLong" xml:space="preserve"><value>업로드 내용이 선언된 크기를 초과합니다</value></data>
+  <data name="BodyTooShort" xml:space="preserve"><value>업로드 내용이 선언된 크기보다 작습니다</value></data>
+  <data name="LengthMismatch" xml:space="preserve"><value>내용 길이가 일치하지 않습니다: 예상 {0}, 수신 {1}</value></data>
+  <data name="ContentLengthMismatch" xml:space="preserve"><value>Content-Length가 제안된 파일 크기와 일치하지 않습니다</value></data>
+  <data name="ChecksumMismatch" xml:space="preserve"><value>업로드 내용의 SHA-256 검증에 실패했습니다</value></data>
+  <data name="InvalidFilename" xml:space="preserve"><value>수신 파일 이름에 안전하지 않은 부분이 있습니다</value></data>
+  <data name="InvalidFilenameNamed" xml:space="preserve"><value>수신 파일 이름의 안전하지 않은 부분: {0}</value></data>
+  <data name="UnsafePath" xml:space="preserve"><value>수신 경로가 안전하지 않습니다</value></data>
+  <data name="UnsafePathNamed" xml:space="preserve"><value>안전하지 않은 수신 경로: {0}</value></data>
+  <data name="PathEscapes" xml:space="preserve"><value>수신 경로가 대상 디렉터리를 벗어납니다</value></data>
+  <data name="PathEscapesNamed" xml:space="preserve"><value>수신 경로가 대상을 벗어납니다: {0}</value></data>
+  <data name="PathLinked" xml:space="preserve"><value>대상 경로가 연결된 디렉터리를 통과합니다</value></data>
+  <data name="PathLinkedNamed" xml:space="preserve"><value>수신 경로가 연결된 디렉터리를 통과합니다: {0}</value></data>
+  <data name="ParentMissing" xml:space="preserve"><value>대상에 상위 디렉터리가 없습니다</value></data>
+  <data name="IdentityIncomplete" xml:space="preserve"><value>'{0}'의 ID 파일이 불완전합니다. 두 ID PEM 파일을 모두 복원하거나 제거하세요</value></data>
+  <data name="IdentityLoadFailed" xml:space="preserve"><value>'{0}'의 ID를 로드할 수 없습니다</value></data>
+  <data name="IdentityReadFailed" xml:space="preserve"><value>로컬 ID를 읽을 수 없습니다</value></data>
+  <data name="IdentityAccessDenied" xml:space="preserve"><value>로컬 ID에 액세스할 수 없습니다</value></data>
+  <data name="IdentityPrivateKeyMissing" xml:space="preserve"><value>인증서에 일치하는 개인 키가 없습니다</value></data>
+  <data name="PortUnavailable" xml:space="preserve"><value>TCP 포트 {0}을 사용할 수 없습니다. 다른 포트를 선택하거나 사용 중인 프로세스를 중지하세요</value></data>
+  <data name="DiscoveryStartFailed" xml:space="preserve"><value>UDP 포트 {0}에서 LocalSend 검색을 시작할 수 없습니다</value></data>
+  <data name="DiscoveryInterfaceMissing" xml:space="preserve"><value>현재 사용 가능한 IPv4 인터페이스가 없습니다</value></data>
+  <data name="DiscoveryMembershipFailed" xml:space="preserve"><value>멀티캐스트 그룹에 가입할 수 있는 IPv4 인터페이스가 없습니다</value></data>
+  <data name="PeerPinRequired" xml:space="preserve"><value>상대 기기에 PIN이 필요합니다</value></data>
+  <data name="PeerPinInvalid" xml:space="preserve"><value>상대 기기가 PIN을 거부했습니다</value></data>
+  <data name="RateLimited" xml:space="preserve"><value>요청이 너무 많습니다. 나중에 다시 시도하세요</value></data>
+  <data name="WebPinRequired" xml:space="preserve"><value>웹 공유 PIN이 없거나 올바르지 않습니다</value></data>
+  <data name="WebPinRateLimited" xml:space="preserve"><value>웹 공유 PIN 입력 오류가 너무 많습니다</value></data>
+  <data name="NoActiveShare" xml:space="preserve"><value>활성 웹 공유가 없습니다</value></data>
+  <data name="WebBrowser" xml:space="preserve"><value>웹 브라우저</value></data>
+  <data name="UnknownDevice" xml:space="preserve"><value>알 수 없음</value></data>
+  <data name="Browser" xml:space="preserve"><value>브라우저</value></data>
+  <data name="RemoteAddressMissing" xml:space="preserve"><value>HTTP 요청에 원본 주소가 없습니다</value></data>
+  <data name="RequestTooLarge" xml:space="preserve"><value>요청 본문이 설정된 제한을 초과합니다</value></data>
+  <data name="InvalidFileMetadata" xml:space="preserve"><value>파일 메타데이터가 잘못되었습니다</value></data>
+  <data name="InvalidSenderMetadata" xml:space="preserve"><value>송신자 메타데이터가 잘못되었습니다</value></data>
+  <data name="TransferLimitExceeded" xml:space="preserve"><value>수신 전송이 설정된 제한을 초과합니다</value></data>
+  <data name="ClientFingerprintMismatch" xml:space="preserve"><value>클라이언트 인증서 지문이 일치하지 않습니다</value></data>
+  <data name="ClientCertificateRequired" xml:space="preserve"><value>클라이언트 인증서가 필요합니다</value></data>
+  <data name="UploadCredentialsMissing" xml:space="preserve"><value>업로드 자격 증명이 없습니다</value></data>
+  <data name="DownloadCredentialsMissing" xml:space="preserve"><value>다운로드 자격 증명이 없습니다</value></data>
+  <data name="SessionIdMissing" xml:space="preserve"><value>세션 ID가 없습니다</value></data>
+  <data name="SessionExpired" xml:space="preserve"><value>세션이 없거나 만료되었습니다</value></data>
+  <data name="UploadCredentialsInvalid" xml:space="preserve"><value>업로드 토큰, 원본 주소 또는 파일 ID가 잘못되었습니다</value></data>
+  <data name="ExpectedJsonObject" xml:space="preserve"><value>JSON 개체가 필요합니다</value></data>
+  <data name="FieldStringRequired" xml:space="preserve"><value>'{0}'은(는) 문자열이어야 합니다</value></data>
+  <data name="FieldRequired" xml:space="preserve"><value>'{0}'이(가) 필요합니다</value></data>
+  <data name="FieldIntegerRequired" xml:space="preserve"><value>'{0}'은(는) 정수여야 합니다</value></data>
+  <data name="FieldBooleanRequired" xml:space="preserve"><value>'{0}'은(는) 부울 값이어야 합니다</value></data>
+  <data name="PeerPortInvalid" xml:space="preserve"><value>상대 기기의 포트가 잘못되었습니다</value></data>
+  <data name="ProtocolUnsupported" xml:space="preserve"><value>상대 기기의 프로토콜을 지원하지 않습니다</value></data>
+  <data name="TimestampInvalid" xml:space="preserve"><value>'{0}' 타임스탬프가 잘못되었습니다</value></data>
+  <data name="FileIdMismatch" xml:space="preserve"><value>파일 키와 파일 ID가 다릅니다</value></data>
+  <data name="MissingInfo" xml:space="preserve"><value>기기 정보가 없습니다</value></data>
+  <data name="MissingFiles" xml:space="preserve"><value>파일 메타데이터가 없습니다</value></data>
+  <data name="FilesObject" xml:space="preserve"><value>파일 메타데이터는 JSON 개체여야 합니다</value></data>
+  <data name="FilesArray" xml:space="preserve"><value>파일 메타데이터는 JSON 배열이어야 합니다</value></data>
+  <data name="DuplicateFileId" xml:space="preserve"><value>파일 ID가 중복되었습니다</value></data>
+  <data name="DuplicateTokenId" xml:space="preserve"><value>업로드 토큰 키가 중복되었습니다</value></data>
+  <data name="FileIdBlank" xml:space="preserve"><value>파일 ID는 비워 둘 수 없습니다</value></data>
+  <data name="SessionIdBlank" xml:space="preserve"><value>세션 ID는 비워 둘 수 없습니다</value></data>
+  <data name="UploadTokenBlank" xml:space="preserve"><value>업로드 토큰은 비워 둘 수 없습니다</value></data>
+  <data name="FingerprintBlank" xml:space="preserve"><value>지문은 비워 둘 수 없습니다</value></data>
+  <data name="EndpointAddressMissing" xml:space="preserve"><value>연결 주소에 IP 주소가 필요합니다</value></data>
+  <data name="PortRange" xml:space="preserve"><value>포트는 1에서 65535 사이여야 합니다</value></data>
+  <data name="CannotBlank" xml:space="preserve"><value>비워 둘 수 없습니다</value></data>
+  <data name="MustPositive" xml:space="preserve"><value>양수여야 합니다</value></data>
+  <data name="TimeoutPositive" xml:space="preserve"><value>시간 제한은 양수이거나 무한이어야 합니다</value></data>
+  <data name="ExpirationGreater" xml:space="preserve"><value>기기 만료 시간은 알림 간격보다 길어야 합니다</value></data>
+  <data name="MulticastIPv4" xml:space="preserve"><value>멀티캐스트 주소는 IPv4여야 합니다</value></data>
+  <data name="PinBlank" xml:space="preserve"><value>설정된 PIN은 비워 둘 수 없습니다</value></data>
+  <data name="ProbeNotVerified" xml:space="preserve"><value>검색으로 TLS ID를 검증하지 못했습니다</value></data>
+  <data name="PeerNotTrusted" xml:space="preserve"><value>호스트가 이 기기를 신뢰하지 않았습니다</value></data>
+  <data name="WebRequestTimedOut" xml:space="preserve"><value>웹 공유 요청 시간이 초과되었습니다</value></data>
+  <data name="IdentityLoadGeneric" xml:space="preserve"><value>로컬 ID를 로드할 수 없습니다</value></data>
+  <data name="InvalidJson" xml:space="preserve"><value>JSON 요청이 잘못되었습니다</value></data>
+  <data name="WebPinPrompt" xml:space="preserve"><value>PIN을 입력하세요</value></data>
+  <data name="WebPick" xml:space="preserve"><value>업로드할 파일 선택</value></data>
+  <data name="WebWaiting" xml:space="preserve"><value>Tonarink 응답 대기 중…</value></data>
+  <data name="WebIncorrectPin" xml:space="preserve"><value>PIN이 올바르지 않습니다</value></data>
+  <data name="WebDeclined" xml:space="preserve"><value>수신자가 거절했습니다</value></data>
+  <data name="WebTimedOut" xml:space="preserve"><value>요청 시간이 초과되었습니다</value></data>
+  <data name="WebTooLarge" xml:space="preserve"><value>선택한 파일이 너무 크거나 많습니다</value></data>
+  <data name="WebRequestFailed" xml:space="preserve"><value>요청 실패: </value></data>
+  <data name="WebUploading" xml:space="preserve"><value>업로드 중</value></data>
+  <data name="WebSentFiles" xml:space="preserve"><value>파일 {count}개를 보냈습니다</value></data>
+  <data name="WebSentFile" xml:space="preserve"><value>파일 {count}개를 보냈습니다</value></data>
+  <data name="WebNoneAccepted" xml:space="preserve"><value>수락된 파일이 없습니다</value></data>
+  <data name="WebUploadFailed" xml:space="preserve"><value>업로드 실패</value></data>
+  <data name="HttpHeaderTooLarge" xml:space="preserve"><value>HTTP 헤더가 너무 큽니다</value></data>
+  <data name="HttpRequestLineInvalid" xml:space="preserve"><value>HTTP 요청 줄이 잘못되었습니다</value></data>
+  <data name="HttpHeaderInvalid" xml:space="preserve"><value>HTTP 헤더가 잘못되었습니다</value></data>
+  <data name="HttpContentLengthInvalid" xml:space="preserve"><value>HTTP Content-Length가 잘못되었습니다</value></data>
+  <data name="HttpChunkSizeInvalid" xml:space="preserve"><value>HTTP 청크 크기가 잘못되었습니다</value></data>
+  <data name="HttpChunkShort" xml:space="preserve"><value>HTTP 청크가 선언된 크기 전에 끝났습니다</value></data>
+  <data name="HttpBodyTruncated" xml:space="preserve"><value>청크 HTTP 본문이 예기치 않게 끝났습니다</value></data>
+  <data name="HttpChunkLineTooLong" xml:space="preserve"><value>HTTP 청크 줄이 너무 깁니다</value></data>
+  <data name="HttpChunkTerminatorMissing" xml:space="preserve"><value>HTTP 청크 종료 문자가 없습니다</value></data>
+</root>

@@ -175,14 +175,14 @@ static class SendTransferHooks
                     return;
                 }
 
-                if (result is OutgoingTransferResult.PinRateLimited)
+                if (result is OutgoingTransferResult.RateLimited)
                 {
                     var errorState = new TransferUiState.Active(
                         TransferState.Failed,
                         device.Alias,
                         0,
                         totalBytes,
-                        t.Message(new("App", "PinRateLimited")),
+                        t.Message(new("App", "RateLimited")),
                         IsError: true);
                     dispatchTransfer(new SendTransferAction.Failed(errorState));
                     PublishTransferOverlay(

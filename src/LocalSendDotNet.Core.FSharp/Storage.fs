@@ -1,5 +1,7 @@
 namespace LocalSendDotNet.FSharp
 
+open LocalSendDotNet.Resources
+
 open System
 open System.Collections.Generic
 open System.IO
@@ -19,7 +21,7 @@ module internal Storage =
             value.ToCharArray()
             |> Array.map (fun c -> if Char.IsControl c || Set.contains c invalid then '_' else c)
             |> fun chars -> String(chars).Trim().TrimEnd('.', ' ')
-        if sanitized = "" || sanitized = "." || sanitized = ".." then unsafePath "Invalid filename component."
+        if sanitized = "" || sanitized = "." || sanitized = ".." then unsafePath (CoreText.InvalidFilename)
         let stem = (sanitized.Split('.')[0]).ToUpperInvariant()
         let reserved =
             stem = "CON" || stem = "PRN" || stem = "AUX" || stem = "NUL"
@@ -33,22 +35,22 @@ module internal Storage =
             if Directory.Exists path then
                 let info = DirectoryInfo path
                 if not (isNull info.LinkTarget) || info.Attributes.HasFlag FileAttributes.ReparsePoint then
-                    unsafePath "The destination traverses a linked directory."
+                    unsafePath (CoreText.PathLinked)
 
     let resolveUnique root (requestedName: string) (reserved: ISet<string>) =
         let fullRoot = Path.GetFullPath root
         Directory.CreateDirectory fullRoot |> ignore
-        if Path.IsPathRooted requestedName || requestedName.Contains ':' then unsafePath "Rooted incoming path."
+        if Path.IsPathRooted requestedName || requestedName.Contains ':' then unsafePath (CoreText.UnsafePath)
         let components = requestedName.Replace('\\', '/').Split('/', StringSplitOptions.RemoveEmptyEntries)
-        if components.Length = 0 || Array.exists (fun c -> c = "." || c = "..") components then unsafePath "Unsafe incoming path."
+        if components.Length = 0 || Array.exists (fun c -> c = "." || c = "..") components then unsafePath (CoreText.UnsafePath)
         let safe = Array.map sanitize components
         let parents = safe |> Array.take (safe.Length - 1)
         ensureNoLinks fullRoot parents
         let candidate = Path.Combine(Array.append [| fullRoot |] safe) |> Path.GetFullPath
         let prefix = Path.TrimEndingDirectorySeparator fullRoot + string Path.DirectorySeparatorChar
         let comparison = if OperatingSystem.IsWindows() then StringComparison.OrdinalIgnoreCase else StringComparison.Ordinal
-        if not (candidate.StartsWith(prefix, comparison)) then unsafePath "Incoming path escapes the destination."
-        let directory = Path.GetDirectoryName candidate |> Option.ofObj |> Option.defaultWith (fun () -> unsafePath "Missing parent directory.")
+        if not (candidate.StartsWith(prefix, comparison)) then unsafePath (CoreText.PathEscapes)
+        let directory = Path.GetDirectoryName candidate |> Option.ofObj |> Option.defaultWith (fun () -> unsafePath (CoreText.ParentMissing))
         Directory.CreateDirectory directory |> ignore
         ensureNoLinks fullRoot parents
         let available path = not (File.Exists path || Directory.Exists path) && reserved.Add path
@@ -71,12 +73,12 @@ module internal Storage =
                     if read = 0 then finished <- true
                     else
                         if int64 read > item.Size - count then
-                            raise (StorageException(FailureCode.LengthMismatch, "Body exceeds the declared file size."))
+                            raise (StorageException(FailureCode.LengthMismatch, (CoreText.BodyTooLong)))
                         do! output.WriteAsync(ReadOnlyMemory(buffer, 0, read), ct)
                         if verifySha256 && item.Sha256.IsSome then hash.AppendData(buffer, 0, read)
                         count <- count + int64 read
                         report count
-                if count <> item.Size then raise (StorageException(FailureCode.LengthMismatch, "Body is shorter than declared."))
+                if count <> item.Size then raise (StorageException(FailureCode.LengthMismatch, (CoreText.BodyTooShort)))
                 if verifySha256 then
                     match item.Sha256 with
                     | None -> ()
@@ -87,7 +89,7 @@ module internal Storage =
                                 let expected = if advertised.Length = 64 then Convert.FromHexString advertised else Convert.FromBase64String advertised
                                 CryptographicOperations.FixedTimeEquals(ReadOnlySpan actual, ReadOnlySpan expected)
                             with :? FormatException -> false
-                        if not matches then raise (StorageException(FailureCode.ChecksumMismatch, "SHA-256 digest differs."))
+                        if not matches then raise (StorageException(FailureCode.ChecksumMismatch, (CoreText.ChecksumMismatch)))
                 do! output.FlushAsync ct
                 return count
             }

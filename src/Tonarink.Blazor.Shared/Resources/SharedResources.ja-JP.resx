@@ -116,7 +116,7 @@
   <data name="ThemeDescription" xml:space="preserve"><value>システムに従う、または外観を指定</value></data>
   <data name="ThemeLight" xml:space="preserve"><value>ライト</value></data>
   <data name="ThemeSystem" xml:space="preserve"><value>システムに従う</value></data>
-  <data name="TooManyPinAttempts" xml:space="preserve"><value>PIN の試行回数が多すぎます。しばらくしてからお試しください</value></data>
+  <data name="TooManyRequests" xml:space="preserve"><value>リクエストが多すぎます。しばらくしてから再試行してください</value></data>
   <data name="ClipboardReadFailed" xml:space="preserve"><value>クリップボードを読み取れませんでした</value></data>
   <data name="ClipboardWriteFailed" xml:space="preserve"><value>クリップボードに書き込めませんでした</value></data>
   <data name="DeviceBusy" xml:space="preserve"><value>受信側のデバイスは使用中です</value></data>

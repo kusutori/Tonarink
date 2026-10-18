@@ -141,9 +141,9 @@ public sealed class PortableServerTests
                 ready.SetResult();
                 var outcomes = await Task.WhenAll(sending).WaitAsync(deadline.Token);
                 Assert.HasCount(3, outcomes.Where(outcome => outcome is SendOutcome.PinRequired { InvalidPin: true }), $"Portable round {round} lost PIN attempts.");
-                Assert.HasCount(5, outcomes.Where(outcome => outcome is SendOutcome.PinRateLimited));
+                Assert.HasCount(5, outcomes.Where(outcome => outcome is SendOutcome.RateLimited));
                 Assert.IsTrue((await sender.SendAsync(device, [new SendTextItem("correct but locked")], new() { Pin = "2468" },
-                    cancellationToken: deadline.Token)) is SendOutcome.PinRateLimited);
+                    cancellationToken: deadline.Token)) is SendOutcome.RateLimited);
                 Assert.IsEmpty(receiver.GetPendingIncomingTransfers());
                 Assert.IsEmpty(Directory.EnumerateFiles(downloads, "*", SearchOption.AllDirectories).ToArray());
                 Assert.AreEqual(LocalSendNodeState.Running, receiver.State);

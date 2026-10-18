@@ -97,7 +97,6 @@
   <data name="Browser share: {0}" xml:space="preserve"><value>浏览器分享：{0}</value></data>
   <data name="The PIN is incorrect" xml:space="preserve"><value>PIN 不正确</value></data>
   <data name="The receiving device requires --pin PIN" xml:space="preserve"><value>接收设备需要 --pin PIN</value></data>
-  <data name="Too many PIN attempts; try again later" xml:space="preserve"><value>PIN 尝试次数过多，请稍后重试</value></data>
   <data name="The receiving device is busy" xml:space="preserve"><value>接收设备正忙</value></data>
   <data name="The receiving device declined the transfer" xml:space="preserve"><value>接收设备拒绝了传输</value></data>
   <data name="Ambiguous device name; use a fingerprint or address." xml:space="preserve"><value>设备名称重复，请使用指纹或地址</value></data>

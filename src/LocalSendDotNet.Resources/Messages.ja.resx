@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <data name="AtLeastOneItem" xml:space="preserve"><value>少なくとも 1 つの項目が必要です</value></data>
+  <data name="PeerCertificateMissing" xml:space="preserve"><value>相手が TLS 証明書を提示しませんでした</value></data>
+  <data name="PeerIdentityInvalid" xml:space="preserve"><value>相手の TLS ID 検証に失敗しました</value></data>
+  <data name="PeerFingerprintMissing" xml:space="preserve"><value>相手が ID フィンガープリントを提示しませんでした</value></data>
+  <data name="PeerFingerprintMismatch" xml:space="preserve"><value>通知されたフィンガープリントが TLS 証明書と一致しません</value></data>
+  <data name="PeerRegisterFingerprintMismatch" xml:space="preserve"><value>登録時のフィンガープリントが信頼された ID と一致しません</value></data>
+  <data name="InfoResponseEmpty" xml:space="preserve"><value>相手が空のデバイス情報を返しました</value></data>
+  <data name="RegisterResponseEmpty" xml:space="preserve"><value>相手が空の登録応答を返しました</value></data>
+  <data name="PrepareResponseEmpty" xml:space="preserve"><value>相手が空のアップロード準備応答を返しました</value></data>
+  <data name="SourceLengthChanged" xml:space="preserve"><value>アップロード前または途中でソースのサイズが変わりました</value></data>
+  <data name="SourceLengthChangedNamed" xml:space="preserve"><value>アップロード前にソースのサイズが変わりました: {0}</value></data>
+  <data name="StreamFactoryNull" xml:space="preserve"><value>ストリームファクトリが null を返しました</value></data>
+  <data name="StreamUnreadable" xml:space="preserve"><value>ストリームファクトリが読み取り不能なストリームを返しました</value></data>
+  <data name="SourcePathRequired" xml:space="preserve"><value>ソースパスが必要です</value></data>
+  <data name="FileNameRequired" xml:space="preserve"><value>ファイル名が必要です</value></data>
+  <data name="LengthNonnegative" xml:space="preserve"><value>長さを負の値にはできません</value></data>
+  <data name="InvalidSourceSize" xml:space="preserve"><value>ソースのサイズが無効か、対応範囲を超えています</value></data>
+  <data name="PeerEndpointMissing" xml:space="preserve"><value>デバイスに使用可能な接続先がありません</value></data>
+  <data name="NodeNotRunning" xml:space="preserve"><value>ネットワーク操作の前にノードを起動してください</value></data>
+  <data name="NodeCannotRestart" xml:space="preserve"><value>停止したノードは再起動できません。新しいインスタンスを作成してください</value></data>
+  <data name="IdentityNotLoaded" xml:space="preserve"><value>ローカル ID が読み込まれていません</value></data>
+  <data name="RequestMissing" xml:space="preserve"><value>受信リクエストは存在しません</value></data>
+  <data name="SelectionUnknown" xml:space="preserve"><value>選択にこのリクエストに含まれない項目があります</value></data>
+  <data name="TargetNameUnknown" xml:space="preserve"><value>保存先ファイル名にこのリクエストに含まれない項目があります</value></data>
+  <data name="DecisionAlreadyMade" xml:space="preserve"><value>このリクエストは処理済みです</value></data>
+  <data name="TransferBusy" xml:space="preserve"><value>受信側は別の転送で使用中です</value></data>
+  <data name="TransferDeclined" xml:space="preserve"><value>受信側が転送を拒否しました</value></data>
+  <data name="DecisionTimedOut" xml:space="preserve"><value>受信の承認待ちがタイムアウトしました</value></data>
+  <data name="TransferExpired" xml:space="preserve"><value>送信側が承認済みの転送を制限時間内に完了しませんでした</value></data>
+  <data name="TransferCancelled" xml:space="preserve"><value>転送がキャンセルされました</value></data>
+  <data name="BodyTooLong" xml:space="preserve"><value>アップロード内容が申告されたサイズを超えています</value></data>
+  <data name="BodyTooShort" xml:space="preserve"><value>アップロード内容が申告されたサイズより短くなっています</value></data>
+  <data name="LengthMismatch" xml:space="preserve"><value>内容の長さが一致しません: 期待値 {0}、受信値 {1}</value></data>
+  <data name="ContentLengthMismatch" xml:space="preserve"><value>Content-Length が提示されたファイルサイズと一致しません</value></data>
+  <data name="ChecksumMismatch" xml:space="preserve"><value>アップロード内容の SHA-256 検証に失敗しました</value></data>
+  <data name="InvalidFilename" xml:space="preserve"><value>受信ファイル名に安全でない部分があります</value></data>
+  <data name="InvalidFilenameNamed" xml:space="preserve"><value>受信ファイル名の安全でない部分: {0}</value></data>
+  <data name="UnsafePath" xml:space="preserve"><value>受信パスが安全ではありません</value></data>
+  <data name="UnsafePathNamed" xml:space="preserve"><value>安全でない受信パス: {0}</value></data>
+  <data name="PathEscapes" xml:space="preserve"><value>受信パスが保存先ディレクトリの外にあります</value></data>
+  <data name="PathEscapesNamed" xml:space="preserve"><value>受信パスが保存先の外にあります: {0}</value></data>
+  <data name="PathLinked" xml:space="preserve"><value>保存先パスがリンクされたディレクトリを通過します</value></data>
+  <data name="PathLinkedNamed" xml:space="preserve"><value>受信パスがリンクされたディレクトリを通過します: {0}</value></data>
+  <data name="ParentMissing" xml:space="preserve"><value>保存先に親ディレクトリがありません</value></data>
+  <data name="IdentityIncomplete" xml:space="preserve"><value>「{0}」の ID ファイルが不完全です。両方の PEM ファイルを復元または削除してください</value></data>
+  <data name="IdentityLoadFailed" xml:space="preserve"><value>「{0}」の ID を読み込めませんでした</value></data>
+  <data name="IdentityReadFailed" xml:space="preserve"><value>ローカル ID を読み取れませんでした</value></data>
+  <data name="IdentityAccessDenied" xml:space="preserve"><value>ローカル ID にアクセスできませんでした</value></data>
+  <data name="IdentityPrivateKeyMissing" xml:space="preserve"><value>証明書に一致する秘密鍵がありません</value></data>
+  <data name="PortUnavailable" xml:space="preserve"><value>TCP ポート {0} は使用できません。別のポートを選ぶか、使用中のプロセスを停止してください</value></data>
+  <data name="DiscoveryStartFailed" xml:space="preserve"><value>UDP ポート {0} で LocalSend の検出を開始できませんでした</value></data>
+  <data name="DiscoveryInterfaceMissing" xml:space="preserve"><value>現在使用可能な IPv4 インターフェイスがありません</value></data>
+  <data name="DiscoveryMembershipFailed" xml:space="preserve"><value>マルチキャストグループに参加できる IPv4 インターフェイスがありません</value></data>
+  <data name="PeerPinRequired" xml:space="preserve"><value>相手のデバイスに PIN が必要です</value></data>
+  <data name="PeerPinInvalid" xml:space="preserve"><value>相手のデバイスが PIN を拒否しました</value></data>
+  <data name="RateLimited" xml:space="preserve"><value>リクエストが多すぎます。しばらくしてから再試行してください</value></data>
+  <data name="WebPinRequired" xml:space="preserve"><value>Web 共有の PIN が未入力か正しくありません</value></data>
+  <data name="WebPinRateLimited" xml:space="preserve"><value>Web 共有の PIN の失敗回数が多すぎます</value></data>
+  <data name="NoActiveShare" xml:space="preserve"><value>有効な Web 共有がありません</value></data>
+  <data name="WebBrowser" xml:space="preserve"><value>Web ブラウザー</value></data>
+  <data name="UnknownDevice" xml:space="preserve"><value>不明</value></data>
+  <data name="Browser" xml:space="preserve"><value>ブラウザー</value></data>
+  <data name="RemoteAddressMissing" xml:space="preserve"><value>HTTP リクエストに送信元アドレスがありません</value></data>
+  <data name="RequestTooLarge" xml:space="preserve"><value>リクエスト本文が設定された上限を超えています</value></data>
+  <data name="InvalidFileMetadata" xml:space="preserve"><value>ファイルのメタデータが無効です</value></data>
+  <data name="InvalidSenderMetadata" xml:space="preserve"><value>送信側のメタデータが無効です</value></data>
+  <data name="TransferLimitExceeded" xml:space="preserve"><value>受信転送が設定された上限を超えています</value></data>
+  <data name="ClientFingerprintMismatch" xml:space="preserve"><value>クライアント証明書のフィンガープリントが一致しません</value></data>
+  <data name="ClientCertificateRequired" xml:space="preserve"><value>クライアント証明書が必要です</value></data>
+  <data name="UploadCredentialsMissing" xml:space="preserve"><value>アップロードの認証情報がありません</value></data>
+  <data name="DownloadCredentialsMissing" xml:space="preserve"><value>ダウンロードの認証情報がありません</value></data>
+  <data name="SessionIdMissing" xml:space="preserve"><value>セッション ID がありません</value></data>
+  <data name="SessionExpired" xml:space="preserve"><value>セッションが存在しないか、有効期限が切れています</value></data>
+  <data name="UploadCredentialsInvalid" xml:space="preserve"><value>アップロードトークン、送信元アドレス、またはファイル ID が無効です</value></data>
+  <data name="ExpectedJsonObject" xml:space="preserve"><value>JSON オブジェクトが必要です</value></data>
+  <data name="FieldStringRequired" xml:space="preserve"><value>「{0}」は文字列である必要があります</value></data>
+  <data name="FieldRequired" xml:space="preserve"><value>「{0}」は必須です</value></data>
+  <data name="FieldIntegerRequired" xml:space="preserve"><value>「{0}」は整数である必要があります</value></data>
+  <data name="FieldBooleanRequired" xml:space="preserve"><value>「{0}」は真偽値である必要があります</value></data>
+  <data name="PeerPortInvalid" xml:space="preserve"><value>相手のポートが無効です</value></data>
+  <data name="ProtocolUnsupported" xml:space="preserve"><value>相手のプロトコルは対応していません</value></data>
+  <data name="TimestampInvalid" xml:space="preserve"><value>「{0}」のタイムスタンプが無効です</value></data>
+  <data name="FileIdMismatch" xml:space="preserve"><value>ファイルキーとファイル ID が一致しません</value></data>
+  <data name="MissingInfo" xml:space="preserve"><value>デバイス情報がありません</value></data>
+  <data name="MissingFiles" xml:space="preserve"><value>ファイルのメタデータがありません</value></data>
+  <data name="FilesObject" xml:space="preserve"><value>ファイルのメタデータは JSON オブジェクトである必要があります</value></data>
+  <data name="FilesArray" xml:space="preserve"><value>ファイルのメタデータは JSON 配列である必要があります</value></data>
+  <data name="DuplicateFileId" xml:space="preserve"><value>ファイル ID が重複しています</value></data>
+  <data name="DuplicateTokenId" xml:space="preserve"><value>アップロードトークンのキーが重複しています</value></data>
+  <data name="FileIdBlank" xml:space="preserve"><value>ファイル ID は空にできません</value></data>
+  <data name="SessionIdBlank" xml:space="preserve"><value>セッション ID は空にできません</value></data>
+  <data name="UploadTokenBlank" xml:space="preserve"><value>アップロードトークンは空にできません</value></data>
+  <data name="FingerprintBlank" xml:space="preserve"><value>フィンガープリントは空にできません</value></data>
+  <data name="EndpointAddressMissing" xml:space="preserve"><value>接続先に IP アドレスが必要です</value></data>
+  <data name="PortRange" xml:space="preserve"><value>ポートは 1 から 65535 の範囲である必要があります</value></data>
+  <data name="CannotBlank" xml:space="preserve"><value>空にできません</value></data>
+  <data name="MustPositive" xml:space="preserve"><value>正の値である必要があります</value></data>
+  <data name="TimeoutPositive" xml:space="preserve"><value>タイムアウトは正の値または無制限である必要があります</value></data>
+  <data name="ExpirationGreater" xml:space="preserve"><value>デバイスの有効期限は通知間隔より長くする必要があります</value></data>
+  <data name="MulticastIPv4" xml:space="preserve"><value>マルチキャストアドレスは IPv4 である必要があります</value></data>
+  <data name="PinBlank" xml:space="preserve"><value>設定された PIN は空にできません</value></data>
+  <data name="ProbeNotVerified" xml:space="preserve"><value>検出で TLS ID を検証できませんでした</value></data>
+  <data name="PeerNotTrusted" xml:space="preserve"><value>ホストがこのデバイスを信頼しませんでした</value></data>
+  <data name="WebRequestTimedOut" xml:space="preserve"><value>Web 共有リクエストがタイムアウトしました</value></data>
+  <data name="IdentityLoadGeneric" xml:space="preserve"><value>ローカル ID を読み込めませんでした</value></data>
+  <data name="InvalidJson" xml:space="preserve"><value>JSON リクエストが無効です</value></data>
+  <data name="WebPinPrompt" xml:space="preserve"><value>PIN を入力してください</value></data>
+  <data name="WebPick" xml:space="preserve"><value>アップロードするファイルを選択</value></data>
+  <data name="WebWaiting" xml:space="preserve"><value>Tonarink の応答を待っています…</value></data>
+  <data name="WebIncorrectPin" xml:space="preserve"><value>PIN が違います</value></data>
+  <data name="WebDeclined" xml:space="preserve"><value>受信側が拒否しました</value></data>
+  <data name="WebTimedOut" xml:space="preserve"><value>リクエストがタイムアウトしました</value></data>
+  <data name="WebTooLarge" xml:space="preserve"><value>選択したファイルが大きすぎるか、多すぎます</value></data>
+  <data name="WebRequestFailed" xml:space="preserve"><value>リクエストに失敗しました: </value></data>
+  <data name="WebUploading" xml:space="preserve"><value>アップロード中</value></data>
+  <data name="WebSentFiles" xml:space="preserve"><value>{count} 件のファイルを送信しました</value></data>
+  <data name="WebSentFile" xml:space="preserve"><value>{count} 件のファイルを送信しました</value></data>
+  <data name="WebNoneAccepted" xml:space="preserve"><value>承認されたファイルはありません</value></data>
+  <data name="WebUploadFailed" xml:space="preserve"><value>アップロードに失敗しました</value></data>
+  <data name="HttpHeaderTooLarge" xml:space="preserve"><value>HTTP ヘッダーが大きすぎます</value></data>
+  <data name="HttpRequestLineInvalid" xml:space="preserve"><value>HTTP リクエスト行が無効です</value></data>
+  <data name="HttpHeaderInvalid" xml:space="preserve"><value>HTTP ヘッダーが無効です</value></data>
+  <data name="HttpContentLengthInvalid" xml:space="preserve"><value>HTTP Content-Length が無効です</value></data>
+  <data name="HttpChunkSizeInvalid" xml:space="preserve"><value>HTTP チャンクのサイズが無効です</value></data>
+  <data name="HttpChunkShort" xml:space="preserve"><value>HTTP チャンクが申告されたサイズに達する前に終了しました</value></data>
+  <data name="HttpBodyTruncated" xml:space="preserve"><value>チャンク化された HTTP 本文が予期せず終了しました</value></data>
+  <data name="HttpChunkLineTooLong" xml:space="preserve"><value>HTTP チャンク行が長すぎます</value></data>
+  <data name="HttpChunkTerminatorMissing" xml:space="preserve"><value>HTTP チャンクの終端がありません</value></data>
+</root>

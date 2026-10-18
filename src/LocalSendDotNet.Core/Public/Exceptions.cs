@@ -34,7 +34,7 @@ public sealed class PortUnavailableException : LocalSendException
     /// <param name="port">The unavailable TCP port.</param>
     /// <param name="innerException">The underlying bind failure.</param>
     public PortUnavailableException(int port, Exception innerException)
-        : base($"TCP port {port} is unavailable. Choose another LocalSendOptions.Port or stop the process using it.", innerException) => Port = port;
+        : base(CoreText.PortUnavailable(port), innerException) => Port = port;
 
     /// <summary>Gets the unavailable port.</summary>
     public int Port { get; }

@@ -26,7 +26,14 @@ For a manually entered address, call `ProbeDeviceAsync(endpoint)` first. HTTPS p
 
 Use `SendFileItem`, `SendTextItem`, or `SendStreamItem`. The stream factory makes sandboxed file pickers and virtual content usable without an intermediate file. `LocalSendItems.FromDirectory` builds items with protocol-safe relative names. `SendOptions.ComputeSha256` performs a complete pre-read and includes the digest in prepare-upload; enable it when integrity is more important than avoiding a second read.
 
-`SendAsync` reports a transfer ID in its first progress callback. Retain that ID to call `CancelTransferAsync`. Cancellation also attempts the remote `/cancel` route with a short bounded timeout. Its `SendOutcome` return value separates completion, internal cancellation, PIN requirements, PIN rate limiting, peer capacity, rejection, and structured failure. Expected peer responses do not use exceptions. Caller cancellation still throws `OperationCanceledException`.
+`SendAsync` reports a transfer ID in its first progress callback. Retain that ID to call `CancelTransferAsync`. Cancellation also attempts the remote `/cancel` route with a short bounded timeout. Its `SendOutcome` return value separates completion, internal cancellation, PIN requirements, request rate limiting, peer capacity, rejection, and structured failure. Expected peer responses do not use exceptions. Caller cancellation still throws `OperationCanceledException`.
+
+`SendOutcome.RateLimited` represents HTTP 429 without assuming a PIN-specific cause.
+HTTP 409 maps to `PeerBusy`. Neither classification inspects the peer's message text.
+Core-owned errors and browser UI use the shared `LocalSendDotNet.Resources` catalog;
+diagnostic messages follow the operation's `CurrentUICulture`, while browser pages
+honor `WebShareOptions.UiCulture`. Hosts must classify failures using outcome types,
+exception types and `TransferFailure.Code`, never by matching translated messages.
 
 ## Receiving
 

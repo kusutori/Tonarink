@@ -35,7 +35,7 @@ internal sealed class V2MulticastDiscovery(
         try { await RefreshInterfacesAsync(force: true, requireInterface: true, cancellationToken).ConfigureAwait(false); }
         catch (Exception exception) when (exception is SocketException or NetworkInformationException)
         {
-            throw new DiscoveryUnavailableException($"UDP port {options.Port} could not start LocalSend discovery.", exception);
+            throw new DiscoveryUnavailableException(CoreText.DiscoveryStartFailed(options.Port), exception);
         }
         NetworkChange.NetworkAddressChanged += OnNetworkAddressChanged;
         _started = true;
@@ -94,7 +94,7 @@ internal sealed class V2MulticastDiscovery(
     private (Socket Receiver, IReadOnlyList<IPAddress> JoinedAddresses) CreateReceiver(IReadOnlyCollection<IPAddress> addresses)
     {
         if (addresses.Count == 0)
-            throw new DiscoveryUnavailableException("No usable IPv4 interface is currently available.");
+            throw new DiscoveryUnavailableException(CoreText.DiscoveryInterfaceMissing);
         var receiver = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
         try
         {
@@ -115,7 +115,7 @@ internal sealed class V2MulticastDiscovery(
                 }
             }
             if (joined.Count == 0)
-                throw new DiscoveryUnavailableException("No IPv4 interface could join the LocalSend multicast group.");
+                throw new DiscoveryUnavailableException(CoreText.DiscoveryMembershipFailed);
             return (receiver, joined);
         }
         catch

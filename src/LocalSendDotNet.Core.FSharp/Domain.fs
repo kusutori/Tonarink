@@ -1,5 +1,7 @@
 namespace LocalSendDotNet.FSharp
 
+open LocalSendDotNet.Resources
+
 open System
 open System.IO
 open System.Net
@@ -14,7 +16,7 @@ type FileId = private FileId of string
 module FileId =
     let value (FileId value) = value
     let create value =
-        if String.IsNullOrWhiteSpace value then Error "A file ID cannot be blank."
+        if String.IsNullOrWhiteSpace value then Error (CoreText.FileIdBlank)
         else Ok(FileId value)
     let fresh () = FileId(Guid.NewGuid().ToString("N"))
 
@@ -25,7 +27,7 @@ type SessionId = private SessionId of string
 module SessionId =
     let value (SessionId value) = value
     let create value =
-        if String.IsNullOrWhiteSpace value then Error "A session ID cannot be blank."
+        if String.IsNullOrWhiteSpace value then Error (CoreText.SessionIdBlank)
         else Ok(SessionId value)
     let fresh () = SessionId(Guid.NewGuid().ToString("N"))
 
@@ -36,7 +38,7 @@ type UploadToken = private UploadToken of string
 module UploadToken =
     let value (UploadToken value) = value
     let create value =
-        if String.IsNullOrWhiteSpace value then Error "An upload token cannot be blank."
+        if String.IsNullOrWhiteSpace value then Error (CoreText.UploadTokenBlank)
         else Ok(UploadToken value)
     let fresh () = UploadToken(Convert.ToHexString(Security.Cryptography.RandomNumberGenerator.GetBytes(32)))
 
@@ -48,7 +50,7 @@ module Fingerprint =
     let value (Fingerprint value) = value
     // HTTP discovery is unverified and may use non-certificate identifiers.
     let create value =
-        if String.IsNullOrWhiteSpace value then Error "A fingerprint cannot be blank."
+        if String.IsNullOrWhiteSpace value then Error (CoreText.FingerprintBlank)
         else Ok(Fingerprint(value.ToUpperInvariant()))
     let internal ofCertificate value = Fingerprint value
 
@@ -71,8 +73,8 @@ with
 module DeviceEndpoint =
     let create (address: IPAddress | null) port protocol =
         match address with
-        | null -> Error "An endpoint needs an IP address."
-        | _ when port < 1 || port > 65535 -> Error "An endpoint port must be between 1 and 65535."
+        | null -> Error (CoreText.EndpointAddressMissing)
+        | _ when port < 1 || port > 65535 -> Error (CoreText.PortRange)
         | address ->
             Ok { AddressValue = if address.IsIPv4MappedToIPv6 then address.MapToIPv4() else address
                  PortValue = port; ProtocolValue = protocol }
@@ -185,7 +187,7 @@ type SendOutcome =
     | Completed of transferId: Guid * items: TransferredItem list
     | Cancelled of transferId: Guid * items: TransferredItem list
     | PinRequired of transferId: Guid * invalidPin: bool
-    | PinRateLimited of transferId: Guid
+    | RateLimited of transferId: Guid
     | PeerBusy of transferId: Guid
     | Declined of transferId: Guid
     | Failed of transferId: Guid * items: TransferredItem list * failure: TransferFailure

@@ -2,6 +2,7 @@ module internal LocalSendDotNet.FSharp.Examples
 
 // Optional compile-only examples. Neither function is invoked by the library.
 
+open LocalSendDotNet.Resources
 open System
 open System.Net
 open System.Threading
@@ -32,11 +33,11 @@ let sendText (node: LocalSendNode) (address: string) port message (approve: Devi
     | Error error -> return Error error
     | Ok endpoint ->
         let! probe = node.ProbeAsync(endpoint, cancellationToken)
-        if not probe.IdentityVerified then return Error "The probe did not verify a TLS identity."
+        if not probe.IdentityVerified then return Error (CoreText.ProbeNotVerified)
         else
             // The host shows/compares the fingerprint before approving a first-time peer.
             let! trusted = approve probe.Device
-            if not trusted then return Error "The host did not trust this peer."
+            if not trusted then return Error (CoreText.PeerNotTrusted)
             else
                 let! outcome = node.SendAsync(probe.Device, [SendItems.text message], SendOptions.Default, cancellationToken)
                 return Ok outcome

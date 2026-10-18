@@ -7,18 +7,18 @@ internal static class SafeFileTarget
         var rootFull = Path.GetFullPath(root);
         Directory.CreateDirectory(rootFull);
         if (Path.IsPathRooted(requestedName) || requestedName.Contains(':', StringComparison.Ordinal))
-            throw new LocalSendException($"Unsafe incoming path: {requestedName}");
+            throw new LocalSendException(CoreText.UnsafePathNamed(requestedName));
 
         var components = requestedName.Replace('\\', '/').Split('/', StringSplitOptions.RemoveEmptyEntries);
         if (components.Length == 0 || components.Any(static x => x is "." or ".."))
-            throw new LocalSendException($"Unsafe incoming path: {requestedName}");
+            throw new LocalSendException(CoreText.UnsafePathNamed(requestedName));
 
         var sanitized = components.Select(SanitizeComponent).ToArray();
         EnsureNoLinkedDirectories(rootFull, sanitized[..^1]);
         var candidate = Path.GetFullPath(Path.Combine([rootFull, .. sanitized]));
         var prefix = rootFull.EndsWith(Path.DirectorySeparatorChar) ? rootFull : rootFull + Path.DirectorySeparatorChar;
         if (!candidate.StartsWith(prefix, OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal))
-            throw new LocalSendException($"Incoming path escapes the destination: {requestedName}");
+            throw new LocalSendException(CoreText.PathEscapesNamed(requestedName));
 
         Directory.CreateDirectory(Path.GetDirectoryName(candidate)!);
         EnsureNoLinkedDirectories(rootFull, sanitized[..^1]);
@@ -42,7 +42,7 @@ internal static class SafeFileTarget
         var chars = value.Select(c => char.IsControl(c) || invalid.Contains(c) ? '_' : c).ToArray();
         var sanitized = new string(chars).Trim().TrimEnd('.', ' ');
         if (sanitized.Length == 0 || sanitized is "." or "..")
-            throw new LocalSendException($"Unsafe incoming filename component: {value}");
+            throw new LocalSendException(CoreText.InvalidFilenameNamed(value));
         if (OperatingSystem.IsWindows())
         {
             var stem = sanitized.Split('.')[0];
@@ -65,7 +65,7 @@ internal static class SafeFileTarget
                 continue;
             var info = new DirectoryInfo(current);
             if (info.LinkTarget is not null || info.Attributes.HasFlag(FileAttributes.ReparsePoint))
-                throw new LocalSendException($"Incoming path traverses a linked directory: {component}");
+                throw new LocalSendException(CoreText.PathLinkedNamed(component));
         }
     }
 }

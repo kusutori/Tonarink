@@ -16,7 +16,7 @@ public sealed class TransferOutcomeTests
             SendOutcome.Completed completed => $"completed:{completed.Items.Count}",
             SendOutcome.Cancelled cancelled => $"cancelled:{cancelled.Items.Count}",
             SendOutcome.PinRequired pin => $"pin:{pin.InvalidPin}",
-            SendOutcome.PinRateLimited => "pin-rate-limited",
+            SendOutcome.RateLimited => "rate-limited",
             SendOutcome.PeerBusy => "peer-busy",
             SendOutcome.Declined => "declined",
             SendOutcome.Failed failed => $"failed:{failed.Failure.Code}",

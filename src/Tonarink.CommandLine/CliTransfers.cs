@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Net;
 using LocalSendDotNet;
+using LocalSendDotNet.Resources;
 using Tonarink.Application;
 
 namespace Tonarink.Cli;
@@ -24,7 +25,7 @@ sealed partial class CliCommands
             SendOutcome.Completed complete => TransferResult(complete.TransferId, "Completed", complete.Items, 0),
             SendOutcome.Cancelled cancelled => TransferResult(cancelled.TransferId, "Cancelled", cancelled.Items, 130),
             SendOutcome.PinRequired required => CliProtocol.Error(required.InvalidPin ? CliText.Get("The PIN is incorrect") : CliText.Get("The receiving device requires --pin PIN"), 5),
-            SendOutcome.PinRateLimited => CliProtocol.Error(CliText.Get("Too many PIN attempts; try again later"), 5),
+            SendOutcome.RateLimited => CliProtocol.Error(CoreText.RateLimited, 5),
             SendOutcome.PeerBusy => CliProtocol.Error(CliText.Get("The receiving device is busy"), 4),
             SendOutcome.Declined => CliProtocol.Error(CliText.Get("The receiving device declined the transfer"), 4),
             SendOutcome.Failed failed => TransferResult(failed.TransferId, "Failed", failed.Items, 1, failed.Failure.Message),

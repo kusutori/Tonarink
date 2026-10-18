@@ -118,7 +118,7 @@
   <data name="ThemeDescription" xml:space="preserve"><value>跟随系统或固定外观</value></data>
   <data name="ThemeLight" xml:space="preserve"><value>浅色</value></data>
   <data name="ThemeSystem" xml:space="preserve"><value>跟随系统</value></data>
-  <data name="TooManyPinAttempts" xml:space="preserve"><value>PIN 尝试次数过多，请稍后重试。</value></data>
+  <data name="TooManyRequests" xml:space="preserve"><value>请求过于频繁，请稍后重试</value></data>
   <data name="ClipboardReadFailed" xml:space="preserve"><value>无法读取剪贴板。</value></data>
   <data name="ClipboardWriteFailed" xml:space="preserve"><value>无法写入剪贴板。</value></data>
   <data name="DeviceBusy" xml:space="preserve"><value>接收设备正忙。</value></data>

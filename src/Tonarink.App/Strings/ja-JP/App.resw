@@ -179,7 +179,7 @@
   <data name="Pin" xml:space="preserve"><value>PIN</value></data>
   <data name="PinConfirm" xml:space="preserve"><value>確認</value></data>
   <data name="PinPlaceholder" xml:space="preserve"><value>PIN を入力</value></data>
-  <data name="PinRateLimited" xml:space="preserve"><value>PIN の試行回数が多すぎます。しばらくしてからお試しください</value></data>
+  <data name="RateLimited" xml:space="preserve"><value>リクエストが多すぎます。しばらくしてから再試行してください</value></data>
   <data name="PinRequiredMessage" xml:space="preserve"><value>{device} の受信 PIN が必要です</value></data>
   <data name="PinRequiredTitle" xml:space="preserve"><value>PIN が必要です</value></data>
   <data name="Port" xml:space="preserve"><value>ポート</value></data>

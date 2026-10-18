@@ -100,16 +100,16 @@ public sealed class LocalSendOptions
         if (DeviceExpiration <= TimeSpan.Zero)
             throw new ArgumentOutOfRangeException(nameof(DeviceExpiration));
         if (DeviceExpiration <= AnnouncementInterval)
-            throw new ArgumentException("Device expiration must be greater than the announcement interval.", nameof(DeviceExpiration));
+            throw new ArgumentException(CoreText.ExpirationGreater, nameof(DeviceExpiration));
         if (MulticastAddress.AddressFamily != System.Net.Sockets.AddressFamily.InterNetwork)
-            throw new ArgumentException("The v2 discovery multicast address must be IPv4.", nameof(MulticastAddress));
+            throw new ArgumentException(CoreText.MulticastIPv4, nameof(MulticastAddress));
         if (ReceivePin is { Length: 0 })
-            throw new ArgumentException("A receive PIN cannot be empty.", nameof(ReceivePin));
+            throw new ArgumentException(CoreText.PinBlank, nameof(ReceivePin));
     }
 
     private static void ValidateTimeout(TimeSpan value, string name)
     {
         if (value <= TimeSpan.Zero && value != Timeout.InfiniteTimeSpan)
-            throw new ArgumentOutOfRangeException(name, "The timeout must be positive or infinite.");
+            throw new ArgumentOutOfRangeException(name, CoreText.TimeoutPositive);
     }
 }

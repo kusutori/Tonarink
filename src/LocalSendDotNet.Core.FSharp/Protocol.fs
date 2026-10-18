@@ -1,5 +1,7 @@
 namespace LocalSendDotNet.FSharp
 
+open LocalSendDotNet.Resources
+
 open System
 open System.Globalization
 open System.IO
@@ -23,7 +25,7 @@ module internal Wire =
     let basePath = "/api/localsend/v2"
 
     let private property name (element: JsonElement) =
-        if element.ValueKind <> JsonValueKind.Object then raise (JsonException "Expected a JSON object.")
+        if element.ValueKind <> JsonValueKind.Object then raise (JsonException (CoreText.ExpectedJsonObject))
         element.EnumerateObject()
         |> Seq.tryFind (fun p -> String.Equals(p.Name, name, StringComparison.OrdinalIgnoreCase))
         |> Option.map _.Value
@@ -33,12 +35,12 @@ module internal Wire =
         | None -> None
         | Some value when value.ValueKind = JsonValueKind.Null -> None
         | Some value when value.ValueKind = JsonValueKind.String -> Option.ofObj(value.GetString())
-        | Some _ -> raise (JsonException $"'{name}' must be a string.")
+        | Some _ -> raise (JsonException (CoreText.FieldStringRequired(name)))
 
     let private requiredString name element =
         match optionalString name element with
         | Some value when not (String.IsNullOrWhiteSpace value) -> value
-        | Some _ | None -> raise (JsonException $"'{name}' is required.")
+        | Some _ | None -> raise (JsonException (CoreText.FieldRequired(name)))
 
     let private integer name fallback element =
         match property name element with
@@ -46,14 +48,14 @@ module internal Wire =
         | Some value ->
             match value.TryGetInt64() with
             | true, number -> number
-            | false, _ -> raise (JsonException $"'{name}' must be an integer.")
+            | false, _ -> raise (JsonException (CoreText.FieldIntegerRequired(name)))
 
     let private boolean name fallback element =
         match property name element with
         | None -> fallback
         | Some value when value.ValueKind = JsonValueKind.True -> true
         | Some value when value.ValueKind = JsonValueKind.False -> false
-        | Some _ -> raise (JsonException $"'{name}' must be a boolean.")
+        | Some _ -> raise (JsonException (CoreText.FieldBooleanRequired(name)))
 
     let private require = function Ok value -> value | Error message -> raise (JsonException message)
 
@@ -73,7 +75,7 @@ module internal Wire =
 
     let private readPeer element : PeerInfo =
         let port = integer "port" 53317L element
-        if port < 1L || port > 65535L then raise (JsonException "Invalid peer port.")
+        if port < 1L || port > 65535L then raise (JsonException (CoreText.PeerPortInvalid))
         { Alias = requiredString "alias" element; Version = requiredString "version" element
           Model = optionalString "deviceModel" element
           DeviceType = optionalString "deviceType" element |> Option.map _.ToLowerInvariant() |> deviceType
@@ -83,7 +85,7 @@ module internal Wire =
               match optionalString "protocol" element |> Option.map _.ToLowerInvariant() with
               | Some "http" -> Protocol.Http
               | Some "https" | None -> Protocol.Https
-              | Some _ -> raise (JsonException "Unsupported peer protocol.")
+              | Some _ -> raise (JsonException (CoreText.ProtocolUnsupported))
           Download = boolean "download" false element; Announce = boolean "announce" false element }
 
     let private timestamp name element =
@@ -91,15 +93,15 @@ module internal Wire =
         |> Option.map (fun value ->
             match DateTimeOffset.TryParse(value, CultureInfo.InvariantCulture, DateTimeStyles.None) with
             | true, date -> date
-            | false, _ -> raise (JsonException $"Invalid '{name}' timestamp."))
+            | false, _ -> raise (JsonException (CoreText.TimestampInvalid(name))))
 
     let private readFile expectedId element : IncomingItem =
         let id = requiredString "id" element |> FileId.create |> require
         match expectedId with
-        | Some key when FileId.value id <> key -> raise (JsonException "File key and ID differ.")
+        | Some key when FileId.value id <> key -> raise (JsonException (CoreText.FileIdMismatch))
         | Some _ | None -> ()
         let size = integer "size" -1L element
-        if size < 0L then raise (JsonException "File size cannot be negative.")
+        if size < 0L then raise (JsonException (CoreText.LengthNonnegative))
         let metadata = property "metadata" element |> Option.filter (fun e -> e.ValueKind <> JsonValueKind.Null)
         { Id = id; FileName = requiredString "fileName" element; Size = size
           ContentType = requiredString "fileType" element
@@ -111,27 +113,27 @@ module internal Wire =
 
     let decodeOffer bytes =
         let decode root =
-            let info = property "info" root |> Option.defaultWith (fun () -> raise (JsonException "Missing info.")) |> readPeer
-            let files = property "files" root |> Option.defaultWith (fun () -> raise (JsonException "Missing files."))
-            if files.ValueKind <> JsonValueKind.Object then raise (JsonException "Files must be an object.")
+            let info = property "info" root |> Option.defaultWith (fun () -> raise (JsonException (CoreText.MissingInfo))) |> readPeer
+            let files = property "files" root |> Option.defaultWith (fun () -> raise (JsonException (CoreText.MissingFiles)))
+            if files.ValueKind <> JsonValueKind.Object then raise (JsonException (CoreText.FilesObject))
             let items = files.EnumerateObject() |> Seq.map (fun p -> readFile (Some p.Name) p.Value) |> Seq.toList
-            if items.Length <> (items |> List.map _.Id |> Set.ofList |> Set.count) then raise (JsonException "Duplicate file ID.")
+            if items.Length <> (items |> List.map _.Id |> Set.ofList |> Set.count) then raise (JsonException (CoreText.DuplicateFileId))
             { Info = info; Files = items }
         parse decode bytes
 
     let decodeWebOffer bytes =
         let decode root =
-            let files = property "files" root |> Option.defaultWith (fun () -> raise (JsonException "Missing files."))
-            if files.ValueKind <> JsonValueKind.Array then raise (JsonException "Files must be an array.")
+            let files = property "files" root |> Option.defaultWith (fun () -> raise (JsonException (CoreText.MissingFiles)))
+            if files.ValueKind <> JsonValueKind.Array then raise (JsonException (CoreText.FilesArray))
             let items = files.EnumerateArray() |> Seq.map (readFile None) |> Seq.toList
-            if items.Length <> (items |> List.map _.Id |> Set.ofList |> Set.count) then raise (JsonException "Duplicate file ID.")
+            if items.Length <> (items |> List.map _.Id |> Set.ofList |> Set.count) then raise (JsonException (CoreText.DuplicateFileId))
             items
         parse decode bytes
 
     let decodeAcceptance bytes =
         let decode root =
             let session = requiredString "sessionId" root |> SessionId.create |> require
-            let files = property "files" root |> Option.defaultWith (fun () -> raise (JsonException "Missing files."))
+            let files = property "files" root |> Option.defaultWith (fun () -> raise (JsonException (CoreText.MissingFiles)))
             let pairs =
                 files.EnumerateObject()
                 |> Seq.map (fun p ->
@@ -139,7 +141,7 @@ module internal Wire =
                     let token = p.Value.GetString() |> Option.ofObj |> Option.defaultValue "" |> UploadToken.create |> require
                     id, token)
                 |> Seq.toList
-            if pairs.Length <> (pairs |> List.map fst |> Set.ofList |> Set.count) then raise (JsonException "Duplicate upload token key.")
+            if pairs.Length <> (pairs |> List.map fst |> Set.ofList |> Set.count) then raise (JsonException (CoreText.DuplicateTokenId))
             { SessionId = session; Tokens = Map.ofList pairs }
         parse decode bytes
 

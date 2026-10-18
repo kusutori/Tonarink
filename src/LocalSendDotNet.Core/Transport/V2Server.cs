@@ -90,7 +90,7 @@ internal sealed class V2Server(
         if (options.EnableHttps && (certificate is null || !DeviceIdentityStore.ValidatePeerCertificate(certificate, payload.Fingerprint)))
         {
             logger.LogWarning("Ignoring spoofed register fingerprint from {Address}", context.Connection.RemoteIpAddress);
-            await WriteErrorAsync(context, HttpStatusCode.Forbidden, "Client fingerprint mismatch").ConfigureAwait(false);
+            await WriteErrorAsync(context, HttpStatusCode.Forbidden, CoreText.ClientFingerprintMismatch).ConfigureAwait(false);
             return;
         }
         else
@@ -210,12 +210,12 @@ internal sealed class V2Server(
         if (payload.Files.Length == 0 || payload.Files.GroupBy(static file => file.Id, StringComparer.Ordinal).Any(static group => group.Count() != 1) ||
             payload.Files.Any(static file => file.Size < 0 || string.IsNullOrWhiteSpace(file.Id) || string.IsNullOrWhiteSpace(file.FileName) || string.IsNullOrWhiteSpace(file.FileType)))
         {
-            await WriteErrorAsync(context, HttpStatusCode.BadRequest, "Invalid file metadata").ConfigureAwait(false);
+            await WriteErrorAsync(context, HttpStatusCode.BadRequest, CoreText.InvalidFileMetadata).ConfigureAwait(false);
             return;
         }
         if (payload.Files.Length > options.MaxIncomingItemsPerTransfer || ExceedsTransferLimit(payload.Files, options.MaxIncomingTransferBytes))
         {
-            await WriteErrorAsync(context, HttpStatusCode.RequestEntityTooLarge, "Incoming transfer exceeds configured limits").ConfigureAwait(false);
+            await WriteErrorAsync(context, HttpStatusCode.RequestEntityTooLarge, CoreText.TransferLimitExceeded).ConfigureAwait(false);
             return;
         }
 
@@ -232,7 +232,7 @@ internal sealed class V2Server(
             {
                 Info = new DeviceInfoDto
                 {
-                    Alias = "Web browser",
+                    Alias = CoreText.WebBrowser,
                     Version = V2Constants.Version,
                     DeviceModel = WebShareUserAgent.Describe(userAgent),
                     DeviceType = "web",
@@ -284,25 +284,25 @@ internal sealed class V2Server(
             return;
         if (payload.Files.Count == 0)
         {
-            await WriteErrorAsync(context, HttpStatusCode.BadRequest, "No files provided").ConfigureAwait(false);
+            await WriteErrorAsync(context, HttpStatusCode.BadRequest, CoreText.AtLeastOneItem).ConfigureAwait(false);
             return;
         }
         if (payload.Info.Port is < 1 or > ushort.MaxValue || string.IsNullOrWhiteSpace(payload.Info.Alias) ||
             !IsFingerprint(payload.Info.Fingerprint) ||
             (!StringComparer.OrdinalIgnoreCase.Equals(payload.Info.Protocol, "http") && !StringComparer.OrdinalIgnoreCase.Equals(payload.Info.Protocol, "https")))
         {
-            await WriteErrorAsync(context, HttpStatusCode.BadRequest, "Invalid sender metadata").ConfigureAwait(false);
+            await WriteErrorAsync(context, HttpStatusCode.BadRequest, CoreText.InvalidSenderMetadata).ConfigureAwait(false);
             return;
         }
         if (payload.Files.Any(static pair => pair.Value.Size < 0 || string.IsNullOrWhiteSpace(pair.Value.FileName) ||
             string.IsNullOrWhiteSpace(pair.Value.FileType) || !StringComparer.Ordinal.Equals(pair.Key, pair.Value.Id)))
         {
-            await WriteErrorAsync(context, HttpStatusCode.BadRequest, "Invalid file metadata").ConfigureAwait(false);
+            await WriteErrorAsync(context, HttpStatusCode.BadRequest, CoreText.InvalidFileMetadata).ConfigureAwait(false);
             return;
         }
         if (payload.Files.Count > options.MaxIncomingItemsPerTransfer || ExceedsTransferLimit(payload.Files.Values, options.MaxIncomingTransferBytes))
         {
-            await WriteErrorAsync(context, HttpStatusCode.RequestEntityTooLarge, "Incoming transfer exceeds configured limits").ConfigureAwait(false);
+            await WriteErrorAsync(context, HttpStatusCode.RequestEntityTooLarge, CoreText.TransferLimitExceeded).ConfigureAwait(false);
             return;
         }
 
@@ -310,7 +310,7 @@ internal sealed class V2Server(
         var certFingerprint = certificate is null ? null : DeviceIdentityStore.Fingerprint(certificate);
         if (options.EnableHttps && (certificate is null || !DeviceIdentityStore.ValidatePeerCertificate(certificate, payload.Info.Fingerprint)))
         {
-            await WriteErrorAsync(context, HttpStatusCode.Forbidden, "Client fingerprint mismatch").ConfigureAwait(false);
+            await WriteErrorAsync(context, HttpStatusCode.Forbidden, CoreText.ClientFingerprintMismatch).ConfigureAwait(false);
             return;
         }
         if (!CheckPin(context, remote))
@@ -329,7 +329,7 @@ internal sealed class V2Server(
         var query = context.Request.Query;
         if (!query.TryGetValue("sessionId", out var sessionId) || !query.TryGetValue("fileId", out var fileId) || !query.TryGetValue("token", out var token))
         {
-            await WriteErrorAsync(context, HttpStatusCode.BadRequest, "Missing upload query parameters").ConfigureAwait(false);
+            await WriteErrorAsync(context, HttpStatusCode.BadRequest, CoreText.UploadCredentialsMissing).ConfigureAwait(false);
             return;
         }
         var status = await onUpload(sessionId.ToString(), fileId.ToString(), token.ToString(), RemoteAddress(context), context.Request.Body, context.Request.ContentLength, context.RequestAborted).ConfigureAwait(false);
@@ -340,7 +340,7 @@ internal sealed class V2Server(
     {
         if (!context.Request.Query.TryGetValue("sessionId", out var sessionId))
         {
-            await WriteErrorAsync(context, HttpStatusCode.BadRequest, "Missing sessionId").ConfigureAwait(false);
+            await WriteErrorAsync(context, HttpStatusCode.BadRequest, CoreText.SessionIdMissing).ConfigureAwait(false);
             return;
         }
         context.Response.StatusCode = await onCancel(sessionId.ToString(), RemoteAddress(context), context.RequestAborted).ConfigureAwait(false)
@@ -405,12 +405,12 @@ internal sealed class V2Server(
         }
         catch (Microsoft.AspNetCore.Http.BadHttpRequestException exception) when (exception.StatusCode == StatusCodes.Status413PayloadTooLarge)
         {
-            await WriteErrorAsync(context, HttpStatusCode.RequestEntityTooLarge, "JSON request exceeds the configured limit").ConfigureAwait(false);
+            await WriteErrorAsync(context, HttpStatusCode.RequestEntityTooLarge, CoreText.RequestTooLarge).ConfigureAwait(false);
             return default;
         }
         catch (Exception exception) when (exception is System.Text.Json.JsonException or Microsoft.AspNetCore.Http.BadHttpRequestException)
         {
-            await WriteErrorAsync(context, HttpStatusCode.BadRequest, "Invalid JSON request").ConfigureAwait(false);
+            await WriteErrorAsync(context, HttpStatusCode.BadRequest, CoreText.InvalidJson).ConfigureAwait(false);
             return default;
         }
     }

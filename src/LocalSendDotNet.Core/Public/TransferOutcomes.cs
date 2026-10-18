@@ -5,7 +5,7 @@ public union SendOutcome(
     SendOutcome.Completed,
     SendOutcome.Cancelled,
     SendOutcome.PinRequired,
-    SendOutcome.PinRateLimited,
+    SendOutcome.RateLimited,
     SendOutcome.PeerBusy,
     SendOutcome.Declined,
     SendOutcome.Failed)
@@ -25,9 +25,9 @@ public union SendOutcome(
     /// <param name="InvalidPin">Whether a supplied PIN was rejected.</param>
     public sealed record PinRequired(Guid TransferId, bool InvalidPin);
 
-    /// <summary>The peer temporarily rate-limited PIN attempts.</summary>
+    /// <summary>The peer temporarily rate-limited requests.</summary>
     /// <param name="TransferId">The transfer identifier.</param>
-    public sealed record PinRateLimited(Guid TransferId);
+    public sealed record RateLimited(Guid TransferId);
 
     /// <summary>The peer has no free transfer capacity.</summary>
     /// <param name="TransferId">The transfer identifier.</param>

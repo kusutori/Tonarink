@@ -57,7 +57,7 @@ public sealed class PinSecurityTests
                 {
                     var locked = await sender.SendAsync(device, [new SendTextItem(Content)], new() { Pin = value },
                         cancellationToken: deadline.Token);
-                    Assert.IsTrue(locked is SendOutcome.PinRateLimited, $"Locked PIN {value ?? "<missing>"}: {Describe(locked)}");
+                    Assert.IsTrue(locked is SendOutcome.RateLimited, $"Locked PIN {value ?? "<missing>"}: {Describe(locked)}");
                     Assert.IsEmpty(receiver.GetPendingIncomingTransfers());
                 }
                 var recovery = Stopwatch.StartNew();
@@ -65,7 +65,7 @@ public sealed class PinSecurityTests
                 do
                 {
                     recovered = await SendAndAcceptAsync(sender, receiver, device, deadline.Token);
-                    if (recovered is not SendOutcome.PinRateLimited) break;
+                    if (recovered is not SendOutcome.RateLimited) break;
                     Assert.IsLessThan(TimeSpan.FromSeconds(5), recovery.Elapsed, "PIN lock did not expire on the same node.");
                     await Task.Delay(50, deadline.Token);
                 } while (true);
@@ -538,7 +538,7 @@ public sealed class PinSecurityTests
             if (await Task.WhenAny(sending, arriving) == sending)
             {
                 var denied = await sending;
-                Assert.IsTrue(denied is SendOutcome.PinRateLimited, $"Recovery probe: {Describe(denied)}");
+                Assert.IsTrue(denied is SendOutcome.RateLimited, $"Recovery probe: {Describe(denied)}");
                 Assert.IsFalse(arriving.IsCompleted);
                 Assert.IsEmpty(receiver.GetPendingIncomingTransfers());
                 return denied;
@@ -587,7 +587,7 @@ public sealed class PinSecurityTests
         SendOutcome.Completed value => value.ToString(),
         SendOutcome.Cancelled value => value.ToString(),
         SendOutcome.PinRequired value => value.ToString(),
-        SendOutcome.PinRateLimited value => value.ToString(),
+        SendOutcome.RateLimited value => value.ToString(),
         SendOutcome.PeerBusy value => value.ToString(),
         SendOutcome.Declined value => value.ToString(),
         SendOutcome.Failed value => value.ToString(),

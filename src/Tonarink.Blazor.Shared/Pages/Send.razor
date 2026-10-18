@@ -134,7 +134,7 @@
             {
                 RuntimeSendResult.Completed or RuntimeSendResult.Cancelled => null,
                 RuntimeSendResult.PinRequired required => RequestPin(required),
-                RuntimeSendResult.PinRateLimited => T("TooManyPinAttempts"),
+                RuntimeSendResult.RateLimited => T("TooManyRequests"),
                 RuntimeSendResult.PeerBusy => T("DeviceBusy"),
                 RuntimeSendResult.Declined => T("TransferDeclined"),
                 RuntimeSendResult.Failed failed => failed.Message,

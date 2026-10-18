@@ -46,7 +46,7 @@ internal sealed class WebShareService(LocalSendOptions options, ILogger logger)
     {
         ArgumentNullException.ThrowIfNull(items);
         if (items.Count == 0)
-            throw new ArgumentException("At least one item is required.", nameof(items));
+            throw new ArgumentException(CoreText.AtLeastOneItem, nameof(items));
         shareOptions ??= new WebShareOptions();
         lock (_gate)
         {
@@ -212,7 +212,7 @@ internal sealed class WebShareService(LocalSendOptions options, ILogger logger)
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
         {
             Decline(session.SessionId);
-            throw new TimeoutException("The web share request timed out.");
+            throw new TimeoutException(CoreText.WebRequestTimedOut);
         }
     }
 
@@ -303,5 +303,5 @@ internal sealed class WebShareBrowserSession(string sessionId, string deviceInfo
     public WebShareRequest ToRequest() => new(SessionId, DeviceInfo, Ip, Pending);
 }
 
-internal sealed class WebSharePinException() : Exception("The web share PIN is missing or incorrect.");
-internal sealed class WebSharePinRateLimitedException() : Exception("Too many incorrect web share PIN attempts.");
+internal sealed class WebSharePinException() : Exception(CoreText.WebPinRequired);
+internal sealed class WebSharePinRateLimitedException() : Exception(CoreText.WebPinRateLimited);

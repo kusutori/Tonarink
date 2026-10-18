@@ -15,7 +15,7 @@ static class CoreTransferOutcomeMapper
         SendOutcome.PinRequired required => new OutgoingTransferResult.PinRequired(
             required.TransferId,
             required.InvalidPin),
-        SendOutcome.PinRateLimited limited => new OutgoingTransferResult.PinRateLimited(limited.TransferId),
+        SendOutcome.RateLimited limited => new OutgoingTransferResult.RateLimited(limited.TransferId),
         SendOutcome.PeerBusy busy => new OutgoingTransferResult.PeerBusy(busy.TransferId),
         SendOutcome.Declined declined => new OutgoingTransferResult.Declined(declined.TransferId),
         SendOutcome.Failed failed => new OutgoingTransferResult.Failed(

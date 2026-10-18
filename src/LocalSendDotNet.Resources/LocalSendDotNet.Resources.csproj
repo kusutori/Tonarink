@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>LocalSendDotNet.Resources</AssemblyName>
+    <RootNamespace>LocalSendDotNet.Resources</RootNamespace>
+    <IsPackable>false</IsPackable>
+    <NeutralLanguage>en</NeutralLanguage>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Keep every translation in this assembly, including single-file and AOT hosts. -->
+    <EmbeddedResource Update="Messages.*.resx">
+      <WithCulture>false</WithCulture>
+      <LogicalName>LocalSendDotNet.Resources.%(Filename).resources</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+</Project>

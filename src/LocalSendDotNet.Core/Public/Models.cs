@@ -231,7 +231,7 @@ public sealed record SendStreamItem : SendItem
     internal override async ValueTask<Stream> OpenReadAsync(CancellationToken cancellationToken)
     {
         var stream = await _openStream(cancellationToken).ConfigureAwait(false);
-        return stream ?? throw new LocalSendException("The stream factory returned null.");
+        return stream ?? throw new LocalSendException(CoreText.StreamFactoryNull);
     }
 }
 

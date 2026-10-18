@@ -12,7 +12,7 @@ union OutgoingTransferResult(
     OutgoingTransferResult.Completed,
     OutgoingTransferResult.Cancelled,
     OutgoingTransferResult.PinRequired,
-    OutgoingTransferResult.PinRateLimited,
+    OutgoingTransferResult.RateLimited,
     OutgoingTransferResult.PeerBusy,
     OutgoingTransferResult.Declined,
     OutgoingTransferResult.Failed)
@@ -23,7 +23,7 @@ union OutgoingTransferResult(
 
     public sealed record PinRequired(Guid TransferId, bool InvalidPin);
 
-    public sealed record PinRateLimited(Guid TransferId);
+    public sealed record RateLimited(Guid TransferId);
 
     public sealed record PeerBusy(Guid TransferId);
 

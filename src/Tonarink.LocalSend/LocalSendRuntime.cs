@@ -152,8 +152,8 @@ public sealed class LocalSendRuntime : ITonarinkRuntime
             .ConfigureAwait(false);
         if (result is SendOutcome.PinRequired required)
             return new RuntimeSendResult.PinRequired(required.InvalidPin);
-        if (result is SendOutcome.PinRateLimited)
-            return new RuntimeSendResult.PinRateLimited();
+        if (result is SendOutcome.RateLimited)
+            return new RuntimeSendResult.RateLimited();
 
         var (transferId, status, bytesTransferred, runtimeResult) = result switch
         {
@@ -182,7 +182,7 @@ public sealed class LocalSendRuntime : ITonarinkRuntime
                 AppTransferStatus.Failed,
                 failed.Items.Sum(static item => item.BytesTransferred),
                 new RuntimeSendResult.Failed(failed.Failure.Message)),
-            SendOutcome.PinRequired or SendOutcome.PinRateLimited =>
+            SendOutcome.PinRequired or SendOutcome.RateLimited =>
                 throw new InvalidOperationException("PIN outcomes must be returned before recording the final transfer."),
         };
         _state.UpsertTransfer(new TransferActivity(

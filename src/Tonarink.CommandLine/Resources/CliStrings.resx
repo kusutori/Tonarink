@@ -97,7 +97,6 @@
   <data name="Browser share: {0}" xml:space="preserve"><value>Browser share: {0}</value></data>
   <data name="The PIN is incorrect" xml:space="preserve"><value>The PIN is incorrect</value></data>
   <data name="The receiving device requires --pin PIN" xml:space="preserve"><value>The receiving device requires --pin PIN</value></data>
-  <data name="Too many PIN attempts; try again later" xml:space="preserve"><value>Too many PIN attempts; try again later</value></data>
   <data name="The receiving device is busy" xml:space="preserve"><value>The receiving device is busy</value></data>
   <data name="The receiving device declined the transfer" xml:space="preserve"><value>The receiving device declined the transfer</value></data>
   <data name="Ambiguous device name; use a fingerprint or address." xml:space="preserve"><value>Ambiguous device name; use a fingerprint or address.</value></data>

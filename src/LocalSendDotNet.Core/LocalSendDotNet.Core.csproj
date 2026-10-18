@@ -17,9 +17,12 @@
     <PackageReleaseNotes>https://github.com/kusutori/Tonarink/blob/main/CHANGELOG.md</PackageReleaseNotes>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <IncludeSymbols>true</IncludeSymbols>
+    <!-- Ship the private shared text assembly with Core; no second NuGet package is required. -->
+    <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);IncludeCoreResources</TargetsForTfmSpecificBuildOutput>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="../LocalSendDotNet.Resources/LocalSendDotNet.Resources.csproj" PrivateAssets="all" />
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" Condition="'$(CI)' == 'true'" />
     <None Update="README.md" Pack="true" PackagePath="/" />
@@ -30,4 +33,10 @@
     <None Update="docs/interop-matrix.md" Pack="true" PackagePath="/" />
     <None Include="../../CHANGELOG.md" Pack="true" PackagePath="/" />
   </ItemGroup>
+  <Target Name="IncludeCoreResources" DependsOnTargets="ResolveReferences">
+    <ItemGroup>
+      <BuildOutputInPackage Include="@(ReferenceCopyLocalPaths)"
+                            Condition="'%(Filename)' == 'LocalSendDotNet.Resources' And '%(Extension)' == '.dll'" />
+    </ItemGroup>
+  </Target>
 </Project>

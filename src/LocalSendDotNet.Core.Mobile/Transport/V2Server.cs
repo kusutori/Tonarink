@@ -157,7 +157,7 @@ internal sealed class V2Server(
         if (options.EnableHttps && (request.ClientCertificate is null || !DeviceIdentityStore.ValidatePeerCertificate(request.ClientCertificate, payload.Fingerprint)))
         {
             logger.LogWarning("Ignoring spoofed register fingerprint from {Address}", request.RemoteAddress);
-            await WriteErrorAsync(response, request, HttpStatusCode.Forbidden, "Client fingerprint mismatch").ConfigureAwait(false);
+            await WriteErrorAsync(response, request, HttpStatusCode.Forbidden, CoreText.ClientFingerprintMismatch).ConfigureAwait(false);
             return;
         }
         await onRegister(payload, request.RemoteAddress, fingerprint).ConfigureAwait(false);
@@ -188,31 +188,31 @@ internal sealed class V2Server(
             return;
         if (payload.Files.Count == 0)
         {
-            await WriteErrorAsync(response, request, HttpStatusCode.BadRequest, "No files provided").ConfigureAwait(false);
+            await WriteErrorAsync(response, request, HttpStatusCode.BadRequest, CoreText.AtLeastOneItem).ConfigureAwait(false);
             return;
         }
         if (payload.Info.Port is < 1 or > ushort.MaxValue || string.IsNullOrWhiteSpace(payload.Info.Alias) ||
             !IsFingerprint(payload.Info.Fingerprint) ||
             (!StringComparer.OrdinalIgnoreCase.Equals(payload.Info.Protocol, "http") && !StringComparer.OrdinalIgnoreCase.Equals(payload.Info.Protocol, "https")))
         {
-            await WriteErrorAsync(response, request, HttpStatusCode.BadRequest, "Invalid sender metadata").ConfigureAwait(false);
+            await WriteErrorAsync(response, request, HttpStatusCode.BadRequest, CoreText.InvalidSenderMetadata).ConfigureAwait(false);
             return;
         }
         if (payload.Files.Any(static pair => pair.Value.Size < 0 || string.IsNullOrWhiteSpace(pair.Value.FileName) ||
             string.IsNullOrWhiteSpace(pair.Value.FileType) || !StringComparer.Ordinal.Equals(pair.Key, pair.Value.Id)))
         {
-            await WriteErrorAsync(response, request, HttpStatusCode.BadRequest, "Invalid file metadata").ConfigureAwait(false);
+            await WriteErrorAsync(response, request, HttpStatusCode.BadRequest, CoreText.InvalidFileMetadata).ConfigureAwait(false);
             return;
         }
         if (payload.Files.Count > options.MaxIncomingItemsPerTransfer || ExceedsTransferLimit(payload.Files.Values, options.MaxIncomingTransferBytes))
         {
-            await WriteErrorAsync(response, request, HttpStatusCode.RequestEntityTooLarge, "Incoming transfer exceeds configured limits").ConfigureAwait(false);
+            await WriteErrorAsync(response, request, HttpStatusCode.RequestEntityTooLarge, CoreText.TransferLimitExceeded).ConfigureAwait(false);
             return;
         }
         var fingerprint = request.ClientCertificate is null ? null : DeviceIdentityStore.Fingerprint(request.ClientCertificate);
         if (options.EnableHttps && (request.ClientCertificate is null || !DeviceIdentityStore.ValidatePeerCertificate(request.ClientCertificate, payload.Info.Fingerprint)))
         {
-            await WriteErrorAsync(response, request, HttpStatusCode.Forbidden, "Client fingerprint mismatch").ConfigureAwait(false);
+            await WriteErrorAsync(response, request, HttpStatusCode.Forbidden, CoreText.ClientFingerprintMismatch).ConfigureAwait(false);
             return;
         }
         var pinStatus = CheckPin(request);
@@ -235,7 +235,7 @@ internal sealed class V2Server(
     {
         if (!request.Query.TryGetValue("sessionId", out var sessionId) || !request.Query.TryGetValue("fileId", out var fileId) || !request.Query.TryGetValue("token", out var token))
         {
-            await WriteErrorAsync(response, request, HttpStatusCode.BadRequest, "Missing upload query parameters").ConfigureAwait(false);
+            await WriteErrorAsync(response, request, HttpStatusCode.BadRequest, CoreText.UploadCredentialsMissing).ConfigureAwait(false);
             return;
         }
         var status = await onUpload(sessionId, fileId, token, request.RemoteAddress, request.Body, request.ContentLength, request.CancellationToken).ConfigureAwait(false);
@@ -246,7 +246,7 @@ internal sealed class V2Server(
     {
         if (!request.Query.TryGetValue("sessionId", out var sessionId))
         {
-            await WriteErrorAsync(response, request, HttpStatusCode.BadRequest, "Missing sessionId").ConfigureAwait(false);
+            await WriteErrorAsync(response, request, HttpStatusCode.BadRequest, CoreText.SessionIdMissing).ConfigureAwait(false);
             return;
         }
         var found = await onCancel(sessionId, request.RemoteAddress, request.CancellationToken).ConfigureAwait(false);
@@ -288,12 +288,12 @@ internal sealed class V2Server(
         if (payload.Files.Length == 0 || payload.Files.GroupBy(static file => file.Id, StringComparer.Ordinal).Any(static group => group.Count() != 1) ||
             payload.Files.Any(static file => file.Size < 0 || string.IsNullOrWhiteSpace(file.Id) || string.IsNullOrWhiteSpace(file.FileName) || string.IsNullOrWhiteSpace(file.FileType)))
         {
-            await WriteErrorAsync(response, request, HttpStatusCode.BadRequest, "Invalid file metadata").ConfigureAwait(false);
+            await WriteErrorAsync(response, request, HttpStatusCode.BadRequest, CoreText.InvalidFileMetadata).ConfigureAwait(false);
             return;
         }
         if (payload.Files.Length > options.MaxIncomingItemsPerTransfer || ExceedsTransferLimit(payload.Files, options.MaxIncomingTransferBytes))
         {
-            await WriteErrorAsync(response, request, HttpStatusCode.RequestEntityTooLarge, "Incoming transfer exceeds configured limits").ConfigureAwait(false);
+            await WriteErrorAsync(response, request, HttpStatusCode.RequestEntityTooLarge, CoreText.TransferLimitExceeded).ConfigureAwait(false);
             return;
         }
 
@@ -310,7 +310,7 @@ internal sealed class V2Server(
             {
                 Info = new DeviceInfoDto
                 {
-                    Alias = "Web browser",
+                    Alias = CoreText.WebBrowser,
                     Version = V2Constants.Version,
                     DeviceModel = WebShareUserAgent.Describe(userAgent),
                     DeviceType = "web",
@@ -396,7 +396,7 @@ internal sealed class V2Server(
     {
         if (request.ContentLength is > 0 && request.ContentLength > limit)
         {
-            await WriteErrorAsync(response, request, HttpStatusCode.RequestEntityTooLarge, "JSON request exceeds the configured limit").ConfigureAwait(false);
+            await WriteErrorAsync(response, request, HttpStatusCode.RequestEntityTooLarge, CoreText.RequestTooLarge).ConfigureAwait(false);
             return default;
         }
         try
@@ -405,7 +405,7 @@ internal sealed class V2Server(
         }
         catch (JsonException)
         {
-            await WriteErrorAsync(response, request, HttpStatusCode.BadRequest, "Invalid JSON request").ConfigureAwait(false);
+            await WriteErrorAsync(response, request, HttpStatusCode.BadRequest, CoreText.InvalidJson).ConfigureAwait(false);
             return default;
         }
     }
@@ -506,7 +506,7 @@ internal sealed class V2Server(
                         return null;
                     buffer.Write(rented, 0, read);
                     if (buffer.Length > MaxHeaderBytes)
-                        throw new InvalidDataException("HTTP header is too large.");
+                        throw new InvalidDataException(CoreText.HttpHeaderTooLarge);
                     headerEnd = FindHeaderEnd(buffer.GetBuffer().AsSpan(0, checked((int)buffer.Length)));
                 }
 
@@ -515,7 +515,7 @@ internal sealed class V2Server(
                 var lines = headerText.Split("\r\n", StringSplitOptions.None);
                 var requestLine = lines[0].Split(' ', StringSplitOptions.RemoveEmptyEntries);
                 if (requestLine.Length != 3 || !requestLine[2].StartsWith("HTTP/1.", StringComparison.Ordinal))
-                    throw new InvalidDataException("Invalid HTTP request line.");
+                    throw new InvalidDataException(CoreText.HttpRequestLineInvalid);
                 var method = requestLine[0].ToUpperInvariant();
                 var target = requestLine[1];
                 var headers = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -525,14 +525,14 @@ internal sealed class V2Server(
                         continue;
                     var separator = line.IndexOf(':');
                     if (separator <= 0)
-                        throw new InvalidDataException("Invalid HTTP header.");
+                        throw new InvalidDataException(CoreText.HttpHeaderInvalid);
                     headers[line[..separator].Trim()] = line[(separator + 1)..].Trim();
                 }
                 long? contentLength = null;
                 if (headers.TryGetValue("Content-Length", out var lengthText))
                 {
                     if (!long.TryParse(lengthText, NumberStyles.None, CultureInfo.InvariantCulture, out var length) || length < 0)
-                        throw new InvalidDataException("Invalid Content-Length.");
+                        throw new InvalidDataException(CoreText.HttpContentLengthInvalid);
                     contentLength = length;
                 }
                 var chunked = headers.TryGetValue("Transfer-Encoding", out var encoding)
@@ -615,9 +615,11 @@ internal sealed class V2Server(
             HttpStatusCode.Unauthorized => "Unauthorized",
             HttpStatusCode.Forbidden => "Forbidden",
             HttpStatusCode.NotFound => "Not Found",
+            HttpStatusCode.Conflict => "Conflict",
             HttpStatusCode.RequestTimeout => "Request Timeout",
             HttpStatusCode.RequestEntityTooLarge => "Payload Too Large",
             HttpStatusCode.TooManyRequests => "Too Many Requests",
+            HttpStatusCode.UnprocessableEntity => "Unprocessable Entity",
             _ => status.ToString(),
         };
     }
@@ -713,7 +715,7 @@ internal sealed class V2Server(
                 var separator = line.IndexOf(';');
                 var sizeText = separator < 0 ? line : line[..separator];
                 if (!long.TryParse(sizeText.Trim(), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out _remaining) || _remaining < 0)
-                    throw new InvalidDataException("Invalid HTTP chunk size.");
+                    throw new InvalidDataException(CoreText.HttpChunkSizeInvalid);
                 if (_remaining == 0)
                 {
                     while ((await ReadLineAsync(cancellationToken).ConfigureAwait(false)).Length != 0) { }
@@ -724,7 +726,7 @@ internal sealed class V2Server(
 
             var read = await inner.ReadAsync(buffer[..(int)Math.Min(buffer.Length, _remaining)], cancellationToken).ConfigureAwait(false);
             if (read == 0)
-                throw new EndOfStreamException("The HTTP chunk ended before its declared size.");
+                throw new EndOfStreamException(CoreText.HttpChunkShort);
             _remaining -= read;
             if (_remaining == 0)
                 _consumeTerminator = true;
@@ -739,7 +741,7 @@ internal sealed class V2Server(
             while (bytes.Count <= 8192)
             {
                 if (await inner.ReadAsync(one, cancellationToken).ConfigureAwait(false) == 0)
-                    throw new EndOfStreamException("Unexpected end of chunked HTTP body.");
+                    throw new EndOfStreamException(CoreText.HttpBodyTruncated);
                 var current = one[0];
                 if (previous == '\r' && current == '\n')
                 {
@@ -749,7 +751,7 @@ internal sealed class V2Server(
                 bytes.Add(current);
                 previous = current;
             }
-            throw new InvalidDataException("HTTP chunk line is too long.");
+            throw new InvalidDataException(CoreText.HttpChunkLineTooLong);
         }
 
         private async Task ExpectCrlfAsync(CancellationToken cancellationToken)
@@ -757,7 +759,7 @@ internal sealed class V2Server(
             var terminator = new byte[2];
             await inner.ReadExactlyAsync(terminator, cancellationToken).ConfigureAwait(false);
             if (terminator[0] != '\r' || terminator[1] != '\n')
-                throw new InvalidDataException("HTTP chunk is missing its terminator.");
+                throw new InvalidDataException(CoreText.HttpChunkTerminatorMissing);
         }
 
         public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();

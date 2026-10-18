@@ -6,13 +6,13 @@ internal static class WebShareHtml
 {
     public static string Render(string title, bool pinRequired, WebShareMode mode, string? uiCulture)
     {
-        var ui = WebShareUi.Resolve(uiCulture);
+        var ui = CoreText.WebShare(uiCulture);
         return mode == WebShareMode.Receive
             ? RenderReceive(title, pinRequired, ui)
             : RenderDownload(title, pinRequired, ui);
     }
 
-    private static string RenderDownload(string title, bool pinRequired, WebShareUiStrings ui) => $$"""
+    private static string RenderDownload(string title, bool pinRequired, WebShareStrings ui) => $$"""
         <!DOCTYPE html>
         <html lang="{{WebUtility.HtmlEncode(ui.HtmlLang)}}">
         <head>
@@ -34,7 +34,7 @@ internal static class WebShareHtml
         <div id="files"></div>
         <script>
         const pinRequired = {{(pinRequired ? "true" : "false")}};
-        const s = {{WebShareUi.ToJson(ui)}};
+        const s = {{ui.ToJson()}};
         const numbers = new Intl.NumberFormat(s.htmlLang, { maximumFractionDigits: 1 });
         function formatSize(bytes) {
           if (bytes < 1024) return numbers.format(bytes) + ' B';
@@ -51,7 +51,8 @@ internal static class WebShareHtml
           status.textContent = s.waiting;
           const response = await fetch('/api/localsend/v2/prepare-download?pin=' + encodeURIComponent(pin), { method: 'POST' });
           if (response.status === 401) { status.textContent = s.incorrectPin; return; }
-          if (response.status === 429) { status.textContent = s.tooManyPinAttempts; return; }
+          if (response.status === 409) { status.textContent = s.busy; return; }
+          if (response.status === 429) { status.textContent = s.rateLimited; return; }
           if (response.status === 403) { status.textContent = s.declined; return; }
           if (!response.ok) { status.textContent = s.requestFailed + response.status; return; }
           const data = await response.json();
@@ -77,9 +78,9 @@ internal static class WebShareHtml
         </html>
         """;
 
-    private static string RenderReceive(string title, bool pinRequired, WebShareUiStrings ui)
+    private static string RenderReceive(string title, bool pinRequired, WebShareStrings ui)
     {
-        var strings = WebShareUi.ToJson(ui);
+        var strings = ui.ToJson();
         return $$"""
         <!DOCTYPE html>
         <html lang="{{WebUtility.HtmlEncode(ui.HtmlLang)}}">
@@ -155,7 +156,7 @@ internal static class WebShareHtml
               body: JSON.stringify({ files: metadata })
             });
             if (preparedResponse.status === 401) throw new Error(s.incorrectPin);
-            if (preparedResponse.status === 429) throw new Error(s.tooManyPinAttempts);
+            if (preparedResponse.status === 429) throw new Error(s.rateLimited);
             if (preparedResponse.status === 403) throw new Error(s.declined);
             if (preparedResponse.status === 408) throw new Error(s.timedOut);
             if (preparedResponse.status === 413) throw new Error(s.tooLarge);

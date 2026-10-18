@@ -43,7 +43,7 @@ public sealed class IdentityTests
         {
             await File.WriteAllTextAsync(Path.Combine(directory, "identity-certificate.pem"), "incomplete");
             var exception = await Assert.ThrowsExactlyAsync<IdentityLoadException>(() => DeviceIdentityStore.LoadOrCreateAsync(directory, default));
-            Assert.Contains("incomplete", exception.Message, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains(directory, exception.Message, StringComparison.Ordinal);
         }
         finally { Directory.Delete(directory, recursive: true); }
     }

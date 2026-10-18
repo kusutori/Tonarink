@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <data name="AtLeastOneItem" xml:space="preserve"><value>至少需要一个项目</value></data>
+  <data name="PeerCertificateMissing" xml:space="preserve"><value>对方未提供 TLS 证书</value></data>
+  <data name="PeerIdentityInvalid" xml:space="preserve"><value>对方未通过 TLS 身份验证</value></data>
+  <data name="PeerFingerprintMissing" xml:space="preserve"><value>对方未提供身份指纹</value></data>
+  <data name="PeerFingerprintMismatch" xml:space="preserve"><value>声明的指纹与 TLS 证书不匹配</value></data>
+  <data name="PeerRegisterFingerprintMismatch" xml:space="preserve"><value>注册指纹与受信任的身份不匹配</value></data>
+  <data name="InfoResponseEmpty" xml:space="preserve"><value>对方返回了空的设备信息</value></data>
+  <data name="RegisterResponseEmpty" xml:space="preserve"><value>对方返回了空的注册响应</value></data>
+  <data name="PrepareResponseEmpty" xml:space="preserve"><value>对方返回了空的上传准备响应</value></data>
+  <data name="SourceLengthChanged" xml:space="preserve"><value>源文件大小在上传前或上传过程中发生变化</value></data>
+  <data name="SourceLengthChangedNamed" xml:space="preserve"><value>源文件大小在上传前发生变化：{0}</value></data>
+  <data name="StreamFactoryNull" xml:space="preserve"><value>流工厂返回了空值</value></data>
+  <data name="StreamUnreadable" xml:space="preserve"><value>流工厂返回了不可读取的流</value></data>
+  <data name="SourcePathRequired" xml:space="preserve"><value>需要提供源路径</value></data>
+  <data name="FileNameRequired" xml:space="preserve"><value>需要提供文件名</value></data>
+  <data name="LengthNonnegative" xml:space="preserve"><value>长度不能为负数</value></data>
+  <data name="InvalidSourceSize" xml:space="preserve"><value>源大小无效或超出支持范围</value></data>
+  <data name="PeerEndpointMissing" xml:space="preserve"><value>设备没有可用的连接地址</value></data>
+  <data name="NodeNotRunning" xml:space="preserve"><value>请先启动节点，再执行网络操作</value></data>
+  <data name="NodeCannotRestart" xml:space="preserve"><value>已停止的节点无法重新启动，请创建新实例</value></data>
+  <data name="IdentityNotLoaded" xml:space="preserve"><value>尚未加载本地身份</value></data>
+  <data name="RequestMissing" xml:space="preserve"><value>接收请求已不存在</value></data>
+  <data name="SelectionUnknown" xml:space="preserve"><value>选择中包含不属于此请求的项目</value></data>
+  <data name="TargetNameUnknown" xml:space="preserve"><value>目标文件名中包含不属于此请求的项目</value></data>
+  <data name="DecisionAlreadyMade" xml:space="preserve"><value>此请求已经处理</value></data>
+  <data name="TransferBusy" xml:space="preserve"><value>接收方正忙于其他传输</value></data>
+  <data name="TransferDeclined" xml:space="preserve"><value>接收方已拒绝传输</value></data>
+  <data name="DecisionTimedOut" xml:space="preserve"><value>等待接收决定超时</value></data>
+  <data name="TransferExpired" xml:space="preserve"><value>发送方未在规定时间内完成已接受的传输</value></data>
+  <data name="TransferCancelled" xml:space="preserve"><value>传输已取消</value></data>
+  <data name="BodyTooLong" xml:space="preserve"><value>上传内容超出声明的大小</value></data>
+  <data name="BodyTooShort" xml:space="preserve"><value>上传内容小于声明的大小</value></data>
+  <data name="LengthMismatch" xml:space="preserve"><value>内容长度不匹配：预期 {0}，实际 {1}</value></data>
+  <data name="ContentLengthMismatch" xml:space="preserve"><value>Content-Length 与声明的文件大小不一致</value></data>
+  <data name="ChecksumMismatch" xml:space="preserve"><value>上传内容未通过 SHA-256 校验</value></data>
+  <data name="InvalidFilename" xml:space="preserve"><value>传入文件名的组成部分不安全</value></data>
+  <data name="InvalidFilenameNamed" xml:space="preserve"><value>不安全的传入文件名组成部分：{0}</value></data>
+  <data name="UnsafePath" xml:space="preserve"><value>传入路径不安全</value></data>
+  <data name="UnsafePathNamed" xml:space="preserve"><value>不安全的传入路径：{0}</value></data>
+  <data name="PathEscapes" xml:space="preserve"><value>传入路径超出目标目录</value></data>
+  <data name="PathEscapesNamed" xml:space="preserve"><value>传入路径超出目标目录：{0}</value></data>
+  <data name="PathLinked" xml:space="preserve"><value>目标路径经过链接目录</value></data>
+  <data name="PathLinkedNamed" xml:space="preserve"><value>传入路径经过链接目录：{0}</value></data>
+  <data name="ParentMissing" xml:space="preserve"><value>目标路径没有父目录</value></data>
+  <data name="IdentityIncomplete" xml:space="preserve"><value>“{0}”中的身份文件不完整，请恢复或移除两个身份 PEM 文件</value></data>
+  <data name="IdentityLoadFailed" xml:space="preserve"><value>无法加载“{0}”中的身份</value></data>
+  <data name="IdentityReadFailed" xml:space="preserve"><value>无法读取本地身份</value></data>
+  <data name="IdentityAccessDenied" xml:space="preserve"><value>无法访问本地身份</value></data>
+  <data name="IdentityPrivateKeyMissing" xml:space="preserve"><value>证书没有匹配的私钥</value></data>
+  <data name="PortUnavailable" xml:space="preserve"><value>TCP 端口 {0} 不可用，请更换端口或停止占用它的进程</value></data>
+  <data name="DiscoveryStartFailed" xml:space="preserve"><value>无法使用 UDP 端口 {0} 启动 LocalSend 发现</value></data>
+  <data name="DiscoveryInterfaceMissing" xml:space="preserve"><value>当前没有可用的 IPv4 网络接口</value></data>
+  <data name="DiscoveryMembershipFailed" xml:space="preserve"><value>没有 IPv4 网络接口能够加入多播组</value></data>
+  <data name="PeerPinRequired" xml:space="preserve"><value>对方设备需要 PIN</value></data>
+  <data name="PeerPinInvalid" xml:space="preserve"><value>对方设备拒绝了此 PIN</value></data>
+  <data name="RateLimited" xml:space="preserve"><value>请求过于频繁，请稍后重试</value></data>
+  <data name="WebPinRequired" xml:space="preserve"><value>网页共享 PIN 缺失或不正确</value></data>
+  <data name="WebPinRateLimited" xml:space="preserve"><value>网页共享 PIN 错误次数过多</value></data>
+  <data name="NoActiveShare" xml:space="preserve"><value>当前没有活动的网页共享</value></data>
+  <data name="WebBrowser" xml:space="preserve"><value>网页浏览器</value></data>
+  <data name="UnknownDevice" xml:space="preserve"><value>未知</value></data>
+  <data name="Browser" xml:space="preserve"><value>浏览器</value></data>
+  <data name="RemoteAddressMissing" xml:space="preserve"><value>HTTP 请求没有来源地址</value></data>
+  <data name="RequestTooLarge" xml:space="preserve"><value>请求体超出配置的限制</value></data>
+  <data name="InvalidFileMetadata" xml:space="preserve"><value>文件元数据无效</value></data>
+  <data name="InvalidSenderMetadata" xml:space="preserve"><value>发送方元数据无效</value></data>
+  <data name="TransferLimitExceeded" xml:space="preserve"><value>传入传输超出配置的限制</value></data>
+  <data name="ClientFingerprintMismatch" xml:space="preserve"><value>客户端证书指纹不匹配</value></data>
+  <data name="ClientCertificateRequired" xml:space="preserve"><value>需要客户端证书</value></data>
+  <data name="UploadCredentialsMissing" xml:space="preserve"><value>缺少上传凭据</value></data>
+  <data name="DownloadCredentialsMissing" xml:space="preserve"><value>缺少下载凭据</value></data>
+  <data name="SessionIdMissing" xml:space="preserve"><value>缺少会话 ID</value></data>
+  <data name="SessionExpired" xml:space="preserve"><value>会话不存在或已过期</value></data>
+  <data name="UploadCredentialsInvalid" xml:space="preserve"><value>上传令牌、来源地址或文件 ID 无效</value></data>
+  <data name="ExpectedJsonObject" xml:space="preserve"><value>需要 JSON 对象</value></data>
+  <data name="FieldStringRequired" xml:space="preserve"><value>“{0}”必须是字符串</value></data>
+  <data name="FieldRequired" xml:space="preserve"><value>需要提供“{0}”</value></data>
+  <data name="FieldIntegerRequired" xml:space="preserve"><value>“{0}”必须是整数</value></data>
+  <data name="FieldBooleanRequired" xml:space="preserve"><value>“{0}”必须是布尔值</value></data>
+  <data name="PeerPortInvalid" xml:space="preserve"><value>对方端口无效</value></data>
+  <data name="ProtocolUnsupported" xml:space="preserve"><value>不支持对方使用的协议</value></data>
+  <data name="TimestampInvalid" xml:space="preserve"><value>“{0}”时间戳无效</value></data>
+  <data name="FileIdMismatch" xml:space="preserve"><value>文件键与文件 ID 不一致</value></data>
+  <data name="MissingInfo" xml:space="preserve"><value>缺少设备信息</value></data>
+  <data name="MissingFiles" xml:space="preserve"><value>缺少文件元数据</value></data>
+  <data name="FilesObject" xml:space="preserve"><value>文件元数据必须是 JSON 对象</value></data>
+  <data name="FilesArray" xml:space="preserve"><value>文件元数据必须是 JSON 数组</value></data>
+  <data name="DuplicateFileId" xml:space="preserve"><value>文件 ID 重复</value></data>
+  <data name="DuplicateTokenId" xml:space="preserve"><value>上传令牌键重复</value></data>
+  <data name="FileIdBlank" xml:space="preserve"><value>文件 ID 不能为空</value></data>
+  <data name="SessionIdBlank" xml:space="preserve"><value>会话 ID 不能为空</value></data>
+  <data name="UploadTokenBlank" xml:space="preserve"><value>上传令牌不能为空</value></data>
+  <data name="FingerprintBlank" xml:space="preserve"><value>指纹不能为空</value></data>
+  <data name="EndpointAddressMissing" xml:space="preserve"><value>连接地址需要提供 IP</value></data>
+  <data name="PortRange" xml:space="preserve"><value>端口必须介于 1 和 65535 之间</value></data>
+  <data name="CannotBlank" xml:space="preserve"><value>不能为空</value></data>
+  <data name="MustPositive" xml:space="preserve"><value>必须为正数</value></data>
+  <data name="TimeoutPositive" xml:space="preserve"><value>超时必须为正值或无限</value></data>
+  <data name="ExpirationGreater" xml:space="preserve"><value>设备过期时间必须大于广播间隔</value></data>
+  <data name="MulticastIPv4" xml:space="preserve"><value>多播地址必须为 IPv4</value></data>
+  <data name="PinBlank" xml:space="preserve"><value>已配置的 PIN 不能为空</value></data>
+  <data name="ProbeNotVerified" xml:space="preserve"><value>探测未验证 TLS 身份</value></data>
+  <data name="PeerNotTrusted" xml:space="preserve"><value>宿主未信任此设备</value></data>
+  <data name="WebRequestTimedOut" xml:space="preserve"><value>网页共享请求超时</value></data>
+  <data name="IdentityLoadGeneric" xml:space="preserve"><value>无法加载本地身份</value></data>
+  <data name="InvalidJson" xml:space="preserve"><value>JSON 请求无效</value></data>
+  <data name="WebPinPrompt" xml:space="preserve"><value>请输入 PIN</value></data>
+  <data name="WebPick" xml:space="preserve"><value>选择并上传文件</value></data>
+  <data name="WebWaiting" xml:space="preserve"><value>等待 Tonarink 接收…</value></data>
+  <data name="WebIncorrectPin" xml:space="preserve"><value>PIN 不正确</value></data>
+  <data name="WebDeclined" xml:space="preserve"><value>接收方已拒绝</value></data>
+  <data name="WebTimedOut" xml:space="preserve"><value>等待接收超时</value></data>
+  <data name="WebTooLarge" xml:space="preserve"><value>文件过大或数量过多</value></data>
+  <data name="WebRequestFailed" xml:space="preserve"><value>请求失败：</value></data>
+  <data name="WebUploading" xml:space="preserve"><value>正在上传</value></data>
+  <data name="WebSentFiles" xml:space="preserve"><value>已发送 {count} 个文件</value></data>
+  <data name="WebSentFile" xml:space="preserve"><value>已发送 {count} 个文件</value></data>
+  <data name="WebNoneAccepted" xml:space="preserve"><value>没有文件被接受</value></data>
+  <data name="WebUploadFailed" xml:space="preserve"><value>上传失败</value></data>
+  <data name="HttpHeaderTooLarge" xml:space="preserve"><value>HTTP 请求头过大</value></data>
+  <data name="HttpRequestLineInvalid" xml:space="preserve"><value>HTTP 请求行无效</value></data>
+  <data name="HttpHeaderInvalid" xml:space="preserve"><value>HTTP 请求头无效</value></data>
+  <data name="HttpContentLengthInvalid" xml:space="preserve"><value>HTTP Content-Length 无效</value></data>
+  <data name="HttpChunkSizeInvalid" xml:space="preserve"><value>HTTP 分块大小无效</value></data>
+  <data name="HttpChunkShort" xml:space="preserve"><value>HTTP 分块在达到声明大小前结束</value></data>
+  <data name="HttpBodyTruncated" xml:space="preserve"><value>分块 HTTP 正文意外结束</value></data>
+  <data name="HttpChunkLineTooLong" xml:space="preserve"><value>HTTP 分块行过长</value></data>
+  <data name="HttpChunkTerminatorMissing" xml:space="preserve"><value>缺少 HTTP 分块结束符</value></data>
+</root>

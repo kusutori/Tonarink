@@ -1,5 +1,7 @@
 namespace LocalSendDotNet.FSharp
 
+open LocalSendDotNet.Resources
+
 open System
 open System.Net
 open System.Net.Sockets
@@ -56,32 +58,32 @@ module NodeOptions =
         // These checks are independent: report all invalid fields in one pass.
         let errors =
             [ for field, value in [ "Alias", options.Alias; "DataDirectory", options.DataDirectory; "DownloadDirectory", options.DownloadDirectory ] do
-                  if String.IsNullOrWhiteSpace value then yield { Field = field; Message = "Cannot be blank." }
+                  if String.IsNullOrWhiteSpace value then yield { Field = field; Message = (CoreText.CannotBlank) }
               if options.Port < 1 || options.Port > 65535 then
-                  yield { Field = "Port"; Message = "Must be between 1 and 65535." }
+                  yield { Field = "Port"; Message = (CoreText.PortRange) }
               for field, value in
                   [ "MaxConcurrentTransfers", int64 options.MaxConcurrentTransfers
                     "MaxConcurrentFileUploads", int64 options.MaxConcurrentFileUploads
                     "MaxIncomingItemsPerTransfer", int64 options.MaxIncomingItemsPerTransfer
                     "MaxIncomingTransferBytes", options.MaxIncomingTransferBytes
                     "MaxPrepareRequestBytes", options.MaxPrepareRequestBytes ] do
-                  if value <= 0L then yield { Field = field; Message = "Must be positive." }
+                  if value <= 0L then yield { Field = field; Message = (CoreText.MustPositive) }
               for field, value in
                   [ "DiscoveryTimeout", options.DiscoveryTimeout; "RequestTimeout", options.RequestTimeout
                     "UploadTimeout", options.UploadTimeout; "CancelRequestTimeout", options.CancelRequestTimeout
                     "IncomingDecisionTimeout", options.IncomingDecisionTimeout; "IncomingTransferTimeout", options.IncomingTransferTimeout ] do
                   if value <= TimeSpan.Zero && value <> Timeout.InfiniteTimeSpan then
-                      yield { Field = field; Message = "Must be positive or infinite." }
+                      yield { Field = field; Message = (CoreText.TimeoutPositive) }
               for field, value in
                   [ "PinLockoutDuration", options.PinLockoutDuration; "AnnouncementInterval", options.AnnouncementInterval
                     "DeviceExpiration", options.DeviceExpiration ] do
-                  if value <= TimeSpan.Zero then yield { Field = field; Message = "Must be positive." }
+                  if value <= TimeSpan.Zero then yield { Field = field; Message = (CoreText.MustPositive) }
               if options.DeviceExpiration <= options.AnnouncementInterval then
-                  yield { Field = "DeviceExpiration"; Message = "Must exceed the announcement interval." }
+                  yield { Field = "DeviceExpiration"; Message = (CoreText.ExpirationGreater) }
               if options.MulticastAddress.AddressFamily <> AddressFamily.InterNetwork then
-                  yield { Field = "MulticastAddress"; Message = "Must be IPv4." }
+                  yield { Field = "MulticastAddress"; Message = (CoreText.MulticastIPv4) }
               match options.ReceivePin with
-              | Some pin when String.IsNullOrWhiteSpace pin -> yield { Field = "ReceivePin"; Message = "Cannot be blank when configured." }
+              | Some pin when String.IsNullOrWhiteSpace pin -> yield { Field = "ReceivePin"; Message = (CoreText.PinBlank) }
               | Some _ | None -> () ]
         if List.isEmpty errors then Ok(ValidatedOptions options) else Error errors
 

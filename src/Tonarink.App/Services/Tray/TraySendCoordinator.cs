@@ -116,10 +116,10 @@ static class TraySendCoordinator
                     cancelled.Items.Sum(static item => item.BytesTransferred),
                     t.Message(new("App", "TransferCancelled")),
                     false),
-                OutgoingTransferResult.PinRateLimited => (
+                OutgoingTransferResult.RateLimited => (
                     TransferState.Failed,
                     0,
-                    t.Message(new("App", "PinRateLimited")),
+                    t.Message(new("App", "RateLimited")),
                     true),
                 OutgoingTransferResult.Failed failed => (
                     TransferState.Failed,

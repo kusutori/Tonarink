@@ -179,7 +179,7 @@
   <data name="Pin" xml:space="preserve"><value>PIN</value></data>
   <data name="PinConfirm" xml:space="preserve"><value>Confirmer</value></data>
   <data name="PinPlaceholder" xml:space="preserve"><value>Saisir le PIN</value></data>
-  <data name="PinRateLimited" xml:space="preserve"><value>Trop de tentatives de PIN ; réessayez plus tard</value></data>
+  <data name="RateLimited" xml:space="preserve"><value>Trop de demandes ; réessayez plus tard</value></data>
   <data name="PinRequiredMessage" xml:space="preserve"><value>{device} exige un PIN de réception</value></data>
   <data name="PinRequiredTitle" xml:space="preserve"><value>PIN requis</value></data>
   <data name="Port" xml:space="preserve"><value>Port</value></data>

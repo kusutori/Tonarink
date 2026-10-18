@@ -573,8 +573,8 @@ sealed class TrayFlyoutPanel : Component<TrayFlyoutPanelProps>
                         OutgoingTransferResult.Completed => new TrayDropStatus.Information(
                             t.Message(new("App", "SentToDevice"), ("device", device.Alias))),
                         OutgoingTransferResult.PinRequired => null,
-                        OutgoingTransferResult.PinRateLimited => new TrayDropStatus.Error(
-                            t.Message(new("App", "PinRateLimited"))),
+                        OutgoingTransferResult.RateLimited => new TrayDropStatus.Error(
+                            t.Message(new("App", "RateLimited"))),
                         OutgoingTransferResult.Cancelled => new TrayDropStatus.Information(
                             t.Message(new("App", "TransferCancelled"))),
                         OutgoingTransferResult.Failed failed => new TrayDropStatus.Error(failed.Failure.Message),

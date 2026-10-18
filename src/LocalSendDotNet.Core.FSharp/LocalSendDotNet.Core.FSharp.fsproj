@@ -6,6 +6,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="../LocalSendDotNet.Resources/LocalSendDotNet.Resources.csproj" />
     <PackageReference Include="FSharp.Core" />
     <PackageReference Include="FsToolkit.ErrorHandling" />
     <FrameworkReference Include="Microsoft.AspNetCore.App" />

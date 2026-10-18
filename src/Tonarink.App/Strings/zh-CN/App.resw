@@ -183,7 +183,7 @@
   <data name="Pin" xml:space="preserve"><value>PIN</value></data>
   <data name="PinConfirm" xml:space="preserve"><value>确认</value></data>
   <data name="PinPlaceholder" xml:space="preserve"><value>输入 PIN</value></data>
-  <data name="PinRateLimited" xml:space="preserve"><value>PIN 尝试次数过多，请稍后重试</value></data>
+  <data name="RateLimited" xml:space="preserve"><value>请求过于频繁，请稍后重试</value></data>
   <data name="PinRequiredMessage" xml:space="preserve"><value>{device} 要求输入接收 PIN。</value></data>
   <data name="PinRequiredTitle" xml:space="preserve"><value>需要 PIN</value></data>
   <data name="Port" xml:space="preserve"><value>端口</value></data>

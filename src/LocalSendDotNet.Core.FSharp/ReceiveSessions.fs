@@ -1,5 +1,7 @@
 namespace LocalSendDotNet.FSharp
 
+open LocalSendDotNet.Resources
+
 open System
 open System.Collections.Concurrent
 open System.Collections.Generic
@@ -32,7 +34,7 @@ type internal PrepareResult =
     | InvalidDestination of string
 
 [<RequireQualifiedAccess>]
-type internal UploadError = NotFound | Forbidden | Busy | Failed of string
+type internal UploadError = NotFound | Forbidden | Busy | Failed of FailureCode * string
 
 /// Session metadata is synchronized separately from body I/O. File uploads may complete in any order.
 type internal IncomingSession(request: IncomingRequest, address: IPAddress, canCancelSender: bool,
@@ -189,7 +191,7 @@ type internal ReceiveSessions(options: NodeOptions, offers: BroadcastHub<Incomin
                 let! _ = session.Completion.WaitAsync(options.IncomingTransferTimeout, lifetime)
                 ()
             with
-            | :? TimeoutException -> session.Fail { Code = FailureCode.TransferTimeout; Message = "Incoming transfer expired."; ItemId = None }
+            | :? TimeoutException -> session.Fail { Code = FailureCode.TransferTimeout; Message = (CoreText.TransferExpired); ItemId = None }
             | :? OperationCanceledException -> session.Cancel()
         finally
             release session
@@ -243,16 +245,16 @@ type internal ReceiveSessions(options: NodeOptions, offers: BroadcastHub<Incomin
 
     member _.Accept(requestId, receiveOptions, ct: CancellationToken) = task {
         match requests.TryGetValue requestId with
-        | false, _ -> return invalidArg (nameof requestId) "No pending request with this ID."
+        | false, _ -> return invalidArg (nameof requestId) (CoreText.RequestMissing)
         | true, session ->
             ct.ThrowIfCancellationRequested()
             let known = session.Request.Items |> List.map _.Id |> Set.ofList
             match receiveOptions.Selection with
-            | ItemSelection.Only selected when not (Set.isSubset selected known) -> invalidArg (nameof receiveOptions) "Selection contains an unknown file ID."
+            | ItemSelection.Only selected when not (Set.isSubset selected known) -> invalidArg (nameof receiveOptions) (CoreText.SelectionUnknown)
             | ItemSelection.All | ItemSelection.Only _ -> ()
             if receiveOptions.TargetFileNames |> Map.exists (fun id _ -> not (Set.contains id known)) then
-                invalidArg (nameof receiveOptions) "Target filenames contain an unknown file ID."
-            if not (session.Decide(ReceiveDecision.Accept receiveOptions)) then invalidOp "This request already has a decision."
+                invalidArg (nameof receiveOptions) (CoreText.TargetNameUnknown)
+            if not (session.Decide(ReceiveDecision.Accept receiveOptions)) then invalidOp (CoreText.DecisionAlreadyMade)
             return! session.Completion.WaitAsync ct
     }
 
@@ -277,23 +279,23 @@ type internal ReceiveSessions(options: NodeOptions, offers: BroadcastHub<Incomin
                     use linked = CancellationTokenSource.CreateLinkedTokenSource(ct, lifetime, session.CancellationToken)
                     try
                         if contentLength |> Option.exists ((<>) target.Item.Size) then
-                            raise (StorageException(FailureCode.LengthMismatch, "Content-Length differs from the offer."))
+                            raise (StorageException(FailureCode.LengthMismatch, CoreText.ContentLengthMismatch))
                         let! item = Storage.receive body target.Path target.Item target.VerifySha256 (fun bytes -> session.Report(fileId, bytes)) linked.Token
                         session.CompleteItem item
                         return Ok ()
                     with
-                    | :? OperationCanceledException -> session.Cancel(); return Error(UploadError.Failed "Transfer cancelled.")
+                    | :? OperationCanceledException -> session.Cancel(); return Error(UploadError.Failed(FailureCode.ReceiveFailed, CoreText.TransferCancelled))
                     | StorageException(code, message) ->
                         if session.CancellationRequested then session.Cancel()
                         else session.Fail { Code = code; Message = message; ItemId = Some fileId }
-                        return Error(UploadError.Failed message)
+                        return Error(UploadError.Failed(code, message))
                     | :? IOException as error ->
                         if session.CancellationRequested then session.Cancel()
                         else session.Fail { Code = FailureCode.ReceiveFailed; Message = error.Message; ItemId = Some fileId }
-                        return Error(UploadError.Failed error.Message)
+                        return Error(UploadError.Failed(FailureCode.ReceiveFailed, error.Message))
                     | :? UnauthorizedAccessException as error ->
                         session.Fail { Code = FailureCode.ReceiveFailed; Message = error.Message; ItemId = Some fileId }
-                        return Error(UploadError.Failed error.Message)
+                        return Error(UploadError.Failed(FailureCode.ReceiveFailed, error.Message))
         finally uploads.Release() |> ignore
     }
 

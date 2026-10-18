@@ -1,5 +1,7 @@
 namespace LocalSendDotNet.FSharp
 
+open LocalSendDotNet.Resources
+
 open System
 open System.IO
 open System.Security.Cryptography
@@ -59,18 +61,18 @@ module internal IdentityStore =
         use! identityLock = acquireLock (Path.Combine(directory, ".identity.lock")) ct
         let exists = File.Exists certificatePath
         if exists <> File.Exists keyPath then
-            raise (IdentityLoadException($"Incomplete identity in '{directory}'; restore or remove both PEM files.", None))
+            raise (IdentityLoadException((CoreText.IdentityIncomplete(directory)), None))
         if exists then
             try
                 let! certificatePem = File.ReadAllTextAsync(certificatePath, ct)
                 let! keyPem = File.ReadAllTextAsync(keyPath, ct)
                 use loaded = X509Certificate2.CreateFromPem(certificatePem, keyPem)
-                if not loaded.HasPrivateKey then raise (CryptographicException "Identity has no matching private key.")
+                if not loaded.HasPrivateKey then raise (CryptographicException (CoreText.IdentityPrivateKeyMissing))
                 return new DeviceIdentity(X509CertificateLoader.LoadPkcs12(loaded.Export X509ContentType.Pkcs12, null))
             with
-            | :? CryptographicException as error -> return raise (IdentityLoadException("Could not load identity.", Some error))
-            | :? IOException as error -> return raise (IdentityLoadException("Could not read identity.", Some error))
-            | :? UnauthorizedAccessException as error -> return raise (IdentityLoadException("Cannot access identity.", Some error))
+            | :? CryptographicException as error -> return raise (IdentityLoadException((CoreText.IdentityLoadGeneric), Some error))
+            | :? IOException as error -> return raise (IdentityLoadException((CoreText.IdentityReadFailed), Some error))
+            | :? UnauthorizedAccessException as error -> return raise (IdentityLoadException((CoreText.IdentityAccessDenied), Some error))
         else
             use rsa = RSA.Create 2048
             let request = CertificateRequest("CN=LocalSend User", rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1)

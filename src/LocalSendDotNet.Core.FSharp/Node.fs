@@ -1,5 +1,7 @@
 namespace LocalSendDotNet.FSharp
 
+open LocalSendDotNet.Resources
+
 open System
 open System.Collections.Concurrent
 open System.IO
@@ -64,7 +66,7 @@ type LocalSendNode(configuration: ValidatedOptions) =
         if disposed then raise (ObjectDisposedException "LocalSendNode")
         match state, client with
         | NodeState.Running, Some transport -> transport
-        | _ -> invalidOp "Start the node before using network operations.")
+        | _ -> invalidOp (CoreText.NodeNotRunning))
 
     let rec isIdentityError (error: exn) =
         match error with
@@ -197,7 +199,7 @@ type LocalSendNode(configuration: ValidatedOptions) =
             if disposed then raise (ObjectDisposedException "LocalSendNode")
             match state with
             | NodeState.Running -> ()
-            | NodeState.Stopping | NodeState.Stopped | NodeState.Disposed -> invalidOp "A stopped node cannot be restarted."
+            | NodeState.Stopping | NodeState.Stopped | NodeState.Disposed -> invalidOp (CoreText.NodeCannotRestart)
             | NodeState.Created | NodeState.Starting | NodeState.Faulted _ ->
                 transition NodeState.Starting
                 try
@@ -206,7 +208,7 @@ type LocalSendNode(configuration: ValidatedOptions) =
                     identity <- Some certificate
                     let transport = HttpTransport(certificate, options)
                     client <- Some transport
-                    let local = localIdentity () |> Option.defaultWith (fun () -> invalidOp "Identity did not load.")
+                    let local = localIdentity () |> Option.defaultWith (fun () -> invalidOp (CoreText.IdentityNotLoaded))
                     let registration device = task { let! _ = devices.Upsert(device, false) in return () }
                     let currentServer = Server(options, certificate, local, sessions, web, (fun device -> registration device :> Task), onCancel)
                     server <- Some currentServer
@@ -286,7 +288,7 @@ type LocalSendNode(configuration: ValidatedOptions) =
         transport.Probe(endpoint, token, options.RequestTimeout))
 
     member _.AddKnownDeviceAsync(endpoint, fingerprint, ct: CancellationToken) = runNetwork ct (fun transport token -> task {
-        let local = localIdentity () |> Option.defaultWith (fun () -> invalidOp "No local identity.")
+        let local = localIdentity () |> Option.defaultWith (fun () -> invalidOp (CoreText.IdentityNotLoaded))
         let! device = transport.Register(endpoint, fingerprint, local, token)
         return! devices.Upsert(device, true)
     })
@@ -329,10 +331,10 @@ type LocalSendNode(configuration: ValidatedOptions) =
         let id = Guid.NewGuid()
         let transport, operation, local = lock gate (fun () ->
             let transport = ensureRunning ()
-            let endpoint = device.PreferredEndpoint |> Option.defaultWith (fun () -> invalidArg (nameof device) "Peer has no endpoint.")
+            let endpoint = device.PreferredEndpoint |> Option.defaultWith (fun () -> invalidArg (nameof device) (CoreText.PeerEndpointMissing))
             let operation = OutgoingOperation(endpoint, device.Fingerprint, ct, lifetime.Token)
             outgoing[id] <- operation
-            transport, operation, localIdentity () |> Option.defaultWith (fun () -> invalidOp "No local identity."))
+            transport, operation, localIdentity () |> Option.defaultWith (fun () -> invalidOp (CoreText.IdentityNotLoaded)))
         let mutable completed = []
         let mutable total, transferred = 0L, 0L
         let mutable failureCode = FailureCode.PrepareFailed
@@ -351,7 +353,7 @@ type LocalSendNode(configuration: ValidatedOptions) =
                     let! negotiation = transport.Prepare(operation.Endpoint, device.Fingerprint, offer.Wire, sendOptions.Pin, operation.Token)
                     match negotiation with
                     | Negotiation.PinRequired invalid -> return SendOutcome.PinRequired(id, invalid)
-                    | Negotiation.PinRateLimited -> return SendOutcome.PinRateLimited id
+                    | Negotiation.RateLimited -> return SendOutcome.RateLimited id
                     | Negotiation.Busy -> return SendOutcome.PeerBusy id
                     | Negotiation.Declined -> return SendOutcome.Declined id
                     | Negotiation.NoUpload ->
@@ -363,7 +365,7 @@ type LocalSendNode(configuration: ValidatedOptions) =
                     | Negotiation.Accepted acceptance ->
                         operation.Session <- Some acceptance.SessionId
                         if acceptance.Tokens |> Map.exists (fun file _ -> not (Map.containsKey file offer.Sources)) then
-                            raise (InvalidDataException "Peer accepted an unknown file ID.")
+                            raise (InvalidDataException CoreText.SelectionUnknown)
                         let selected = offer.Wire.Files |> List.filter (fun item -> Map.containsKey item.Id acceptance.Tokens)
                         total <- selected |> List.sumBy _.Size
                         failureCode <- FailureCode.UploadFailed

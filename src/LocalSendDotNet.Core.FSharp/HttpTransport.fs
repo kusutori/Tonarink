@@ -1,5 +1,7 @@
 namespace LocalSendDotNet.FSharp
 
+open LocalSendDotNet.Resources
+
 open System
 open System.IO
 open System.Net
@@ -15,7 +17,7 @@ type internal Negotiation =
     | Accepted of UploadAcceptance
     | NoUpload
     | PinRequired of invalid: bool
-    | PinRateLimited
+    | RateLimited
     | Busy
     | Declined
 
@@ -33,7 +35,7 @@ module internal OutgoingOffer =
                 try
                     let length = SendItems.length item
                     if length < 0L || length > Int64.MaxValue - total then
-                        return Error { Code = FailureCode.SourceIo; Message = "Invalid or overflowing source size."; ItemId = None }
+                        return Error { Code = FailureCode.SourceIo; Message = (CoreText.InvalidSourceSize); ItemId = None }
                     else
                         let! digest = task {
                             if computeHash then
@@ -60,7 +62,7 @@ module internal OutgoingOffer =
             entries <- metadata :: entries
             sources <- Map.add metadata.Id item sources
         do! if List.isEmpty entries then
-                Error { Code = FailureCode.PrepareFailed; Message = "At least one item is required."; ItemId = None }
+                Error { Code = FailureCode.PrepareFailed; Message = (CoreText.AtLeastOneItem); ItemId = None }
             else Ok ()
         return { Wire = { Info = Wire.ofIdentity identity; Files = List.rev entries }; Sources = sources }
     }
@@ -73,10 +75,10 @@ type internal HttpTransport(identity: DeviceIdentity, options: NodeOptions) =
             handler.ClientCertificates.Add identity.Certificate |> ignore
             handler.ServerCertificateCustomValidationCallback <- fun _ certificate _ _ ->
                 match certificate with
-                | null -> raise (PeerIdentityException "Peer provided no TLS certificate.")
+                | null -> raise (PeerIdentityException (CoreText.PeerCertificateMissing))
                 | certificate ->
                     if not (IdentityStore.validatePeer expected certificate) then
-                        raise (PeerIdentityException "Peer TLS identity failed validation.")
+                        raise (PeerIdentityException (CoreText.PeerIdentityInvalid))
                     capture (IdentityStore.fingerprint certificate)
                     true
         let client = new HttpClient(handler, true)
@@ -105,10 +107,10 @@ type internal HttpTransport(identity: DeviceIdentity, options: NodeOptions) =
             match certificate, peer.Fingerprint with
             | Some actual, advertised ->
                 if advertised |> Option.exists (fun advertised -> not (String.Equals(advertised, Fingerprint.value actual, StringComparison.OrdinalIgnoreCase))) then
-                    raise (PeerIdentityException "Advertised fingerprint differs from TLS identity.")
+                    raise (PeerIdentityException (CoreText.PeerFingerprintMismatch))
                 actual
             | None, Some advertised -> decode Fingerprint.create advertised
-            | None, None -> raise (PeerIdentityException "Peer did not provide a fingerprint.")
+            | None, None -> raise (PeerIdentityException (CoreText.PeerFingerprintMissing))
         let peer = { peer with Port = endpoint.Port; Protocol = endpoint.Protocol }
         let device = decode (fun () -> Wire.toDevice endpoint.Address fingerprint peer) ()
         return { Device = device; IdentityVerified = certificate.IsSome }
@@ -122,7 +124,7 @@ type internal HttpTransport(identity: DeviceIdentity, options: NodeOptions) =
         let! bytes = response.Content.ReadAsByteArrayAsync ct
         let peer = decode Wire.decodePeer bytes
         if peer.Fingerprint |> Option.exists (fun advertised -> not (String.Equals(advertised, Fingerprint.value fingerprint, StringComparison.OrdinalIgnoreCase))) then
-            raise (PeerIdentityException "Register fingerprint differs from trusted identity.")
+            raise (PeerIdentityException (CoreText.PeerRegisterFingerprintMismatch))
         return decode (fun () -> Wire.toDevice endpoint.Address fingerprint { peer with Port = endpoint.Port; Protocol = endpoint.Protocol }) ()
     }
 
@@ -136,9 +138,8 @@ type internal HttpTransport(identity: DeviceIdentity, options: NodeOptions) =
         | HttpStatusCode.Forbidden -> return Negotiation.Declined
         | HttpStatusCode.NoContent -> return Negotiation.NoUpload
         | HttpStatusCode.TooManyRequests ->
-            let! bytes = response.Content.ReadAsByteArrayAsync ct
-            let message = Wire.decodeError bytes |> Result.defaultValue ""
-            return if message.Contains("maximum", StringComparison.OrdinalIgnoreCase) then Negotiation.Busy else Negotiation.PinRateLimited
+            return Negotiation.RateLimited
+        | HttpStatusCode.Conflict -> return Negotiation.Busy
         | _ ->
             response.EnsureSuccessStatusCode() |> ignore
             let! bytes = response.Content.ReadAsByteArrayAsync ct
@@ -147,7 +148,7 @@ type internal HttpTransport(identity: DeviceIdentity, options: NodeOptions) =
 
     member _.Upload(endpoint: DeviceEndpoint, fingerprint, acceptance: UploadAcceptance, item: IncomingItem,
                     source: SendItem, report: int64 -> unit, ct: CancellationToken) = task {
-        if SendItems.length source <> item.Size then raise (IOException "Source size changed before upload.")
+        if SendItems.length source <> item.Size then raise (IOException (CoreText.SourceLengthChanged))
         use client = createClient endpoint (Some fingerprint) options.UploadTimeout ignore
         use! stream = SendItems.openRead ct source
         let mutable consumed = 0L
@@ -161,7 +162,7 @@ type internal HttpTransport(identity: DeviceIdentity, options: NodeOptions) =
                          query "token" (UploadToken.value acceptance.Tokens[item.Id]) ]
         use! response = client.PostAsync(path, body, ct)
         response.EnsureSuccessStatusCode() |> ignore
-        if consumed <> item.Size then raise (IOException "Source size changed during upload.")
+        if consumed <> item.Size then raise (IOException (CoreText.SourceLengthChanged))
         return { Id = item.Id; FileName = item.FileName; BytesTransferred = item.Size; SavedPath = None }
     }
 

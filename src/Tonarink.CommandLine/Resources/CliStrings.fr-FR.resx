@@ -97,7 +97,6 @@
   <data name="Browser share: {0}" xml:space="preserve"><value>Partage par navigateur : {0}</value></data>
   <data name="The PIN is incorrect" xml:space="preserve"><value>Le PIN est incorrect</value></data>
   <data name="The receiving device requires --pin PIN" xml:space="preserve"><value>L’appareil destinataire exige --pin PIN</value></data>
-  <data name="Too many PIN attempts; try again later" xml:space="preserve"><value>Trop de tentatives de PIN ; réessayez plus tard</value></data>
   <data name="The receiving device is busy" xml:space="preserve"><value>L’appareil destinataire est occupé</value></data>
   <data name="The receiving device declined the transfer" xml:space="preserve"><value>L’appareil destinataire a refusé le transfert</value></data>
   <data name="Ambiguous device name; use a fingerprint or address." xml:space="preserve"><value>Nom d’appareil ambigu ; utiliser une empreinte ou une adresse</value></data>

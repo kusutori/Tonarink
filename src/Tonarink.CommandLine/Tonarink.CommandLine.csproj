@@ -16,6 +16,7 @@
     </EmbeddedResource>
     <PackageReference Include="System.CommandLine" />
     <ProjectReference Include="../LocalSendDotNet.Core/LocalSendDotNet.Core.csproj" />
+    <ProjectReference Include="../LocalSendDotNet.Resources/LocalSendDotNet.Resources.csproj" />
     <ProjectReference Include="../Tonarink.Application/Tonarink.Application.csproj" />
     <InternalsVisibleTo Include="Tonarink" />
     <InternalsVisibleTo Include="Tonarink.Cli" />
