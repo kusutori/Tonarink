@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" fill="none" role="img" aria-labelledby="title description">
+  <title id="title">Tonarink — overlapping panels concept</title>
+  <desc id="description">Vector reconstruction of original concept 03: an aqua rear panel overlaps a lower teal front panel, connected by a light transfer arrow.</desc>
+  <defs>
+    <linearGradient id="rearPanel" x1="1106" y1="162" x2="1247" y2="352" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#A2FAF4"/>
+      <stop offset="0.48" stop-color="#70EBEE"/>
+      <stop offset="1" stop-color="#27BED2"/>
+    </linearGradient>
+    <linearGradient id="frontPanel" x1="1393" y1="151" x2="1238" y2="411" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#00AFBB"/>
+      <stop offset="0.5" stop-color="#008C9C"/>
+      <stop offset="1" stop-color="#006273"/>
+    </linearGradient>
+    <linearGradient id="transferArrow" x1="1164" y1="312" x2="1325" y2="249" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#74E6EA" stop-opacity="0"/>
+      <stop offset="0.34" stop-color="#B0EAF0" stop-opacity="0.92"/>
+      <stop offset="0.72" stop-color="#E6F4F7"/>
+      <stop offset="1" stop-color="#F2F8FA"/>
+    </linearGradient>
+    <linearGradient id="rearEdge" x1="1115" y1="155" x2="1282" y2="118" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#C4FFFB" stop-opacity="0.7"/>
+      <stop offset="1" stop-color="#C4FFFB" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(-1006 -4)">
+    <path fill="url(#rearPanel)" d="M1096 206C1096 174 1110 153 1139 141L1237 107C1268 96 1292 111 1292 141V295C1292 321 1278 339 1252 348L1143 379C1116 388 1096 373 1096 347V206Z"/>
+    <path fill="url(#frontPanel)" d="M1223 248C1223 216 1238 193 1269 183L1375 152C1405 142 1428 157 1428 188V337C1428 363 1416 380 1391 388L1278 420C1247 429 1223 412 1223 382V248Z"/>
+    <path fill="url(#transferArrow)" d="M1148 271C1183 287 1217 245 1263 245C1267 244 1269 242 1269 238V216C1269 209 1274 207 1279 212L1344 272C1351 279 1351 285 1344 292L1280 348C1275 353 1269 351 1269 344V324C1269 320 1266 318 1262 319C1224 319 1205 356 1165 351C1154 329 1149 297 1148 271Z"/>
+    <path d="M1097 205C1097 175 1111 154 1139 142L1237 108C1266 98 1290 111 1291 140" stroke="url(#rearEdge)" stroke-width="1.2"/>
+  </g>
+</svg>

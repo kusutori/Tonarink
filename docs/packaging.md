@@ -60,7 +60,7 @@ Schema references: [AppExecutionAlias](https://learn.microsoft.com/en-us/uwp/sch
 
 ### Start tile artwork
 
-The four Start tile layouts use the existing `Assets/AppIcon.svg` glyph over
+The four Start tile layouts use the `Assets/AppIcon.svg` overlapping-panel mark over
 a full-bleed, opaque teal background (no rounded app-icon plate). Wide tiles
 keep the same glyph size as medium tiles and extend the background horizontally.
 Regenerate their base and 125%, 150%, 200%, and 400% PNG assets with ImageMagick:
@@ -74,6 +74,20 @@ This only replaces `Square71x71Logo`, `Square150x150Logo`, `Wide310x150Logo`, an
 the packaging pipeline includes their scale variants. Desktop/taskbar icons,
 store artwork, and splash assets remain unchanged. Actual Start menu tile
 behavior must be checked on Windows 10; image previews alone cannot verify it.
+
+### Application branding assets
+
+`Assets/AppIcon.svg` is the static app mark. Generate its ICO, app-list PNGs,
+Store icons, and OS splash images with `./tools/New-AppIconAssets.ps1`, then
+regenerate the Start tiles with `./tools/New-TileAssets.ps1`.
+
+The approved animation sources live in `docs/assets/logo-concepts/`:
+`03-splash.lottie.json` is the one-shot entrance, and
+`03-idle-combined.lottie.json` is the 4-second floating/transfer-light loop.
+`node tools/build-logo-lottie.mjs` exports them to `Assets/Lottie/SplashLogo.json`
+and `IdleLogo.json`, using the same tighter canvas as the static mark. An optional
+official Skottie player directory writes preview scenes without changing other
+scenes. These are build-time authoring sources, not selectable runtime themes.
 
 ### Building packages
 

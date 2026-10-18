@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" fill="none" role="img" aria-labelledby="title description">
+  <title id="title">Tonarink — symmetrical spiral concept</title>
+  <desc id="description">Vector reconstruction of original concept 02: two opposing aqua and teal ribbons curl around an open centre.</desc>
+  <defs>
+    <linearGradient id="aquaFace" x1="612" y1="279" x2="815" y2="109" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#06C7D6"/>
+      <stop offset="0.48" stop-color="#41E1EB"/>
+      <stop offset="1" stop-color="#9BF7FC"/>
+    </linearGradient>
+    <linearGradient id="aquaReturn" x1="636" y1="275" x2="740" y2="356" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#007C8C"/>
+      <stop offset="0.48" stop-color="#12ADBD"/>
+      <stop offset="1" stop-color="#5EDCE5"/>
+    </linearGradient>
+    <linearGradient id="tealReturn" x1="866" y1="189" x2="915" y2="264" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#009BAE"/>
+      <stop offset="1" stop-color="#00596D"/>
+    </linearGradient>
+    <linearGradient id="tealFace" x1="900" y1="254" x2="771" y2="425" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#00ADBD"/>
+      <stop offset="0.52" stop-color="#008F9F"/>
+      <stop offset="1" stop-color="#006479"/>
+    </linearGradient>
+    <linearGradient id="foldLight" x1="750" y1="341" x2="922" y2="250" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#BAFAFC" stop-opacity="0.65"/>
+      <stop offset="1" stop-color="#BAFAFC" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(-518 -4)">
+    <!-- The return surfaces are separate vector shapes, not a flattened image. -->
+    <path fill="url(#aquaReturn)" d="M614 314C622 292 654 267 694 248C684 260 718 280 775 302C741 314 721 338 715 365C713 374 706 372 695 369C655 356 622 338 614 314Z"/>
+    <path fill="url(#tealReturn)" d="M863 279V198C863 180 875 180 888 187C909 198 925 215 930 230C936 245 904 262 863 279Z"/>
+    <path fill="url(#aquaFace)" d="M601 232C601 196 624 170 663 151L788 97C813 86 832 101 832 127V143C832 170 819 190 793 202L694 248C662 263 632 286 619 303C614 309 613 315 616 321C606 315 601 303 601 286V232Z"/>
+    <path fill="url(#tealFace)" d="M734 394V373C734 345 751 322 782 308L892 259C915 248 933 239 930 229C941 245 946 263 945 285C945 323 931 347 898 366L775 421C753 431 734 418 734 394Z"/>
+    <path d="M738 354C745 334 761 318 782 308L892 259C914 249 933 239 930 229" stroke="url(#foldLight)" stroke-width="1.2"/>
+  </g>
+</svg>

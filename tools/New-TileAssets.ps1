@@ -2,9 +2,8 @@
 .SYNOPSIS
 Regenerates opaque Windows Start tile assets from the existing app icon.
 .DESCRIPTION
-Requires ImageMagick (magick) with SVG support. Keeps the original glyph and
-its proportions; extends only the teal plate to fill each tile, without the
-rounded app-icon corners or rim. Does not change desktop/taskbar icon assets.
+Requires ImageMagick (magick) with SVG support. Centers the app mark over an
+opaque, full-bleed teal background. Does not change desktop/taskbar icons.
 #>
 [CmdletBinding()]
 param(
@@ -35,29 +34,38 @@ try {
         $ns = [Xml.XmlNamespaceManager]::new($svg.NameTable)
         $ns.AddNamespace('svg', 'http://www.w3.org/2000/svg')
         $root = $svg.DocumentElement
-        # All tile layouts use the original 256-unit height. Wide tiles add
-        # background space on either side, not a stretched or enlarged glyph.
-        $logicalWidth = 256.0 * $tile.Width / $tile.Height
-        $root.SetAttribute('viewBox', '0 0 ' + $logicalWidth.ToString('G17', $invariant) + ' 256')
+        # Wide tiles add background space, not a stretched or enlarged mark.
+        $logicalWidth = 384.0 * $tile.Width / $tile.Height
+        $root.SetAttribute('viewBox', '0 0 ' + $logicalWidth.ToString('G17', $invariant) + ' 384')
         $root.SetAttribute('width', [string]($tile.Width * 4))
         $root.SetAttribute('height', [string]($tile.Height * 4))
 
-        $plate = $root.SelectSingleNode("svg:g[@clip-path='url(#plateClip)']", $ns)
-        $glyph = $root.SelectSingleNode("svg:g[@filter='url(#glyphLift)']", $ns)
-        if ($null -eq $plate -or $null -eq $glyph) {
-            throw 'AppIcon.svg no longer has the expected plate/glyph groups.'
+        $glyph = $root.SelectSingleNode('svg:g', $ns)
+        $defs = $root.SelectSingleNode('svg:defs', $ns)
+        if ($null -eq $glyph -or $null -eq $defs) { throw 'AppIcon.svg must contain its mark and gradient definitions.' }
+        $gradient = $svg.CreateElement('linearGradient', $root.NamespaceURI)
+        $gradient.SetAttribute('id', 'tileBackground')
+        $gradient.SetAttribute('x1', '0')
+        $gradient.SetAttribute('y1', '0')
+        $gradient.SetAttribute('x2', '1')
+        $gradient.SetAttribute('y2', '1')
+        foreach ($entry in @(@('0', '#14C4C2'), @('0.48', '#009BA3'), @('1', '#0B6570'))) {
+            $stop = $svg.CreateElement('stop', $root.NamespaceURI)
+            $stop.SetAttribute('offset', $entry[0])
+            $stop.SetAttribute('stop-color', $entry[1])
+            $gradient.AppendChild($stop) | Out-Null
         }
-        $plate.RemoveAttribute('clip-path')
-        foreach ($rect in $plate.SelectNodes('svg:rect', $ns)) {
-            $rect.SetAttribute('width', $logicalWidth.ToString('G17', $invariant))
-            $rect.RemoveAttribute('rx')
-        }
-        $rim = $root.SelectSingleNode("svg:rect[@stroke='url(#rim)']", $ns)
-        if ($null -ne $rim) { $root.RemoveChild($rim) | Out-Null }
-        $clip = $root.SelectSingleNode("svg:defs/svg:clipPath[@id='plateClip']", $ns)
-        if ($null -ne $clip) { $clip.ParentNode.RemoveChild($clip) | Out-Null }
-        $offset = (($logicalWidth - 256) / 2).ToString('G17', $invariant)
-        $glyph.SetAttribute('transform', "translate($offset 0)")
+        $defs.AppendChild($gradient) | Out-Null
+        $background = $svg.CreateElement('rect', $root.NamespaceURI)
+        $background.SetAttribute('width', $logicalWidth.ToString('G17', $invariant))
+        $background.SetAttribute('height', '384')
+        $background.SetAttribute('fill', 'url(#tileBackground)')
+        $root.InsertBefore($background, $glyph) | Out-Null
+        $wrapper = $svg.CreateElement('g', $root.NamespaceURI)
+        $offset = (($logicalWidth - 384 * 0.8) / 2).ToString('G17', $invariant)
+        $wrapper.SetAttribute('transform', "translate($offset 38.4) scale(0.8)")
+        $root.InsertBefore($wrapper, $glyph) | Out-Null
+        $wrapper.AppendChild($glyph) | Out-Null
         $svg.Save($svgPath)
 
         # Render a vector master at twice the largest output size, then
