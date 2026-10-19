@@ -130,7 +130,7 @@ jobs:
         if: always() && hashFiles('artifacts/test-results/ci/run.json') != ''
         with:
           name: test-results-winui
-          path: artifacts/test-results/ci/winui/
+          path: artifacts/test-results/ci/
           if-no-files-found: error
       - run: >-
           dotnet publish src/Tonarink.ExplorerCommand/Tonarink.ExplorerCommand.csproj
@@ -156,7 +156,7 @@ jobs:
         if: always() && hashFiles('artifacts/test-results/ci/run.json') != ''
         with:
           name: test-results-blazor
-          path: artifacts/test-results/ci/blazor/
+          path: artifacts/test-results/ci/
           if-no-files-found: error
       - name: Smoke-test authenticated Web host
         env:
