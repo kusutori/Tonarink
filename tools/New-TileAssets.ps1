@@ -3,7 +3,7 @@
 Regenerates opaque Windows Start tile assets from the existing app icon.
 .DESCRIPTION
 Requires ImageMagick (magick) with SVG support. Centers the app mark over an
-opaque, full-bleed teal background. Does not change desktop/taskbar icons.
+opaque, full-bleed deep teal background (#123947). Does not change desktop/taskbar icons.
 #>
 [CmdletBinding()]
 param(
@@ -43,23 +43,10 @@ try {
         $glyph = $root.SelectSingleNode('svg:g', $ns)
         $defs = $root.SelectSingleNode('svg:defs', $ns)
         if ($null -eq $glyph -or $null -eq $defs) { throw 'AppIcon.svg must contain its mark and gradient definitions.' }
-        $gradient = $svg.CreateElement('linearGradient', $root.NamespaceURI)
-        $gradient.SetAttribute('id', 'tileBackground')
-        $gradient.SetAttribute('x1', '0')
-        $gradient.SetAttribute('y1', '0')
-        $gradient.SetAttribute('x2', '1')
-        $gradient.SetAttribute('y2', '1')
-        foreach ($entry in @(@('0', '#14C4C2'), @('0.48', '#009BA3'), @('1', '#0B6570'))) {
-            $stop = $svg.CreateElement('stop', $root.NamespaceURI)
-            $stop.SetAttribute('offset', $entry[0])
-            $stop.SetAttribute('stop-color', $entry[1])
-            $gradient.AppendChild($stop) | Out-Null
-        }
-        $defs.AppendChild($gradient) | Out-Null
         $background = $svg.CreateElement('rect', $root.NamespaceURI)
         $background.SetAttribute('width', $logicalWidth.ToString('G17', $invariant))
         $background.SetAttribute('height', '384')
-        $background.SetAttribute('fill', 'url(#tileBackground)')
+        $background.SetAttribute('fill', '#123947')
         $root.InsertBefore($background, $glyph) | Out-Null
         $wrapper = $svg.CreateElement('g', $root.NamespaceURI)
         $offset = (($logicalWidth - 384 * 0.8) / 2).ToString('G17', $invariant)

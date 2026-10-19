@@ -61,7 +61,7 @@ Schema references: [AppExecutionAlias](https://learn.microsoft.com/en-us/uwp/sch
 ### Start tile artwork
 
 The four Start tile layouts use the `Assets/AppIcon.svg` overlapping-panel mark over
-a full-bleed, opaque teal background (no rounded app-icon plate). Wide tiles
+a full-bleed, opaque deep blue-green background (`#123947`, no rounded app-icon plate). Wide tiles
 keep the same glyph size as medium tiles and extend the background horizontally.
 Regenerate their base and 125%, 150%, 200%, and 400% PNG assets with ImageMagick:
 
