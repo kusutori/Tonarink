@@ -147,32 +147,37 @@ const output = join(root, '03-overlapping-panels.lottie.json');
 writeFileSync(output, encoded);
 console.log(output);
 
-// Splash variant: separate panel entrances followed by a curved alpha-matte
-// reveal. The matte only uncovers the original arrow; it never changes its
-// silhouette, gradient or final placement.
+// Splash variant: overlap the curved arrow reveal with the panels' final
+// approach, then hold the completed mark briefly. The matte only uncovers the
+// original arrow; it never changes its silhouette, gradient or final placement.
+const splashDuration = 84;
+const splashLastFrame = splashDuration - 1;
+const arrowStart = 20;
+const arrowComplete = 62;
 const splash = structuredClone(document);
 splash.nm = 'Tonarink concept 03 — splash assembly';
+splash.op = splashDuration;
 splash.markers = [
   { tm: 0, cm: 'Empty', dr: 1 },
   { tm: 1, cm: 'PanelsEnter', dr: 39 },
-  { tm: 34, cm: 'ArrowDraw', dr: 42 },
-  { tm: 76, cm: 'Complete', dr: 44 },
+  { tm: arrowStart, cm: 'ArrowDraw', dr: arrowComplete - arrowStart },
+  { tm: arrowComplete, cm: 'Complete', dr: splashDuration - arrowComplete },
 ];
 const rear = splash.layers[2];
 rear.ks.p = animated([
-  [0, [-170, 18, 0], 'send'], [36, [0, 0, 0]], [119, [0, 0, 0]],
+  [0, [-170, 18, 0], 'send'], [36, [0, 0, 0]], [splashLastFrame, [0, 0, 0]],
 ]);
-rear.ks.o = animated([[0, [0], 'send'], [20, [100]], [119, [100]]]);
+rear.ks.o = animated([[0, [0], 'send'], [20, [100]], [splashLastFrame, [100]]]);
 const front = splash.layers[1];
 front.ks.p = animated([
   [0, [170, -18, 0]], [5, [170, -18, 0], 'send'],
-  [40, [0, 0, 0]], [119, [0, 0, 0]],
+  [40, [0, 0, 0]], [splashLastFrame, [0, 0, 0]],
 ]);
-front.ks.o = animated([[0, [0]], [5, [0], 'send'], [25, [100]], [119, [100]]]);
+front.ks.o = animated([[0, [0]], [5, [0], 'send'], [25, [100]], [splashLastFrame, [100]]]);
 const arrow = splash.layers[0];
 arrow.shapes[0].it[0].ks = fixed(arrowBase);
 arrow.tt = 1;
-arrow.ks.o = animated([[0, [0]], [34, [0], 'send'], [36, [100]], [119, [100]]]);
+arrow.ks.o = animated([[0, [0]], [arrowStart, [0], 'send'], [arrowStart + 2, [100]], [splashLastFrame, [100]]]);
 const sweep = {
   c: false,
   v: [[100, 312], [230, 278], [375, 278]],
@@ -184,7 +189,7 @@ const matte = layer(4, 'Arrow curved reveal — alpha matte', [{
     { ty: 'sh', nm: 'Curved sweep centreline', ks: fixed(sweep) },
     { ty: 'st', nm: 'Reveal coverage', c: fixed([1, 1, 1, 1]), o: fixed(100), w: fixed(168), lc: 1, lj: 2, ml: 4 },
     { ty: 'tm', nm: 'Tail to arrowhead', s: fixed(0),
-      e: animated([[0, [0]], [34, [0], 'send'], [76, [100]], [119, [100]]]),
+      e: animated([[0, [0]], [arrowStart, [0], 'send'], [arrowComplete, [100]], [splashLastFrame, [100]]]),
       o: fixed(0), m: 1 },
     structuredClone(groupTransform),
   ],
@@ -192,7 +197,10 @@ const matte = layer(4, 'Arrow curved reveal — alpha matte', [{
 matte.td = 1;
 splash.layers = [matte, arrow, front, rear];
 // Native LottieGen orders layers by ind before pairing adjacent track mattes.
-splash.layers.forEach((layer, index) => { layer.ind = index + 1; });
+splash.layers.forEach((layer, index) => {
+  layer.ind = index + 1;
+  layer.op = splashDuration;
+});
 const splashEncoded = JSON.stringify(splash, null, 2) + '\n';
 const splashOutput = join(root, '03-splash.lottie.json');
 writeFileSync(splashOutput, splashEncoded);

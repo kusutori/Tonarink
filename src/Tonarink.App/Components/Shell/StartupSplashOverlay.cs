@@ -25,7 +25,9 @@ sealed class StartupSplashOverlay : Component<StartupSplashOverlayProps>
 
         return Border(
                 (AnimatedVisualPlayer() with { AutoPlay = false })
-                .Size(256, 256)
+                // SplashLogo's 768x384 canvas includes horizontal entrance
+                // space; keep the artwork at its original 256/384 scale.
+                .Size(512, 256)
                 .HAlign(HorizontalAlignment.Center)
                 .VAlign(VerticalAlignment.Center)
                 .AutomationName("Tonarink")

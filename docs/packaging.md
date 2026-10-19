@@ -85,7 +85,9 @@ The approved animation sources live in `docs/assets/logo-concepts/`:
 `03-splash.lottie.json` is the one-shot entrance, and
 `03-idle-combined.lottie.json` is the 4-second floating/transfer-light loop.
 `node tools/build-logo-lottie.mjs` exports them to `Assets/Lottie/SplashLogo.json`
-and `IdleLogo.json`, using the same tighter canvas as the static mark. An optional
+and `IdleLogo.json`. Idle uses the tighter static-mark canvas; splash preserves
+extra horizontal entrance space and scales its player to keep the settled mark
+the same size. An optional
 official Skottie player directory writes preview scenes without changing other
 scenes. These are build-time authoring sources, not selectable runtime themes.
 

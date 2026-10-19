@@ -12,15 +12,22 @@ for (const [input, name, sceneNumber] of [
   ['03-idle-combined.lottie.json', 'IdleLogo', 2],
 ]) {
   const doc = JSON.parse(readFileSync(join(designs, input), 'utf8'));
-  // Remove excess concept-sheet padding, matching AppIcon.svg's 384px canvas.
-  doc.w = doc.h = 384;
+  // Idle uses the tight static-logo framing. Splash needs horizontal room for
+  // the panel entrances: their swept bounds must not hit the composition clip.
+  // StartupSplashOverlay displays 768x384 at 512x256, retaining the original
+  // 256/384 artwork scale and the same centred final lockup.
+  const width = name === 'SplashLogo' ? 768 : 384;
+  const height = 384;
+  const offset = [(width - doc.w) / 2, (height - doc.h) / 2];
+  doc.w = width;
+  doc.h = height;
   doc.nm = `Tonarink ${name}`;
   for (const [index, layer] of doc.layers.entries()) {
     if (layer.parent !== undefined) throw new Error('Expected independent logo layers.');
     // LottieGen resolves stacking and adjacent track mattes by layer index.
     // Keep those indices aligned with the exported top-to-bottom array order.
     layer.ind = index + 1;
-    const move = position => position.map((value, index) => index < 2 ? value - 64 : value);
+    const move = position => position.map((value, index) => index < 2 ? value + offset[index] : value);
     const position = layer.ks.p;
     if (position.a === 0) position.k = move(position.k);
     else for (const key of position.k) {
