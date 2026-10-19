@@ -101,7 +101,10 @@ try {
         # MTP gets its cooperative deadline first; the owning controller also
         # bounds startup/build and a test body that ignores cancellation.
         $hardLimit = if ($name -eq 'Cli') { 660 } else { 360 }
-        $run = Invoke-TestProcess -FilePath (Get-Command dotnet -CommandType Application).Source `
+        # Hosted runners can expose dotnet from several PATH entries. Launch
+        # the first application, matching shell resolution, not an array.
+        $dotnetExecutable = Get-Command dotnet -CommandType Application | Select-Object -First 1 -ExpandProperty Source
+        $run = Invoke-TestProcess -FilePath $dotnetExecutable `
             -ArgumentList $arguments -WorkingDirectory $repo -ResultsDirectory $controllerDirectory `
             -TimeoutSeconds $hardLimit
         Write-Host ([IO.File]::ReadAllText((Join-Path $controllerDirectory 'controller.stdout.txt')))
