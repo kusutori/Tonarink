@@ -1,7 +1,7 @@
-using LocalSendDotNet;
-using LocalSendDotNet.ApiSurface;
 using System.Security.Cryptography;
 using System.Text;
+using LocalSendDotNet;
+using LocalSendDotNet.ApiSurface;
 
 var surface = PublicApiSurface.Create(typeof(LocalSendNode).Assembly);
 Console.Write(args.Contains("--hash", StringComparer.Ordinal)

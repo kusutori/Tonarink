@@ -1,6 +1,6 @@
-using LocalSendDotNet.ApiSurface;
 using System.Security.Cryptography;
 using System.Text;
+using LocalSendDotNet.ApiSurface;
 
 namespace LocalSendDotNet.Core.Tests;
 

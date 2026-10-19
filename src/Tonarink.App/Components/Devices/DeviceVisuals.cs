@@ -1,9 +1,9 @@
+using System.Net.Sockets;
 using LocalSendDotNet;
 using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Core;
 using Microsoft.UI.Reactor.Localization;
 using Microsoft.UI.Xaml;
-using System.Net.Sockets;
 using static Microsoft.UI.Reactor.Factories;
 
 namespace Tonarink.Components.Devices;

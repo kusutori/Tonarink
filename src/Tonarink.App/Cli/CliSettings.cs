@@ -39,8 +39,11 @@ static class CliSettings
             "alias" => s with { Alias = Required(value, key) },
             "download-directory" => s with { DownloadDirectory = FullPath(Required(value, key), workingDirectory) },
             "theme" => s with { ThemeIndex = Choice(value, ["system", "light", "dark"]) },
-            "language" => s with { LanguageIndex = Choice(value,
-                [.. AppLanguages.Choices.Select(choice => choice.Culture ?? "system")]) },
+            "language" => s with
+            {
+                LanguageIndex = Choice(value,
+                [.. AppLanguages.Choices.Select(choice => choice.Culture ?? "system")])
+            },
             "auto-save" => s with { AutoSave = EnumValue<AutoSaveMode>(value), FavoritesOnly = EnumValue<AutoSaveMode>(value) == AutoSaveMode.Favorites },
             "minimize-to-tray" => s with { MinimizeToTray = Boolean(value) },
             "tray-click" => s with { TrayClickOpensFlyout = Choice(value, ["panel", "window"]) == 0 },

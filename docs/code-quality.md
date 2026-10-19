@@ -36,7 +36,24 @@
 
 统一 UTF-8、空格缩进、文件末尾换行；C# 使用 4 空格，JSON/YAML 和多数项目配置使用 2 空格，现有三个 Windows 宿主项目文件保留 4 空格。Markdown 保留行尾空格以允许硬换行。
 
-不在本轮统一已有混合换行符，不强制 var/显式类型、表达式体、所有分支加大括号、异步方法后缀或私有字段前缀，也不批量重排现有代码。空白格式目前由编辑器及既有 CI 的 `dotnet format --verify-no-changes` 检查；未将 IDE0055 升级为构建错误。
+不统一已有混合换行符，不强制 var/显式类型、表达式体、所有分支加大括号、异步方法后缀或私有字段前缀。空白排版和 using 排序使用 SDK 自带的 `dotnet format` 整理并校验；未将 IDE0055 升级为构建错误。
+
+本地与 CI 共用 `tools/Format-Code.ps1`，SDK 由 `global.json` 选择：
+
+```powershell
+# 整理 Core/CLI（包含 portable 测试）和 Web；不需要移动平台工作负载
+./tools/Format-Code.ps1
+
+# Windows 开发机整理全部活跃 CI 范围
+./tools/Format-Code.ps1 -Scope Core,Web,Windows
+
+# 与 CI 一致，只校验、不修改文件
+./tools/Format-Code.ps1 -Scope Core,Web,Windows -Verify
+```
+
+`Windows` 包含 App、ExplorerCommand 和 WidgetProvider，使用 x64 平台；`Core` 包含共享 Application 测试，因此 Web 不再重复检查该测试项目。移动平台宿主仍在各自暂禁用的 CI 任务中检查，F# 实验项目不在 `dotnet format` 的 C# 检查范围内。
+
+CI 的 `format` 是独立任务，格式不符仍使该任务失败，但不会阻止其他任务编译和测试。跨平台测试矩阵关闭 fail-fast，避免一个平台失败时取消其他平台的诊断。只有测试入口已生成运行元数据后才上传报告，保留真实的编译、格式或测试错误，不再把“测试尚未开始”额外报告为上传失败。
 
 `*.g.cs`、`*.g.i.cs`、`*.generated.cs`、`*.designer.cs` 和 obj/bin 中的 C# 标记为生成代码；不以目录豁免任何手写业务代码，不抑制生成代码的编译器错误。各分析器是否分析生成代码仍由其实现决定。
 

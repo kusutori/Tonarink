@@ -193,7 +193,8 @@ public sealed class LocalSendRuntime : ITonarinkRuntime
             status,
             bytesTransferred,
             items.Sum(static item => item.Size),
-            DateTimeOffset.UtcNow) { ItemCount = items.Count });
+            DateTimeOffset.UtcNow)
+        { ItemCount = items.Count });
         if (runtimeResult is RuntimeSendResult.Completed)
             await _platform.NotifyAsync(Text("SendCompleteTitle"), Text("SendCompleteBody", target.Alias), cancellationToken).ConfigureAwait(false);
         return runtimeResult;
@@ -267,7 +268,8 @@ public sealed class LocalSendRuntime : ITonarinkRuntime
             status,
             bytesTransferred,
             request.Items.Where(item => ids.Contains(item.Id, StringComparer.Ordinal)).Sum(static item => item.Size),
-            DateTimeOffset.UtcNow) { ItemCount = ids.Length });
+            DateTimeOffset.UtcNow)
+        { ItemCount = ids.Length });
         if (runtimeResult is RuntimeReceiveResult.Completed)
         {
             foreach (var item in receivedItems.Where(static item => item.SavedPath is not null))

@@ -77,7 +77,8 @@ sealed class FilePreviewProviderContent : Component<FilePreviewProviderContentPr
                             automationId: $"Settings.Preview.{Props.Provider}.Delete")
                         .Size(40, 40)
                         .VAlign(VerticalAlignment.Center)
-                        .Grid(column: 2)) with { ColumnSpacing = 8 })
+                        .Grid(column: 2)) with
+        { ColumnSpacing = 8 })
                 .Width(396)
                 .HAlign(HorizontalAlignment.Right)
                 .VAlign(VerticalAlignment.Center);

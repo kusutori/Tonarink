@@ -99,32 +99,32 @@ static class IncomingTransferReducer
     public static IncomingTransferViewState Reduce(
         IncomingTransferViewState state,
         IncomingTransferAction action) => action switch
-    {
-        IncomingTransferAction.Started started => new IncomingTransferViewState.Receiving(
-            TransferState.Preparing,
-            state.BytesTransferred,
-            state.TotalBytes,
-            started.Status,
-            state.Text),
-        IncomingTransferAction.Progressed progressed => new IncomingTransferViewState.Receiving(
-            progressed.Progress.State,
-            progressed.Progress.BytesTransferred,
-            progressed.Progress.TotalBytes,
-            progressed.Status,
-            state.Text),
-        IncomingTransferAction.Completed completed => new IncomingTransferViewState.Finished(
-            completed.State,
-            completed.BytesTransferred,
-            state.TotalBytes,
-            completed.Status,
-            completed.Text ?? state.Text,
-            completed.IsError),
-        IncomingTransferAction.Failed failed => new IncomingTransferViewState.Finished(
-            TransferState.Failed,
-            state.BytesTransferred,
-            state.TotalBytes,
-            failed.Status,
-            state.Text,
-            IsError: true),
-    };
+        {
+            IncomingTransferAction.Started started => new IncomingTransferViewState.Receiving(
+                TransferState.Preparing,
+                state.BytesTransferred,
+                state.TotalBytes,
+                started.Status,
+                state.Text),
+            IncomingTransferAction.Progressed progressed => new IncomingTransferViewState.Receiving(
+                progressed.Progress.State,
+                progressed.Progress.BytesTransferred,
+                progressed.Progress.TotalBytes,
+                progressed.Status,
+                state.Text),
+            IncomingTransferAction.Completed completed => new IncomingTransferViewState.Finished(
+                completed.State,
+                completed.BytesTransferred,
+                state.TotalBytes,
+                completed.Status,
+                completed.Text ?? state.Text,
+                completed.IsError),
+            IncomingTransferAction.Failed failed => new IncomingTransferViewState.Finished(
+                TransferState.Failed,
+                state.BytesTransferred,
+                state.TotalBytes,
+                failed.Status,
+                state.Text,
+                IsError: true),
+        };
 }

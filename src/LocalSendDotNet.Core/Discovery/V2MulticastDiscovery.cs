@@ -1,8 +1,8 @@
+using System.Collections.Concurrent;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Text.Json;
-using System.Collections.Concurrent;
 using LocalSendDotNet.Protocol.V2;
 using Microsoft.Extensions.Logging;
 

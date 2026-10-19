@@ -104,11 +104,11 @@ sealed class TransientInfoBarItem : Component<TransientInfoBarItemProps>
         }, message.Id);
 
         return (InfoBar(message.Title, message.Message) with
-            {
-                IsOpen = true,
-                IsClosable = true,
-                OnClosed = () => Props.Remove(message.Id),
-            })
+        {
+            IsOpen = true,
+            IsClosable = true,
+            OnClosed = () => Props.Remove(message.Id),
+        })
             .Severity(message.Severity)
             .Translation(0, message.HasEntered ? 0 : -72, 0)
             .TranslationTransition(new()

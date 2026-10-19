@@ -8,11 +8,11 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Windows.System;
-using BasicConnectedAnimationConfiguration = Microsoft.UI.Xaml.Media.Animation.BasicConnectedAnimationConfiguration;
 using static Microsoft.UI.Reactor.Factories;
-using static Tonarink.Utilities.ByteSize;
 using static Tonarink.Components.Devices.DeviceVisuals;
 using static Tonarink.Components.Transfers.TransferOverlayVisuals;
+using static Tonarink.Utilities.ByteSize;
+using BasicConnectedAnimationConfiguration = Microsoft.UI.Xaml.Media.Animation.BasicConnectedAnimationConfiguration;
 
 namespace Tonarink.Components.Transfers;
 
@@ -177,35 +177,35 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
         var isPending = acceptMutation.IsPending || declineMutation.IsPending;
         var canEdit = !view.IsDecided && !isPending;
         var renameFileCommand = UseCommand(UseMemo(() => new Command<IncomingFileCommandTarget>
-            {
-                Label = t.Message(new("App", "Rename")),
-                Icon = new FontIconData(AppIcons.Rename),
-                Accelerator = Accelerator(VirtualKey.F2),
-                CanExecute = canEdit,
-                Execute = target => OpenRenameDialog(target.ItemId, target.DisplayName),
-            },
+        {
+            Label = t.Message(new("App", "Rename")),
+            Icon = new FontIconData(AppIcons.Rename),
+            Accelerator = Accelerator(VirtualKey.F2),
+            CanExecute = canEdit,
+            Execute = target => OpenRenameDialog(target.ItemId, target.DisplayName),
+        },
             t.Locale,
             canEdit));
         var undoRenameCommand = UseCommand(UseMemo(() => new Command<IncomingFileCommandTarget>
-            {
-                Label = t.Message(new("App", "Undo")),
-                Icon = new FontIconData(AppIcons.Undo),
-                Accelerator = Accelerator(VirtualKey.Z, VirtualKeyModifiers.Control),
-                CanExecute = canEdit,
-                Execute = target => updateRenameState(current =>
-                    IncomingFileCard.UndoRename(current, target.ItemId)),
-            },
+        {
+            Label = t.Message(new("App", "Undo")),
+            Icon = new FontIconData(AppIcons.Undo),
+            Accelerator = Accelerator(VirtualKey.Z, VirtualKeyModifiers.Control),
+            CanExecute = canEdit,
+            Execute = target => updateRenameState(current =>
+                IncomingFileCard.UndoRename(current, target.ItemId)),
+        },
             t.Locale,
             canEdit));
         var redoRenameCommand = UseCommand(UseMemo(() => new Command<IncomingFileCommandTarget>
-            {
-                Label = t.Message(new("App", "Redo")),
-                Icon = new FontIconData(AppIcons.Redo),
-                Accelerator = Accelerator(VirtualKey.Y, VirtualKeyModifiers.Control),
-                CanExecute = canEdit,
-                Execute = target => updateRenameState(current =>
-                    IncomingFileCard.RedoRename(current, target.ItemId)),
-            },
+        {
+            Label = t.Message(new("App", "Redo")),
+            Icon = new FontIconData(AppIcons.Redo),
+            Accelerator = Accelerator(VirtualKey.Y, VirtualKeyModifiers.Control),
+            CanExecute = canEdit,
+            Execute = target => updateRenameState(current =>
+                IncomingFileCard.RedoRename(current, target.ItemId)),
+        },
             t.Locale,
             canEdit));
         var showText = IsTextTransfer(request.Items);

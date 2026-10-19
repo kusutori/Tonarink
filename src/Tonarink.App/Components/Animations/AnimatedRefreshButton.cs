@@ -1,8 +1,8 @@
+using System.Numerics;
 using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Core;
 using Microsoft.UI.Reactor.Hooks;
 using Microsoft.UI.Xaml;
-using System.Numerics;
 using static Microsoft.UI.Reactor.Factories;
 
 namespace Tonarink.Components.Animations;

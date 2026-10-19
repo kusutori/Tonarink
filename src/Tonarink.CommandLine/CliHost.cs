@@ -1,5 +1,5 @@
-using System.IO.Pipes;
 using System.CommandLine;
+using System.IO.Pipes;
 using System.Threading.Channels;
 
 namespace Tonarink.Cli;

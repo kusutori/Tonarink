@@ -1,7 +1,7 @@
+using System.Runtime.InteropServices;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Animation;
-using System.Runtime.InteropServices;
 
 namespace Tonarink.Services.Devices;
 

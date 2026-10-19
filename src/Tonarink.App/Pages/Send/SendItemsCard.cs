@@ -96,9 +96,9 @@ sealed class SendItemsCard : Component<SendItemsCardProps>
                                 ]);
                             }))
                         .PositionInSet(index + 1, items.Count)) with
-                {
-                    Spacing = 8,
-                })
+            {
+                Spacing = 8,
+            })
                 .HAlign(HorizontalAlignment.Stretch)
                 .VAlign(VerticalAlignment.Stretch),
         };

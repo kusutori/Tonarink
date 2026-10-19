@@ -41,8 +41,12 @@ static class AppCommandActivation
                 using var cancellation = new CancellationTokenSource();
                 if (parsed.GetValue(model.Timeout) is { } seconds) cancellation.CancelAfter(TimeSpan.FromSeconds(seconds));
                 var exit = await parsed.InvokeAsync(new InvocationConfiguration
-                { EnableDefaultExceptionHandler = false, ProcessTerminationTimeout = null,
-                  Output = TextWriter.Null, Error = TextWriter.Null }, cancellation.Token).ConfigureAwait(false);
+                {
+                    EnableDefaultExceptionHandler = false,
+                    ProcessTerminationTimeout = null,
+                    Output = TextWriter.Null,
+                    Error = TextWriter.Null
+                }, cancellation.Token).ConfigureAwait(false);
                 if (exit == 0 && model.IsQuit(parsed)) await runtime.QuitAsync(cancellation.Token).ConfigureAwait(false);
             }
             catch (Exception exception) { AppDiagnostics.Report("Launch command failed", exception); }

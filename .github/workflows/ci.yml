@@ -5,12 +5,25 @@ on:
   pull_request:
 
 jobs:
+  format:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+      - name: Verify code formatting
+        shell: pwsh
+        run: ./tools/Format-Code.ps1 -Scope Core,Web,Windows -Verify
+
   test:
     timeout-minutes: 20
     env:
-      # Also applies to format's MSBuild workspace; no mobile workload is needed.
+      # No mobile workload is needed for portable transport tests.
       PortableTransportOnly: 'true'
     strategy:
+      fail-fast: false
       matrix:
         os: [windows-latest, ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
@@ -20,7 +33,6 @@ jobs:
         with:
           dotnet-version: 11.0.100-rc.1.26425.128
       - run: dotnet restore LocalSendDotNet.Core.slnx -p:PortableTransportOnly=true
-      - run: dotnet format LocalSendDotNet.Core.slnx --no-restore --verify-no-changes
       - run: dotnet build LocalSendDotNet.Core.slnx --no-restore --configuration Release -p:PortableTransportOnly=true
       - name: Core protocol and transport tests
         shell: pwsh
@@ -40,7 +52,7 @@ jobs:
           $cliExecutable = Join-Path $PWD ('src/Tonarink.Cli/bin/Release/net11.0/Tonarink.Cli' + $(if ($IsWindows) { '.exe' } else { '' }))
           ./tools/Invoke-Tests.ps1 -Suite Cli -CliExecutable $cliExecutable -NoBuild -ResultsDirectory artifacts/test-results/ci
       - uses: actions/upload-artifact@v4
-        if: always()
+        if: always() && hashFiles('artifacts/test-results/ci/run.json') != ''
         with:
           name: test-results-${{ matrix.os }}
           path: artifacts/test-results/ci/
@@ -93,7 +105,7 @@ jobs:
           $version = ([xml](Get-Content src/Tonarink.Cli/Tonarink.Cli.csproj -Raw)).Project.PropertyGroup.Version
           ./tools/Verify-CliTool.ps1 -AssetDirectory artifacts/cli/nuget -Version $version -InstallerSdkVersion '${{ steps.installer-sdk.outputs.dotnet-version }}' -RuntimeIdentifier '${{ matrix.rid }}'
       - uses: actions/upload-artifact@v4
-        if: always() && matrix.rid != 'win-arm64'
+        if: always() && matrix.rid != 'win-arm64' && hashFiles('artifacts/test-results/cli-distribution/**/run.json') != ''
         with:
           name: test-results-cli-distribution-${{ matrix.rid }}
           path: artifacts/test-results/cli-distribution/
@@ -110,15 +122,12 @@ jobs:
       - run: dotnet restore src/Tonarink.App/Tonarink.App.csproj -p:Platform=x64
       - run: dotnet restore src/Tonarink.ExplorerCommand/Tonarink.ExplorerCommand.csproj -p:Platform=x64 -r win-x64
       - run: dotnet restore src/Tonarink.WidgetProvider/Tonarink.WidgetProvider.csproj -p:Platform=x64 -r win-x64
-      - run: dotnet format src/Tonarink.App/Tonarink.App.csproj --no-restore --verify-no-changes
-      - run: dotnet format src/Tonarink.ExplorerCommand/Tonarink.ExplorerCommand.csproj --no-restore --verify-no-changes
-      - run: dotnet format src/Tonarink.WidgetProvider/Tonarink.WidgetProvider.csproj --no-restore --verify-no-changes
       - run: dotnet build src/Tonarink.App/Tonarink.App.csproj --no-restore --configuration Release -p:Platform=x64
       - name: Real WinUI controls and settings behavior
         shell: pwsh
         run: ./tools/Invoke-Tests.ps1 -Suite WinUI -ResultsDirectory artifacts/test-results/ci
       - uses: actions/upload-artifact@v4
-        if: always()
+        if: always() && hashFiles('artifacts/test-results/ci/run.json') != ''
         with:
           name: test-results-winui
           path: artifacts/test-results/ci/winui/
@@ -139,14 +148,12 @@ jobs:
           dotnet-version: 11.0.100-rc.1.26425.128
       - run: dotnet restore src/Tonarink.Web/Tonarink.Web.csproj
       - run: dotnet restore tests/Tonarink.Application.Tests/Tonarink.Application.Tests.csproj
-      - run: dotnet format src/Tonarink.Web/Tonarink.Web.csproj --no-restore --verify-no-changes
-      - run: dotnet format tests/Tonarink.Application.Tests/Tonarink.Application.Tests.csproj --no-restore --verify-no-changes
       - run: dotnet build src/Tonarink.Web/Tonarink.Web.csproj --no-restore --configuration Release
       - name: Render production Blazor components
         shell: pwsh
         run: ./tools/Invoke-Tests.ps1 -Suite Blazor -ResultsDirectory artifacts/test-results/ci
       - uses: actions/upload-artifact@v4
-        if: always()
+        if: always() && hashFiles('artifacts/test-results/ci/run.json') != ''
         with:
           name: test-results-blazor
           path: artifacts/test-results/ci/blazor/

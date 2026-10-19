@@ -1,9 +1,9 @@
+using System.Globalization;
 using Microsoft.FluentUI.AspNetCore.Components;
 using Tonarink.Application;
+using Tonarink.LocalSend;
 using Tonarink.Web;
 using Tonarink.Web.Components;
-using Tonarink.LocalSend;
-using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
 

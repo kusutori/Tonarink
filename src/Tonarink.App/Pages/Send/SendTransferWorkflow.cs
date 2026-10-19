@@ -98,13 +98,13 @@ static class SendTransferReducer
     public static TransferUiState Reduce(
         TransferUiState state,
         SendTransferAction action) => action switch
-    {
-        SendTransferAction.Reset reset => new TransferUiState.Idle(reset.Message),
-        SendTransferAction.Started started => started.State,
-        SendTransferAction.Progressed progressed => progressed.State,
-        SendTransferAction.Finished finished => finished.State,
-        SendTransferAction.PinRequested requested => requested.State,
-        SendTransferAction.Failed failed => failed.State,
-        SendTransferAction.MessageChanged changed => state.WithMessage(changed.Message),
-    };
+        {
+            SendTransferAction.Reset reset => new TransferUiState.Idle(reset.Message),
+            SendTransferAction.Started started => started.State,
+            SendTransferAction.Progressed progressed => progressed.State,
+            SendTransferAction.Finished finished => finished.State,
+            SendTransferAction.PinRequested requested => requested.State,
+            SendTransferAction.Failed failed => failed.State,
+            SendTransferAction.MessageChanged changed => state.WithMessage(changed.Message),
+        };
 }

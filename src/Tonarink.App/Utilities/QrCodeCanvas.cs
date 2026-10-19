@@ -1,3 +1,4 @@
+using System.Numerics;
 using Microsoft.Graphics.Canvas;
 using Microsoft.UI;
 using Microsoft.UI.Reactor;
@@ -6,7 +7,6 @@ using Microsoft.UI.Reactor.Core;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Hosting;
 using Net.Codecrete.QrCodeGenerator;
-using System.Numerics;
 using static Microsoft.UI.Reactor.Advanced.Factories;
 
 namespace Tonarink.Utilities;

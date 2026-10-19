@@ -1,12 +1,12 @@
 using CommunityToolkit.WinUI.Controls;
 using LocalSendDotNet;
-using Tonarink.Application;
 using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Core;
 using Microsoft.UI.Reactor.Localization;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
+using Tonarink.Application;
 using Tonarink.Components.Animations;
 using static Microsoft.UI.Reactor.Factories;
 using static Tonarink.Controls.SettingsCardElement;
@@ -233,10 +233,10 @@ sealed class SettingsPage : Component<SettingsPageProps>
                                 .MinWidth(180)),
                     ])
                 .AutomationId("Settings.Tray.Expander") with
-                {
-                    Header = t.Message(new("App", "SettingsMinimizeToTray")),
-                    Description = t.Message(new("App", "SettingsMinimizeToTrayDescription")),
-                },
+            {
+                Header = t.Message(new("App", "SettingsMinimizeToTray")),
+                Description = t.Message(new("App", "SettingsMinimizeToTrayDescription")),
+            },
             SettingsCard(
                 header: t.Message(new("App", "SettingsStartWithWindows")),
                 description: t.Message(new("App", "SettingsStartWithWindowsDescription")),
@@ -310,10 +310,10 @@ sealed class SettingsPage : Component<SettingsPageProps>
                                 .IsEnabled(Props.Settings.NotificationsEnabled)),
                     ])
                 .AutomationId("Settings.Notifications.Expander") with
-                {
-                    Header = t.Message(new("App", "SettingsNotifications")),
-                    Description = t.Message(new("App", "SettingsNotificationsDescription")),
-                },
+            {
+                Header = t.Message(new("App", "SettingsNotifications")),
+                Description = t.Message(new("App", "SettingsNotificationsDescription")),
+            },
             SettingsExpander(
                 headerIcon: AnimatedButtons.SettingsContextMenuIcon(Props.Settings.ShowExplorerContextMenu)
                     .WithKey("settings-context-menu-icon"),
@@ -339,10 +339,10 @@ sealed class SettingsPage : Component<SettingsPageProps>
                             .IsEnabled(AppPlatform.HasPackageIdentity() && Props.Settings.ShowExplorerContextMenu)),
                 ])
                 .AutomationId("Settings.Explorer.Expander") with
-                {
-                    Header = t.Message(new("App", "SettingsExplorerContextMenu")),
-                    Description = t.Message(new("App", "SettingsExplorerContextMenuDescription")),
-                },
+            {
+                Header = t.Message(new("App", "SettingsExplorerContextMenu")),
+                Description = t.Message(new("App", "SettingsExplorerContextMenuDescription")),
+            },
             SettingsCard(
                 header: t.Message(new("App", "SettingsSendTo")),
                 description: t.Message(new("App", "SettingsSendToDescription")),
@@ -447,10 +447,10 @@ sealed class SettingsPage : Component<SettingsPageProps>
                                 .IsEnabled(Props.Settings.ReceivePinEnabled)),
                     ])
                 .AutomationId("Settings.Pin.Expander") with
-                {
-                    Header = t.Message(new("App", "SettingsReceivePinProtection")),
-                    Description = t.Message(new("App", "SettingsReceivePinProtectionDescription")),
-                });
+            {
+                Header = t.Message(new("App", "SettingsReceivePinProtection")),
+                Description = t.Message(new("App", "SettingsReceivePinProtectionDescription")),
+            });
 
         var sendCards = SettingsGroup(
             t.Message(new("App", "SettingsSend")),
@@ -627,10 +627,10 @@ sealed class SettingsPage : Component<SettingsPageProps>
                                 .MinWidth(180)),
                     ])
                 .AutomationId("Settings.Advanced.Expander") with
-                {
-                    Header = t.Message(new("App", "SettingsAdvanced")),
-                    Description = t.Message(new("App", "SettingsAdvancedDescription")),
-                });
+            {
+                Header = t.Message(new("App", "SettingsAdvanced")),
+                Description = t.Message(new("App", "SettingsAdvancedDescription")),
+            });
 
         var experimentalCards = SettingsGroup(
             t.Message(new("App", "SettingsExperimental")),
@@ -714,10 +714,10 @@ sealed class SettingsPage : Component<SettingsPageProps>
                                 .WithKey($"preview-provider-{provider}")),
                     ])
                 .AutomationId("Settings.Preview.Expander") with
-                {
-                    Header = t.Message(new("App", "SettingsFilePreview")),
-                    Description = t.Message(new("App", "SettingsFilePreviewDescription")),
-                });
+            {
+                Header = t.Message(new("App", "SettingsFilePreview")),
+                Description = t.Message(new("App", "SettingsFilePreviewDescription")),
+            });
 
         var version = typeof(SettingsPage).Assembly.GetName().Version is { } assemblyVersion
             ? $"{assemblyVersion.Major}.{assemblyVersion.Minor}.{assemblyVersion.Build}"

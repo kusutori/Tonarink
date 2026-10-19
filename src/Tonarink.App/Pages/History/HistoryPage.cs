@@ -8,9 +8,9 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Tonarink.Components.Animations;
 using Windows.System;
-using MenuFlyoutItemBase = Microsoft.UI.Reactor.Core.MenuFlyoutItemBase;
 using static Microsoft.UI.Reactor.Factories;
 using static Tonarink.Utilities.ByteSize;
+using MenuFlyoutItemBase = Microsoft.UI.Reactor.Core.MenuFlyoutItemBase;
 
 namespace Tonarink.Pages.History;
 
@@ -41,42 +41,42 @@ sealed class HistoryPage : Component<HistoryPageProps>
         var visibleEntries = UseMemo(() => filter.FilterEntries(entries, today), entries, filter, today);
         var entryCommands = new HistoryEntryCommands(
             UseCommand(UseMemo(() => new Command<ReceiveHistoryEntry>
+            {
+                Label = t.Message(new("App", "HistoryOpenFile")),
+                Icon = new FontIconData(AppIcons.OpenFile),
+                Accelerator = Accelerator(VirtualKey.Enter),
+                Execute = entry =>
                 {
-                    Label = t.Message(new("App", "HistoryOpenFile")),
-                    Icon = new FontIconData(AppIcons.OpenFile),
-                    Accelerator = Accelerator(VirtualKey.Enter),
-                    Execute = entry =>
-                    {
-                        if (PathExists(entry.Path))
-                            ShellLauncher.Open(entry.Path);
-                    },
+                    if (PathExists(entry.Path))
+                        ShellLauncher.Open(entry.Path);
                 },
+            },
                 t.Locale)),
             UseCommand(UseMemo(() => new Command<ReceiveHistoryEntry>
+            {
+                Label = t.Message(new("App", "HistoryShowInFolder")),
+                Icon = new FontIconData(AppIcons.Folder),
+                Execute = entry =>
                 {
-                    Label = t.Message(new("App", "HistoryShowInFolder")),
-                    Icon = new FontIconData(AppIcons.Folder),
-                    Execute = entry =>
-                    {
-                        if (PathExists(entry.Path))
-                            ShellLauncher.Reveal(entry.Path);
-                    },
+                    if (PathExists(entry.Path))
+                        ShellLauncher.Reveal(entry.Path);
                 },
+            },
                 t.Locale)),
             UseCommand(UseMemo(() => new Command<ReceiveHistoryEntry>
-                {
-                    Label = t.Message(new("App", "HistoryInfo")),
-                    Icon = new FontIconData(AppIcons.Details),
-                    Execute = entry => setInfoEntry(entry),
-                },
+            {
+                Label = t.Message(new("App", "HistoryInfo")),
+                Icon = new FontIconData(AppIcons.Details),
+                Execute = entry => setInfoEntry(entry),
+            },
                 t.Locale)),
             UseCommand(UseMemo(() => new Command<ReceiveHistoryEntry>
-                {
-                    Label = t.Message(new("App", "HistoryDeleteItem")),
-                    Icon = new FontIconData(AppIcons.Delete),
-                    Accelerator = Accelerator(VirtualKey.Delete),
-                    Execute = entry => history.Remove(entry.Id),
-                },
+            {
+                Label = t.Message(new("App", "HistoryDeleteItem")),
+                Icon = new FontIconData(AppIcons.Delete),
+                Accelerator = Accelerator(VirtualKey.Delete),
+                Execute = entry => history.Remove(entry.Id),
+            },
                 t.Locale, history)));
 
         var previousNavigationHistory = UseRef<Guid?>(null);
@@ -147,9 +147,9 @@ sealed class HistoryPage : Component<HistoryPageProps>
                     (entry, index) =>
                     HistoryRow(entry, t, entryCommands)
                         .PositionInSet(index + 1, visibleEntries.Count)) with
-                {
-                    Spacing = 8,
-                })
+            {
+                Spacing = 8,
+            })
                 .HAlign(HorizontalAlignment.Stretch)
                 .VAlign(VerticalAlignment.Stretch),
         };

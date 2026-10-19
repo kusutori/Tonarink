@@ -311,9 +311,9 @@ static class IncomingFileCard
                         static item => item.Id,
                         (item, index) => ReceiveItemRow(model, item)
                             .PositionInSet(index + 1, request.Items.Count)) with
-                    {
-                        Spacing = 8,
-                    })
+                {
+                    Spacing = 8,
+                })
                     .Padding(left: 4, top: 4, right: 16, bottom: 4)
                     .HAlign(HorizontalAlignment.Stretch)
                     .VAlign(VerticalAlignment.Stretch)

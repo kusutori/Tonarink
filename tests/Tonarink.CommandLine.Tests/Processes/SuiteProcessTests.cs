@@ -3,8 +3,8 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Xml.Linq;
-using Tonarink.TestSupport;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Tonarink.TestSupport;
 
 namespace Tonarink.CommandLine.Tests;
 
