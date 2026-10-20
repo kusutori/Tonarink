@@ -36,9 +36,11 @@ public sealed class HistoryPageTests
             Assert.IsTrue(page.ClearButton.IsEnabled);
             Assert.IsFalse(page.Texts.Contains("No receive history yet"));
             var secondButton = page.RowButton(second);
+            Assert.IsTrue(secondButton.Focus(FocusState.Programmatic));
             store.Replace(second);
             await UntilAsync(() => page.RowButtons.Count == 1);
-            Assert.AreSame(secondButton, page.RowButton(second));
+            Assert.AreNotEqual(FocusState.Unfocused, page.RowButton(second).FocusState,
+                "Removing a different record must not discard keyboard focus on the retained row.");
             Assert.IsFalse(page.Texts.Contains(first.FileName));
             store.Replace();
             await UntilAsync(() => page.Texts.Contains("No receive history yet") && !page.ClearButton.IsEnabled);

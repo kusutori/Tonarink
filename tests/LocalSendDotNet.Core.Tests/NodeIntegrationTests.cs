@@ -84,7 +84,7 @@ public sealed class NodeIntegrationTests
 
     [TestMethod]
     [Timeout(60_000)]
-    public async Task LargeVirtualStreamTransfersWithoutMaterializingSource()
+    public async Task VirtualStreamTransfersEveryByteWithoutChangingItsContent()
     {
         const long length = 32L * 1024 * 1024;
         var root = TestDirectory.Create();
@@ -109,7 +109,19 @@ public sealed class NodeIntegrationTests
 
             _ = sent.RequireCompleted();
             _ = received.RequireCompleted();
-            Assert.AreEqual(length, new FileInfo(Path.Combine(downloads, "large.bin")).Length);
+            // Size alone also passes for a preallocated zero-filled file.
+            // Verify the payload, without asserting the sender's buffering strategy.
+            await using var output = File.OpenRead(Path.Combine(downloads, "large.bin"));
+            Assert.AreEqual(length, output.Length);
+            var buffer = new byte[8192];
+            long verified = 0;
+            int count;
+            while ((count = await output.ReadAsync(buffer)) != 0)
+            {
+                Assert.AreEqual(-1, buffer.AsSpan(0, count).IndexOfAnyExcept((byte)0xA5), $"Content changed near offset {verified}.");
+                verified += count;
+            }
+            Assert.AreEqual(length, verified);
         }
         finally { Directory.Delete(root, recursive: true); }
     }
@@ -465,7 +477,7 @@ internal sealed class GeneratedStream(long length) : Stream
     {
         var read = (int)Math.Min(count, length - _position);
         if (read <= 0) return 0;
-        Array.Clear(buffer, offset, read);
+        Array.Fill(buffer, (byte)0xA5, offset, read);
         _position += read;
         return read;
     }
@@ -474,7 +486,7 @@ internal sealed class GeneratedStream(long length) : Stream
         cancellationToken.ThrowIfCancellationRequested();
         var read = (int)Math.Min(buffer.Length, length - _position);
         if (read <= 0) return ValueTask.FromResult(0);
-        buffer.Span[..read].Clear();
+        buffer.Span[..read].Fill(0xA5);
         _position += read;
         return ValueTask.FromResult(read);
     }

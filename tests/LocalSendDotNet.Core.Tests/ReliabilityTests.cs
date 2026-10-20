@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
+using System.Text.Json;
 using LocalSendDotNet.Protocol.V2;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -31,13 +32,27 @@ public sealed class ReliabilityTests
     }
 
     [TestMethod]
-    public void DeviceStoreExpiresAndPublishesRemovedDevice()
+    public async Task DeviceExpirationNotifiesSubscribersAndKeepsFreshPeers()
     {
         var hub = new BroadcastHub<DeviceChange>(8);
         var store = new DeviceStore(hub);
-        store.Upsert(new("old", "2.2", null, LocalSendDeviceType.Desktop, "fingerprint", false, [], DateTimeOffset.UtcNow.AddMinutes(-5)));
-        Assert.AreEqual(1, store.RemoveExpired(DateTimeOffset.UtcNow.AddMinutes(-1)));
-        Assert.IsEmpty(store.Snapshot());
+        var cutoff = new DateTimeOffset(2026, 10, 1, 12, 0, 0, TimeSpan.Zero);
+        using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        await using var reader = hub.Subscribe(deadline.Token).GetAsyncEnumerator();
+        var added = reader.MoveNextAsync().AsTask();
+        store.Upsert(new("old", "2.2", null, LocalSendDeviceType.Desktop, "expired", false, [], cutoff.AddMinutes(-1)));
+        Assert.IsTrue(await added);
+        Assert.AreEqual(DeviceChangeKind.Added, reader.Current.Kind);
+        store.Upsert(new("fresh", "2.2", null, LocalSendDeviceType.Desktop, "current", false, [], cutoff.AddMinutes(1)));
+        Assert.IsTrue(await reader.MoveNextAsync());
+        Assert.AreEqual("current", reader.Current.Device.Fingerprint);
+
+        var removed = reader.MoveNextAsync().AsTask();
+        Assert.AreEqual(1, store.RemoveExpired(cutoff));
+        Assert.IsTrue(await removed);
+        Assert.AreEqual(DeviceChangeKind.Removed, reader.Current.Kind);
+        Assert.AreEqual("expired", reader.Current.Device.Fingerprint);
+        Assert.AreEqual("current", Assert.ContainsSingle(store.Snapshot()).Fingerprint);
     }
 
     [TestMethod]
@@ -105,23 +120,8 @@ public sealed class ReliabilityTests
     }
 
     [TestMethod]
-    public void PublicSurfaceKeepsProtocolDtosInternalAndUiEntryPointsStable()
-    {
-        var assembly = typeof(LocalSendNode).Assembly;
-        Assert.DoesNotContain(type => type.Namespace?.Contains(".Protocol", StringComparison.Ordinal) == true, assembly.GetExportedTypes());
-        var methods = typeof(LocalSendNode).GetMethods().Select(static method => method.Name).ToHashSet(StringComparer.Ordinal);
-        foreach (var method in new[]
-        {
-            "StartAsync", "StopAsync", "RefreshAsync", "GetDevices", "WatchDeviceChangesAsync", "WatchIncomingTransfersAsync",
-            "SendAsync", "AcceptAsync", "DeclineAsync", "CancelTransferAsync", "ProbeDeviceAsync", "AddKnownDeviceAsync", "RemoveDevice",
-            "StartWebShareAsync", "StopWebShare", "WatchWebShareAsync"
-        })
-            Assert.Contains(method, methods);
-    }
-
-    [TestMethod]
     [Timeout(15_000)]
-    public async Task DiscoveryReceiverCanRebindAfterInterfaceRefresh()
+    public async Task DiscoveryMembershipTracksAvailableInterfacesAndRetainsTheLastUsableSet()
     {
         var addresses = NetworkInterface.GetAllNetworkInterfaces()
             .Where(static nic => nic.OperationalStatus == OperationalStatus.Up && nic.NetworkInterfaceType is not NetworkInterfaceType.Loopback and not NetworkInterfaceType.Tunnel)
@@ -167,6 +167,7 @@ public sealed class ReliabilityTests
             Assert.AreEqual(LocalSendNodeState.Running, node.State);
             Assert.IsNotNull(node.Identity);
             Assert.IsNotNull(node.DiscoveryError);
+            await AssertHttpInfoAsync(node, port);
             await node.StopAsync();
         }
         finally { Directory.Delete(root, recursive: true); }
@@ -191,6 +192,7 @@ public sealed class ReliabilityTests
             listener.Stop();
             await node.StartAsync();
             Assert.AreEqual(LocalSendNodeState.Running, node.State);
+            await AssertHttpInfoAsync(node, port);
             await node.StopAsync();
         }
         finally
@@ -202,13 +204,14 @@ public sealed class ReliabilityTests
 
     [TestMethod]
     [Timeout(20_000)]
-    public async Task CancelledStartupCleansUpAndCanBeRetried()
+    public async Task CancelledStartRequestCanBeRetried()
     {
         var root = TestDirectory.Create();
         await using var node = new LocalSendNode(TestOptions(GetFreeTcpPort(), root));
         try
         {
-            using var cancellation = new CancellationTokenSource(TimeSpan.FromMilliseconds(50));
+            using var cancellation = new CancellationTokenSource();
+            await cancellation.CancelAsync();
             await Assert.ThrowsAsync<OperationCanceledException>(() => node.StartAsync(cancellation.Token));
             Assert.AreEqual(LocalSendNodeState.Created, node.State);
             await node.StartAsync();
@@ -216,6 +219,21 @@ public sealed class ReliabilityTests
             await node.StopAsync();
         }
         finally { Directory.Delete(root, recursive: true); }
+    }
+
+    private static async Task AssertHttpInfoAsync(LocalSendNode node, int port)
+    {
+        using var handler = new HttpClientHandler
+        {
+            ServerCertificateCustomValidationCallback = (_, certificate, _, _) =>
+                certificate is not null && DeviceIdentityStore.ValidatePeerCertificate(certificate, node.Identity!.Fingerprint)
+        };
+        using var client = new HttpClient(handler) { Timeout = TimeSpan.FromSeconds(5) };
+        using var response = await client.GetAsync($"https://127.0.0.1:{port}/api/localsend/v2/info");
+        response.EnsureSuccessStatusCode();
+        using var info = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        Assert.AreEqual("test", info.RootElement.GetProperty("alias").GetString());
+        Assert.AreEqual(node.Identity!.Fingerprint, info.RootElement.GetProperty("fingerprint").GetString());
     }
 
     private static int GetFreeUdpPort()

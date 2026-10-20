@@ -45,7 +45,7 @@ public sealed class PluralMessageTests
         "2 个待处理请求", "已选择 2 项 · 2 KB", "已选择 2/2 个文件",
         "已接收来自 Peer 的 2 个项目。", "已向 Peer 发送 2 个项目。"
     })]
-    public void ShippedMessagesFormatZeroSingularAndPluralInEachLocale(
+    public void ShippedEnglishAndChineseMessagesFormatZeroSingularAndPlural(
         string locale, int count, string[] expected)
     {
         var intl = new IntlAccessor(locale, global::Tonarink.AppShell.Resources, new MessageCache());

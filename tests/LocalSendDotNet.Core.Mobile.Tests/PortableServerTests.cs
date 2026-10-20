@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Sockets;
+using System.Text.Json;
 using LocalSendDotNet;
 
 namespace LocalSendDotNet.Core.Mobile.Tests;
@@ -21,12 +22,17 @@ public sealed class PortableServerTests
         try
         {
             await Task.WhenAll(receiver.StartAsync(), sender.StartAsync());
-            var receiveTask = AcceptNextAsync(receiver);
+            await using var incoming = receiver.WatchIncomingTransfersAsync().GetAsyncEnumerator();
+            var arriving = incoming.MoveNextAsync().AsTask();
             var device = new LocalSendDevice("Receiver", "2.2", null, LocalSendDeviceType.Mobile,
                 receiver.Identity!.Fingerprint, false,
                 [new DeviceEndpoint(IPAddress.Loopback, receiverPort, LocalSendProtocol.Https)], DateTimeOffset.UtcNow);
 
-            var sent = await sender.SendAsync(device, [new SendTextItem("portable hello")]);
+            var sending = sender.SendAsync(device, [new SendTextItem("portable hello")]);
+            Assert.IsTrue(await arriving.WaitAsync(TimeSpan.FromSeconds(5)));
+            Assert.AreEqual("portable hello", Assert.ContainsSingle(incoming.Current.Items).Preview);
+            var receiveTask = receiver.AcceptAsync(incoming.Current.RequestId);
+            var sent = await sending;
             _ = RequireCompleted(sent);
             var received = await receiveTask;
             var item = Assert.ContainsSingle(RequireCompleted(received).Items);
@@ -54,7 +60,9 @@ public sealed class PortableServerTests
             };
             using var client = new HttpClient(handler);
             var json = await client.GetStringAsync($"https://127.0.0.1:{port}/api/localsend/v2/info");
-            Assert.Contains("Portable", json, StringComparison.Ordinal);
+            using var info = JsonDocument.Parse(json);
+            Assert.AreEqual("Portable", info.RootElement.GetProperty("alias").GetString());
+            Assert.AreEqual(node.Identity!.Fingerprint, info.RootElement.GetProperty("fingerprint").GetString());
         }
         finally
         {

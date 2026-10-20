@@ -32,7 +32,7 @@ public sealed class ResponseQueueTests
                 Assert.AreEqual(index.ToString(), item.Message);
             }
             Assert.IsTrue(output.Reader.TryRead(out var last));
-            Assert.AreSame(next, last);
+            Assert.AreEqual(next, last);
             output.Complete();
             await output.Reader.Completion.WaitAsync(Deadline);
         }
@@ -97,7 +97,7 @@ public sealed class ResponseQueueTests
                 Assert.AreEqual(index.ToString(), progress.Message);
             }
             Assert.IsTrue(output.Reader.TryRead(out var last));
-            Assert.AreSame(final, last);
+            Assert.AreEqual(final, last);
             Assert.AreEqual("result", last.Type);
             output.Complete();
             await output.Reader.Completion.WaitAsync(Deadline);
@@ -157,7 +157,7 @@ public sealed class ResponseQueueTests
         Assert.AreEqual(CliResponseQueue.Capacity, output.Reader.Count);
         CliResponse? last = null;
         while (output.Reader.TryRead(out var item)) last = item;
-        Assert.AreSame(progress, last);
+        Assert.AreEqual(progress, last);
         output.Complete();
         await output.Reader.Completion.WaitAsync(Deadline);
     }

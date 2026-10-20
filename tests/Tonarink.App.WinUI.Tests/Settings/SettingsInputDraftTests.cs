@@ -9,14 +9,26 @@ namespace Tonarink.App.WinUI.Tests;
 public sealed class SettingsInputDraftTests
 {
     [TestMethod]
-    public void EditingDoesNotMutatePersistedSettings()
+    public void DraftStartsWithTheUsersSavedEditableValues()
     {
-        var saved = AppSettings.Default;
-        var draft = SettingsInputDraft.FromSettings(saved) with { Alias = "Edited", Port = 54321 };
+        // Deliberately avoid defaults: returning an empty/default draft must fail.
+        var saved = AppSettings.Default with
+        {
+            Alias = "Saved laptop",
+            DeviceModel = "Saved model",
+            Port = 54321,
+            DiscoveryTimeoutMs = 1234,
+            MulticastGroup = "239.1.2.3",
+            ReceivePin = "2468",
+        };
+        var draft = SettingsInputDraft.FromSettings(saved);
 
-        Assert.AreEqual(AppSettings.Default, saved);
-        Assert.AreNotEqual(SettingsInputDraft.FromSettings(saved), draft);
-        Assert.IsTrue(draft.TryValidate(false, out _));
+        Assert.AreEqual("Saved laptop", draft.Alias);
+        Assert.AreEqual("Saved model", draft.DeviceModel);
+        Assert.AreEqual(54321d, draft.Port);
+        Assert.AreEqual(1234d, draft.DiscoveryTimeoutMs);
+        Assert.AreEqual("239.1.2.3", draft.MulticastGroup);
+        Assert.AreEqual("2468", draft.ReceivePin);
     }
 
     [TestMethod]
@@ -25,12 +37,18 @@ public sealed class SettingsInputDraftTests
         var original = AppSettings.Default;
         var draft = SettingsInputDraft.FromSettings(original) with
         {
-            Alias = "  Laptop  ", DeviceModel = "  Model  ", Port = 54321,
-            DiscoveryTimeoutMs = 1200, MulticastGroup = " 239.1.2.3 ", ReceivePin = " 2468 ",
+            Alias = "  Laptop  ",
+            DeviceModel = "  Model  ",
+            Port = 54321,
+            DiscoveryTimeoutMs = 1200,
+            MulticastGroup = " 239.1.2.3 ",
+            ReceivePin = " 2468 ",
         };
         var latest = original with
         {
-            ThemeIndex = 2, NotificationsEnabled = false, ReceivePinEnabled = true,
+            ThemeIndex = 2,
+            NotificationsEnabled = false,
+            ReceivePinEnabled = true,
             NetworkWhitelist = (string[])["192.168.1.*"],
         };
 
@@ -45,7 +63,7 @@ public sealed class SettingsInputDraftTests
         Assert.AreEqual("2468", applied.ResolvedReceivePin);
         Assert.AreEqual(latest.ThemeIndex, applied.ThemeIndex);
         Assert.IsFalse(applied.NotificationsEnabled);
-        Assert.AreSame(latest.NetworkWhitelist, applied.NetworkWhitelist);
+        Assert.AreSequenceEqual(new[] { "192.168.1.*" }, applied.NetworkWhitelist!);
     }
 
     [TestMethod]
@@ -109,7 +127,9 @@ public sealed class SettingsInputDraftTests
         var saved = AppSettings.Default;
         var draft = SettingsInputDraft.FromSettings(saved) with
         {
-            Alias = " ", DeviceModel = " ", MulticastGroup = " ",
+            Alias = " ",
+            DeviceModel = " ",
+            MulticastGroup = " ",
         };
         Assert.IsTrue(draft.TryValidate(false, out _));
         var applied = draft.ApplyTo(saved);

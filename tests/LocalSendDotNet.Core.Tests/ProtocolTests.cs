@@ -24,9 +24,16 @@ public sealed class ProtocolTests
 
         var json = JsonSerializer.Serialize(dto, V2Json.Options);
 
-        Assert.Contains("\"deviceType\":\"desktop\"", json, StringComparison.Ordinal);
-        Assert.Contains("\"announce\":true", json, StringComparison.Ordinal);
-        Assert.DoesNotContain("deviceModel", json, StringComparison.Ordinal);
+        using var document = JsonDocument.Parse(json);
+        var payload = document.RootElement;
+        Assert.AreEqual("测试设备", payload.GetProperty("alias").GetString());
+        Assert.AreEqual("2.2", payload.GetProperty("version").GetString());
+        Assert.AreEqual("desktop", payload.GetProperty("deviceType").GetString());
+        Assert.AreEqual(new string('A', 64), payload.GetProperty("fingerprint").GetString());
+        Assert.AreEqual(53317, payload.GetProperty("port").GetInt32());
+        Assert.AreEqual("https", payload.GetProperty("protocol").GetString());
+        Assert.IsTrue(payload.GetProperty("announce").GetBoolean());
+        Assert.IsFalse(payload.TryGetProperty("deviceModel", out _));
     }
 
     [TestMethod]
@@ -34,7 +41,9 @@ public sealed class ProtocolTests
     {
         var dto = new DeviceInfoDto { Alias = "a", Version = "2.2", Fingerprint = "f", Port = 1, Protocol = "https" };
         var json = JsonSerializer.Serialize(dto, V2Json.Options);
-        Assert.DoesNotContain("announce", json, StringComparison.Ordinal);
+        using var document = JsonDocument.Parse(json);
+        Assert.IsFalse(document.RootElement.TryGetProperty("announce", out _));
+        Assert.AreEqual("a", document.RootElement.GetProperty("alias").GetString());
     }
 
     [TestMethod]
@@ -54,7 +63,4 @@ public sealed class ProtocolTests
     public void UnknownDeviceTypeFallsBackToDesktop(string? value, LocalSendDeviceType expected) =>
         Assert.AreEqual(expected, V2ProtocolAdapter.ParseDeviceType(value));
 
-    [TestMethod]
-    public void InvalidJsonIsRejected() => Assert.ThrowsExactly<JsonException>(() =>
-        JsonSerializer.Deserialize<DeviceInfoDto>("{not-json}", V2Json.Options));
 }

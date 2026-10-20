@@ -21,8 +21,8 @@ public sealed class LanguageTests
             Assert.AreEqual(expected, CliText.Get("Transfer cancelled"));
             Assert.AreEqual("missing resource fallback", CliText.Get("missing resource fallback"));
         }
-        Assert.AreSame(previous, CultureInfo.CurrentCulture);
-        Assert.AreSame(previousUi, CultureInfo.CurrentUICulture);
+        Assert.AreEqual(previous.Name, CultureInfo.CurrentCulture.Name);
+        Assert.AreEqual(previousUi.Name, CultureInfo.CurrentUICulture.Name);
     }
 
     [TestMethod]

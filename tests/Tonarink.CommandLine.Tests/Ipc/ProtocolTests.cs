@@ -1,4 +1,5 @@
 using System.Buffers.Binary;
+using System.Text;
 using System.Text.Json;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Tonarink.Cli;
@@ -9,6 +10,34 @@ namespace Tonarink.CommandLine.Tests;
 [TestCategory("Unit")]
 public sealed class ProtocolTests
 {
+    [TestMethod]
+    public async Task FramesUseLittleEndianUtf8JsonRatherThanOnlyAgreeingWithTheirOwnReader()
+    {
+        // An independently constructed frame prevents matching writer/reader
+        // defects (wrong byte order or JSON property names) from passing a round trip.
+        var payload = Encoding.UTF8.GetBytes("{\"arguments\":[\"status\"],\"workingDirectory\":\"/caller\",\"standardInput\":\"文本 🌏\",\"language\":\"zh-CN\"}");
+        using var incoming = new MemoryStream();
+        var header = new byte[4];
+        BinaryPrimitives.WriteInt32LittleEndian(header, payload.Length);
+        incoming.Write(header);
+        incoming.Write(payload);
+        incoming.Position = 0;
+        var request = await CliProtocol.ReadAsync(incoming, CliJsonContext.Default.CliRequest, default);
+        Assert.AreSequenceEqual(new[] { "status" }, request.Arguments);
+        Assert.AreEqual("/caller", request.WorkingDirectory);
+        Assert.AreEqual("文本 🌏", request.StandardInput);
+        Assert.AreEqual("zh-CN", request.Language);
+
+        using var outgoing = new MemoryStream();
+        await CliProtocol.WriteAsync(outgoing, new CliResponse("result", 9, "诊断 🌏"), CliJsonContext.Default.CliResponse, default);
+        var frame = outgoing.ToArray();
+        Assert.AreEqual(frame.Length - 4, BinaryPrimitives.ReadInt32LittleEndian(frame));
+        using var json = JsonDocument.Parse(frame.AsMemory(4));
+        Assert.AreEqual("result", json.RootElement.GetProperty("type").GetString());
+        Assert.AreEqual(9, json.RootElement.GetProperty("exitCode").GetInt32());
+        Assert.AreEqual("诊断 🌏", json.RootElement.GetProperty("message").GetString());
+    }
+
     [TestMethod]
     public async Task Frames_RoundTripMultipleRequestsWithoutConsumingNextFrame()
     {
@@ -30,7 +59,7 @@ public sealed class ProtocolTests
     [DataRow(-1)]
     [DataRow(0)]
     [DataRow(4 * 1024 * 1024 + 1)]
-    public async Task InvalidLength_IsRejectedBeforeAllocatingPayload(int length)
+    public async Task NonPositiveOrOversizedFrameLengthIsRejected(int length)
     {
         var header = new byte[4];
         BinaryPrimitives.WriteInt32LittleEndian(header, length);

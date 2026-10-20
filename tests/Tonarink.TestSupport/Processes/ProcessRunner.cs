@@ -19,6 +19,11 @@ public static class ProcessRunner
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             RedirectStandardInput = true,
+            // The CLI and owned probes use UTF-8 pipes, independently of the
+            // test runner's Windows console code page.
+            StandardInputEncoding = new UTF8Encoding(false),
+            StandardOutputEncoding = new UTF8Encoding(false),
+            StandardErrorEncoding = new UTF8Encoding(false),
         };
         foreach (var argument in arguments)
             start.ArgumentList.Add(argument);

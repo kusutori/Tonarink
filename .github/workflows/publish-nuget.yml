@@ -16,6 +16,8 @@ concurrency:
 jobs:
   pack:
     runs-on: ubuntu-latest
+    env:
+      PortableTransportOnly: 'true'
     outputs:
       version: ${{ steps.version.outputs.version }}
     steps:
@@ -49,8 +51,16 @@ jobs:
       - name: Build
         run: dotnet build LocalSendDotNet.Core.slnx --no-restore --configuration Release
 
-      - name: Test
-        run: dotnet test LocalSendDotNet.Core.slnx --no-build --configuration Release --filter "Skip!=Manual"
+      - name: Test Core package behavior
+        shell: pwsh
+        run: ./tools/Invoke-Tests.ps1 -Suite Core -NoBuild -ResultsDirectory artifacts/test-results/nuget
+
+      - uses: actions/upload-artifact@v4
+        if: always() && hashFiles('artifacts/test-results/nuget/run.json') != ''
+        with:
+          name: core-package-test-results
+          path: artifacts/test-results/nuget/
+          if-no-files-found: error
 
       - name: Pack
         run: >-

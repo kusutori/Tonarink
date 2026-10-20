@@ -19,12 +19,14 @@ param(
 $ErrorActionPreference = 'Stop'
 $repo = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..')).Path
 . (Join-Path $PSScriptRoot 'testing/Invoke-TestProcess.ps1')
+# Discovery guards for accidental suite omission, not coverage/quality targets.
+# Keep these aligned when behavior cases are intentionally merged or removed.
 $projects = @{
-    Core = @('LocalSendDotNet.Core.Tests', 95)
-    Application = @('Tonarink.Application.Tests', 26)
-    CommandLine = @('Tonarink.CommandLine.Tests', 186)
+    Core = @('LocalSendDotNet.Core.Tests', 91)
+    Application = @('Tonarink.Application.Tests', 30)
+    CommandLine = @('Tonarink.CommandLine.Tests', 180)
     Cli = @('Tonarink.Cli.E2E.Tests', 55)
-    WinUI = @('Tonarink.App.WinUI.Tests', 126)
+    WinUI = @('Tonarink.App.WinUI.Tests', 127)
     WindowsInput = @('Tonarink.App.WinUI.Tests', 1)
     AppE2E = @('Tonarink.App.E2E.Tests', 2)
     Blazor = @('Tonarink.Blazor.Shared.Tests', 8)

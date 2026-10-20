@@ -4,6 +4,8 @@ using Microsoft.UI.Reactor.Core;
 using Microsoft.UI.Reactor.Hosting;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
+using Microsoft.UI.Xaml.Automation.Peers;
+using Microsoft.UI.Xaml.Automation.Provider;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -22,19 +24,10 @@ namespace Tonarink.App.WinUI.Tests;
 public sealed class ExpanderTests
 {
     [UITestMethod]
-    public async Task AsyncUiMethod_RemainsOnRealDispatcherAfterAwait()
+    public async Task ChangingTheHeaderToggleUpdatesTheRealizedChildActionWithoutReopening()
     {
-        Assert.IsTrue(TestApplication.TestWindow.DispatcherQueue.HasThreadAccess);
-        await Task.Delay(10);
-        Assert.IsTrue(TestApplication.TestWindow.DispatcherQueue.HasThreadAccess);
-        var button = new Microsoft.UI.Xaml.Controls.Button();
-        Assert.IsNotNull(button.DispatcherQueue);
-    }
-
-    [UITestMethod]
-    public async Task ProductionExpander_UpdatesHeaderAndItemWithoutReplacingNativeControls()
-    {
-        Action<bool>? setEnabled = null;
+        var changes = 0;
+        var clicks = 0;
         var host = new ReactorHostControl();
         TestApplication.TestWindow.Content = host;
         try
@@ -42,12 +35,11 @@ public sealed class ExpanderTests
             host.Mount(context =>
             {
                 var (enabled, update) = context.UseState(false);
-                setEnabled = update;
                 return SettingsExpander(
-                content: ToggleSwitch(enabled, update).AutomationName("header toggle")
+                content: ToggleSwitch(enabled, value => { changes++; update(value); }).AutomationName("header toggle")
                     .AutomationId("Fixture.Enabled"),
                 items: [SettingsCard(header: "child", isClickEnabled: false, isActionIconVisible: false,
-                    content: AnimatedButtons.Add("action", () => { }, isEnabled: enabled,
+                    content: AnimatedButtons.Add("action", () => clicks++, isEnabled: enabled,
                         automationId: "Fixture.Add"))])
                 .AutomationId("Fixture.Expander")
                 .Set(control => control.IsExpanded = true);
@@ -57,17 +49,24 @@ public sealed class ExpanderTests
             await UntilAsync(() => expander.Content is Microsoft.UI.Xaml.Controls.ToggleSwitch && expander.Items.Count == 1);
             var toggle = (Microsoft.UI.Xaml.Controls.ToggleSwitch)expander.Content;
             var card = (SettingsCard)expander.Items[0];
-            await UntilAsync(() => Find<Microsoft.UI.Xaml.Controls.Button>((DependencyObject)card.Content) is not null);
-            var button = Find<Microsoft.UI.Xaml.Controls.Button>((DependencyObject)card.Content)!;
+            await UntilAsync(() => Find<Microsoft.UI.Xaml.Controls.Button>(host, "Fixture.Add") is not null);
+            var button = Find<Microsoft.UI.Xaml.Controls.Button>(host, "Fixture.Add")!;
             Assert.AreEqual("Fixture.Expander", AutomationProperties.GetAutomationId(expander));
             Assert.AreEqual("Fixture.Enabled", AutomationProperties.GetAutomationId(toggle));
             Assert.AreEqual("Fixture.Add", AutomationProperties.GetAutomationId(button));
             Assert.IsFalse(button.IsEnabled);
             Assert.IsFalse(toggle.IsOn);
 
-            Assert.IsNotNull(setEnabled);
-            setEnabled(true);
-            await UntilAsync(() => toggle.IsOn && button.IsEnabled);
+            Assert.AreEqual(0, changes, "Initial controlled values must not be reported as user edits.");
+            // Raise the native control event, not a captured Reactor state setter.
+            toggle.IsOn = true;
+            await UntilAsync(() => Find<Microsoft.UI.Xaml.Controls.Button>(host, "Fixture.Add")?.IsEnabled == true);
+            var current = Find<Microsoft.UI.Xaml.Controls.Button>(host, "Fixture.Add")!;
+            Assert.AreEqual(1, changes);
+            var invoke = new ButtonAutomationPeer(current).GetPattern(PatternInterface.Invoke) as IInvokeProvider;
+            Assert.IsNotNull(invoke);
+            invoke.Invoke();
+            Assert.AreEqual(1, clicks, "The realized action must still invoke its current callback after the update.");
             Assert.AreSame(expander, Find<SettingsExpander>(host));
             Assert.AreSame(toggle, expander.Content);
             Assert.AreSame(card, expander.Items[0]);
@@ -75,6 +74,9 @@ public sealed class ExpanderTests
             Assert.AreEqual("Fixture.Expander", AutomationProperties.GetAutomationId(expander));
             Assert.AreEqual("Fixture.Enabled", AutomationProperties.GetAutomationId(toggle));
             Assert.AreEqual("Fixture.Add", AutomationProperties.GetAutomationId(button));
+            toggle.IsOn = false;
+            await UntilAsync(() => Find<Microsoft.UI.Xaml.Controls.Button>(host, "Fixture.Add")?.IsEnabled == false);
+            Assert.AreEqual(2, changes);
         }
         finally
         {
@@ -86,13 +88,13 @@ public sealed class ExpanderTests
         }
     }
 
-    private static T? Find<T>(DependencyObject root) where T : DependencyObject
+    private static T? Find<T>(DependencyObject root, string? id = null) where T : DependencyObject
     {
-        if (root is T found)
+        if (root is T found && (id is null || AutomationProperties.GetAutomationId(root) == id))
             return found;
         for (var index = 0; index < VisualTreeHelper.GetChildrenCount(root); index++)
         {
-            if (Find<T>(VisualTreeHelper.GetChild(root, index)) is { } child)
+            if (Find<T>(VisualTreeHelper.GetChild(root, index), id) is { } child)
                 return child;
         }
         return null;

@@ -82,7 +82,7 @@ public sealed class CommandBehaviorTests
     }
 
     [TestMethod]
-    public async Task HistoryClear_PassesNullIdAndDoesNotInvokeAnyFileDeletionApi()
+    public async Task HistoryClear_RequestsRemovalOfAllRecords()
     {
         var runtime = new RuntimeSpy();
         Assert.AreEqual(0, await Invoke(runtime, ["history", "clear", "--yes"], []));

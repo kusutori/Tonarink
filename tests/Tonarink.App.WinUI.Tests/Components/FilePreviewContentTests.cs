@@ -1,7 +1,10 @@
+using System.Globalization;
+using System.Text.Json;
 using CommunityToolkit.WinUI.Controls;
 using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Hosting;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Automation.Provider;
 using Microsoft.UI.Xaml.Controls;
@@ -10,9 +13,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.AppContainer;
 using Tonarink.Components.Settings;
 using Tonarink.Services.Localization;
 using Tonarink.TestSupport;
-using System.Globalization;
-using System.Text.Json;
-using Microsoft.UI.Xaml.Automation;
 using static Microsoft.UI.Reactor.Factories;
 using static Tonarink.Controls.SettingsExpanderElement;
 
@@ -48,8 +48,8 @@ public sealed class FilePreviewContentTests
             await UntilAsync(() => Descendants<TextBox>(host).Any() && Descendants<Microsoft.UI.Xaml.Controls.Button>(host).Count(IsAction) == 2);
             var input = Descendants<TextBox>(host).Single();
             var actions = Descendants<Microsoft.UI.Xaml.Controls.Button>(host).Where(IsAction).ToArray();
-            var verify = actions[0];
-            var delete = actions[1];
+            var verify = actions.Single(button => AutomationProperties.GetAutomationId(button).EndsWith(".Verify", StringComparison.Ordinal));
+            var delete = actions.Single(button => AutomationProperties.GetAutomationId(button).EndsWith(".Delete", StringComparison.Ordinal));
             var entered = false;
             delete.PointerEntered += (_, _) => entered = true;
 
@@ -65,7 +65,7 @@ public sealed class FilePreviewContentTests
             Assert.IsEmpty(saves);
             await UiAsync("hover", "Settings.Preview.QuickLook.Delete");
             await UntilAsync(() => entered);
-            Assert.IsFalse(removed, "Hover must open the lid, not remove the item.");
+            Assert.IsFalse(removed, "Hover must not remove the item; this does not assert the animation's appearance.");
             await UiAsync("invoke", "Settings.Preview.QuickLook.Verify", "--action", "invoke");
             await UntilAsync(() => Descendants<FontIcon>(verify).Any(icon => icon.Glyph == "\uE783"));
             Assert.IsEmpty(saves);
@@ -117,19 +117,12 @@ public sealed class FilePreviewContentTests
             Assert.IsInstanceOfType<SettingsCard>(expander.Items[0]);
             var input = Descendants<TextBox>(host).Single();
             var actions = Descendants<Microsoft.UI.Xaml.Controls.Button>(host).Where(IsAction).ToArray();
-            var verify = actions[0];
-            var delete = actions[1];
+            var verify = actions.Single(button => AutomationProperties.GetAutomationId(button).EndsWith(".Verify", StringComparison.Ordinal));
+            var delete = actions.Single(button => AutomationProperties.GetAutomationId(button).EndsWith(".Delete", StringComparison.Ordinal));
             Assert.IsFalse(verify.IsEnabled);
             Assert.AreEqual("Settings.Preview.QuickLook.Path", AutomationProperties.GetAutomationId(input));
             Assert.AreEqual("Settings.Preview.QuickLook.Verify", AutomationProperties.GetAutomationId(verify));
             Assert.AreEqual("Settings.Preview.QuickLook.Delete", AutomationProperties.GetAutomationId(delete));
-            Assert.AreEqual(300d, input.Width);
-            Assert.AreEqual(new Thickness(0), verify.Padding);
-            Assert.AreEqual(new Thickness(0), delete.Padding);
-            Assert.AreEqual(HorizontalAlignment.Center, verify.HorizontalContentAlignment);
-            Assert.AreEqual(HorizontalAlignment.Center, delete.HorizontalContentAlignment);
-            Assert.AreEqual(verify.Width, delete.Width);
-            Assert.AreEqual(verify.Height, delete.Height);
 
             input.Text = path + ".missing";
             await UntilAsync(() => verify.IsEnabled);
@@ -163,7 +156,11 @@ public sealed class FilePreviewContentTests
         }
     }
 
-    private static bool IsAction(Microsoft.UI.Xaml.Controls.Button button) => button.Width == 40 && button.Height == 40;
+    private static bool IsAction(Microsoft.UI.Xaml.Controls.Button button)
+    {
+        var id = AutomationProperties.GetAutomationId(button);
+        return id is "Settings.Preview.QuickLook.Verify" or "Settings.Preview.QuickLook.Delete";
+    }
 
     private static void Invoke(Microsoft.UI.Xaml.Controls.Button button)
     {

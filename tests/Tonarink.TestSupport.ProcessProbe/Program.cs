@@ -3,6 +3,12 @@ using System.Diagnostics;
 // Test-owned subprocess only. No production app/profile or host is involved.
 if (args.Length != 2 || !Guid.TryParse(args[1], out var nonce))
     return 2;
+if (args[0] == "echo-stdin")
+{
+    // Raw bytes are the independent oracle for the parent's pipe encoding.
+    await Console.OpenStandardInput().CopyToAsync(Console.OpenStandardOutput());
+    return 0;
+}
 using var self = Process.GetCurrentProcess();
 Console.WriteLine($"ready:{nonce:D}:{self.Id}");
 Console.Out.Flush();

@@ -42,7 +42,7 @@ public sealed class TransportReliabilityTests
     [Timeout(30_000)]
     public async Task AcceptedButAbandonedSessionTimesOutAndReleasesSlot()
     {
-        var setup = await TestPeers.CreateAsync(incomingTransferTimeout: TimeSpan.FromMilliseconds(200));
+        var setup = await TestPeers.CreateAsync(incomingTransferTimeout: TimeSpan.FromSeconds(1), maxConcurrentTransfers: 1);
         await using var receiver = setup.Receiver;
         try
         {
@@ -55,6 +55,20 @@ public sealed class TransportReliabilityTests
 
             var result = await receiveTask;
             Assert.AreEqual("transfer_timeout", result.RequireFailed().Failure.Code);
+            Assert.IsEmpty(Directory.EnumerateFiles(setup.Downloads, "*", SearchOption.AllDirectories));
+
+            // With exactly one slot, a leaked reservation prevents this transfer.
+            var next = NextRequestAsync(receiver);
+            var recoveryFile = File("b", "recovered.txt", "recovered");
+            var recoveryPrepare = setup.Client.PrepareUploadAsync(setup.Endpoint, setup.ReceiverFingerprint,
+                setup.Request(new Dictionary<string, FileDto> { ["b"] = recoveryFile }), null, default);
+            var recoveryRequest = await next.WaitAsync(TimeSpan.FromSeconds(5));
+            var recoveryReceive = receiver.AcceptAsync(recoveryRequest.RequestId);
+            var recovered = await recoveryPrepare;
+            Assert.IsNotNull(recovered);
+            await UploadAsync(setup, recovered, recoveryFile, "recovered");
+            _ = (await recoveryReceive).RequireCompleted();
+            Assert.AreEqual("recovered", await System.IO.File.ReadAllTextAsync(Path.Combine(setup.Downloads, "recovered.txt")));
         }
         finally { setup.Delete(); }
     }
@@ -179,9 +193,14 @@ public sealed class TransportReliabilityTests
                 Port = setup.SenderInfo.Port,
                 Protocol = setup.SenderInfo.Protocol
             };
-            await Assert.ThrowsExactlyAsync<HttpRequestException>(() =>
+            var denied = await Assert.ThrowsExactlyAsync<HttpRequestException>(() =>
                 setup.Client.RegisterAsync(setup.Endpoint, setup.ReceiverFingerprint, spoofed, default));
+            Assert.AreEqual(HttpStatusCode.Forbidden, denied.StatusCode);
             Assert.DoesNotContain(device => device.Fingerprint == spoofed.Fingerprint, receiver.GetDevices());
+
+            // Rejecting all registrations must not pass a spoof-rejection test.
+            _ = await setup.Client.RegisterAsync(setup.Endpoint, setup.ReceiverFingerprint, setup.SenderInfo, default);
+            Assert.Contains(device => device.Fingerprint == setup.SenderInfo.Fingerprint && device.Alias == "Sender", receiver.GetDevices());
         }
         finally { setup.Delete(); }
     }
@@ -190,13 +209,31 @@ public sealed class TransportReliabilityTests
     [Timeout(30_000)]
     public async Task PrepareMetadataLimitRemainsEnforcedWhileLargeUploadsAreAllowed()
     {
-        var setup = await TestPeers.CreateAsync(maxPrepareRequestBytes: 128);
+        var setup = await TestPeers.CreateAsync(maxPrepareRequestBytes: 1024);
         await using var receiver = setup.Receiver;
         try
         {
-            var file = File("a", new string('x', 256) + ".txt", "content");
-            await Assert.ThrowsExactlyAsync<HttpRequestException>(() => setup.Client.PrepareUploadAsync(setup.Endpoint, setup.ReceiverFingerprint,
+            var file = File("a", new string('x', 2048) + ".txt", "content");
+            var failure = await Assert.ThrowsExactlyAsync<HttpRequestException>(() => setup.Client.PrepareUploadAsync(setup.Endpoint, setup.ReceiverFingerprint,
                 setup.Request(new Dictionary<string, FileDto> { ["a"] = file }), null, default));
+            Assert.AreEqual(HttpStatusCode.RequestEntityTooLarge, failure.StatusCode,
+                "An accepted request that later times out must not masquerade as metadata-limit enforcement.");
+            Assert.IsEmpty(receiver.GetPendingIncomingTransfers());
+
+            // Positive control: the limit applies to metadata, not file bytes.
+            // A server rejecting every prepare request must fail this check.
+            var content = new string('v', 4096);
+            var valid = File("b", "valid.bin", content);
+            var next = NextRequestAsync(receiver);
+            var preparing = setup.Client.PrepareUploadAsync(setup.Endpoint, setup.ReceiverFingerprint,
+                setup.Request(new Dictionary<string, FileDto> { ["b"] = valid }), null, default);
+            var incoming = await next.WaitAsync(TimeSpan.FromSeconds(5));
+            var receiving = receiver.AcceptAsync(incoming.RequestId);
+            var prepared = await preparing;
+            Assert.IsNotNull(prepared);
+            await UploadAsync(setup, prepared, valid, content);
+            _ = (await receiving).RequireCompleted();
+            Assert.AreEqual(content, await System.IO.File.ReadAllTextAsync(Path.Combine(setup.Downloads, "valid.bin")));
         }
         finally { setup.Delete(); }
     }

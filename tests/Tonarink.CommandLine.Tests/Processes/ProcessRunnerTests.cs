@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Tonarink.TestSupport;
 
@@ -8,6 +9,33 @@ namespace Tonarink.CommandLine.Tests;
 [TestCategory("Integration")]
 public sealed class ProcessRunnerTests
 {
+    [TestMethod]
+    public async Task Utf8PipesPreserveTextEvenWhenTheParentConsoleUsesAscii()
+    {
+        using var directory = new TemporaryDirectory();
+        var assembly = Path.Combine(AppContext.BaseDirectory, "ProcessProbe", "Tonarink.TestSupport.ProcessProbe.dll");
+        const string text = "\t 开始 \"quote\" 🌏\r\nline two\n结束 \t\r\n";
+        var inputEncoding = Console.InputEncoding;
+        var outputEncoding = Console.OutputEncoding;
+        // This assembly is non-parallel. CI's Windows console code page must
+        // not silently corrupt a UTF-8 CLI fixture before the app reads it.
+        try
+        {
+            Console.InputEncoding = Encoding.ASCII;
+            Console.OutputEncoding = Encoding.ASCII;
+            var result = await ProcessRunner.RunAsync("dotnet", [assembly, "echo-stdin", Guid.NewGuid().ToString("D")],
+                directory.Path, TimeSpan.FromSeconds(15), input: text);
+            Assert.AreEqual(0, result.ExitCode, result.StandardError);
+            Assert.AreEqual(text, result.StandardOutput);
+            Assert.AreEqual(string.Empty, result.StandardError);
+        }
+        finally
+        {
+            Console.InputEncoding = inputEncoding;
+            Console.OutputEncoding = outputEncoding;
+        }
+    }
+
     [TestMethod]
     public async Task SuccessfulProcessKeepsStandardOutputAndErrorSeparate()
     {

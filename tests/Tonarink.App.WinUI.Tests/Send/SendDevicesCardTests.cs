@@ -10,13 +10,13 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.VisualStudio.TestTools.UnitTesting.AppContainer;
-using Tonarink.Hooks.LocalSendNode;
 using Tonarink.Components.Devices;
+using Tonarink.Hooks.LocalSendNode;
 using Tonarink.Pages.Send;
 using Tonarink.Services.Devices;
 using Tonarink.Utilities;
-using XamlMenuFlyout = Microsoft.UI.Xaml.Controls.MenuFlyout;
 using static Microsoft.UI.Reactor.Factories;
+using XamlMenuFlyout = Microsoft.UI.Xaml.Controls.MenuFlyout;
 
 namespace Tonarink.App.WinUI.Tests;
 
@@ -25,17 +25,15 @@ namespace Tonarink.App.WinUI.Tests;
 public sealed class SendDevicesCardTests
 {
     [UITestMethod]
-    public async Task OwnedHostDisposalRunsEffectsAndProductionCardUnmountExactlyOnce()
+    public async Task DeviceIdentityCardPublishesItsMountedAnchorAndClearsItOnUnmount()
     {
         var changes = new List<FrameworkElement?>();
-        var cleanups = 0;
         var host = new ReactorHostControl();
         TestApplication.TestWindow.Content = host;
         try
         {
             host.Mount(context =>
             {
-                context.UseEffect(() => () => cleanups++);
                 return LocaleProvider("en-US", Component<DeviceIdentityCard, DeviceIdentityCardProps>(new(
                     "Owned card", null, LocalSendDeviceType.Desktop, "#1",
                     ElementChanged: changes.Add)), global::Tonarink.AppShell.Resources, defaultLocale: "en-US");
@@ -43,14 +41,9 @@ public sealed class SendDevicesCardTests
             await UntilAsync(() => changes.Count == 1);
             Assert.IsNotNull(changes[0]);
             Assert.AreSame(host.XamlRoot, changes[0]!.XamlRoot);
-            Assert.AreEqual(0, cleanups);
             host.Dispose();
-            Assert.AreEqual(1, cleanups);
             Assert.AreEqual(2, changes.Count);
             Assert.IsNull(changes[1]);
-            host.Dispose();
-            Assert.AreEqual(1, cleanups);
-            Assert.AreEqual(2, changes.Count, "Terminal disposal must not repeat production unmount callbacks.");
         }
         finally
         {

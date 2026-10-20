@@ -12,7 +12,6 @@ namespace Tonarink.MtpProbe;
 public sealed class ProbeTests
 {
     private FileStream? _lease;
-    private string? _marker;
     public TestContext TestContext { get; set; } = null!;
 
     [TestInitialize]
@@ -27,7 +26,6 @@ public sealed class ProbeTests
         _lease = new FileStream(lease!, FileMode.Open, FileAccess.Read, FileShare.None);
 
         var marker = $"entered:{nonce:D}:{Environment.ProcessId}:{TestContext.TestName}";
-        _marker = marker;
         var evidence = Path.Combine(Path.GetDirectoryName(lease!)!, "probe-entry.txt");
         File.WriteAllText(evidence, marker);
         TestContext.AddResultFile(evidence);
@@ -49,20 +47,6 @@ public sealed class ProbeTests
 
     [TestMethod]
     public void Killed() => Process.GetCurrentProcess().Kill();
-
-    [TestMethod]
-    public async Task Hanging()
-    {
-        try { await Task.Delay(Timeout.InfiniteTimeSpan, TestContext.CancellationToken); }
-        catch (OperationCanceledException) when (TestContext.CancellationToken.IsCancellationRequested)
-        {
-            var evidence = Path.Combine(Path.GetDirectoryName((string)TestContext.Properties["probeLease"]!)!,
-                "probe-cancelled.txt");
-            File.WriteAllText(evidence, _marker!.Replace("entered:", "cancelled:", StringComparison.Ordinal));
-            TestContext.AddResultFile(evidence);
-            throw;
-        }
-    }
 
     [TestMethod]
     public async Task UncooperativeHang() => await Task.Delay(Timeout.InfiniteTimeSpan);

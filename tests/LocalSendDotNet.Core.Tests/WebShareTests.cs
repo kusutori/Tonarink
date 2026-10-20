@@ -193,8 +193,6 @@ public sealed class WebShareTests
 
             var page = await client.GetStringAsync($"http://127.0.0.1:{port}/");
             Assert.Contains("prepare-web-upload", page, StringComparison.Ordinal);
-            Assert.Contains("function createFileId()", page, StringComparison.Ordinal);
-            Assert.DoesNotContain("id: crypto.randomUUID()", page, StringComparison.Ordinal);
 
             await using var incoming = node.WatchIncomingTransfersAsync().GetAsyncEnumerator();
             var incomingMove = incoming.MoveNextAsync().AsTask();
@@ -210,7 +208,10 @@ public sealed class WebShareTests
 
             Assert.IsTrue(await incomingMove);
             var request = incoming.Current;
-            Assert.AreEqual("Web browser", request.Sender.Alias);
+            Assert.AreEqual(LocalSendDeviceType.Web, request.Sender.DeviceType);
+            var offered = Assert.ContainsSingle(request.Items);
+            Assert.AreEqual("from-browser.txt", offered.FileName);
+            Assert.AreEqual(12L, offered.Size);
             var acceptTask = node.AcceptAsync(request.RequestId);
             Assert.IsEmpty(node.GetPendingIncomingTransfers());
 

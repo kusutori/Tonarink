@@ -17,7 +17,6 @@ public sealed class FilePreviewSettingsTests
             FilePreviewProvider.QuickLook, "QuickLook.exe");
         var duplicate = FilePreviewSettings.Add(added, FilePreviewProvider.QuickLook);
 
-        Assert.AreSame(added, duplicate);
         Assert.ContainsSingle(FilePreviewSettings.Providers(duplicate));
         Assert.AreEqual("QuickLook.exe", duplicate.QuickLookExecutablePath);
     }
@@ -41,7 +40,6 @@ public sealed class FilePreviewSettingsTests
         var restored = RoundTrip(deleted);
         var migrated = FilePreviewSettings.MigrateDetectedTools(restored, "installed-peek.exe", "installed-quicklook.exe");
 
-        Assert.AreSame(restored, migrated);
         Assert.IsEmpty(FilePreviewSettings.Providers(migrated));
         Assert.AreEqual("", migrated.PowerToysPeekExecutablePath);
         Assert.AreEqual("", migrated.QuickLookExecutablePath);
@@ -54,7 +52,8 @@ public sealed class FilePreviewSettingsTests
             FilePreviewSettings.Add(Empty, FilePreviewProvider.PowerToysPeek),
             FilePreviewProvider.QuickLook) with
         {
-            PreviewProvider = FilePreviewProvider.QuickLook, NotificationsEnabled = false,
+            PreviewProvider = FilePreviewProvider.QuickLook,
+            NotificationsEnabled = false,
         };
         both = FilePreviewSettings.SetExecutablePath(both, FilePreviewProvider.PowerToysPeek, "peek.exe");
         both = FilePreviewSettings.SetExecutablePath(both, FilePreviewProvider.QuickLook, "quicklook.exe");
@@ -73,8 +72,8 @@ public sealed class FilePreviewSettingsTests
         var removed = FilePreviewSettings.Remove(added, FilePreviewProvider.QuickLook);
         var lateSave = FilePreviewSettings.SetExecutablePath(removed, FilePreviewProvider.QuickLook, "old.exe");
 
-        Assert.AreSame(removed, lateSave);
         Assert.IsEmpty(FilePreviewSettings.Providers(lateSave));
+        Assert.AreEqual("", lateSave.QuickLookExecutablePath, "A delayed save must not restore the deleted override.");
     }
 
     [TestMethod]
@@ -114,7 +113,8 @@ public sealed class FilePreviewSettingsTests
     {
         var legacy = AppSettings.Default with
         {
-            FilePreviewEnabled = true, PreviewProvider = FilePreviewProvider.QuickLook,
+            FilePreviewEnabled = true,
+            PreviewProvider = FilePreviewProvider.QuickLook,
             PowerToysPeekExecutablePath = "custom-peek.exe",
         };
         var migrated = FilePreviewSettings.MigrateDetectedTools(legacy, "", "");
@@ -160,8 +160,9 @@ public sealed class FilePreviewSettingsTests
             FilePreviewProvider.QuickLook, "installed.exe");
         var migrated = FilePreviewSettings.MigrateDetectedTools(settings, "", "installed.exe", clearDetectedPaths: false);
 
-        Assert.AreSame(settings, migrated);
-        Assert.IsTrue(AppSettingsFile.FromSettings(settings).FilePreviewPathsAreOverrides);
+        Assert.AreEqual("installed.exe", migrated.QuickLookExecutablePath);
+        Assert.AreSequenceEqual(new[] { FilePreviewProvider.QuickLook }, FilePreviewSettings.Providers(migrated));
+        Assert.IsTrue(AppSettingsFile.FromSettings(migrated).FilePreviewPathsAreOverrides);
     }
 
     [TestMethod]

@@ -44,7 +44,10 @@ public sealed class ReceiveChecksumProcessTests
         var (upload, accepted) = await UploadThroughCliAsync(receiver, client, senderFingerprint, "checksum 测试.bin", bytes,
             new string('0', 64), skip, policy == "length-mismatch" ? bytes.Length + 1 : bytes.Length);
 
-        Assert.AreEqual(shouldAccept ? HttpStatusCode.OK : HttpStatusCode.BadRequest, upload);
+        if (shouldAccept)
+            Assert.AreEqual(HttpStatusCode.OK, upload);
+        else
+            Assert.IsFalse((int)upload is >= 200 and < 300, $"Invalid content must be rejected, received HTTP {(int)upload}.");
         Assert.AreEqual(shouldAccept ? 0 : 1, accepted.Process.ExitCode, accepted.Process.StandardOutput);
         Assert.AreEqual(shouldAccept ? "Completed" : "Failed", accepted.Data.GetProperty("state").GetString());
         Assert.IsFalse(accepted.Data.TryGetProperty("text", out _));
@@ -58,7 +61,10 @@ public sealed class ReceiveChecksumProcessTests
         }
         else
         {
-            StringAssert.Contains(accepted.Data.GetProperty("error").GetString()!, policy == "default" ? "SHA-256" : "Expected");
+            // CLI callers must receive a failure diagnostic, not a particular
+            // English sentence. Core's checksum/length tests assert the stable
+            // structured failure codes independently of translated messages.
+            Assert.IsFalse(string.IsNullOrWhiteSpace(accepted.Data.GetProperty("error").GetString()));
             Assert.IsEmpty(Directory.EnumerateFiles(receiver.Downloads, "*", SearchOption.AllDirectories).ToArray());
             Assert.IsEmpty((await receiver.SuccessAsync("history", "list")).Data.EnumerateArray().ToArray());
         }

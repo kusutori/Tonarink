@@ -1,6 +1,6 @@
-using System.Text;
 using System.Net;
 using System.Net.Sockets;
+using System.Text;
 using LocalSendDotNet;
 using Microsoft.VisualStudio.TestTools.UnitTesting.AppContainer;
 using Tonarink.Pages.Send;
@@ -25,8 +25,8 @@ public sealed class SelectedSendItemTests
         var original = new SelectedSendItem(Guid.NewGuid(), new SendFileItem(path, "folder/nested/original.txt"),
             "Original display", bytes.Length, SelectedSendItemKind.File, path);
 
-        Assert.AreSame(original, SelectedSendItemOperations.UndoRename(original));
-        Assert.AreSame(original, SelectedSendItemOperations.RedoRename(original));
+        Assert.AreEqual(original, SelectedSendItemOperations.UndoRename(original));
+        Assert.AreEqual(original, SelectedSendItemOperations.RedoRename(original));
         var first = SelectedSendItemOperations.Rename(original, "first.txt");
         var second = SelectedSendItemOperations.Rename(first, "最新.txt");
         Assert.AreEqual("folder/nested/最新.txt", second.Item.FileName);
@@ -61,12 +61,11 @@ public sealed class SelectedSendItemTests
         Assert.AreEqual(original.DisplayName, restored.DisplayName);
         Assert.AreEqual("folder/nested/original.txt", original.Item.FileName);
         Assert.IsNull(original.OriginalFileName);
+        await using var peers = await FileTransferPeers.CreateAsync();
         foreach (var selected in new[] { second, undone, redone, replaced, restored })
         {
-            var fileItem = selected.Item as SendFileItem;
-            Assert.IsNotNull(fileItem);
-            Assert.AreEqual(path, fileItem.Path);
-            CollectionAssert.AreEqual(bytes, await File.ReadAllBytesAsync(fileItem.Path));
+            var saved = await peers.TransferAsync(selected);
+            CollectionAssert.AreEqual(bytes, await File.ReadAllBytesAsync(saved));
         }
         CollectionAssert.AreEqual(bytes, await File.ReadAllBytesAsync(path));
     }
@@ -109,6 +108,7 @@ public sealed class SelectedSendItemTests
         Assert.HasCount(2, items);
         Assert.HasCount(2, items.Select(item => item.Id).Distinct().ToArray());
         CollectionAssert.AreEquivalent(expected.Keys.ToArray(), items.Select(item => item.Item.FileName).ToArray());
+        await using var peers = await FileTransferPeers.CreateAsync();
         foreach (var item in items)
         {
             Assert.AreEqual(item.Item.FileName, item.DisplayName);
@@ -117,10 +117,8 @@ public sealed class SelectedSendItemTests
             Assert.IsNotNull(item.LocalPath);
             Assert.IsTrue(Path.IsPathFullyQualified(item.LocalPath));
             Assert.IsTrue(File.Exists(item.LocalPath));
-            var fileItem = item.Item as SendFileItem;
-            Assert.IsNotNull(fileItem);
-            Assert.AreEqual(item.LocalPath, fileItem.Path);
-            CollectionAssert.AreEqual(expected[item.Item.FileName], await File.ReadAllBytesAsync(fileItem.Path));
+            var saved = await peers.TransferAsync(item);
+            CollectionAssert.AreEqual(expected[item.Item.FileName], await File.ReadAllBytesAsync(saved));
         }
     }
 
@@ -162,7 +160,6 @@ public sealed class SelectedSendItemTests
         Assert.AreEqual("folder\\资料.txt", selected.DisplayName);
         Assert.AreEqual(path, selected.LocalPath);
         Assert.AreEqual(bytes.LongLength, selected.Length);
-        Assert.AreEqual(bytes.LongLength, ((SendStreamItem)selected.Item).LengthValue);
         Assert.AreEqual("text/plain", selected.Item.ContentType);
         Assert.AreEqual(SelectedSendItemKind.File, selected.Kind);
 
