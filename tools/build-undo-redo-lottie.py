@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import math
 import sys
 from pathlib import Path
 
@@ -83,323 +84,161 @@ def extract_contours(font: TTFont, codepoint: int) -> tuple[str, list[dict[str, 
     finish(False)
     return glyph_name, contours
 
-
-def keyframe(
-    frame: int,
-    start: list[float],
-    end: list[float] | None = None,
-    easing: tuple[float, float, float, float] | None = None,
-) -> dict[str, object]:
-    result: dict[str, object] = {"t": frame, "s": start}
-    if end is not None:
-        result["e"] = end
-    if easing is not None:
-        x1, y1, x2, y2 = easing
-        result["o"] = {"x": [x1], "y": [y1]}
-        result["i"] = {"x": [x2], "y": [y2]}
-    return result
+PRESSED_FRAME = 8
+REST_FRAME = 25
+END_FRAME = REST_FRAME + 1
 
 
-def animated(keyframes: list[dict[str, object]]) -> dict[str, object]:
+def deformed(contour: dict, codepoint: int, amount: float) -> dict:
+    # Identify the real head/shaft join on both edges of the font outline.
+    # The front shaft segment is straight, tangent to the bend. Retract along
+    # that segment towards the bend: diagonally up/right for undo, up/left for
+    # redo. Canvas-X deformation is NOT movement along these curved arrows.
+    vertices = contour["v"]
+    if codepoint == 0xE7A7:
+        head_indices = set(range(10, 20))
+        neck_indices = (10, 19)
+        upstream_indices = (9, 20)
+        tail_indices = set(range(2, 6))
+        tail_join_indices = (2, 5)
+        tail_upstream_indices = (1, 6)
+    else:
+        # Vertices 0 and 22 coincide at the contour seam; move both copies.
+        head_indices = set(range(7)) | set(range(18, len(vertices)))
+        neck_indices = (6, 18)
+        upstream_indices = (7, 17)
+        tail_indices = set(range(11, 14))
+        tail_join_indices = (11, 13)
+        tail_upstream_indices = (10, 14)
+
+    def center(indices: tuple[int, int]) -> list[float]:
+        return [(vertices[indices[0]][axis] + vertices[indices[1]][axis]) / 2
+                for axis in range(2)]
+
+    def retreat(join: tuple[int, int], upstream: tuple[int, int], distance: float) -> list[float]:
+        start, end = center(join), center(upstream)
+        tangent = [end[axis] - start[axis] for axis in range(2)]
+        length = math.hypot(*tangent)
+        if distance >= length:
+            raise ValueError("Retraction must remain within the glyph's straight shaft segment")
+        return [distance * coordinate / length for coordinate in tangent]
+
+    head_shift = retreat(neck_indices, upstream_indices, amount)
+    tail_shift = retreat(tail_join_indices, tail_upstream_indices, amount * 0.4)
+
+    # Retract both ends towards the fixed bend, with a smaller tail movement.
+    # Move each cap rigidly so its Bezier handles, rounding and width stay intact.
+    def move(index: int, point: list[float]) -> list[float]:
+        shift = head_shift if index in head_indices else tail_shift if index in tail_indices else (0, 0)
+        return [round(point[axis] + shift[axis], 4) for axis in range(2)]
+
+    return {
+        "v": [move(index, point) for index, point in enumerate(vertices)],
+        "i": [handle[:] for handle in contour["i"]],
+        "o": [handle[:] for handle in contour["o"]],
+        "c": contour["c"],
+    }
+
+
+def animated_path(contour: dict, codepoint: int) -> dict:
+    # 133 ms press, then a restrained directional overshoot and soft settle.
+    # AnimatedIcon holds frame 8 for an arbitrarily long physical press.
+    beats = [(0, 0), (PRESSED_FRAME, 6.5), (14, -1.8), (19, 0.4), (REST_FRAME, 0)]
+    easings = [
+        (0.20, 0.75, 0.34, 0.94),
+        (0.20, 0.75, 0.34, 0.94),
+        (0.00, 0.65, 0.51, 0.99),
+        (0.00, 0.65, 0.51, 0.99),
+    ]
+    shapes = [deformed(contour, codepoint, amount) for _, amount in beats]
+    keyframes = []
+    for index, (frame, _) in enumerate(beats):
+        keyframe = {"t": frame, "s": [shapes[index]]}
+        if index < len(easings):
+            x1, y1, x2, y2 = easings[index]
+            keyframe.update({
+                "e": [shapes[index + 1]],
+                "o": {"x": x1, "y": y1},
+                "i": {"x": x2, "y": y2},
+            })
+        keyframes.append(keyframe)
     return {"a": 1, "k": keyframes}
 
 
-def transform(opacity: dict[str, object] | int = 100) -> dict[str, object]:
-    return {
-        "o": opacity if isinstance(opacity, dict) else {"a": 0, "k": opacity},
-        "r": {"a": 0, "k": 0},
-        "p": {"a": 0, "k": [0, 0, 0]},
-        "a": {"a": 0, "k": [0, 0, 0]},
-        "s": {"a": 0, "k": [100, 100, 100]},
-    }
-
-
-def shape_layer(
-    index: int,
-    name: str,
-    shapes: list[dict[str, object]],
-    opacity: dict[str, object] | int = 100,
-) -> dict[str, object]:
-    return {
-        "ddd": 0,
-        "ind": index,
-        "ty": 4,
-        "nm": name,
-        "sr": 1,
-        "ks": transform(opacity),
-        "ao": 0,
-        "shapes": shapes,
-        "ip": 0,
-        "op": 32,
-        "st": 0,
-        "bm": 0,
-    }
-
-
-def foreground_fill() -> dict[str, object]:
-    return {
-        "ty": "fl",
-        "nm": "Foreground {Color:var(Foreground)}",
-        "c": {"a": 0, "k": [0, 0, 0, 1]},
-        "o": {"a": 0, "k": 100},
-        "r": 1,
-    }
-
-
-def add(left: list[float], right: list[float]) -> list[float]:
-    return [left[0] + right[0], left[1] + right[1]]
-
-
-def midpoint(left: list[float], right: list[float]) -> list[float]:
-    return [(left[0] + right[0]) / 2, (left[1] + right[1]) / 2]
-
-
-def cubic(
-    start: list[float],
-    control1: list[float],
-    control2: list[float],
-    end: list[float],
-    progress: float,
-) -> list[float]:
-    inverse = 1 - progress
-    return [
-        inverse**3 * start[axis]
-        + 3 * inverse**2 * progress * control1[axis]
-        + 3 * inverse * progress**2 * control2[axis]
-        + progress**3 * end[axis]
-        for axis in range(2)
+def markers() -> list[dict]:
+    result = [
+        {"tm": 0, "cm": "Normal", "dr": 0},
+        {"tm": 0, "cm": "PointerOver", "dr": 0},
+        {"tm": PRESSED_FRAME, "cm": "Pressed", "dr": 0},
     ]
-
-
-def exact_centerline(
-    contour: dict[str, object],
-    codepoint: int,
-) -> list[list[float]]:
-    vertices = contour["v"]
-    incoming = contour["i"]
-    outgoing = contour["o"]
-
-    def controls(start: int, end: int, forward: bool) -> tuple[list[float], list[float]]:
-        if forward:
-            return add(vertices[start], outgoing[start]), add(vertices[end], incoming[end])
-        return add(vertices[start], incoming[start]), add(vertices[end], outgoing[end])
-
-    if codepoint == 0xE7A7:
-        # Each tuple pairs the two actual outline edges around the same shaft
-        # segment. The final duplicate vertex (22) retains the closing curve's
-        # incoming handle, unlike vertex 0 at the same coordinate.
-        segments = [
-            (2, 1, False, 5, 6, True),
-            (1, 0, False, 6, 7, True),
-            (22, 21, False, 7, 8, True),
-            (21, 20, False, 8, 9, True),
-            (20, 19, False, 9, 10, True),
-        ]
-        tip = [vertices[17][0], vertices[12][1]]
-    else:
-        segments = [
-            (11, 10, False, 13, 14, True),
-            (10, 9, False, 14, 15, True),
-            (9, 8, False, 15, 16, True),
-            (8, 7, False, 16, 17, True),
-            (7, 6, False, 17, 18, True),
-        ]
-        tip = [vertices[20][0], vertices[4][1]]
-
-    points: list[list[float]] = []
-    for edge1_start, edge1_end, edge1_forward, edge2_start, edge2_end, edge2_forward in segments:
-        start = midpoint(vertices[edge1_start], vertices[edge2_start])
-        end = midpoint(vertices[edge1_end], vertices[edge2_end])
-        edge1_control1, edge1_control2 = controls(edge1_start, edge1_end, edge1_forward)
-        edge2_control1, edge2_control2 = controls(edge2_start, edge2_end, edge2_forward)
-        control1 = midpoint(edge1_control1, edge2_control1)
-        control2 = midpoint(edge1_control2, edge2_control2)
-        first_step = 0 if not points else 1
-        points.extend(
-            cubic(start, control1, control2, end, step / 24)
-            for step in range(first_step, 25)
-        )
-
-    end = points[-1]
-    points.extend(
-        [
-            end[0] + (tip[0] - end[0]) * step / 8,
-            end[1] + (tip[1] - end[1]) * step / 8,
-        ]
-        for step in range(1, 9)
-    )
-    return points
-
-
-def sample_centerline(
-    contour: dict[str, object],
-    codepoint: int,
-    count: int,
-) -> list[list[float]]:
-    points = exact_centerline(contour, codepoint)
-    distances = [0.0]
-    for previous, current in zip(points, points[1:]):
-        distances.append(
-            distances[-1]
-            + ((current[0] - previous[0]) ** 2 + (current[1] - previous[1]) ** 2) ** 0.5
-        )
-
-    sampled: list[list[float]] = []
-    cursor = 0
-    for index in range(count):
-        linear_progress = index / (count - 1)
-        # Smooth acceleration and deceleration while retaining exact endpoints.
-        progress = linear_progress * linear_progress * (3 - 2 * linear_progress)
-        target = distances[-1] * progress
-        while cursor + 1 < len(distances) and distances[cursor + 1] < target:
-            cursor += 1
-        if cursor + 1 == len(distances):
-            sampled.append(points[-1])
-            continue
-
-        span = distances[cursor + 1] - distances[cursor]
-        local = 0 if span == 0 else (target - distances[cursor]) / span
-        sampled.append([
-            points[cursor][0] + (points[cursor + 1][0] - points[cursor][0]) * local,
-            points[cursor][1] + (points[cursor + 1][1] - points[cursor][1]) * local,
+    for name, start, end in [
+        ("NormalToPointerOver", 0, 0),
+        ("PointerOverToNormal", 0, 0),
+        ("NormalToPressed", 0, PRESSED_FRAME),
+        ("PointerOverToPressed", 0, PRESSED_FRAME),
+        ("PressedToNormal", PRESSED_FRAME, REST_FRAME),
+        ("PressedToPointerOver", PRESSED_FRAME, REST_FRAME),
+    ]:
+        result.extend([
+            {"tm": start, "cm": f"{name}_Start", "dr": 0},
+            {"tm": end, "cm": f"{name}_End", "dr": 0},
         ])
-    return [[round(x, 4), round(y, 4), 0] for x, y in sampled]
+    return result
 
 
-def square_layer(
-    index: int,
-    contour: dict[str, object],
-    codepoint: int,
-) -> dict[str, object]:
-    positions = sample_centerline(contour, codepoint, 20)
-    position_keyframes: list[dict[str, object]] = [keyframe(0, positions[0], positions[0])]
-    for offset, position in enumerate(positions):
-        frame = 3 + offset
-        next_position = positions[min(offset + 1, len(positions) - 1)]
-        position_keyframes.append(keyframe(frame, position, next_position))
-
-    opacity = animated([
-        keyframe(0, [0], [0]),
-        keyframe(2, [0], [100]),
-        keyframe(4, [100], [100]),
-        keyframe(21, [100], [0]),
-        keyframe(24, [0]),
-    ])
-    return {
-        "ddd": 0,
-        "ind": index,
-        "ty": 4,
-        "nm": "Tail-to-head square",
-        "sr": 1,
-        "ks": {
-            **transform(opacity),
-            "p": animated(position_keyframes),
-        },
-        "ao": 0,
-        "shapes": [
-            {
-                "ty": "gr",
-                "nm": "Traveling square",
-                "it": [
-                    {
-                        "ty": "rc",
-                        "nm": "Square",
-                        "p": {"a": 0, "k": [0, 0]},
-                        "s": {"a": 0, "k": [3.6, 3.6]},
-                        "r": {"a": 0, "k": 0},
-                    },
-                    foreground_fill(),
-                    {
-                        "ty": "tr",
-                        "p": {"a": 0, "k": [0, 0]},
-                        "a": {"a": 0, "k": [0, 0]},
-                        "s": {"a": 0, "k": [100, 100]},
-                        "r": {"a": 0, "k": 0},
-                        "o": {"a": 0, "k": 100},
-                        "sk": {"a": 0, "k": 0},
-                        "sa": {"a": 0, "k": 0},
-                    },
-                ],
-            }
-        ],
-        "ip": 0,
-        "op": 32,
-        "st": 0,
-        "bm": 0,
-    }
-
-
-def build_lottie(font: TTFont, name: str, codepoint: int) -> dict[str, object]:
+def build_lottie(font: TTFont, name: str, codepoint: int) -> dict:
     glyph_name, contours = extract_contours(font, codepoint)
-    ease_out = (0.18, 0.82, 0.28, 1.0)
-    base_opacity = animated([
-        keyframe(0, [100], [100]),
-        keyframe(3, [100], [42], ease_out),
-        keyframe(6, [42], [42]),
-        keyframe(21, [42], [100], ease_out),
-        keyframe(27, [100]),
-    ])
-
-    base_shapes: list[dict[str, object]] = [
-        {
-            "ty": "gr",
-            "nm": f"Segoe Fluent Icons U+{codepoint:04X}",
-            "it": [
-                *[
-                    {"ty": "sh", "nm": f"Contour {index + 1}", "ks": {"a": 0, "k": contour}}
-                    for index, contour in enumerate(contours)
-                ],
-                foreground_fill(),
-                {
-                    "ty": "tr",
-                    "p": {"a": 0, "k": [0, 0]},
-                    "a": {"a": 0, "k": [0, 0]},
-                    "s": {"a": 0, "k": [100, 100]},
-                    "r": {"a": 0, "k": 0},
-                    "o": {"a": 0, "k": 100},
-                    "sk": {"a": 0, "k": 0},
-                    "sa": {"a": 0, "k": 0},
-                },
-            ],
-        }
-    ]
     return {
-        "v": "5.12.2",
-        "fr": 60,
-        "ip": 0,
-        "op": 32,
-        "w": 48,
-        "h": 48,
-        "nm": f"Tonarink {name} (Segoe Fluent Icons)",
-        "ddd": 0,
-        "assets": [],
-        "meta": {
-            "font": str(FONT_PATH),
-            "codepoint": f"{codepoint:04X}",
-            "glyph": glyph_name,
-        },
-        "layers": [
-            square_layer(1, contours[0], codepoint),
-            shape_layer(2, "Original icon", base_shapes, base_opacity),
-        ],
-        "markers": [],
+        "v": "5.12.2", "fr": 60, "ip": 0, "op": END_FRAME, "w": 48, "h": 48,
+        "nm": f"Tonarink {name} - press and spring (Segoe Fluent Icons)",
+        "ddd": 0, "assets": [],
+        "meta": {"font": str(FONT_PATH), "codepoint": f"{codepoint:04X}", "glyph": glyph_name},
+        "layers": [{
+            "ddd": 0, "ind": 1, "ty": 4, "nm": "Arrow press and release", "sr": 1,
+            "ks": {
+                "o": {"a": 0, "k": 100}, "r": {"a": 0, "k": 0},
+                "p": {"a": 0, "k": [0, 0, 0]}, "a": {"a": 0, "k": [0, 0, 0]},
+                "s": {"a": 0, "k": [100, 100, 100]},
+            },
+            "ao": 0,
+            "shapes": [{
+                "ty": "gr", "nm": f"Segoe Fluent Icons U+{codepoint:04X}",
+                "it": [
+                    *[{
+                        "ty": "sh", "nm": f"Contour {index + 1}",
+                        "ks": animated_path(contour, codepoint),
+                    } for index, contour in enumerate(contours)],
+                    {
+                        "ty": "fl", "nm": "Foreground {Color:var(Foreground)}",
+                        "c": {"a": 0, "k": [0, 0, 0, 1]}, "o": {"a": 0, "k": 100}, "r": 1,
+                    },
+                    {
+                        "ty": "tr", "p": {"a": 0, "k": [0, 0]}, "a": {"a": 0, "k": [0, 0]},
+                        "s": {"a": 0, "k": [100, 100]}, "r": {"a": 0, "k": 0},
+                        "o": {"a": 0, "k": 100}, "sk": {"a": 0, "k": 0}, "sa": {"a": 0, "k": 0},
+                    },
+                ],
+            }],
+            "ip": 0, "op": END_FRAME, "st": 0, "bm": 0,
+        }],
+        "markers": markers(),
     }
 
 
-font = TTFont(FONT_PATH)
-for icon_name, icon_codepoint in ICONS.items():
-    payload = json.dumps(
-        build_lottie(font, icon_name, icon_codepoint),
-        ensure_ascii=False,
-        separators=(",", ":"),
-    ) + "\n"
-    output_path = OUTPUT_DIRECTORY / f"{icon_name}.json"
-    output_path.write_text(payload, encoding="utf-8")
-    print(output_path)
+if __name__ == "__main__":
+    font = TTFont(FONT_PATH)
+    for index, (icon_name, icon_codepoint) in enumerate(ICONS.items(), start=1):
+        payload = json.dumps(
+            build_lottie(font, icon_name, icon_codepoint),
+            ensure_ascii=False, separators=(",", ":"),
+        ) + "\n"
+        output_path = OUTPUT_DIRECTORY / f"{icon_name}.json"
+        output_path.write_text(payload, encoding="utf-8")
+        print(output_path)
 
-    if len(sys.argv) > 1:
-        preview_directory = Path(sys.argv[1]).resolve()
-        preview_directory.mkdir(parents=True, exist_ok=True)
-        preview_path = preview_directory / f"{icon_name}.json"
-        preview_path.write_text(payload, encoding="utf-8")
-        print(preview_path)
+        if len(sys.argv) > 1:
+            preview_directory = Path(sys.argv[1]).resolve() / f"scene-{index}"
+            preview_directory.mkdir(parents=True, exist_ok=True)
+            preview_path = preview_directory / "lottie.json"
+            preview_path.write_text(payload, encoding="utf-8")
+            print(preview_path)

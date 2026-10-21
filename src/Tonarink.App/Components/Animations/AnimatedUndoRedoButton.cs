@@ -1,7 +1,7 @@
 using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Core;
-using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using static Microsoft.UI.Reactor.Factories;
 
 namespace Tonarink.Components.Animations;
@@ -24,53 +24,28 @@ sealed class AnimatedUndoRedoButton : Component<AnimatedUndoRedoButtonProps>
 {
     public override Element Render()
     {
-        var playbackRef = UseRef<UndoRedoPlayback?>();
-        var playback = playbackRef.Current ??= new UndoRedoPlayback();
-        var reduceMotion = UseReducedMotion();
+        var source = UseMemo(() => CreateSource(Props.Kind), Props.Kind);
+        var fallback = UseMemo(() => new FontIconSource
+        {
+            FontFamily = new FontFamily("Segoe Fluent Icons"),
+            Glyph = Props.Kind switch
+            {
+                UndoRedoIconKind.Undo => AppIcons.Undo,
+                UndoRedoIconKind.Redo => AppIcons.Redo,
+            },
+        }, Props.Kind);
 
+        // The standard Button template drives AnimatedIcon.State through its
+        // ContentPresenter. Inherit it rather than setting a local icon state:
+        // press holds the compressed pose, release plays the spring-back.
+        // WinUI also handles cancellation, keyboard input, foreground colors,
+        // rapid transitions and the system's reduced-motion setting.
         return Button(
-                (AnimatedVisualPlayer() with { AutoPlay = false })
-                .Size(Props.IconSize, Props.IconSize)
-                .Opacity(Props.IsEnabled ? 1 : 0.36)
-                .IsHitTestVisible(false)
-                .AccessibilityHidden()
-                .OnMountAdd(element =>
-                {
-                    if (element is not AnimatedVisualPlayer player)
-                        return;
-
-                    var source = CreateSource(Props.Kind);
-                    AnimatedIconForeground.Apply(player, source.Visual);
-                    player.Loaded += (_, _) =>
-                    {
-                        AnimatedIconForeground.Apply(player, source.Visual);
-                        player.SetProgress(0);
-                    };
-                    player.ActualThemeChanged += (_, _) => AnimatedIconForeground.Apply(player, source.Visual);
-                    player.Source = source.Visual;
-                    player.SetProgress(0);
-                    playback.Player = player;
-                })
-                .OnUnmountAdd(element =>
-                {
-                    if (element is AnimatedVisualPlayer player)
-                        player.Stop();
-
-                    playback.AnimationVersion++;
-                    playback.Player = null;
-                }),
-                () =>
-                {
-                    if (!reduceMotion && playback.Player is { } player)
-                    {
-                        var version = ++playback.AnimationVersion;
-                        player.Stop();
-                        player.SetProgress(0);
-                        _ = PlayAndSettleAsync(playback, player, version);
-                    }
-
-                    Props.OnClick();
-                })
+                AnimatedIcon(source, fallback)
+                    .Size(Props.IconSize, Props.IconSize)
+                    .IsHitTestVisible(false)
+                    .AccessibilityHidden(),
+                Props.OnClick)
             .AutomationName(Props.AutomationName)
             .ToolTip(Props.ToolTip ?? Props.AutomationName)
             .Size(40, 40)
@@ -78,35 +53,9 @@ sealed class AnimatedUndoRedoButton : Component<AnimatedUndoRedoButtonProps>
             .IsEnabled(Props.IsEnabled);
     }
 
-    private static async Task PlayAndSettleAsync(
-        UndoRedoPlayback playback,
-        AnimatedVisualPlayer player,
-        int version)
-    {
-        await player.PlayAsync(0, 1, looped: false);
-        if (version == playback.AnimationVersion && playback.Player == player)
-            player.SetProgress(0);
-    }
-
-    private static UndoRedoIconSource CreateSource(UndoRedoIconKind kind) => kind switch
+    private static IAnimatedVisualSource2 CreateSource(UndoRedoIconKind kind) => kind switch
     {
         UndoRedoIconKind.Undo => new Tonarink.UndoFlowIcon(),
         UndoRedoIconKind.Redo => new Tonarink.RedoFlowIcon(),
     };
-
-    private union UndoRedoIconSource(Tonarink.UndoFlowIcon, Tonarink.RedoFlowIcon)
-    {
-        public IAnimatedVisualSource2 Visual => this switch
-        {
-            Tonarink.UndoFlowIcon undo => undo,
-            Tonarink.RedoFlowIcon redo => redo,
-        };
-    }
-
-    private sealed class UndoRedoPlayback
-    {
-        public AnimatedVisualPlayer? Player { get; set; }
-
-        public int AnimationVersion { get; set; }
-    }
 }
