@@ -19,16 +19,9 @@ sealed class HistoryFilterButton : Component<HistoryFilterButtonProps>
         var t = UseIntl();
         var (draft, setDraft) = UseState(Props.Filter);
         var buttonRef = UseRef<ToggleSplitButton?>();
+        var flyoutCleanup = UseRef<Action?>();
+        var alignedOpening = UseRef(false);
         var (resetVersion, setResetVersion) = UseState(0);
-        UseEffect(() =>
-        {
-            if (buttonRef.Current?.Flyout is not { } flyout) return static () => { };
-
-            // ContentFlyout has no Opened callback in preview.16.
-            void Opened(object? sender, object args) => setDraft(Props.Filter);
-            flyout.Opened += Opened;
-            return () => flyout.Opened -= Opened;
-        }, []);
 
         var fields = VStack(16,
             Field(Message("HistoryFilterSearch"),
@@ -115,8 +108,8 @@ sealed class HistoryFilterButton : Component<HistoryFilterButtonProps>
             {
                 if (Props.Filter.IsActive)
                     Props.Apply(HistoryFilter.Default);
-                else if (buttonRef.Current is { } button)
-                    button.Flyout?.ShowAt(button);
+                else
+                    Open();
 
                 // Opening the editor must not check the toggle before filters are applied.
                 setResetVersion(resetVersion + 1);
@@ -129,10 +122,62 @@ sealed class HistoryFilterButton : Component<HistoryFilterButtonProps>
             .AutomationId("History.Filter")
             .ToolTip(Message(Props.Filter.IsActive ? "HistoryFilterReset" : "HistoryFilterTitle"))
             .WithFlyout(ContentFlyout(panel, FlyoutPlacementMode.BottomEdgeAlignedRight))
-            .OnMountAdd(element => buttonRef.Current = element as ToggleSplitButton)
-            .OnUnmountAdd(_ => buttonRef.Current = null);
+            .OnMountAdd(element =>
+            {
+                if (element is not ToggleSplitButton { Flyout: { } flyout } button) return;
+
+                buttonRef.Current = button;
+                // Effects run before child mounting in Reactor. Subscribe here, after
+                // WithFlyout has populated the native slot, not in a mount-only effect.
+                // SplitButton forces left alignment; cancel before presentation and
+                // reopen through our right-aligned path for mouse, keyboard and UIA.
+                void Opening(object? sender, object args)
+                {
+                    if (alignedOpening.Current) return;
+
+                    flyout.Hide();
+                    button.DispatcherQueue.TryEnqueue(() =>
+                    {
+                        if (ReferenceEquals(buttonRef.Current, button)) Open();
+                    });
+                }
+
+                // ContentFlyout has no opening callbacks in preview.16.
+                void Opened(object? sender, object args) => setDraft(Props.Filter);
+                flyout.Opening += Opening;
+                flyout.Opened += Opened;
+                flyoutCleanup.Current = () =>
+                {
+                    flyout.Opening -= Opening;
+                    flyout.Opened -= Opened;
+                };
+            })
+            .OnUnmountAdd(_ =>
+            {
+                flyoutCleanup.Current?.Invoke();
+                flyoutCleanup.Current = null;
+                buttonRef.Current = null;
+            });
 
         string Message(string key) => t.Message(new("App", key));
+
+        void Open()
+        {
+            if (buttonRef.Current is not { } button) return;
+
+            alignedOpening.Current = true;
+            try
+            {
+                button.Flyout?.ShowAt(button, new FlyoutShowOptions
+                {
+                    Placement = FlyoutPlacementMode.BottomEdgeAlignedRight,
+                });
+            }
+            finally
+            {
+                alignedOpening.Current = false;
+            }
+        }
 
         string TimeLabel(HistoryTimeRange range) => Message(range switch
         {
