@@ -10,11 +10,13 @@ public sealed partial class FileTypeToken
         Kind = kind;
         Label = label;
         Glyph = FileTypeGlyphs.ForKind(kind);
+        Extension = FileTypeGlyphs.ExtensionsForKind(kind).FirstOrDefault()?.TrimStart('.') ?? "";
     }
 
     internal FileTypeGlyphKind Kind { get; }
     public string Label { get; }
     public string Glyph { get; }
+    public string Extension { get; }
 
     public override string ToString() => Label;
 }

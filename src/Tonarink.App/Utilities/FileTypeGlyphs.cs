@@ -1,3 +1,5 @@
+using System.Collections.Frozen;
+
 namespace Tonarink.Utilities;
 
 enum FileTypeGlyphKind
@@ -43,65 +45,98 @@ static class FileTypeGlyphs
     private const string TextMessageGlyph = "\uE70F";
     private const string ClipboardGlyph = "\uE77F";
 
-    private static readonly HashSet<string> ArchiveExtensions = new(StringComparer.OrdinalIgnoreCase)
-    {
+    private static readonly string[] ArchiveExtensions =
+    [
         ".7z", ".bz2", ".cab", ".gz", ".gzip", ".rar", ".tar", ".tbz", ".tbz2", ".tgz",
         ".txz", ".xz", ".zip", ".zst",
-    };
+    ];
 
-    private static readonly HashSet<string> VideoExtensions = new(StringComparer.OrdinalIgnoreCase)
-    {
+    private static readonly string[] VideoExtensions =
+    [
         ".3g2", ".3gp", ".avi", ".flv", ".m2ts", ".m4v", ".mkv", ".mov", ".mp4", ".mpeg",
         ".mpg", ".mts", ".ogv", ".ts", ".webm", ".wmv",
-    };
+    ];
 
-    private static readonly HashSet<string> ImageExtensions = new(StringComparer.OrdinalIgnoreCase)
-    {
+    private static readonly string[] ImageExtensions =
+    [
         ".avif", ".bmp", ".gif", ".heic", ".heif", ".ico", ".jfif", ".jpeg", ".jpg", ".png",
         ".svg", ".tif", ".tiff", ".webp",
-    };
+    ];
 
-    private static readonly HashSet<string> AudioExtensions = new(StringComparer.OrdinalIgnoreCase)
-    {
+    private static readonly string[] AudioExtensions =
+    [
         ".aac", ".aif", ".aiff", ".alac", ".amr", ".flac", ".m4a", ".mp3", ".oga", ".ogg",
         ".opus", ".wav", ".wma",
-    };
+    ];
 
-    private static readonly HashSet<string> EmailExtensions = new(StringComparer.OrdinalIgnoreCase)
-    {
+    private static readonly string[] EmailExtensions =
+    [
         ".eml", ".emlx", ".mbox", ".msg", ".ost", ".pst",
-    };
+    ];
 
-    private static readonly HashSet<string> CalendarExtensions = new(StringComparer.OrdinalIgnoreCase)
-    {
+    private static readonly string[] CalendarExtensions =
+    [
         ".ical", ".icalendar", ".ics", ".ifb",
-    };
+    ];
 
-    private static readonly HashSet<string> OfflineMapExtensions = new(StringComparer.OrdinalIgnoreCase)
-    {
+    private static readonly string[] OfflineMapExtensions =
+    [
         ".map", ".mbtiles", ".mwm", ".obf", ".osm", ".pbf", ".pmtiles",
-    };
+    ];
 
-    private static readonly HashSet<string> DatabaseExtensions = new(StringComparer.OrdinalIgnoreCase)
-    {
+    private static readonly string[] DatabaseExtensions =
+    [
         ".accdb", ".db", ".db3", ".dbf", ".duckdb", ".fdb", ".mdb", ".mdf",
         ".realm", ".sqlite", ".sqlite3",
-    };
+    ];
 
-    private static readonly HashSet<string> FontExtensions = new(StringComparer.OrdinalIgnoreCase)
-    {
+    private static readonly string[] FontExtensions =
+    [
         ".eot", ".otc", ".otf", ".ttc", ".ttf", ".woff", ".woff2",
-    };
+    ];
 
-    private static readonly HashSet<string> EbookExtensions = new(StringComparer.OrdinalIgnoreCase)
-    {
+    private static readonly string[] EbookExtensions =
+    [
         ".azw", ".azw3", ".cbr", ".cbz", ".djv", ".djvu", ".epub", ".fb2",
         ".kfx", ".lit", ".lrf", ".mobi", ".prc",
-    };
+    ];
 
-    private static readonly HashSet<string> SubtitleExtensions = new(StringComparer.OrdinalIgnoreCase)
-    {
+    private static readonly string[] SubtitleExtensions =
+    [
         ".ass", ".srt", ".ssa", ".vtt",
+    ];
+
+    private static readonly string[] PdfExtensions = [".pdf"];
+    private static readonly string[] TextExtensions = [".txt"];
+    private static readonly string[] ContactExtensions = [".vcf", ".vcard"];
+
+    // Classification, search and the representative suffix share one ordered
+    // list per kind. Build a case-insensitive lookup once for file classification.
+    private static readonly FrozenDictionary<string, FileTypeGlyphKind> KindsByExtension =
+        Enum.GetValues<FileTypeGlyphKind>()
+            .SelectMany(kind => ExtensionsForKind(kind).Select(extension => KeyValuePair.Create(extension, kind)))
+            .ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
+
+    public static IReadOnlyList<string> ExtensionsForKind(FileTypeGlyphKind kind) => kind switch
+    {
+        FileTypeGlyphKind.Archive => ArchiveExtensions,
+        FileTypeGlyphKind.Pdf => PdfExtensions,
+        FileTypeGlyphKind.Text => TextExtensions,
+        FileTypeGlyphKind.Video => VideoExtensions,
+        FileTypeGlyphKind.Image => ImageExtensions,
+        FileTypeGlyphKind.Audio => AudioExtensions,
+        FileTypeGlyphKind.Email => EmailExtensions,
+        FileTypeGlyphKind.Calendar => CalendarExtensions,
+        FileTypeGlyphKind.OfflineMap => OfflineMapExtensions,
+        FileTypeGlyphKind.Database => DatabaseExtensions,
+        FileTypeGlyphKind.Font => FontExtensions,
+        FileTypeGlyphKind.Ebook => EbookExtensions,
+        FileTypeGlyphKind.Contact => ContactExtensions,
+        FileTypeGlyphKind.Subtitle => SubtitleExtensions,
+        // Document is the fallback for unrecognized extensions, not an explicit
+        // extension group; the remaining kinds describe non-file content.
+        FileTypeGlyphKind.Document or FileTypeGlyphKind.Folder
+            or FileTypeGlyphKind.TextMessage or FileTypeGlyphKind.Clipboard => [],
     };
 
     public static string ForFileName(string? fileName) => ForKind(KindForFileName(fileName));
@@ -149,23 +184,6 @@ static class FileTypeGlyphs
             return FileTypeGlyphKind.Document;
 
         var extension = Path.GetExtension(fileName);
-        return extension.ToLowerInvariant() switch
-        {
-            ".pdf" => FileTypeGlyphKind.Pdf,
-            ".txt" => FileTypeGlyphKind.Text,
-            var ext when ArchiveExtensions.Contains(ext) => FileTypeGlyphKind.Archive,
-            var ext when VideoExtensions.Contains(ext) => FileTypeGlyphKind.Video,
-            var ext when ImageExtensions.Contains(ext) => FileTypeGlyphKind.Image,
-            var ext when AudioExtensions.Contains(ext) => FileTypeGlyphKind.Audio,
-            var ext when EmailExtensions.Contains(ext) => FileTypeGlyphKind.Email,
-            var ext when CalendarExtensions.Contains(ext) => FileTypeGlyphKind.Calendar,
-            var ext when OfflineMapExtensions.Contains(ext) => FileTypeGlyphKind.OfflineMap,
-            var ext when DatabaseExtensions.Contains(ext) => FileTypeGlyphKind.Database,
-            var ext when FontExtensions.Contains(ext) => FileTypeGlyphKind.Font,
-            var ext when EbookExtensions.Contains(ext) => FileTypeGlyphKind.Ebook,
-            ".vcf" or ".vcard" => FileTypeGlyphKind.Contact,
-            var ext when SubtitleExtensions.Contains(ext) => FileTypeGlyphKind.Subtitle,
-            _ => FileTypeGlyphKind.Document,
-        };
+        return KindsByExtension.GetValueOrDefault(extension, FileTypeGlyphKind.Document);
     }
 }
