@@ -5,7 +5,6 @@ using Microsoft.UI.Composition;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Core;
-using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Hosting;
 using Windows.UI.ViewManagement;
 
@@ -157,8 +156,8 @@ static partial class TrayFlyoutHost
     private static bool TryStartShowAnimation(ReactorWindow window)
     {
         var native = window.NativeWindow;
-        var queue = native?.DispatcherQueue;
-        if (native is null || queue is null)
+        var queue = native.DispatcherQueue;
+        if (queue is null)
             return false;
 
         var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(native);
@@ -199,8 +198,6 @@ static partial class TrayFlyoutHost
     private static bool TryStartHideAnimation(ReactorWindow window)
     {
         var native = window.NativeWindow;
-        if (native is null)
-            return false;
 
         var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(native);
         if (hwnd == 0 || !GetWindowRect(hwnd, out var bounds))
@@ -246,8 +243,8 @@ static partial class TrayFlyoutHost
             1,
             to,
             visual.Compositor.CreateCubicBezierEasingFunction(entering
-                ? new Vector2(0.25f, 0.46f)
-                : new Vector2(0.55f, 0.085f),
+                    ? new Vector2(0.25f, 0.46f)
+                    : new Vector2(0.55f, 0.085f),
                 entering
                     ? new Vector2(0.45f, 0.94f)
                     : new Vector2(0.68f, 0.53f)));
@@ -264,7 +261,7 @@ static partial class TrayFlyoutHost
     }
 
     private static Visual? TryGetPanelVisual(ReactorWindow window) =>
-        window.NativeWindow?.Content is UIElement content
+        window.NativeWindow.Content is { } content
             ? ElementCompositionPreview.GetElementVisual(content)
             : null;
 
@@ -358,7 +355,7 @@ static partial class TrayFlyoutHost
             return;
 
         var queue = DispatcherQueue.GetForCurrentThread()
-                    ?? window.NativeWindow?.DispatcherQueue;
+                    ?? window.NativeWindow.DispatcherQueue;
         if (queue is null)
         {
             Dismiss(window);
@@ -377,8 +374,6 @@ static partial class TrayFlyoutHost
     private static void FocusFlyout(ReactorWindow window)
     {
         var native = window.NativeWindow;
-        if (native is null)
-            return;
 
         var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(native);
         window.Activate();
@@ -413,8 +408,6 @@ static partial class TrayFlyoutHost
     {
         StopClickAwayWatch();
         var native = window.NativeWindow;
-        if (native is null)
-            return;
 
         _flyoutHwnd = WinRT.Interop.WindowNative.GetWindowHandle(native);
         _mouseHook = SetWindowsHookExW(WhMouseLl, MouseProc, GetModuleHandleW(null), 0);
@@ -433,17 +426,16 @@ static partial class TrayFlyoutHost
 
     private static nint OnMouse(int nCode, nint wParam, nint lParam)
     {
-        if (nCode >= 0
-            && _flyoutHwnd != 0
-            && !IsPinned
-            && DateTime.UtcNow - _shownUtc >= TimeSpan.FromMilliseconds(250)
-            && wParam is (nint)WmLButtonDown or (nint)WmRButtonDown or (nint)WmNclButtonDown)
-        {
-            var info = Marshal.PtrToStructure<MsllHookStruct>(lParam);
-            var target = WindowFromPoint(info.Point);
-            if (!IsUnderFlyout(target) && TryFind() is { IsVisible: true } window)
-                QueueDismiss(window);
-        }
+        if (nCode < 0
+            || _flyoutHwnd == 0
+            || IsPinned
+            || DateTime.UtcNow - _shownUtc < TimeSpan.FromMilliseconds(250)
+            || wParam is not (WmLButtonDown or WmRButtonDown or WmNclButtonDown))
+            return CallNextHookEx(_mouseHook, nCode, wParam, lParam);
+        var info = Marshal.PtrToStructure<MsllHookStruct>(lParam);
+        var target = WindowFromPoint(info.Point);
+        if (!IsUnderFlyout(target) && TryFind() is { IsVisible: true } window)
+            QueueDismiss(window);
 
         return CallNextHookEx(_mouseHook, nCode, wParam, lParam);
     }
@@ -554,7 +546,8 @@ static partial class TrayFlyoutHost
 
     [LibraryImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
-    private static partial bool AttachThreadInput(uint idAttach, uint idAttachTo, [MarshalAs(UnmanagedType.Bool)] bool fAttach);
+    private static partial bool AttachThreadInput(uint idAttach, uint idAttachTo,
+        [MarshalAs(UnmanagedType.Bool)] bool fAttach);
 
     [LibraryImport("kernel32.dll")]
     private static partial uint GetCurrentThreadId();
