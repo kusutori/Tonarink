@@ -18,15 +18,17 @@ sealed class HistoryFilterButton : Component<HistoryFilterButtonProps>
     {
         var t = UseIntl();
         var (draft, setDraft) = UseState(Props.Filter);
-        var flyoutRef = UseRef<Flyout?>();
+        var buttonRef = UseRef<ToggleSplitButton?>();
+        var (resetVersion, setResetVersion) = UseState(0);
+        UseEffect(() =>
+        {
+            if (buttonRef.Current?.Flyout is not { } flyout) return static () => { };
 
-        var trigger = Button(Icon(AppIcons.Filter).AccessibilityHidden())
-            .Size(40, 40)
-            .Padding(0, 0)
-            .AutomationName(Message("HistoryFilterTitle"))
-            .AutomationId("History.Filter")
-            .ToolTip(Message("HistoryFilterTitle"));
-        trigger = Props.Filter.IsActive ? trigger.AccentButton() : trigger.SubtleButton();
+            // ContentFlyout has no Opened callback in preview.16.
+            void Opened(object? sender, object args) => setDraft(Props.Filter);
+            flyout.Opened += Opened;
+            return () => flyout.Opened -= Opened;
+        }, []);
 
         var fields = VStack(16,
             Field(Message("HistoryFilterSearch"),
@@ -109,10 +111,22 @@ sealed class HistoryFilterButton : Component<HistoryFilterButtonProps>
                         .Grid(column: 1)))
             .Width(320);
 
-        return (Flyout(trigger, panel) with { Placement = FlyoutPlacementMode.BottomEdgeAlignedRight })
-            .Opened(() => setDraft(Props.Filter))
-            .Set(flyout => flyoutRef.Current = flyout)
-            .OnUnmountAdd(_ => flyoutRef.Current = null);
+        return ToggleSplitButton(AppIcons.Filter, Props.Filter.IsActive, _ =>
+            {
+                Props.Apply(HistoryFilter.Default);
+                // Also restore the controlled unchecked state when it was already inactive.
+                setResetVersion(resetVersion + 1);
+            })
+            .FontFamily("Segoe Fluent Icons")
+            .FontSize(20)
+            .Height(40)
+            .Padding(12, 0)
+            .AutomationName(Message("HistoryFilterTitle"))
+            .AutomationId("History.Filter")
+            .ToolTip(Message("HistoryFilterReset"))
+            .WithFlyout(ContentFlyout(panel, FlyoutPlacementMode.BottomEdgeAlignedRight))
+            .OnMountAdd(element => buttonRef.Current = element as ToggleSplitButton)
+            .OnUnmountAdd(_ => buttonRef.Current = null);
 
         string Message(string key) => t.Message(new("App", key));
 
@@ -135,9 +149,8 @@ sealed class HistoryFilterButton : Component<HistoryFilterButtonProps>
             HistorySortOrder.SizeDescending => "HistoryFilterSortSizeDescending",
         });
 
-        // preview.16 exposes native opening and Opened, but IsOpen=false does
-        // not hide this flyout. Keep only the close operation in this escape hatch.
-        void Close() => flyoutRef.Current?.Hide();
+        // WithFlyout reconciles the panel in place in the SplitButton's own Flyout slot.
+        void Close() => buttonRef.Current?.Flyout?.Hide();
     }
 
     private static Element Field(string label, Element control) =>

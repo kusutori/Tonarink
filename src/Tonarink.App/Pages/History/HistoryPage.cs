@@ -117,17 +117,7 @@ sealed class HistoryPage : Component<HistoryPageProps>
             Wrap = FlexWrap.Wrap
         };
 
-        var filterActions = HStack(8,
-                Button(Icon(AppIcons.Undo).AccessibilityHidden(), () => setFilter(HistoryFilter.Default))
-                    .Size(40, 40)
-                    .Padding(0, 0)
-                    .AutomationName(t.Message(new("App", "HistoryFilterReset")))
-                    .ToolTip(t.Message(new("App", "HistoryFilterReset")))
-                    .AutomationId("History.Filter.Clear")
-                    .IsEnabled(filter.IsActive),
-                Component<HistoryFilterButton, HistoryFilterButtonProps>(new(filter, setFilter))
-                    // Named styles in preview.16 apply only on mount.
-                    .WithKey(filter.IsActive ? "history-filter-active" : "history-filter-inactive"));
+        var filterActions = Component<HistoryFilterButton, HistoryFilterButtonProps>(new(filter, setFilter));
 
         var actions = Grid(
             columns: [GridSize.Star(), GridSize.Auto],
