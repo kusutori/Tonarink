@@ -1,14 +1,11 @@
 using LocalSendDotNet;
 using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Core;
-using Microsoft.UI.Reactor.Input;
 using Microsoft.UI.Reactor.Layout;
-using Microsoft.UI.Reactor.Localization;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using static Microsoft.UI.Reactor.Factories;
-using static Tonarink.Components.Devices.DeviceVisuals;
 using static Tonarink.Components.Transfers.TransferOverlayVisuals;
 using static Tonarink.Pages.Send.SelectedSendItemOperations;
 using static Tonarink.Pages.Send.SendDeviceResolver;
@@ -96,7 +93,7 @@ sealed class SendPage : Component<SendPageProps>
             onNavigatedTo: _ =>
                 PlaySearchingAnimation(searchingPlayerRef.Current, play: !reduceMotion));
 
-        var previousNavigationFavorite = context.UseRef<string?>(null);
+        var previousNavigationFavorite = context.UseRef<string?>();
         context.UseEffect(() =>
         {
             if (Props.NavigationFavoriteFingerprint is not null)
@@ -110,16 +107,16 @@ sealed class SendPage : Component<SendPageProps>
         // to start the existing async flow there; an ExecuteAsync command is intentionally
         // avoided because UseCommand runs async command bodies on the thread pool.
         var pasteCommand = context.UseCommand(StandardCommand.Paste(() =>
-        {
-            _ = itemSelection.AddClipboardAsync();
-        }) with
-        {
-            Label = t.Message(new("App", "Clipboard")),
-            Description = t.Message(
-                new("App", "ChooseItem"),
-                ("item", t.Message(new("App", "Clipboard")))),
-            DebounceMs = 250,
-        });
+            {
+                _ = itemSelection.AddClipboardAsync();
+            }) with
+            {
+                Label = t.Message(new("App", "Clipboard")),
+                Description = t.Message(
+                    new("App", "ChooseItem"),
+                    ("item", t.Message(new("App", "Clipboard")))),
+                DebounceMs = 250,
+            });
 
         var selectionGrid = Grid(
                 columns:
@@ -159,9 +156,9 @@ sealed class SendPage : Component<SendPageProps>
                         () => pasteCommand.Execute?.Invoke(),
                         pasteCommand.IsEnabled)
                     .Grid(column: 3)) with
-        {
-            ColumnSpacing = 12,
-        };
+            {
+                ColumnSpacing = 12,
+            };
 
         Element selectedItemsCard = Component<SendItemsCard, SendItemsCardProps>(new(
                 selectedItems,
@@ -267,14 +264,14 @@ sealed class SendPage : Component<SendPageProps>
             .HAlign(HorizontalAlignment.Stretch);
 
         var pageBody = (FlexColumn(
-                VStack(12,
-                    Subtitle(t.Message(new("App", "ChooseContent")))
-                        .HeadingLevel(AutomationHeadingLevel.Level2),
-                    selectionGrid),
-                contentCards) with
-        {
-            RowGap = 20,
-        })
+                    VStack(12,
+                        Subtitle(t.Message(new("App", "ChooseContent")))
+                            .HeadingLevel(AutomationHeadingLevel.Level2),
+                        selectionGrid),
+                    contentCards) with
+                {
+                    RowGap = 20,
+                })
             .VAlign(isWideLayout ? VerticalAlignment.Stretch : VerticalAlignment.Top);
 
         var pageContainer = CommandHost(
@@ -544,6 +541,7 @@ sealed class SendPage : Component<SendPageProps>
                     await transfer.StartAsync(resolvedDevice, null, normalizedAddress).ConfigureAwait(true);
                     return;
                 }
+
                 setManualAddressError(t.Message(
                     new("App", "DeviceAddressNotFound"),
                     ("address", normalizedAddress)));
@@ -566,6 +564,5 @@ sealed class SendPage : Component<SendPageProps>
             if (!await source.ShareFileAsync(path, item.DisplayName).ConfigureAwait(true))
                 setPickerMessage(t.Message(new("App", "ShareFileFailed")));
         }
-
     });
 }

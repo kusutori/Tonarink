@@ -23,27 +23,28 @@ sealed class HistoryFileTypePicker : Component<HistoryFileTypePickerProps>
     public override Element Render()
     {
         var t = UseIntl();
-        var state = UseMemo(() => new PickerState(Enum.GetValues<FileTypeGlyphKind>()
-            .Select(kind => new FileTypeToken(kind, t.Message(new("App", LabelKey(kind)))))
-            .ToArray(), t.Message(new("App", "Remove")), t.Message(new("App", "SelectAll"))), t.Locale);
+        var state = UseMemo(() => new PickerState([
+            .. Enum.GetValues<FileTypeGlyphKind>()
+                .Select(kind => new FileTypeToken(kind, t.Message(new("App", LabelKey(kind)))))
+        ], t.Message(new("App", "Remove")), t.Message(new("App", "SelectAll"))), t.Locale);
         state.Changed = Props.Changed;
-        UseEffect(() => () => state.DetachControl(), state);
+        UseEffect(() => state.DetachControl, state);
         UseEffect(() => state.Sync(Props.Selected), Props.Selected, state);
 
         return (TokenizingTextBox(
-            itemsSource: state.Items,
-            suggestedItemsSource: state.Suggestions,
-            textMemberPath: nameof(FileTypeToken.Label),
-            // Labels contain spaces in several locales; typing one must not
-            // split a search into free-form tokens.
-            tokenDelimiter: string.Empty,
-            maximumTokens: state.Options.Length,
-            placeholderText: t.Message(new("App", "HistoryFilterTypeAll"))) with
-        {
-            OnTokenItemAdding = state.ValidateToken,
-            OnTokenItemAdded = _ => state.SelectionChanged(),
-            OnTokenItemRemoved = _ => state.SelectionChanged(),
-        })
+                    itemsSource: state.Items,
+                    suggestedItemsSource: state.Suggestions,
+                    textMemberPath: nameof(FileTypeToken.Label),
+                    // Labels contain spaces in several locales; typing one must not
+                    // split a search into free-form tokens.
+                    tokenDelimiter: string.Empty,
+                    maximumTokens: state.Options.Length,
+                    placeholderText: t.Message(new("App", "HistoryFilterTypeAll"))) with
+                {
+                    OnTokenItemAdding = state.ValidateToken,
+                    OnTokenItemAdded = _ => state.SelectionChanged(),
+                    OnTokenItemRemoved = _ => state.SelectionChanged(),
+                })
             .AutomationName(t.Message(new("App", "HistoryFilterFileType")))
             .AutomationId("History.Filter.FileType")
             .MinWidth(0)
@@ -99,15 +100,20 @@ sealed class HistoryFileTypePicker : Component<HistoryFileTypePickerProps>
         private PointerEventHandler? _inputPointerHandler;
 
         public FileTypeToken[] Options { get; } = options;
+
         // Keep the same notifying sources throughout a mounted picker's lifetime.
         // ListViewBase and the toolkit's editor manage their own native containers.
         public ObservableCollection<object> Items { get; } = [];
+
         public ObservableCollection<object> Suggestions { get; } = [];
+
         // WASDK 2.5 Experimental creates each template visual directly from C#.
         // Reuse the template, not its visuals: containers may realize/recycle it
         // independently, with WinUI supplying their current DataContext.
         public DataTemplate Template { get; } = new(static () => CreateTemplateContent(showExtension: false));
+
         public DataTemplate SuggestionTemplate { get; } = new(static () => CreateTemplateContent(showExtension: true));
+
         // Stretch the container as well as the template, so its star column
         // places the suffix at the popup's right edge rather than after the name.
         public Style SuggestionContainerStyle { get; } = new(typeof(ListViewItem))
@@ -164,7 +170,7 @@ sealed class HistoryFileTypePicker : Component<HistoryFileTypePickerProps>
             return content;
         }
 
-        public TokenizingTextBox? Control { get; private set; }
+        private TokenizingTextBox? Control { get; set; }
         public Action<ImmutableHashSet<FileTypeGlyphKind>>? Changed { get; set; }
 
         public void AttachControl(TokenizingTextBox control)
@@ -257,7 +263,8 @@ sealed class HistoryFileTypePicker : Component<HistoryFileTypePickerProps>
                 return;
 
             for (var current = FocusManager.GetFocusedElement(root) as DependencyObject;
-                current is not null; current = VisualTreeHelper.GetParent(current))
+                 current is not null;
+                 current = VisualTreeHelper.GetParent(current))
                 if (ReferenceEquals(current, owner))
                     return;
 
@@ -271,7 +278,9 @@ sealed class HistoryFileTypePicker : Component<HistoryFileTypePickerProps>
             if (Control is not { } owner)
                 return;
 
-            for (var current = source as DependencyObject; current is not null; current = VisualTreeHelper.GetParent(current))
+            for (var current = source as DependencyObject;
+                 current is not null;
+                 current = VisualTreeHelper.GetParent(current))
             {
                 // WCT 8.2 creates [Remove, Select all] for token containers and
                 // [Select all] for the picker itself, with hard-coded English text.
@@ -279,18 +288,18 @@ sealed class HistoryFileTypePicker : Component<HistoryFileTypePickerProps>
                 if (current is TokenizingTextBoxItem { ContextFlyout: MenuFlyout menu })
                 {
                     if (menu.Items.Count == 2 && menu.Items[0] is MenuFlyoutItem remove
-                        && menu.Items[1] is MenuFlyoutItem selectAll)
+                                              && menu.Items[1] is MenuFlyoutItem selectAll)
                     {
                         remove.Text = removeText;
                         selectAll.Text = selectAllText;
                     }
+
                     return;
                 }
 
                 if (ReferenceEquals(current, owner))
                 {
-                    if (owner.ContextFlyout is MenuFlyout { Items.Count: 1 } menuFlyout
-                        && menuFlyout.Items[0] is MenuFlyoutItem selectAll)
+                    if (owner.ContextFlyout is MenuFlyout { Items: [MenuFlyoutItem selectAll] })
                         selectAll.Text = selectAllText;
                     return;
                 }
@@ -314,7 +323,7 @@ sealed class HistoryFileTypePicker : Component<HistoryFileTypePickerProps>
                     // Repair only this documented template part, after its handlers
                     // finish, using the element's actual theme rather than the app's.
                     var counter = owner.FindDescendant<TextBlock>(static text =>
-                        text.Name == "PART_TokensCounter" && text.Visibility == Visibility.Visible);
+                        text is { Name: "PART_TokensCounter", Visibility: Visibility.Visible });
                     counter?.SetThemeResourceBinding(TextBlock.ForegroundProperty,
                         !owner.IsEnabled ? "TextFillColorDisabledBrush"
                         : Items.Count >= Options.Length ? "SystemFillColorCriticalBrush"
@@ -347,8 +356,10 @@ sealed class HistoryFileTypePicker : Component<HistoryFileTypePickerProps>
             owner.DispatcherQueue.TryEnqueue(() =>
             {
                 if (_dismissEmptySuggestions || selectionVersion != _selectionVersion
-                    || !ReferenceEquals(Control, owner) || owner.XamlRoot is not { } root
-                    || !ReferenceEquals(FindInput(FocusManager.GetFocusedElement(root) as DependencyObject, owner), input))
+                                             || !ReferenceEquals(Control, owner) || owner.XamlRoot is not { } root
+                                             || !ReferenceEquals(
+                                                 FindInput(FocusManager.GetFocusedElement(root) as DependencyObject,
+                                                     owner), input))
                     return;
 
                 RefreshSuggestions();
@@ -444,7 +455,7 @@ sealed class HistoryFileTypePicker : Component<HistoryFileTypePickerProps>
             return -1;
         }
 
-        public void RefreshSuggestions(string? text = null)
+        private void RefreshSuggestions(string? text = null)
         {
             var query = (text ?? Control?.Text ?? "").Trim();
             var matching = MatchingOptions(query).ToArray();

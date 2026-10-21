@@ -6,7 +6,6 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
-using Tonarink.Components.Animations;
 using Windows.System;
 using static Microsoft.UI.Reactor.Factories;
 using static Tonarink.Utilities.ByteSize;
@@ -41,45 +40,45 @@ sealed class HistoryPage : Component<HistoryPageProps>
         var visibleEntries = UseMemo(() => filter.FilterEntries(entries, today), entries, filter, today);
         var entryCommands = new HistoryEntryCommands(
             UseCommand(UseMemo(() => new Command<ReceiveHistoryEntry>
-            {
-                Label = t.Message(new("App", "HistoryOpenFile")),
-                Icon = new FontIconData(AppIcons.OpenFile),
-                Accelerator = Accelerator(VirtualKey.Enter),
-                Execute = entry =>
                 {
-                    if (PathExists(entry.Path))
-                        ShellLauncher.Open(entry.Path);
+                    Label = t.Message(new("App", "HistoryOpenFile")),
+                    Icon = new FontIconData(AppIcons.OpenFile),
+                    Accelerator = Accelerator(VirtualKey.Enter),
+                    Execute = entry =>
+                    {
+                        if (PathExists(entry.Path))
+                            ShellLauncher.Open(entry.Path);
+                    },
                 },
-            },
                 t.Locale)),
             UseCommand(UseMemo(() => new Command<ReceiveHistoryEntry>
-            {
-                Label = t.Message(new("App", "HistoryShowInFolder")),
-                Icon = new FontIconData(AppIcons.Folder),
-                Execute = entry =>
                 {
-                    if (PathExists(entry.Path))
-                        ShellLauncher.Reveal(entry.Path);
+                    Label = t.Message(new("App", "HistoryShowInFolder")),
+                    Icon = new FontIconData(AppIcons.Folder),
+                    Execute = entry =>
+                    {
+                        if (PathExists(entry.Path))
+                            ShellLauncher.Reveal(entry.Path);
+                    },
                 },
-            },
                 t.Locale)),
             UseCommand(UseMemo(() => new Command<ReceiveHistoryEntry>
-            {
-                Label = t.Message(new("App", "HistoryInfo")),
-                Icon = new FontIconData(AppIcons.Details),
-                Execute = entry => setInfoEntry(entry),
-            },
+                {
+                    Label = t.Message(new("App", "HistoryInfo")),
+                    Icon = new FontIconData(AppIcons.Details),
+                    Execute = entry => setInfoEntry(entry),
+                },
                 t.Locale)),
             UseCommand(UseMemo(() => new Command<ReceiveHistoryEntry>
-            {
-                Label = t.Message(new("App", "HistoryDeleteItem")),
-                Icon = new FontIconData(AppIcons.Delete),
-                Accelerator = Accelerator(VirtualKey.Delete),
-                Execute = entry => history.Remove(entry.Id),
-            },
+                {
+                    Label = t.Message(new("App", "HistoryDeleteItem")),
+                    Icon = new FontIconData(AppIcons.Delete),
+                    Accelerator = Accelerator(VirtualKey.Delete),
+                    Execute = entry => history.Remove(entry.Id),
+                },
                 t.Locale, history)));
 
-        var previousNavigationHistory = UseRef<Guid?>(null);
+        var previousNavigationHistory = UseRef<Guid?>();
         UseEffect(() =>
         {
             if (Props.NavigationHistoryId is not { } historyId)
@@ -88,6 +87,7 @@ sealed class HistoryPage : Component<HistoryPageProps>
                 previousNavigationHistory.Current = null;
                 return;
             }
+
             previousNavigationHistory.Current = historyId;
 
             var entry = entries.FirstOrDefault(candidate => candidate.Id == historyId);
@@ -112,10 +112,10 @@ sealed class HistoryPage : Component<HistoryPageProps>
                     shakeVersion: deleteShakeVersion,
                     iconSize: 20))
             with
-        {
-            ColumnGap = 8,
-            Wrap = FlexWrap.Wrap
-        };
+            {
+                ColumnGap = 8,
+                Wrap = FlexWrap.Wrap
+            };
 
         var filterActions = Component<HistoryFilterButton, HistoryFilterButtonProps>(new(filter, setFilter));
 
@@ -132,14 +132,14 @@ sealed class HistoryPage : Component<HistoryPageProps>
                         .Foreground(Theme.SecondaryText))
                 .HorizontalContentAlignment(HorizontalAlignment.Stretch),
             _ => (LazyVStack(
-                    visibleEntries,
-                    static entry => entry.Id.ToString("N"),
-                    (entry, index) =>
-                    HistoryRow(entry, t, entryCommands)
-                        .PositionInSet(index + 1, visibleEntries.Count)) with
-            {
-                Spacing = 8,
-            })
+                        visibleEntries,
+                        static entry => entry.Id.ToString("N"),
+                        (entry, index) =>
+                            HistoryRow(entry, t, entryCommands)
+                                .PositionInSet(index + 1, visibleEntries.Count)) with
+                    {
+                        Spacing = 8,
+                    })
                 .HAlign(HorizontalAlignment.Stretch)
                 .VAlign(VerticalAlignment.Stretch),
         };
@@ -151,7 +151,7 @@ sealed class HistoryPage : Component<HistoryPageProps>
                             ? Caption(t.Message(new("App", "HistoryFilterResults"),
                                     ("visible", visibleEntries.Count), ("total", entries.Count)))
                                 .Foreground(Theme.SecondaryText)
-                                .LiveRegion(AutomationLiveSetting.Polite)
+                                .LiveRegion()
                             : null,
                         list.Flex(grow: 1, basis: 0),
                         (ContentDialog(
@@ -159,37 +159,38 @@ sealed class HistoryPage : Component<HistoryPageProps>
                                 TextBlock(t.Message(new("App", "HistoryDeleteAllConfirmMessage")))
                                     .TextWrapping(TextWrapping.WrapWholeWords),
                                 primaryButtonText: t.Message(new("App", "HistoryDeleteAll"))) with
-                        {
-                            IsOpen = confirmClear,
-                            SecondaryButtonText = t.Message(new("App", "Cancel")),
-                            DefaultButton = ContentDialogButton.Primary,
-                            OnClosed = result =>
                             {
-                                if (result == ContentDialogResult.Primary)
+                                IsOpen = confirmClear,
+                                SecondaryButtonText = t.Message(new("App", "Cancel")),
+                                DefaultButton = ContentDialogButton.Primary,
+                                OnClosed = result =>
                                 {
-                                    history.Clear();
-                                    setDeleteShakeVersion(deleteShakeVersion + 1);
-                                }
-                                setConfirmClear(false);
-                            },
-                        }).Themed(Props.Theme),
+                                    if (result == ContentDialogResult.Primary)
+                                    {
+                                        history.Clear();
+                                        setDeleteShakeVersion(deleteShakeVersion + 1);
+                                    }
+
+                                    setConfirmClear(false);
+                                },
+                            }).Themed(Props.Theme),
                         (ContentDialog(
                                 t.Message(new("App", "HistoryInfoTitle")),
                                 infoEntry is null ? Empty() : HistoryInfoBody(infoEntry, t),
                                 primaryButtonText: t.Message(new("App", "Close"))) with
-                        {
-                            IsOpen = infoEntry is not null,
-                            DefaultButton = ContentDialogButton.Primary,
-                            OnClosed = _ =>
                             {
-                                setInfoEntry(null);
-                                if (Props.NavigationHistoryId is { } historyId)
-                                    Props.ConsumeNavigationHistory(historyId);
-                            },
-                        }).Themed(Props.Theme)) with
-                {
-                    RowGap = 20
-                })
+                                IsOpen = infoEntry is not null,
+                                DefaultButton = ContentDialogButton.Primary,
+                                OnClosed = _ =>
+                                {
+                                    setInfoEntry(null);
+                                    if (Props.NavigationHistoryId is { } historyId)
+                                        Props.ConsumeNavigationHistory(historyId);
+                                },
+                            }).Themed(Props.Theme)) with
+                    {
+                        RowGap = 20
+                    })
             .Padding(AppLayout.PagePadding)
             .AutomationName(t.Message(new("App", "HistoryTitle")))
             .Landmark(AutomationLandmarkType.Main);

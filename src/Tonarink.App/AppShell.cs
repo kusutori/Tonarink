@@ -11,7 +11,6 @@ using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Tonarink.Cli;
-using Tonarink.Hooks;
 using Windows.ApplicationModel.DataTransfer;
 using static Microsoft.UI.Reactor.Factories;
 
@@ -28,19 +27,23 @@ sealed class AppShell : Component
 
         UseEffect(() =>
         {
-            var cliHost = new CliHost(new AppCliRuntime(CliBridge.Get), AppPlatform.DataDirectory, AppDiagnostics.Report);
+            var cliHost = new CliHost(new AppCliRuntime(CliBridge.Get), AppPlatform.DataDirectory,
+                AppDiagnostics.Report);
             cliHost.Start();
             return (Action)cliHost.Dispose;
         });
 
         UseEffect(() => AppSettingsStore.Save(settings), settings);
         UseEffect(() => TaskbarReceiveBadge.SetEnabled(settings.ShowReceiveBadge), settings.ShowReceiveBadge);
-        UseEffect(() => () => TaskbarReceiveBadge.Clear());
+        UseEffect(() => TaskbarReceiveBadge.Clear);
         UseEffect(() =>
         {
             if (AppPlatform.HasPackageIdentity()) return;
             try { WindowsSendTo.SetEnabled(settings.ShowInSendToMenu); }
-            catch (Exception exception) { AppDiagnostics.Report("Could not synchronize the Send To shortcut", exception); }
+            catch (Exception exception)
+            {
+                AppDiagnostics.Report("Could not synchronize the Send To shortcut", exception);
+            }
         }, settings.ShowInSendToMenu);
         UseEffect(() =>
         {
@@ -51,7 +54,7 @@ sealed class AppShell : Component
         {
             var cts = new CancellationTokenSource();
             _ = SyncStartupAsync(cts.Token);
-            return () => cts.Cancel();
+            return cts.Cancel;
 
             async Task SyncStartupAsync(CancellationToken cancellationToken)
             {
@@ -76,15 +79,12 @@ sealed class AppShell : Component
         UseEffect(() =>
         {
             NativeSystemMenuTheme.Apply(settings.ThemeIndex);
-            if (window is not null)
+            window?.AppWindow.TitleBar.PreferredTheme = settings.ThemeIndex switch
             {
-                window.AppWindow.TitleBar.PreferredTheme = settings.ThemeIndex switch
-                {
-                    1 => TitleBarTheme.Light,
-                    2 => TitleBarTheme.Dark,
-                    _ => TitleBarTheme.UseDefaultAppMode,
-                };
-            }
+                1 => TitleBarTheme.Light,
+                2 => TitleBarTheme.Dark,
+                _ => TitleBarTheme.UseDefaultAppMode,
+            };
         }, settings.ThemeIndex);
 
         var locale = AppLocale.Resolve(settings.LanguageIndex);
@@ -193,7 +193,7 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
             navigationCoordinator,
             nodeSession,
             windowController.Restore,
-            token => AppNavigationDialogs.PrepareAsync(window?.NativeWindow?.Content?.XamlRoot,
+            token => AppNavigationDialogs.PrepareAsync(window?.NativeWindow.Content?.XamlRoot,
                 t.Message(new("App", "FavoritesTitle")), t.Message(new("App", "HistoryInfoTitle")), token),
             canPresentDialogs: !Props.IsSplashVisible);
         context.UseJumpListIntegration(t, Props.Locale);
@@ -256,146 +256,148 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
             }));
 
         var content = (NavigationHost(navigation, route =>
-            Component<NavigationPage, NavigationPageProps>(new(navigationCoordinator, route switch
-            {
-                AppRoute.Receive => Component<ReceivePage, ReceivePageProps>(new(
-                    runtime,
-                    settings,
-                    updateSettings)),
-                AppRoute.History => Component<HistoryPage, HistoryPageProps>(
-                    new(
-                        settings.DownloadDirectory,
+                Component<NavigationPage, NavigationPageProps>(new(navigationCoordinator, route switch
+                {
+                    AppRoute.Receive => Component<ReceivePage, ReceivePageProps>(new(
+                        runtime,
+                        settings,
+                        updateSettings)),
+                    AppRoute.History => Component<HistoryPage, HistoryPageProps>(
+                        new(
+                            settings.DownloadDirectory,
+                            contentTheme,
+                            activations.NavigationHistoryId,
+                            activations.ConsumeNavigationHistory)),
+                    AppRoute.Send => Component<SendPage, SendPageProps>(new(
+                        runtime,
+                        nodeSession.Node,
                         contentTheme,
-                        activations.NavigationHistoryId,
-                        activations.ConsumeNavigationHistory)),
-                AppRoute.Send => Component<SendPage, SendPageProps>(new(
-                    runtime,
-                    nodeSession.Node,
-                    contentTheme,
-                    nodeSession.RefreshAsync,
-                    setOutgoingTransfer,
-                    activations.ShareTargetPayload,
-                    activations.ConsumeShareTargetPayload,
-                    selectedSendItems,
-                    updateSelectedSendItems,
-                    settings.KeepItemsForMultipleReceivers,
-                    value => updateSettings(current => current with
-                    {
-                        KeepItemsForMultipleReceivers = value,
-                    }),
-                    settings.VerifyChecksumsOnSend,
-                    settings.ExpandDragDropToEntireApp,
-                    settings.FilePreviewEnabled,
-                    settings.PreviewProvider,
-                    settings.PreviewProvider switch
-                    {
-                        FilePreviewProvider.QuickLook => settings.QuickLookExecutablePath,
-                        FilePreviewProvider.PowerToysPeek => settings.PowerToysPeekExecutablePath,
-                    },
-                    device =>
-                    {
-                        setDetailsDevice(device);
-                        navigation.Navigate(AppRoute.DeviceDetails, AppNavigation.DrillIn);
-                    },
-                    activations.NavigationFavoriteFingerprint,
-                    activations.ConsumeNavigationFavorite)),
-                AppRoute.Settings => Component<SettingsPage, SettingsPageProps>(new(
-                    settings,
-                    runtime,
-                    updateSettings,
-                    apply =>
-                    {
-                        var next = apply(settingsRef.Current);
-                        AppSettingsStore.Save(next);
-                        settingsRef.Current = next;
-                        updateSettings(_ => next);
-                        nodeSession.StartOrRestartWithSettings(next);
-                    },
-                    nodeSession.Stop)),
-                AppRoute.NetworkInterfaces => Component<NetworkInterfacesPage, NetworkInterfacesPageProps>(
-                    new(settings, updateSettings)),
-                AppRoute.WebShare => Component<WebSharePage, WebSharePageProps>(new(
-                    nodeSession.Node,
-                    runtime,
-                    settings,
-                    nodeSession.SetHttpsOverride,
-                    WebShareMode.Send)),
-                AppRoute.WebReceive => Component<WebSharePage, WebSharePageProps>(new(
-                    nodeSession.Node,
-                    runtime,
-                    settings,
-                    nodeSession.SetHttpsOverride,
-                    WebShareMode.Receive)),
-                AppRoute.DeviceDetails when detailsDevice is not null =>
-                    Component<DeviceDetailsPage, DeviceDetailsPageProps>(new(
-                            runtime,
-                            detailsDevice,
-                            contentTheme))
-                        .WithKey(detailsDevice.Fingerprint),
-                AppRoute.DeviceDetails => TextBlock(t.Message(new("App", "PageNotFound"))),
-            }))) with
-        {
-            CacheMode = NavigationCacheMode.Enabled,
-            CacheSize = 3,
-            Transition = AppNavigation.IsDetail(navigation.CurrentRoute)
+                        nodeSession.RefreshAsync,
+                        setOutgoingTransfer,
+                        activations.ShareTargetPayload,
+                        activations.ConsumeShareTargetPayload,
+                        selectedSendItems,
+                        updateSelectedSendItems,
+                        settings.KeepItemsForMultipleReceivers,
+                        value => updateSettings(current => current with
+                        {
+                            KeepItemsForMultipleReceivers = value,
+                        }),
+                        settings.VerifyChecksumsOnSend,
+                        settings.ExpandDragDropToEntireApp,
+                        settings.FilePreviewEnabled,
+                        settings.PreviewProvider,
+                        settings.PreviewProvider switch
+                        {
+                            FilePreviewProvider.QuickLook => settings.QuickLookExecutablePath,
+                            FilePreviewProvider.PowerToysPeek => settings.PowerToysPeekExecutablePath,
+                        },
+                        device =>
+                        {
+                            setDetailsDevice(device);
+                            navigation.Navigate(AppRoute.DeviceDetails, AppNavigation.DrillIn);
+                        },
+                        activations.NavigationFavoriteFingerprint,
+                        activations.ConsumeNavigationFavorite)),
+                    AppRoute.Settings => Component<SettingsPage, SettingsPageProps>(new(
+                        settings,
+                        runtime,
+                        updateSettings,
+                        apply =>
+                        {
+                            var next = apply(settingsRef.Current);
+                            AppSettingsStore.Save(next);
+                            settingsRef.Current = next;
+                            updateSettings(_ => next);
+                            nodeSession.StartOrRestartWithSettings(next);
+                        },
+                        nodeSession.Stop)),
+                    AppRoute.NetworkInterfaces => Component<NetworkInterfacesPage, NetworkInterfacesPageProps>(
+                        new(settings, updateSettings)),
+                    AppRoute.WebShare => Component<WebSharePage, WebSharePageProps>(new(
+                        nodeSession.Node,
+                        runtime,
+                        settings,
+                        nodeSession.SetHttpsOverride,
+                        WebShareMode.Send)),
+                    AppRoute.WebReceive => Component<WebSharePage, WebSharePageProps>(new(
+                        nodeSession.Node,
+                        runtime,
+                        settings,
+                        nodeSession.SetHttpsOverride,
+                        WebShareMode.Receive)),
+                    AppRoute.DeviceDetails when detailsDevice is not null =>
+                        Component<DeviceDetailsPage, DeviceDetailsPageProps>(new(
+                                runtime,
+                                detailsDevice,
+                                contentTheme))
+                            .WithKey(detailsDevice.Fingerprint),
+                    AppRoute.DeviceDetails => TextBlock(t.Message(new("App", "PageNotFound"))),
+                }))) with
+            {
+                CacheMode = NavigationCacheMode.Enabled,
+                CacheSize = 3,
+                Transition = AppNavigation.IsDetail(navigation.CurrentRoute)
                     ? NavigationTransition.DrillIn()
                     : NavigationTransition.Slide(),
-        }).WithKey($"navigation:{Props.Locale}:{favoriteRevision}");
+            }).WithKey($"navigation:{Props.Locale}:{favoriteRevision}");
 
         var navigationView = ((NavigationView(
-                    [
-                        NavItem(t.Message(new("App", "NavReceive")), icon: AppIcons.Receive, tag: RouteTag(AppRoute.Receive)),
-                        NavItem(t.Message(new("App", "NavSend")), icon: AppIcons.Send, tag: RouteTag(AppRoute.Send)),
-                        NavItem(t.Message(new("App", "NavSettings")), icon: AppIcons.Settings,
-                            tag: RouteTag(AppRoute.Settings)),
-                    ],
-                    content)
-                .WithNavigation(navigation, RouteTag, ParseRoute)
-                .PaneDisplayMode(useTopNavigation
-                    ? NavigationViewPaneDisplayMode.Top
-                    : NavigationViewPaneDisplayMode.Auto)
-                .CompactModeThresholdWidth(AppLayout.CompactBreakpoint)
-                .ExpandedModeThresholdWidth(AppLayout.ExpandedBreakpoint)
-                .OpenPaneLength(AppLayout.NavigationOpenPaneLength)
-                .CompactPaneLength(AppLayout.NavigationCompactPaneLength)
-                .PaneFooter(paneStatus)
-                .PaneOpenChanged(setNavigationPaneOpen)
-                .PaneToggleButtonVisible(!useTitleBarPaneToggle && !useTopNavigation)
-                .Landmark(AutomationLandmarkType.Navigation)
-                .AutomationName(t.Message(new("App", "MainNavigation")))
-                .AlwaysShowHeader()
-                .BackButtonVisible(false)
-                .TitleBarAutoPadding(false)
-                .Set(static navigationView =>
-                {
-                    navigationView.Resources["NavigationViewHeaderMargin"] = AppLayout.PageHeaderMargin;
-                    navigationView.Resources["NavigationViewMinimalHeaderMargin"] =
-                        AppLayout.PageHeaderMargin;
-                })
-                .OnMountAdd(element =>
-                {
-                    if (element is not NavigationView navigationView)
-                        return;
+                        [
+                            NavItem(t.Message(new("App", "NavReceive")), icon: AppIcons.Receive,
+                                tag: RouteTag(AppRoute.Receive)),
+                            NavItem(t.Message(new("App", "NavSend")), icon: AppIcons.Send,
+                                tag: RouteTag(AppRoute.Send)),
+                            NavItem(t.Message(new("App", "NavSettings")), icon: AppIcons.Settings,
+                                tag: RouteTag(AppRoute.Settings)),
+                        ],
+                        content)
+                    .WithNavigation(navigation, RouteTag, ParseRoute)
+                    .PaneDisplayMode(useTopNavigation
+                        ? NavigationViewPaneDisplayMode.Top
+                        : NavigationViewPaneDisplayMode.Auto)
+                    .CompactModeThresholdWidth(AppLayout.CompactBreakpoint)
+                    .ExpandedModeThresholdWidth(AppLayout.ExpandedBreakpoint)
+                    .OpenPaneLength(AppLayout.NavigationOpenPaneLength)
+                    .CompactPaneLength(AppLayout.NavigationCompactPaneLength)
+                    .PaneFooter(paneStatus)
+                    .PaneOpenChanged(setNavigationPaneOpen)
+                    .PaneToggleButtonVisible(!useTitleBarPaneToggle && !useTopNavigation)
+                    .Landmark(AutomationLandmarkType.Navigation)
+                    .AutomationName(t.Message(new("App", "MainNavigation")))
+                    .AlwaysShowHeader()
+                    .BackButtonVisible(false)
+                    .TitleBarAutoPadding(false)
+                    .Set(static navigationView =>
+                    {
+                        navigationView.Resources["NavigationViewHeaderMargin"] = AppLayout.PageHeaderMargin;
+                        navigationView.Resources["NavigationViewMinimalHeaderMargin"] =
+                            AppLayout.PageHeaderMargin;
+                    })
+                    .OnMountAdd(element =>
+                    {
+                        if (element is not NavigationView navigationView)
+                            return;
 
-                    navigationViewRef.Current = navigationView;
-                    NavigationAnimatedIcons.Attach(navigationView);
-                    setNavigationPaneOpen(navigationView.IsPaneOpen);
-                })
-                .OnUnmountAdd(element =>
+                        navigationViewRef.Current = navigationView;
+                        NavigationAnimatedIcons.Attach(navigationView);
+                        setNavigationPaneOpen(navigationView.IsPaneOpen);
+                    })
+                    .OnUnmountAdd(element =>
+                    {
+                        if (ReferenceEquals(navigationViewRef.Current, element))
+                            navigationViewRef.Current = null;
+                    })
+                    .Flex(grow: 1, basis: 0)) with
                 {
-                    if (ReferenceEquals(navigationViewRef.Current, element))
-                        navigationViewRef.Current = null;
-                })
-                .Flex(grow: 1, basis: 0)) with
-        {
-            IsSettingsVisible = false,
-            Header = Component<PageHeader, PageHeaderProps>(new(
-                    navigation.CurrentRoute,
-                    navigation,
-                    headerRight.Current.Owner == navigation.CurrentRoute
-                        ? headerRight.Current.Build?.Invoke()
-                        : null)),
-        }).Provide(PageHeader.RightSlot, headerRight.Current!)
+                    IsSettingsVisible = false,
+                    Header = Component<PageHeader, PageHeaderProps>(new(
+                        navigation.CurrentRoute,
+                        navigation,
+                        headerRight.Current.Owner == navigation.CurrentRoute
+                            ? headerRight.Current.Build?.Invoke()
+                            : null)),
+                }).Provide(PageHeader.RightSlot, headerRight.Current!)
             .Provide(FloatingInfoBarHost.Slot, floatingInfo.Current!);
 
         var pendingIncoming = runtime.IncomingTransfers.FirstOrDefault();
@@ -495,9 +497,11 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
                         dropFeedbacks,
                         id => updateDropFeedbacks(current =>
                             (TransientInfoBarMessage[])
-                            [.. current.Select(message => message.Id == id
-                                ? message with { HasEntered = true }
-                                : message)]),
+                            [
+                                .. current.Select(message => message.Id == id
+                                    ? message with { HasEntered = true }
+                                    : message)
+                            ]),
                         id => updateDropFeedbacks(current =>
                             (TransientInfoBarMessage[])
                             [.. current.Where(message => message.Id != id)])))

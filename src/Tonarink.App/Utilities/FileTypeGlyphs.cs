@@ -146,7 +146,7 @@ static class FileTypeGlyphs
     public static FileTypeGlyphKind KindForPath(string path) =>
         Directory.Exists(path) ? FileTypeGlyphKind.Folder : KindForFileName(path);
 
-    public static string ForSendItem(Pages.Send.SelectedSendItemKind kind, string? fileName) =>
+    public static string ForSendItem(SelectedSendItemKind kind, string? fileName) =>
         ForKind(KindForSendItem(kind, fileName));
 
     public static string ForKind(FileTypeGlyphKind kind) => kind switch
@@ -171,11 +171,11 @@ static class FileTypeGlyphs
         FileTypeGlyphKind.Document => DocumentGlyph,
     };
 
-    public static FileTypeGlyphKind KindForSendItem(Pages.Send.SelectedSendItemKind kind, string? fileName) => kind switch
+    public static FileTypeGlyphKind KindForSendItem(SelectedSendItemKind kind, string? fileName) => kind switch
     {
-        Pages.Send.SelectedSendItemKind.Text => FileTypeGlyphKind.TextMessage,
-        Pages.Send.SelectedSendItemKind.Clipboard => FileTypeGlyphKind.Clipboard,
-        Pages.Send.SelectedSendItemKind.File => KindForFileName(fileName),
+        SelectedSendItemKind.Text => FileTypeGlyphKind.TextMessage,
+        SelectedSendItemKind.Clipboard => FileTypeGlyphKind.Clipboard,
+        SelectedSendItemKind.File => KindForFileName(fileName),
     };
 
     public static FileTypeGlyphKind KindForFileName(string? fileName)

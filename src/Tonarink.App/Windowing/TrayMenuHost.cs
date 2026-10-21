@@ -59,8 +59,7 @@ sealed class TrayMenuHost : IDisposable
         _disposed = true;
         DismissMenu();
         _window.Deactivated -= OnDeactivated;
-        if (_anchor is not null)
-            _anchor.Loaded -= OnAnchorLoaded;
+        _anchor?.Loaded -= OnAnchorLoaded;
         _anchor = null;
         _window.Close();
     }
@@ -69,8 +68,7 @@ sealed class TrayMenuHost : IDisposable
     {
         if (ReferenceEquals(_anchor, anchor))
             return;
-        if (_anchor is not null)
-            _anchor.Loaded -= OnAnchorLoaded;
+        _anchor?.Loaded -= OnAnchorLoaded;
         _anchor = anchor;
         anchor.Loaded += OnAnchorLoaded;
     }
@@ -157,6 +155,7 @@ sealed class TrayMenuHost : IDisposable
             menu.Closed -= OnMenuClosed;
             menu.Hide();
         }
+
         _window.Hide();
     }
 
@@ -241,6 +240,7 @@ sealed class TrayMenuHost : IDisposable
                     else
                         host.Restore();
                 }
+
                 void OnDoubleClick(object? sender, EventArgs args) => host.Restore();
                 void OnRightClick(object? sender, EventArgs args) => host.ShowMenu();
                 tray.Click += OnClick;
@@ -255,7 +255,8 @@ sealed class TrayMenuHost : IDisposable
             }, tray);
 
             return Grid(columns: [], rows: [])
-                .WithContextFlyout(MenuItems(MenuItem(open), MenuItem(settings), MenuItem(reportBug), MenuSeparator(), MenuItem(exit)))
+                .WithContextFlyout(MenuItems(MenuItem(open), MenuItem(settings), MenuItem(reportBug), MenuSeparator(),
+                    MenuItem(exit)))
                 .Set(host.SetAnchor);
         }
     }

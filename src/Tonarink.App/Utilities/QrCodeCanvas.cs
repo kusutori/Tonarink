@@ -25,14 +25,11 @@ static class QrCodeCanvas
                 redrawKey: text)
             .ClearColor(Colors.Transparent)
             .Size(CanvasSize, CanvasSize)
-            .HAlign(Microsoft.UI.Xaml.HorizontalAlignment.Center)
+            .HAlign(HorizontalAlignment.Center)
             .AutomationName(automationName)
             .OnMountAdd(element =>
             {
-                if (element is not FrameworkElement canvas)
-                    return;
-
-                var visual = ElementCompositionPreview.GetElementVisual(canvas);
+                var visual = ElementCompositionPreview.GetElementVisual(element);
                 var geometry = visual.Compositor.CreateRoundedRectangleGeometry();
                 geometry.Size = new Vector2(CanvasSize, CanvasSize);
                 geometry.CornerRadius = new Vector2(CardCornerRadius, CardCornerRadius);
@@ -40,8 +37,7 @@ static class QrCodeCanvas
             })
             .OnUnmountAdd(element =>
             {
-                if (element is FrameworkElement canvas)
-                    ElementCompositionPreview.GetElementVisual(canvas).Clip = null;
+                ElementCompositionPreview.GetElementVisual(element).Clip = null;
             });
     }
 

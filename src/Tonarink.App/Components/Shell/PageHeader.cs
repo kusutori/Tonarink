@@ -34,7 +34,7 @@ sealed class PageHeader : Component<PageHeaderProps>
         var navigation = Props.Navigation;
         var route = Props.Route;
         var (title, parentRoute, parentTitle) = CrumbLabels(t, route);
-        var parentKey = parentRoute is { } parent ? $"{parent}|{parentTitle}" : "";
+        var parentKey = parentRoute is not null ? $"{parentRoute}|{parentTitle}" : "";
         var items = UseMemo<BreadcrumbBarItemData[]>(
             () => parentRoute is { } parent && !string.IsNullOrEmpty(parentTitle)
                 ? [Breadcrumb(parentTitle, parent), Breadcrumb(title, route)]
@@ -109,5 +109,4 @@ sealed class PageHeader : Component<PageHeaderProps>
             AppRoute.Settings => (t.Message(new("App", "SettingsTitle")), null, null),
             AppRoute.Receive => (t.Message(new("App", "ReceiveTitle")), null, null),
         };
-
 }

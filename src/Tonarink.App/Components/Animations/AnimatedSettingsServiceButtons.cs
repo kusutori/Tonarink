@@ -121,7 +121,7 @@ sealed class AnimatedSettingsServiceButtons : Component<AnimatedSettingsServiceB
                 {
                     AnimatedIconForeground.Apply(player, source, playback.Button);
                     player.SetProgress(playback.IsOnline ? RefreshRestProgress : PlayRestProgress);
-                    if (playback.IsStarting && !playback.ReduceMotion)
+                    if (playback is { IsStarting: true, ReduceMotion: false })
                         EnsureStartingSpin(playback);
                 };
                 player.ActualThemeChanged += (_, _) =>
@@ -150,7 +150,7 @@ sealed class AnimatedSettingsServiceButtons : Component<AnimatedSettingsServiceB
 
     private Element StopButton(StopPlayback playback)
     {
-        var isEnabled = Props.CanStop && !Props.IsBusy;
+        var isEnabled = Props is { CanStop: true, IsBusy: false };
         var button = Button(string.Empty, () =>
             {
                 PlayStopFeedback(playback);
@@ -288,8 +288,7 @@ sealed class AnimatedSettingsServiceButtons : Component<AnimatedSettingsServiceB
 
         while (version == playback.AnimationVersion
                && playback.Player == player
-               && playback.IsStarting
-               && !playback.ReduceMotion)
+               && playback is { IsStarting: true, ReduceMotion: false })
         {
             await player.PlayAsync(
                 RefreshSpinStartProgress,
@@ -341,6 +340,7 @@ sealed class AnimatedSettingsServiceButtons : Component<AnimatedSettingsServiceB
         if (version == playback.AnimationVersion && playback.Player == player)
             player.SetProgress(0);
     }
+
     private sealed class ServiceActionPlayback
     {
         public AnimatedVisualPlayer? Player { get; set; }

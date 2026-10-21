@@ -32,7 +32,8 @@ static class ShellActivationHooks
         var drainingActivations = context.UseRef(false);
         var sessionRef = context.UseRef(nodeSession);
         sessionRef.Current = nodeSession;
-        var navigationHandler = context.UseRef<Func<AppNavigationRequest, CancellationToken, Task>>(HandleNavigationAsync);
+        var navigationHandler =
+            context.UseRef<Func<AppNavigationRequest, CancellationToken, Task>>(HandleNavigationAsync);
         navigationHandler.Current = HandleNavigationAsync;
 
         context.UseEffect(() => canPresentDialogs
@@ -67,10 +68,12 @@ static class ShellActivationHooks
         {
             // This handler starts on the UI dispatcher. Validate before closing
             // an existing dialog, so a stale link cannot disrupt an editor.
-            var fingerprint = request.Favorite is null ? null : FavoriteDeviceStore.Entries.Keys
-                .FirstOrDefault(key => key.Equals(request.Favorite, StringComparison.OrdinalIgnoreCase))
-                ?? throw new CliException(CliText.Get("Favorite fingerprint not found."), 3);
-            if (request.History is { } id && !ReceiveHistoryStore.Entries.Any(entry => entry.Id == id))
+            var fingerprint = request.Favorite is null
+                ? null
+                : FavoriteDeviceStore.Entries.Keys
+                      .FirstOrDefault(key => key.Equals(request.Favorite, StringComparison.OrdinalIgnoreCase))
+                  ?? throw new CliException(CliText.Get("Favorite fingerprint not found."), 3);
+            if (request.History is { } id && ReceiveHistoryStore.Entries.All(entry => entry.Id != id))
                 throw new CliException(CliText.Get("History entry not found."), 3);
             if (request.Route is not null)
                 await prepareNavigation(token);
@@ -92,6 +95,7 @@ static class ShellActivationHooks
                         else navigation.Navigate(route);
                     }
                 }
+
                 restoreWindow();
                 return Task.CompletedTask;
             }, token);

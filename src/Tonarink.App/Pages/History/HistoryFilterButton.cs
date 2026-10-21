@@ -33,7 +33,7 @@ sealed class HistoryFilterButton : Component<HistoryFilterButtonProps>
                 Component<HistoryFileTypePicker, HistoryFileTypePickerProps>(
                     new(draft.FileTypes, types => setDraft(draft with { FileTypes = types })))),
             Field(Message("HistoryFilterTime"),
-                ComboBox(TimeRanges.Select(TimeLabel).ToArray(), Array.IndexOf(TimeRanges, draft.TimeRange), index =>
+                ComboBox([.. TimeRanges.Select(TimeLabel)], Array.IndexOf(TimeRanges, draft.TimeRange), index =>
                     {
                         if ((uint)index < (uint)TimeRanges.Length)
                             setDraft(draft with { TimeRange = TimeRanges[index] });
@@ -46,28 +46,32 @@ sealed class HistoryFilterButton : Component<HistoryFilterButtonProps>
                         columns: [GridSize.Star(), GridSize.Star()],
                         rows: [GridSize.Auto],
                         Field(Message("HistoryFilterFrom"),
-                            CalendarDatePicker(ToPickerDate(draft.From), value => setDraft(draft with { From = ToDate(value) }))
-                                .MinWidth(0)
-                                .PlaceholderText(Message("HistoryFilterAnyDate"))
-                                .AutomationName(Message("HistoryFilterFrom"))
-                                .AutomationId("History.Filter.From"))
+                                CalendarDatePicker(ToPickerDate(draft.From),
+                                        value => setDraft(draft with { From = ToDate(value) }))
+                                    .MinWidth(0)
+                                    .PlaceholderText(Message("HistoryFilterAnyDate"))
+                                    .AutomationName(Message("HistoryFilterFrom"))
+                                    .AutomationId("History.Filter.From"))
                             .MinWidth(0)
                             .Margin(right: 8)
                             .Grid(column: 0),
                         Field(Message("HistoryFilterTo"),
-                            CalendarDatePicker(ToPickerDate(draft.To), value => setDraft(draft with { To = ToDate(value) }))
-                                .MinWidth(0)
-                                .PlaceholderText(Message("HistoryFilterAnyDate"))
-                                .AutomationName(Message("HistoryFilterTo"))
-                                .AutomationId("History.Filter.To"))
+                                CalendarDatePicker(ToPickerDate(draft.To),
+                                        value => setDraft(draft with { To = ToDate(value) }))
+                                    .MinWidth(0)
+                                    .PlaceholderText(Message("HistoryFilterAnyDate"))
+                                    .AutomationName(Message("HistoryFilterTo"))
+                                    .AutomationId("History.Filter.To"))
                             .MinWidth(0)
                             .Grid(column: 1)),
-                    draft.IsValid ? null : Caption(Message("HistoryFilterInvalidRange"))
-                        .Foreground(Theme.SystemCritical)
-                        .TextWrapping(TextWrapping.WrapWholeWords))
+                    draft.IsValid
+                        ? null
+                        : Caption(Message("HistoryFilterInvalidRange"))
+                            .Foreground(Theme.SystemCritical)
+                            .TextWrapping(TextWrapping.WrapWholeWords))
                 : null,
             Field(Message("HistoryFilterSort"),
-                ComboBox(SortOrders.Select(SortLabel).ToArray(), Array.IndexOf(SortOrders, draft.SortOrder), index =>
+                ComboBox([.. SortOrders.Select(SortLabel)], Array.IndexOf(SortOrders, draft.SortOrder), index =>
                     {
                         if ((uint)index < (uint)SortOrders.Length)
                             setDraft(draft with { SortOrder = SortOrders[index] });
@@ -127,6 +131,7 @@ sealed class HistoryFilterButton : Component<HistoryFilterButtonProps>
                 if (element is not ToggleSplitButton { Flyout: { } flyout } button) return;
 
                 buttonRef.Current = button;
+
                 // Effects run before child mounting in Reactor. Subscribe here, after
                 // WithFlyout has populated the native slot, not in a mount-only effect.
                 // SplitButton forces left alignment; cancel before presentation and
@@ -206,8 +211,10 @@ sealed class HistoryFilterButton : Component<HistoryFilterButtonProps>
         VStack(6, Caption(label).Foreground(Theme.SecondaryText), control.HAlign(HorizontalAlignment.Stretch));
 
     private static DateTimeOffset? ToPickerDate(DateOnly? date) => date is { } value
-        ? new DateTimeOffset(value.ToDateTime(TimeOnly.MinValue, DateTimeKind.Local)) : null;
+        ? new DateTimeOffset(value.ToDateTime(TimeOnly.MinValue, DateTimeKind.Local))
+        : null;
 
     private static DateOnly? ToDate(DateTimeOffset? date) => date is { } value
-        ? DateOnly.FromDateTime(value.DateTime) : null;
+        ? DateOnly.FromDateTime(value.DateTime)
+        : null;
 }
