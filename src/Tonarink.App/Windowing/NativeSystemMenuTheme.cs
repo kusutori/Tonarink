@@ -11,16 +11,16 @@ static partial class NativeSystemMenuTheme
         {
             if (new AccessibilitySettings().HighContrast)
             {
-                SetPreferredAppMode((int)PreferredAppMode.Default);
+                _ = SetPreferredAppMode(PreferredAppMode.Default);
                 FlushMenuThemes();
                 return;
             }
 
-            SetPreferredAppMode(themeIndex switch
+            _ = SetPreferredAppMode(themeIndex switch
             {
-                1 => (int)PreferredAppMode.ForceLight,
-                2 => (int)PreferredAppMode.ForceDark,
-                _ => (int)PreferredAppMode.AllowDark,
+                1 => PreferredAppMode.ForceLight,
+                2 => PreferredAppMode.ForceDark,
+                _ => PreferredAppMode.AllowDark,
             });
             FlushMenuThemes();
         }
@@ -43,8 +43,9 @@ static partial class NativeSystemMenuTheme
     }
 
     // Undocumented uxtheme exports used by Explorer to theme Win32 menus.
+    // The return value is a theme mode, not an HRESULT; callers intentionally discard it.
     [LibraryImport("uxtheme.dll", EntryPoint = "#135")]
-    private static partial int SetPreferredAppMode(int preferredAppMode);
+    private static partial PreferredAppMode SetPreferredAppMode(PreferredAppMode preferredAppMode);
 
     [LibraryImport("uxtheme.dll", EntryPoint = "#136")]
     private static partial void FlushMenuThemes();
