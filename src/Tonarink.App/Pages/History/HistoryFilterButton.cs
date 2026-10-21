@@ -113,8 +113,12 @@ sealed class HistoryFilterButton : Component<HistoryFilterButtonProps>
 
         return ToggleSplitButton(AppIcons.Filter, Props.Filter.IsActive, _ =>
             {
-                Props.Apply(HistoryFilter.Default);
-                // Also restore the controlled unchecked state when it was already inactive.
+                if (Props.Filter.IsActive)
+                    Props.Apply(HistoryFilter.Default);
+                else if (buttonRef.Current is { } button)
+                    button.Flyout?.ShowAt(button);
+
+                // Opening the editor must not check the toggle before filters are applied.
                 setResetVersion(resetVersion + 1);
             })
             .FontFamily("Segoe Fluent Icons")
@@ -123,7 +127,7 @@ sealed class HistoryFilterButton : Component<HistoryFilterButtonProps>
             .Padding(12, 0)
             .AutomationName(Message("HistoryFilterTitle"))
             .AutomationId("History.Filter")
-            .ToolTip(Message("HistoryFilterReset"))
+            .ToolTip(Message(Props.Filter.IsActive ? "HistoryFilterReset" : "HistoryFilterTitle"))
             .WithFlyout(ContentFlyout(panel, FlyoutPlacementMode.BottomEdgeAlignedRight))
             .OnMountAdd(element => buttonRef.Current = element as ToggleSplitButton)
             .OnUnmountAdd(_ => buttonRef.Current = null);
