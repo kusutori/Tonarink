@@ -3,7 +3,7 @@ using Windows.UI.ViewManagement;
 
 namespace Tonarink.Windowing;
 
-static class NativeSystemMenuTheme
+static partial class NativeSystemMenuTheme
 {
     public static void Apply(int themeIndex)
     {
@@ -43,9 +43,9 @@ static class NativeSystemMenuTheme
     }
 
     // Undocumented uxtheme exports used by Explorer to theme Win32 menus.
-    [DllImport("uxtheme.dll", EntryPoint = "#135")]
-    private static extern int SetPreferredAppMode(int preferredAppMode);
+    [LibraryImport("uxtheme.dll", EntryPoint = "#135")]
+    private static partial int SetPreferredAppMode(int preferredAppMode);
 
-    [DllImport("uxtheme.dll", EntryPoint = "#136")]
-    private static extern void FlushMenuThemes();
+    [LibraryImport("uxtheme.dll", EntryPoint = "#136")]
+    private static partial void FlushMenuThemes();
 }

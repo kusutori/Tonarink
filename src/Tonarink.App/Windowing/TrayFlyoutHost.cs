@@ -11,7 +11,7 @@ using Windows.UI.ViewManagement;
 
 namespace Tonarink.Windowing;
 
-static class TrayFlyoutHost
+static partial class TrayFlyoutHost
 {
     public static readonly WindowKey Key = WindowKey.Of("tray-flyout");
 
@@ -417,7 +417,7 @@ static class TrayFlyoutHost
             return;
 
         _flyoutHwnd = WinRT.Interop.WindowNative.GetWindowHandle(native);
-        _mouseHook = SetWindowsHookEx(WhMouseLl, MouseProc, GetModuleHandle(null), 0);
+        _mouseHook = SetWindowsHookExW(WhMouseLl, MouseProc, GetModuleHandleW(null), 0);
     }
 
     private static void StopClickAwayWatch()
@@ -473,6 +473,7 @@ static class TrayFlyoutHost
             work.Y + work.Height - AppLayout.TrayFlyoutHeight - AppLayout.TrayFlyoutGap);
     }
 
+    [UnmanagedFunctionPointer(CallingConvention.Winapi)]
     private delegate nint LowLevelMouseProc(int nCode, nint wParam, nint lParam);
 
     [StructLayout(LayoutKind.Sequential)]
@@ -492,35 +493,40 @@ static class TrayFlyoutHost
         public int Y;
     }
 
-    [DllImport("user32.dll")]
-    private static extern nint SetWindowsHookEx(int idHook, LowLevelMouseProc lpfn, nint hMod, uint dwThreadId);
+    [LibraryImport("user32.dll")]
+    private static partial nint SetWindowsHookExW(
+        int idHook, [MarshalAs(UnmanagedType.FunctionPtr)] LowLevelMouseProc lpfn, nint hMod, uint dwThreadId);
 
-    [DllImport("user32.dll")]
-    private static extern bool UnhookWindowsHookEx(nint hhk);
+    [LibraryImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool UnhookWindowsHookEx(nint hhk);
 
-    [DllImport("user32.dll")]
-    private static extern nint CallNextHookEx(nint hhk, int nCode, nint wParam, nint lParam);
+    [LibraryImport("user32.dll")]
+    private static partial nint CallNextHookEx(nint hhk, int nCode, nint wParam, nint lParam);
 
-    [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
-    private static extern nint GetModuleHandle(string? lpModuleName);
+    [LibraryImport("kernel32.dll", StringMarshalling = StringMarshalling.Utf16)]
+    private static partial nint GetModuleHandleW(string? lpModuleName);
 
-    [DllImport("user32.dll")]
-    private static extern nint WindowFromPoint(NativePoint point);
+    [LibraryImport("user32.dll")]
+    private static partial nint WindowFromPoint(NativePoint point);
 
-    [DllImport("user32.dll")]
-    private static extern nint GetAncestor(nint hWnd, int gaFlags);
+    [LibraryImport("user32.dll")]
+    private static partial nint GetAncestor(nint hWnd, int gaFlags);
 
-    [DllImport("user32.dll")]
-    private static extern nint GetForegroundWindow();
+    [LibraryImport("user32.dll")]
+    private static partial nint GetForegroundWindow();
 
-    [DllImport("user32.dll")]
-    private static extern bool SetForegroundWindow(nint hWnd);
+    [LibraryImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool SetForegroundWindow(nint hWnd);
 
-    [DllImport("user32.dll")]
-    private static extern bool BringWindowToTop(nint hWnd);
+    [LibraryImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool BringWindowToTop(nint hWnd);
 
-    [DllImport("user32.dll", SetLastError = true)]
-    private static extern bool SetWindowPos(
+    [LibraryImport("user32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool SetWindowPos(
         nint hWnd,
         nint hWndInsertAfter,
         int x,
@@ -529,26 +535,29 @@ static class TrayFlyoutHost
         int cy,
         uint uFlags);
 
-    [DllImport("user32.dll")]
-    private static extern bool GetWindowRect(nint hWnd, out NativeRect lpRect);
+    [LibraryImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool GetWindowRect(nint hWnd, out NativeRect lpRect);
 
-    [DllImport("user32.dll")]
-    private static extern uint GetDpiForWindow(nint hWnd);
+    [LibraryImport("user32.dll")]
+    private static partial uint GetDpiForWindow(nint hWnd);
 
-    [DllImport("user32.dll")]
-    private static extern bool IsWindow(nint hWnd);
+    [LibraryImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool IsWindow(nint hWnd);
 
-    [DllImport("dwmapi.dll")]
-    private static extern int DwmFlush();
+    [LibraryImport("dwmapi.dll")]
+    private static partial int DwmFlush();
 
-    [DllImport("user32.dll")]
-    private static extern uint GetWindowThreadProcessId(nint hWnd, out uint processId);
+    [LibraryImport("user32.dll")]
+    private static partial uint GetWindowThreadProcessId(nint hWnd, out uint processId);
 
-    [DllImport("user32.dll")]
-    private static extern bool AttachThreadInput(uint idAttach, uint idAttachTo, bool fAttach);
+    [LibraryImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool AttachThreadInput(uint idAttach, uint idAttachTo, [MarshalAs(UnmanagedType.Bool)] bool fAttach);
 
-    [DllImport("kernel32.dll")]
-    private static extern uint GetCurrentThreadId();
+    [LibraryImport("kernel32.dll")]
+    private static partial uint GetCurrentThreadId();
 
     [StructLayout(LayoutKind.Sequential)]
     private struct NativeRect

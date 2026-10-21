@@ -16,7 +16,7 @@ namespace Tonarink.Windowing;
 // remains a XAML popup; it is not rendered inside a tray-panel-sized window.
 // Keep it unowned so activating the menu does not raise the main window.
 // The shell hook explicitly disposes the host when its lifetime ends.
-sealed class TrayMenuHost : IDisposable
+sealed partial class TrayMenuHost : IDisposable
 {
     private readonly ReactorWindow _window;
     private readonly IntlAccessor _intl;
@@ -261,11 +261,20 @@ sealed class TrayMenuHost : IDisposable
         }
     }
 
-    [DllImport("user32.dll")]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    private static extern bool GetCursorPos(out PointInt32 point);
+    // Use the native POINT layout rather than the WinRT-projected PointInt32
+    // so source-generated marshalling needs no assembly-wide runtime changes.
+    [StructLayout(LayoutKind.Sequential)]
+    private struct NativePoint
+    {
+        public int X;
+        public int Y;
+    }
 
-    [DllImport("user32.dll")]
+    [LibraryImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
-    private static extern bool SetForegroundWindow(nint window);
+    private static partial bool GetCursorPos(out NativePoint point);
+
+    [LibraryImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool SetForegroundWindow(nint window);
 }
