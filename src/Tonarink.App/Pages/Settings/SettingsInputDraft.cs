@@ -1,7 +1,6 @@
 using System.Net;
 using System.Net.Sockets;
 using LocalSendDotNet;
-using Tonarink.Models;
 
 namespace Tonarink.Pages.Settings;
 
@@ -25,7 +24,8 @@ sealed record SettingsInputDraft(
         DeviceModel = DeviceModel == previous.DeviceModel ? current.DeviceModel : DeviceModel,
         Port = Port.Equals(previous.Port) ? current.Port : Port,
         DiscoveryTimeoutMs = DiscoveryTimeoutMs.Equals(previous.DiscoveryTimeoutMs)
-            ? current.DiscoveryTimeoutMs : DiscoveryTimeoutMs,
+            ? current.DiscoveryTimeoutMs
+            : DiscoveryTimeoutMs,
         MulticastGroup = MulticastGroup == previous.MulticastGroup ? current.MulticastGroup : MulticastGroup,
         ReceivePin = ReceivePin == previous.ReceivePin ? current.ReceivePin : ReceivePin,
     };
@@ -36,7 +36,8 @@ sealed record SettingsInputDraft(
         if (!double.IsFinite(Port) || Port < 1 || Port > ushort.MaxValue || Port != Math.Truncate(Port))
             errorKey = "SettingsPortInvalid";
         else if (!double.IsFinite(DiscoveryTimeoutMs) || DiscoveryTimeoutMs < 1
-                 || DiscoveryTimeoutMs > 60_000 || DiscoveryTimeoutMs != Math.Truncate(DiscoveryTimeoutMs))
+                                                      || DiscoveryTimeoutMs > 60_000 || DiscoveryTimeoutMs !=
+                                                      Math.Truncate(DiscoveryTimeoutMs))
             errorKey = "SettingsDiscoveryTimeoutInvalid";
         else if (!string.IsNullOrWhiteSpace(MulticastGroup)
                  && (!IPAddress.TryParse(MulticastGroup.Trim(), out var address)
@@ -57,7 +58,8 @@ sealed record SettingsInputDraft(
         Port = (int)Port,
         DiscoveryTimeoutMs = (int)DiscoveryTimeoutMs,
         MulticastGroup = string.IsNullOrWhiteSpace(MulticastGroup)
-            ? LocalSendOptions.DefaultMulticastAddress.ToString() : MulticastGroup.Trim(),
+            ? LocalSendOptions.DefaultMulticastAddress.ToString()
+            : MulticastGroup.Trim(),
         ReceivePin = ReceivePin.Trim(),
     };
 }

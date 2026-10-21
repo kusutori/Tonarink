@@ -7,7 +7,6 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Tonarink.Application;
-using Tonarink.Components.Animations;
 using static Microsoft.UI.Reactor.Factories;
 using static Tonarink.Controls.SettingsCardElement;
 using static Tonarink.Controls.SettingsExpanderElement;
@@ -39,36 +38,36 @@ sealed class SettingsPage : Component<SettingsPageProps>
                              && Props.Runtime.DiscoveryWarning is null
             ? null
             : () => VStack(4,
-                    statusMessage is null
-                        ? null
-                        : Component<FloatingInfoBarItem, FloatingInfoBarItemProps>(new(
-                                (InfoBar(t.Message(new("App", "SettingsTitle")), statusMessage) with
-                                {
-                                    IsOpen = true,
-                                    IsClosable = true,
-                                    OnClosed = () => setStatusMessage(null),
-                                }).Severity(InfoBarSeverity.Error)))
-                            .WithKey("settings-status"),
-                    Props.Runtime.Error is null
-                        ? null
-                        : Component<FloatingInfoBarItem, FloatingInfoBarItemProps>(new(
-                                (InfoBar(t.Message(new("App", "NetworkStartFailed")), Props.Runtime.Error) with
-                                {
-                                    IsOpen = true,
-                                    IsClosable = false,
-                                }).Severity(InfoBarSeverity.Error)))
-                            .WithKey("settings-runtime-error"),
-                    Props.Runtime.DiscoveryWarning is null
-                        ? null
-                        : Component<FloatingInfoBarItem, FloatingInfoBarItemProps>(new(
-                                (InfoBar(
+                statusMessage is null
+                    ? null
+                    : Component<FloatingInfoBarItem, FloatingInfoBarItemProps>(new(
+                            (InfoBar(t.Message(new("App", "SettingsTitle")), statusMessage) with
+                            {
+                                IsOpen = true,
+                                IsClosable = true,
+                                OnClosed = () => setStatusMessage(null),
+                            }).Severity(InfoBarSeverity.Error)))
+                        .WithKey("settings-status"),
+                Props.Runtime.Error is null
+                    ? null
+                    : Component<FloatingInfoBarItem, FloatingInfoBarItemProps>(new(
+                            (InfoBar(t.Message(new("App", "NetworkStartFailed")), Props.Runtime.Error) with
+                            {
+                                IsOpen = true,
+                                IsClosable = false,
+                            }).Severity(InfoBarSeverity.Error)))
+                        .WithKey("settings-runtime-error"),
+                Props.Runtime.DiscoveryWarning is null
+                    ? null
+                    : Component<FloatingInfoBarItem, FloatingInfoBarItemProps>(new(
+                            (InfoBar(
                                     t.Message(new("App", "NodeDiscoveryLimited")),
                                     Props.Runtime.DiscoveryWarning) with
                                 {
                                     IsOpen = true,
                                     IsClosable = false,
                                 }).Severity(InfoBarSeverity.Warning)))
-                            .WithKey("settings-discovery-warning"));
+                        .WithKey("settings-discovery-warning"));
         UseEffect(
             () => floatingInfo.Invalidate(),
             statusMessage,
@@ -200,43 +199,43 @@ sealed class SettingsPage : Component<SettingsPageProps>
                     .AutomationId("Settings.Navigation.TopWhenNarrow")
                     .HelpText(t.Message(new("App", "SettingsUseTopNavigationWhenNarrowDescription")))),
             SettingsExpander(
-                    content:
-                    ToggleSwitch(
-                        Props.Settings.MinimizeToTray,
-                        value => Props.UpdateSettings(settings => settings with { MinimizeToTray = value }))
-                        .AutomationName(t.Message(new("App", "SettingsMinimizeToTray")))
-                        .HelpText(t.Message(new("App", "SettingsMinimizeToTrayDescription"))),
-                    headerIcon: AnimatedButtons.SettingsMinimizeToTrayIcon(Props.Settings.MinimizeToTray)
-                        .WithKey("settings-minimize-to-tray-icon"),
-                    items:
-                    [
-                        SettingsCard(
-                            header: t.Message(new("App", "SettingsTrayClickOpensFlyout")),
-                            description: t.Message(new("App", "SettingsTrayClickOpensFlyoutDescription")),
-                            isClickEnabled: false,
-                            isActionIconVisible: false,
-                            content:
-                            ComboBox(trayClickActionOptions, Props.Settings.TrayClickOpensFlyout ? 0 : 1, index =>
-                                {
-                                    if (index is >= 0 and <= 1
-                                        && (index == 0) != Props.Settings.TrayClickOpensFlyout)
+                        content:
+                        ToggleSwitch(
+                                Props.Settings.MinimizeToTray,
+                                value => Props.UpdateSettings(settings => settings with { MinimizeToTray = value }))
+                            .AutomationName(t.Message(new("App", "SettingsMinimizeToTray")))
+                            .HelpText(t.Message(new("App", "SettingsMinimizeToTrayDescription"))),
+                        headerIcon: AnimatedButtons.SettingsMinimizeToTrayIcon(Props.Settings.MinimizeToTray)
+                            .WithKey("settings-minimize-to-tray-icon"),
+                        items:
+                        [
+                            SettingsCard(
+                                header: t.Message(new("App", "SettingsTrayClickOpensFlyout")),
+                                description: t.Message(new("App", "SettingsTrayClickOpensFlyoutDescription")),
+                                isClickEnabled: false,
+                                isActionIconVisible: false,
+                                content:
+                                ComboBox(trayClickActionOptions, Props.Settings.TrayClickOpensFlyout ? 0 : 1, index =>
                                     {
-                                        Props.UpdateSettings(settings => settings with
+                                        if (index is >= 0 and <= 1
+                                            && (index == 0) != Props.Settings.TrayClickOpensFlyout)
                                         {
-                                            TrayClickOpensFlyout = index == 0,
-                                        });
-                                    }
-                                })
-                                .AutomationName(t.Message(new("App", "SettingsTrayClickOpensFlyout")))
-                                .HelpText(t.Message(new("App", "SettingsTrayClickOpensFlyoutDescription")))
-                                .IsEnabled(Props.Settings.MinimizeToTray)
-                                .MinWidth(180)),
-                    ])
-                .AutomationId("Settings.Tray.Expander") with
-            {
-                Header = t.Message(new("App", "SettingsMinimizeToTray")),
-                Description = t.Message(new("App", "SettingsMinimizeToTrayDescription")),
-            },
+                                            Props.UpdateSettings(settings => settings with
+                                            {
+                                                TrayClickOpensFlyout = index == 0,
+                                            });
+                                        }
+                                    })
+                                    .AutomationName(t.Message(new("App", "SettingsTrayClickOpensFlyout")))
+                                    .HelpText(t.Message(new("App", "SettingsTrayClickOpensFlyoutDescription")))
+                                    .IsEnabled(Props.Settings.MinimizeToTray)
+                                    .MinWidth(180)),
+                        ])
+                    .AutomationId("Settings.Tray.Expander") with
+                {
+                    Header = t.Message(new("App", "SettingsMinimizeToTray")),
+                    Description = t.Message(new("App", "SettingsMinimizeToTrayDescription")),
+                },
             SettingsCard(
                 header: t.Message(new("App", "SettingsStartWithWindows")),
                 description: t.Message(new("App", "SettingsStartWithWindowsDescription")),
@@ -250,99 +249,101 @@ sealed class SettingsPage : Component<SettingsPageProps>
                     .AutomationName(t.Message(new("App", "SettingsStartWithWindows")))
                     .HelpText(t.Message(new("App", "SettingsStartWithWindowsDescription")))),
             SettingsExpander(
-                    content:
-                    ToggleSwitch(
-                        Props.Settings.NotificationsEnabled,
-                        value =>
-                        {
-                            Props.UpdateSettings(settings => settings with { NotificationsEnabled = value });
-                            AppNotificationService.SetEnabled(value);
-                        })
-                        .AutomationName(t.Message(new("App", "SettingsNotificationsEnabled")))
-                        .AutomationId("Settings.Notifications.Enabled")
-                        .HelpText(t.Message(new("App", "SettingsNotificationsEnabledDescription"))),
-                    headerIcon: AnimatedButtons.SettingsNotificationIcon(Props.Settings.NotificationsEnabled)
-                        .WithKey("settings-notification-icon"),
-                    items:
-                    [
-                        SettingsCard(
-                            header: t.Message(new("App", "SettingsNotificationsDefaultAction")),
-                            description: t.Message(new("App", "SettingsNotificationsDefaultActionDescription")),
-                            isClickEnabled: false,
-                            isActionIconVisible: false,
-                            content:
-                            ComboBox(
-                                    notificationDefaultActionOptions,
-                                    (int)Props.Settings.NotificationDefaultAction,
-                                    index =>
-                                    {
-                                        if (Enum.IsDefined(typeof(NotificationDefaultAction), index))
-                                        {
-                                            Props.UpdateSettings(settings => settings with
-                                            {
-                                                NotificationDefaultAction = (NotificationDefaultAction)index,
-                                            });
-                                        }
-                                    })
-                                .AutomationName(t.Message(new("App", "SettingsNotificationsDefaultAction")))
-                                .AutomationId("Settings.Notifications.Action")
-                                .HelpText(t.Message(new("App", "SettingsNotificationsDefaultActionDescription")))
-                                .IsEnabled(Props.Settings.NotificationsEnabled)
-                                .MinWidth(180)),
-                        SettingsCard(
-                            header: t.Message(new("App", "SettingsNotificationsTest")),
-                            description: t.Message(new("App", "SettingsNotificationsTestDescription")),
-                            isClickEnabled: false,
-                            isActionIconVisible: false,
-                            content:
-                            Button(t.Message(new("App", "SettingsNotificationsSendTest")), () =>
-                                {
-                                    var shown = AppNotificationService.TryShow(
-                                        t.Message(new("App", "SettingsNotificationsTestTitle")),
-                                        t.Message(new("App", "SettingsNotificationsTestMessage")),
-                                        "test");
-                                    setStatusMessage(shown
-                                        ? null
-                                        : t.Message(new("App", "SettingsNotificationsTestFailed")));
-                                })
-                                .AutomationName(t.Message(new("App", "SettingsNotificationsSendTest")))
-                                .AutomationId("Settings.Notifications.Test")
-                                .IsEnabled(Props.Settings.NotificationsEnabled)),
-                    ])
-                .AutomationId("Settings.Notifications.Expander") with
-            {
-                Header = t.Message(new("App", "SettingsNotifications")),
-                Description = t.Message(new("App", "SettingsNotificationsDescription")),
-            },
-            SettingsExpander(
-                headerIcon: AnimatedButtons.SettingsContextMenuIcon(Props.Settings.ShowExplorerContextMenu)
-                    .WithKey("settings-context-menu-icon"),
-                content:
-                ToggleSwitch(Props.Settings.ShowExplorerContextMenu, value =>
-                        Props.UpdateSettings(settings => settings with { ShowExplorerContextMenu = value }))
-                    .AutomationName(t.Message(new("App", "SettingsExplorerContextMenu")))
-                    .HelpText(t.Message(new("App", "SettingsExplorerContextMenuDescription")))
-                    .IsEnabled(AppPlatform.HasPackageIdentity()),
-                items:
-                [
-                    SettingsCard(
-                        header: t.Message(new("App", "SettingsExplorerFavorites")),
-                        description: t.Message(new("App", "SettingsExplorerFavoritesDescription")),
-                        isClickEnabled: false,
-                        isActionIconVisible: false,
                         content:
-                        ToggleSwitch(Props.Settings.ShowFavoriteDevicesInExplorerMenu, value =>
-                                Props.UpdateSettings(settings => settings with { ShowFavoriteDevicesInExplorerMenu = value }))
-                            .AutomationName(t.Message(new("App", "SettingsExplorerFavorites")))
-                            .AutomationId("Settings.Explorer.Favorites")
-                            .HelpText(t.Message(new("App", "SettingsExplorerFavoritesDescription")))
-                            .IsEnabled(AppPlatform.HasPackageIdentity() && Props.Settings.ShowExplorerContextMenu)),
-                ])
-                .AutomationId("Settings.Explorer.Expander") with
-            {
-                Header = t.Message(new("App", "SettingsExplorerContextMenu")),
-                Description = t.Message(new("App", "SettingsExplorerContextMenuDescription")),
-            },
+                        ToggleSwitch(
+                                Props.Settings.NotificationsEnabled,
+                                value =>
+                                {
+                                    Props.UpdateSettings(settings => settings with { NotificationsEnabled = value });
+                                    AppNotificationService.SetEnabled(value);
+                                })
+                            .AutomationName(t.Message(new("App", "SettingsNotificationsEnabled")))
+                            .AutomationId("Settings.Notifications.Enabled")
+                            .HelpText(t.Message(new("App", "SettingsNotificationsEnabledDescription"))),
+                        headerIcon: AnimatedButtons.SettingsNotificationIcon(Props.Settings.NotificationsEnabled)
+                            .WithKey("settings-notification-icon"),
+                        items:
+                        [
+                            SettingsCard(
+                                header: t.Message(new("App", "SettingsNotificationsDefaultAction")),
+                                description: t.Message(new("App", "SettingsNotificationsDefaultActionDescription")),
+                                isClickEnabled: false,
+                                isActionIconVisible: false,
+                                content:
+                                ComboBox(
+                                        notificationDefaultActionOptions,
+                                        (int)Props.Settings.NotificationDefaultAction,
+                                        index =>
+                                        {
+                                            if (Enum.IsDefined(typeof(NotificationDefaultAction), index))
+                                            {
+                                                Props.UpdateSettings(settings => settings with
+                                                {
+                                                    NotificationDefaultAction = (NotificationDefaultAction)index,
+                                                });
+                                            }
+                                        })
+                                    .AutomationName(t.Message(new("App", "SettingsNotificationsDefaultAction")))
+                                    .AutomationId("Settings.Notifications.Action")
+                                    .HelpText(t.Message(new("App", "SettingsNotificationsDefaultActionDescription")))
+                                    .IsEnabled(Props.Settings.NotificationsEnabled)
+                                    .MinWidth(180)),
+                            SettingsCard(
+                                header: t.Message(new("App", "SettingsNotificationsTest")),
+                                description: t.Message(new("App", "SettingsNotificationsTestDescription")),
+                                isClickEnabled: false,
+                                isActionIconVisible: false,
+                                content:
+                                Button(t.Message(new("App", "SettingsNotificationsSendTest")), () =>
+                                    {
+                                        var shown = AppNotificationService.TryShow(
+                                            t.Message(new("App", "SettingsNotificationsTestTitle")),
+                                            t.Message(new("App", "SettingsNotificationsTestMessage")),
+                                            "test");
+                                        setStatusMessage(shown
+                                            ? null
+                                            : t.Message(new("App", "SettingsNotificationsTestFailed")));
+                                    })
+                                    .AutomationName(t.Message(new("App", "SettingsNotificationsSendTest")))
+                                    .AutomationId("Settings.Notifications.Test")
+                                    .IsEnabled(Props.Settings.NotificationsEnabled)),
+                        ])
+                    .AutomationId("Settings.Notifications.Expander") with
+                {
+                    Header = t.Message(new("App", "SettingsNotifications")),
+                    Description = t.Message(new("App", "SettingsNotificationsDescription")),
+                },
+            SettingsExpander(
+                        headerIcon: AnimatedButtons.SettingsContextMenuIcon(Props.Settings.ShowExplorerContextMenu)
+                            .WithKey("settings-context-menu-icon"),
+                        content:
+                        ToggleSwitch(Props.Settings.ShowExplorerContextMenu, value =>
+                                Props.UpdateSettings(settings => settings with { ShowExplorerContextMenu = value }))
+                            .AutomationName(t.Message(new("App", "SettingsExplorerContextMenu")))
+                            .HelpText(t.Message(new("App", "SettingsExplorerContextMenuDescription")))
+                            .IsEnabled(AppPlatform.HasPackageIdentity()),
+                        items:
+                        [
+                            SettingsCard(
+                                header: t.Message(new("App", "SettingsExplorerFavorites")),
+                                description: t.Message(new("App", "SettingsExplorerFavoritesDescription")),
+                                isClickEnabled: false,
+                                isActionIconVisible: false,
+                                content:
+                                ToggleSwitch(Props.Settings.ShowFavoriteDevicesInExplorerMenu, value =>
+                                        Props.UpdateSettings(settings =>
+                                            settings with { ShowFavoriteDevicesInExplorerMenu = value }))
+                                    .AutomationName(t.Message(new("App", "SettingsExplorerFavorites")))
+                                    .AutomationId("Settings.Explorer.Favorites")
+                                    .HelpText(t.Message(new("App", "SettingsExplorerFavoritesDescription")))
+                                    .IsEnabled(AppPlatform.HasPackageIdentity() &&
+                                               Props.Settings.ShowExplorerContextMenu)),
+                        ])
+                    .AutomationId("Settings.Explorer.Expander") with
+                {
+                    Header = t.Message(new("App", "SettingsExplorerContextMenu")),
+                    Description = t.Message(new("App", "SettingsExplorerContextMenuDescription")),
+                },
             SettingsCard(
                 header: t.Message(new("App", "SettingsSendTo")),
                 description: t.Message(new("App", "SettingsSendToDescription")),
@@ -420,37 +421,37 @@ sealed class SettingsPage : Component<SettingsPageProps>
                     .AutomationName(t.Message(new("App", "SettingsVerifyChecksumsOnReceive")))
                     .HelpText(t.Message(new("App", "SettingsVerifyChecksumsOnReceiveDescription")))),
             SettingsExpander(
-                    content:
-                    ToggleSwitch(
-                        Props.Settings.ReceivePinEnabled,
-                        value => Props.UpdateSettings(settings => settings with { ReceivePinEnabled = value }))
-                        .AutomationName(t.Message(new("App", "SettingsReceivePinEnabled")))
-                        .HelpText(t.Message(new("App", "SettingsReceivePinEnabledDescription"))),
-                    headerIcon: AnimatedButtons.SettingsPinIcon(Props.Settings.ReceivePinEnabled)
-                        .WithKey("settings-pin-icon"),
-                    items:
-                    [
-                        SettingsCard(
-                            header: t.Message(new("App", "SettingsReceivePin")),
-                            description: t.Message(new("App", "SettingsReceivePinDescription")),
-                            isClickEnabled: false,
-                            isActionIconVisible: false,
-                            content:
-                            PasswordBox(
-                                    draft.ReceivePin,
-                                    value => UpdateDraft(current => current with { ReceivePin = value }),
-                                    placeholderText: t.Message(new("App", "PinPlaceholder")))
-                                .MaxLength(32)
-                                .Required()
-                                .AutomationName(t.Message(new("App", "SettingsReceivePin")))
-                                .MinWidth(180)
-                                .IsEnabled(Props.Settings.ReceivePinEnabled)),
-                    ])
-                .AutomationId("Settings.Pin.Expander") with
-            {
-                Header = t.Message(new("App", "SettingsReceivePinProtection")),
-                Description = t.Message(new("App", "SettingsReceivePinProtectionDescription")),
-            });
+                        content:
+                        ToggleSwitch(
+                                Props.Settings.ReceivePinEnabled,
+                                value => Props.UpdateSettings(settings => settings with { ReceivePinEnabled = value }))
+                            .AutomationName(t.Message(new("App", "SettingsReceivePinEnabled")))
+                            .HelpText(t.Message(new("App", "SettingsReceivePinEnabledDescription"))),
+                        headerIcon: AnimatedButtons.SettingsPinIcon(Props.Settings.ReceivePinEnabled)
+                            .WithKey("settings-pin-icon"),
+                        items:
+                        [
+                            SettingsCard(
+                                header: t.Message(new("App", "SettingsReceivePin")),
+                                description: t.Message(new("App", "SettingsReceivePinDescription")),
+                                isClickEnabled: false,
+                                isActionIconVisible: false,
+                                content:
+                                PasswordBox(
+                                        draft.ReceivePin,
+                                        value => UpdateDraft(current => current with { ReceivePin = value }),
+                                        placeholderText: t.Message(new("App", "PinPlaceholder")))
+                                    .MaxLength(32)
+                                    .Required()
+                                    .AutomationName(t.Message(new("App", "SettingsReceivePin")))
+                                    .MinWidth(180)
+                                    .IsEnabled(Props.Settings.ReceivePinEnabled)),
+                        ])
+                    .AutomationId("Settings.Pin.Expander") with
+                {
+                    Header = t.Message(new("App", "SettingsReceivePinProtection")),
+                    Description = t.Message(new("App", "SettingsReceivePinProtectionDescription")),
+                });
 
         var sendCards = SettingsGroup(
             t.Message(new("App", "SettingsSend")),
@@ -486,16 +487,16 @@ sealed class SettingsPage : Component<SettingsPageProps>
         var serverDescription = hasDraftChanges
             ? t.Message(new("App", "SettingsInputsPending"))
             : needsRestart
-            ? t.Message(new("App", "SettingsNeedRestart"))
-            : nodeState switch
-            {
-                LocalSendNodeState.Running => t.Message(new("App", "SettingsServerRunning")),
-                LocalSendNodeState.Starting => t.Message(new("App", "NodeStarting")),
-                LocalSendNodeState.Stopping => t.Message(new("App", "NodeStopping")),
-                LocalSendNodeState.Created or LocalSendNodeState.Stopped
-                    or LocalSendNodeState.Faulted or LocalSendNodeState.Disposed =>
-                    t.Message(new("App", "SettingsServerStopped")),
-            };
+                ? t.Message(new("App", "SettingsNeedRestart"))
+                : nodeState switch
+                {
+                    LocalSendNodeState.Running => t.Message(new("App", "SettingsServerRunning")),
+                    LocalSendNodeState.Starting => t.Message(new("App", "NodeStarting")),
+                    LocalSendNodeState.Stopping => t.Message(new("App", "NodeStopping")),
+                    LocalSendNodeState.Created or LocalSendNodeState.Stopped
+                        or LocalSendNodeState.Faulted or LocalSendNodeState.Disposed =>
+                        t.Message(new("App", "SettingsServerStopped")),
+                };
         var networkCards = SettingsGroup(
             t.Message(new("App", "SettingsNetwork")),
             SettingsCard(
@@ -531,117 +532,118 @@ sealed class SettingsPage : Component<SettingsPageProps>
                     .AutomationId("Settings.DeviceName")
                     .MinWidth(240)),
             SettingsExpander(
-                    headerIcon: HeaderGlyph(AppIcons.Fingerprint),
-                    items:
-                    [
-                        SettingsCard(
-                            header: t.Message(new("App", "SettingsDeviceType")),
-                            description: t.Message(new("App", "SettingsDeviceTypeDescription")),
-                            isClickEnabled: false,
-                            isActionIconVisible: false,
-                            content:
-                            ComboBox(deviceTypeOptions, DeviceTypeIndex(Props.Settings.DeviceType), index =>
-                                {
-                                    var type = DeviceTypeFromIndex(index);
-                                    if (type != Props.Settings.DeviceType)
-                                        Props.UpdateSettings(settings => settings with { DeviceType = type });
-                                })
-                                .AutomationName(t.Message(new("App", "SettingsDeviceType")))
-                                .HelpText(t.Message(new("App", "SettingsDeviceTypeDescription")))
-                                .MinWidth(180)),
-                        SettingsCard(
-                            header: t.Message(new("App", "SettingsDeviceModel")),
-                            description: t.Message(new("App", "SettingsDeviceModelDescription")),
-                            isClickEnabled: false,
-                            isActionIconVisible: false,
-                            content:
-                            TextBox(draft.DeviceModel,
-                                    value => UpdateDraft(current => current with { DeviceModel = value }),
-                                    Environment.MachineName)
-                                .AutomationName(t.Message(new("App", "SettingsDeviceModel")))
-                                .MinWidth(240)),
-                        SettingsCard(
-                            header: t.Message(new("App", "SettingsPort")),
-                            description: Props.Settings.Port == LocalSendOptions.DefaultPort
-                                ? t.Message(new("App", "SettingsPortDescription"))
-                                : t.Message(new("App", "SettingsPortWarning"), ("port", LocalSendOptions.DefaultPort)),
-                            isClickEnabled: false,
-                            isActionIconVisible: false,
-                            content:
-                            NumberBox(draft.Port, value => UpdateDraft(current => current with { Port = value }))
-                                .Range(1, ushort.MaxValue)
-                                .SpinButtons()
-                                .AutomationName(t.Message(new("App", "SettingsPort")))
-                                .MinWidth(160)),
-                        SettingsCard(
-                            header: t.Message(new("App", "SettingsNetworkInterfaces")),
-                            description: NetworkInterfacesSummary(t, Props.Settings),
-                            isClickEnabled: false,
-                            isActionIconVisible: false,
-                            content:
-                            Button(t.Message(new("App", "Change")),
-                                    () => navigation.Navigate(AppRoute.NetworkInterfaces, AppNavigation.DrillIn))
-                                .AutomationName(t.Message(new("App", "SettingsNetworkInterfaces")))),
-                        SettingsCard(
-                            header: t.Message(new("App", "SettingsDiscoveryTimeout")),
-                            description: t.Message(new("App", "SettingsDiscoveryTimeoutDescription")),
-                            isClickEnabled: false,
-                            isActionIconVisible: false,
-                            content:
-                            NumberBox(draft.DiscoveryTimeoutMs,
-                                    value => UpdateDraft(current => current with { DiscoveryTimeoutMs = value }))
-                                .Range(1, 60_000)
-                                .SpinButtons()
-                                .AutomationName(t.Message(new("App", "SettingsDiscoveryTimeout")))
-                                .MinWidth(160)),
-                        SettingsCard(
-                            header: t.Message(new("App", "SettingsEncryption")),
-                            description: t.Message(new("App", "SettingsEncryptionDescription")),
-                            isClickEnabled: false,
-                            isActionIconVisible: false,
-                            content:
-                            ToggleSwitch(Props.Settings.EnableHttps, value =>
-                            {
-                                Props.UpdateSettings(settings => settings with { EnableHttps = value });
-                                if (!value)
-                                    setEncryptionNoticeOpen(true);
-                            })
-                                .AutomationName(t.Message(new("App", "SettingsEncryption")))
-                                .HelpText(t.Message(new("App", "SettingsEncryptionDescription")))),
-                        SettingsCard(
-                            header: t.Message(new("App", "SettingsMulticast")),
-                            description: string.Equals(
-                                Props.Settings.ResolvedMulticastAddress.ToString(),
-                                LocalSendOptions.DefaultMulticastAddress.ToString(),
-                                StringComparison.Ordinal)
-                                ? t.Message(new("App", "SettingsMulticastDescription"))
-                                : t.Message(
-                                    new("App", "SettingsMulticastWarning"),
-                                    ("group", LocalSendOptions.DefaultMulticastAddress)),
-                            isClickEnabled: false,
-                            isActionIconVisible: false,
-                            content:
-                            TextBox(draft.MulticastGroup,
-                                    value => UpdateDraft(current => current with { MulticastGroup = value }))
-                                .AutomationName(t.Message(new("App", "SettingsMulticast")))
-                                .MinWidth(180)),
-                    ])
-                .AutomationId("Settings.Advanced.Expander") with
-            {
-                Header = t.Message(new("App", "SettingsAdvanced")),
-                Description = t.Message(new("App", "SettingsAdvancedDescription")),
-            });
+                        headerIcon: HeaderGlyph(AppIcons.Fingerprint),
+                        items:
+                        [
+                            SettingsCard(
+                                header: t.Message(new("App", "SettingsDeviceType")),
+                                description: t.Message(new("App", "SettingsDeviceTypeDescription")),
+                                isClickEnabled: false,
+                                isActionIconVisible: false,
+                                content:
+                                ComboBox(deviceTypeOptions, DeviceTypeIndex(Props.Settings.DeviceType), index =>
+                                    {
+                                        var type = DeviceTypeFromIndex(index);
+                                        if (type != Props.Settings.DeviceType)
+                                            Props.UpdateSettings(settings => settings with { DeviceType = type });
+                                    })
+                                    .AutomationName(t.Message(new("App", "SettingsDeviceType")))
+                                    .HelpText(t.Message(new("App", "SettingsDeviceTypeDescription")))
+                                    .MinWidth(180)),
+                            SettingsCard(
+                                header: t.Message(new("App", "SettingsDeviceModel")),
+                                description: t.Message(new("App", "SettingsDeviceModelDescription")),
+                                isClickEnabled: false,
+                                isActionIconVisible: false,
+                                content:
+                                TextBox(draft.DeviceModel,
+                                        value => UpdateDraft(current => current with { DeviceModel = value }),
+                                        Environment.MachineName)
+                                    .AutomationName(t.Message(new("App", "SettingsDeviceModel")))
+                                    .MinWidth(240)),
+                            SettingsCard(
+                                header: t.Message(new("App", "SettingsPort")),
+                                description: Props.Settings.Port == LocalSendOptions.DefaultPort
+                                    ? t.Message(new("App", "SettingsPortDescription"))
+                                    : t.Message(new("App", "SettingsPortWarning"),
+                                        ("port", LocalSendOptions.DefaultPort)),
+                                isClickEnabled: false,
+                                isActionIconVisible: false,
+                                content:
+                                NumberBox(draft.Port, value => UpdateDraft(current => current with { Port = value }))
+                                    .Range(1, ushort.MaxValue)
+                                    .SpinButtons()
+                                    .AutomationName(t.Message(new("App", "SettingsPort")))
+                                    .MinWidth(160)),
+                            SettingsCard(
+                                header: t.Message(new("App", "SettingsNetworkInterfaces")),
+                                description: NetworkInterfacesSummary(t, Props.Settings),
+                                isClickEnabled: false,
+                                isActionIconVisible: false,
+                                content:
+                                Button(t.Message(new("App", "Change")),
+                                        () => navigation.Navigate(AppRoute.NetworkInterfaces, AppNavigation.DrillIn))
+                                    .AutomationName(t.Message(new("App", "SettingsNetworkInterfaces")))),
+                            SettingsCard(
+                                header: t.Message(new("App", "SettingsDiscoveryTimeout")),
+                                description: t.Message(new("App", "SettingsDiscoveryTimeoutDescription")),
+                                isClickEnabled: false,
+                                isActionIconVisible: false,
+                                content:
+                                NumberBox(draft.DiscoveryTimeoutMs,
+                                        value => UpdateDraft(current => current with { DiscoveryTimeoutMs = value }))
+                                    .Range(1, 60_000)
+                                    .SpinButtons()
+                                    .AutomationName(t.Message(new("App", "SettingsDiscoveryTimeout")))
+                                    .MinWidth(160)),
+                            SettingsCard(
+                                header: t.Message(new("App", "SettingsEncryption")),
+                                description: t.Message(new("App", "SettingsEncryptionDescription")),
+                                isClickEnabled: false,
+                                isActionIconVisible: false,
+                                content:
+                                ToggleSwitch(Props.Settings.EnableHttps, value =>
+                                    {
+                                        Props.UpdateSettings(settings => settings with { EnableHttps = value });
+                                        if (!value)
+                                            setEncryptionNoticeOpen(true);
+                                    })
+                                    .AutomationName(t.Message(new("App", "SettingsEncryption")))
+                                    .HelpText(t.Message(new("App", "SettingsEncryptionDescription")))),
+                            SettingsCard(
+                                header: t.Message(new("App", "SettingsMulticast")),
+                                description: string.Equals(
+                                    Props.Settings.ResolvedMulticastAddress.ToString(),
+                                    LocalSendOptions.DefaultMulticastAddress.ToString(),
+                                    StringComparison.Ordinal)
+                                    ? t.Message(new("App", "SettingsMulticastDescription"))
+                                    : t.Message(
+                                        new("App", "SettingsMulticastWarning"),
+                                        ("group", LocalSendOptions.DefaultMulticastAddress)),
+                                isClickEnabled: false,
+                                isActionIconVisible: false,
+                                content:
+                                TextBox(draft.MulticastGroup,
+                                        value => UpdateDraft(current => current with { MulticastGroup = value }))
+                                    .AutomationName(t.Message(new("App", "SettingsMulticast")))
+                                    .MinWidth(180)),
+                        ])
+                    .AutomationId("Settings.Advanced.Expander") with
+                {
+                    Header = t.Message(new("App", "SettingsAdvanced")),
+                    Description = t.Message(new("App", "SettingsAdvancedDescription")),
+                });
 
         var experimentalCards = SettingsGroup(
             t.Message(new("App", "SettingsExperimental")),
             SettingsCard(
-                header: t.Message(new("App", "SettingsAppExecutionAliases")),
-                description: t.Message(new("App", "SettingsAppExecutionAliasesDescription")),
-                headerIcon: AnimatedButtons.SettingsExecutionAliasIcon(aliasAnimationVersion)
-                    .WithKey("settings-execution-alias-icon"),
-                isClickEnabled: true,
-                isActionIconVisible: true,
-                onClick: () => _ = OpenExecutionAliasSettingsAsync())
+                    header: t.Message(new("App", "SettingsAppExecutionAliases")),
+                    description: t.Message(new("App", "SettingsAppExecutionAliasesDescription")),
+                    headerIcon: AnimatedButtons.SettingsExecutionAliasIcon(aliasAnimationVersion)
+                        .WithKey("settings-execution-alias-icon"),
+                    isClickEnabled: true,
+                    isActionIconVisible: true,
+                    onClick: () => _ = OpenExecutionAliasSettingsAsync())
                 .AutomationName(t.Message(new("App", "SettingsAppExecutionAliases")))
                 .HelpText(t.Message(new("App", "SettingsAppExecutionAliasesDescription")))
                 .IsEnabled(AppPlatform.HasPackageIdentity()),
@@ -654,70 +656,73 @@ sealed class SettingsPage : Component<SettingsPageProps>
                 isActionIconVisible: false,
                 content:
                 ToggleSwitch(Props.Settings.ShowFavoriteDevicesInWindowsShare, value =>
-                    Props.UpdateSettings(settings => settings with
-                    {
-                        ShowFavoriteDevicesInWindowsShare = value,
-                    }))
+                        Props.UpdateSettings(settings => settings with
+                        {
+                            ShowFavoriteDevicesInWindowsShare = value,
+                        }))
                     .AutomationName(t.Message(new("App", "SettingsWindowsShareSuggestions")))
                     .HelpText(t.Message(new("App", "SettingsWindowsShareSuggestionsDescription")))
                     .IsEnabled(AppPlatform.HasPackageIdentity())),
             SettingsExpander(
-                    content:
-                    ToggleSwitch(Props.Settings.FilePreviewEnabled, value =>
-                            Props.UpdateSettings(settings => settings with { FilePreviewEnabled = value }))
-                        .AutomationName(t.Message(new("App", "SettingsFilePreviewEnabled")))
-                        .AutomationId("Settings.Preview.Enabled")
-                        .HelpText(t.Message(new("App", "SettingsFilePreviewEnabledDescription"))),
-                    headerIcon: AnimatedButtons.SettingsPreviewIcon(Props.Settings.FilePreviewEnabled),
-                    items:
-                    [
-                        SettingsCard(
-                            header: t.Message(new("App", "SettingsFilePreviewProvider")),
-                            description: t.Message(new("App", "SettingsFilePreviewProviderDescription")),
-                            isClickEnabled: false,
-                            isActionIconVisible: false,
-                            content:
-                            HStack(8,
-                                    AnimatedButtons.Add(
-                                            t.Message(new("App", "SettingsFilePreviewAddTool")),
-                                            AddPreviewProvider,
-                                            isEnabled: Props.Settings.FilePreviewEnabled
-                                                       && !previewProviders.Contains(Props.Settings.PreviewProvider),
-                                            buttonSize: 32,
-                                            automationId: "Settings.Preview.Add")
-                                        .Size(32, 32)
-                                        .VAlign(VerticalAlignment.Center),
-                                    ComboBox(filePreviewProviderOptions, (int)Props.Settings.PreviewProvider, index =>
-                                    {
-                                        if (Enum.IsDefined(typeof(FilePreviewProvider), index))
-                                        {
-                                            Props.UpdateSettings(settings => settings with
-                                            {
-                                                PreviewProvider = (FilePreviewProvider)index,
-                                            });
-                                        }
-                                    })
-                                        .AutomationName(t.Message(new("App", "SettingsFilePreviewProvider")))
-                                        .AutomationId("Settings.Preview.Provider")
-                                        .HelpText(t.Message(new("App", "SettingsFilePreviewProviderDescription")))
-                                        .MinWidth(180)
-                                        .VAlign(VerticalAlignment.Center)
-                                        .IsEnabled(Props.Settings.FilePreviewEnabled))
-                                .VAlign(VerticalAlignment.Center)),
-                        .. previewProviders.Select(provider =>
-                            FilePreviewProviderContent.CreateCard(t, new(
-                                    provider,
-                                    FilePreviewSettings.ExecutablePath(Props.Settings, provider),
-                                    path => Props.UpdateSettings(settings =>
-                                        FilePreviewSettings.SetExecutablePath(settings, provider, path)),
-                                    () => Props.UpdateSettings(settings => FilePreviewSettings.Remove(settings, provider))))
-                                .WithKey($"preview-provider-{provider}")),
-                    ])
-                .AutomationId("Settings.Preview.Expander") with
-            {
-                Header = t.Message(new("App", "SettingsFilePreview")),
-                Description = t.Message(new("App", "SettingsFilePreviewDescription")),
-            });
+                        content:
+                        ToggleSwitch(Props.Settings.FilePreviewEnabled, value =>
+                                Props.UpdateSettings(settings => settings with { FilePreviewEnabled = value }))
+                            .AutomationName(t.Message(new("App", "SettingsFilePreviewEnabled")))
+                            .AutomationId("Settings.Preview.Enabled")
+                            .HelpText(t.Message(new("App", "SettingsFilePreviewEnabledDescription"))),
+                        headerIcon: AnimatedButtons.SettingsPreviewIcon(Props.Settings.FilePreviewEnabled),
+                        items:
+                        [
+                            SettingsCard(
+                                header: t.Message(new("App", "SettingsFilePreviewProvider")),
+                                description: t.Message(new("App", "SettingsFilePreviewProviderDescription")),
+                                isClickEnabled: false,
+                                isActionIconVisible: false,
+                                content:
+                                HStack(8,
+                                        AnimatedButtons.Add(
+                                                t.Message(new("App", "SettingsFilePreviewAddTool")),
+                                                AddPreviewProvider,
+                                                isEnabled: Props.Settings.FilePreviewEnabled
+                                                           && !previewProviders.Contains(Props.Settings
+                                                               .PreviewProvider),
+                                                buttonSize: 32,
+                                                automationId: "Settings.Preview.Add")
+                                            .Size(32, 32)
+                                            .VAlign(VerticalAlignment.Center),
+                                        ComboBox(filePreviewProviderOptions, (int)Props.Settings.PreviewProvider,
+                                                index =>
+                                                {
+                                                    if (Enum.IsDefined(typeof(FilePreviewProvider), index))
+                                                    {
+                                                        Props.UpdateSettings(settings => settings with
+                                                        {
+                                                            PreviewProvider = (FilePreviewProvider)index,
+                                                        });
+                                                    }
+                                                })
+                                            .AutomationName(t.Message(new("App", "SettingsFilePreviewProvider")))
+                                            .AutomationId("Settings.Preview.Provider")
+                                            .HelpText(t.Message(new("App", "SettingsFilePreviewProviderDescription")))
+                                            .MinWidth(180)
+                                            .VAlign(VerticalAlignment.Center)
+                                            .IsEnabled(Props.Settings.FilePreviewEnabled))
+                                    .VAlign(VerticalAlignment.Center)),
+                            .. previewProviders.Select(provider =>
+                                FilePreviewProviderContent.CreateCard(t, new(
+                                        provider,
+                                        FilePreviewSettings.ExecutablePath(Props.Settings, provider),
+                                        path => Props.UpdateSettings(settings =>
+                                            FilePreviewSettings.SetExecutablePath(settings, provider, path)),
+                                        () => Props.UpdateSettings(settings =>
+                                            FilePreviewSettings.Remove(settings, provider))))
+                                    .WithKey($"preview-provider-{provider}")),
+                        ])
+                    .AutomationId("Settings.Preview.Expander") with
+                {
+                    Header = t.Message(new("App", "SettingsFilePreview")),
+                    Description = t.Message(new("App", "SettingsFilePreviewDescription")),
+                });
 
         var version = typeof(SettingsPage).Assembly.GetName().Version is { } assemblyVersion
             ? $"{assemblyVersion.Major}.{assemblyVersion.Minor}.{assemblyVersion.Build}"
@@ -795,11 +800,11 @@ sealed class SettingsPage : Component<SettingsPageProps>
                                 TextBlock(t.Message(new("App", "SettingsEncryptionDisabledNotice")))
                                     .TextWrapping(TextWrapping.WrapWholeWords),
                                 primaryButtonText: t.Message(new("App", "Close"))) with
-                        {
-                            IsOpen = encryptionNoticeOpen,
-                            DefaultButton = ContentDialogButton.Close,
-                            OnClosed = _ => setEncryptionNoticeOpen(false),
-                        })
+                            {
+                                IsOpen = encryptionNoticeOpen,
+                                DefaultButton = ContentDialogButton.Close,
+                                OnClosed = _ => setEncryptionNoticeOpen(false),
+                            })
                     .Padding(AppLayout.PagePadding))
             .HorizontalContentAlignment(HorizontalAlignment.Stretch)
             .AutomationName(t.Message(new("App", "SettingsTitle")))
