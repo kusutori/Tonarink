@@ -10,7 +10,7 @@ internal static class DeviceConnectedAnimation
     private static readonly Dictionary<string, WeakReference<UIElement>> Sources =
         new(StringComparer.Ordinal);
 
-    private static readonly HashSet<string> PreparedKeys = new(StringComparer.Ordinal);
+    private static readonly HashSet<string> PreparedKeys = [with(StringComparer.Ordinal)];
 
     public static void RegisterSource(string key, UIElement source) =>
         Sources[key] = new(source);

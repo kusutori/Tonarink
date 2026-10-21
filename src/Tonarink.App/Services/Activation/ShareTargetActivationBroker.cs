@@ -90,12 +90,12 @@ static class ShareTargetActivationBroker
                 // inspectable is materialized directly as the WinRT interface.
                 case ExtendedActivationKind.ShareTarget
                     when activation.Data is IShareTargetActivatedEventArgs shareArgs:
-                    {
-                        var payload = await CaptureSharePayloadAsync(shareArgs).ConfigureAwait(false);
-                        if (payload is not null)
-                            PendingPayloads.Enqueue(payload);
-                        break;
-                    }
+                {
+                    var payload = await CaptureSharePayloadAsync(shareArgs).ConfigureAwait(false);
+                    if (payload is not null)
+                        PendingPayloads.Enqueue(payload);
+                    break;
+                }
                 case ExtendedActivationKind.ShareTarget:
                     WriteDiagnostic(
                         $"Share activation data did not expose {nameof(IShareTargetActivatedEventArgs)} " +
@@ -176,16 +176,22 @@ static class ShareTargetActivationBroker
                             if (root.TryGetProperty("Fingerprint", out var target)
                                 && target.ValueKind == JsonValueKind.String)
                                 fingerprint = target.GetString();
-                            paths = root.GetProperty("Paths").EnumerateArray()
-                                .Where(value => value.ValueKind == JsonValueKind.String)
-                                .Select(value => value.GetString()!)
-                                .Where(path => !string.IsNullOrWhiteSpace(path) && Path.Exists(path))
-                                .Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+                            paths =
+                            [
+                                .. root.GetProperty("Paths").EnumerateArray()
+                                    .Where(value => value.ValueKind == JsonValueKind.String)
+                                    .Select(value => value.GetString()!)
+                                    .Where(path => !string.IsNullOrWhiteSpace(path) && Path.Exists(path))
+                                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                            ];
                         }
                         else
                         {
-                            paths = File.ReadAllLines(file).Select(path => path.Trim())
-                                .Where(path => path.Length > 0 && Path.Exists(path)).ToArray();
+                            paths =
+                            [
+                                .. File.ReadAllLines(file).Select(path => path.Trim())
+                                    .Where(path => path.Length > 0 && Path.Exists(path))
+                            ];
                         }
                     }
                     catch (IOException)
@@ -206,7 +212,8 @@ static class ShareTargetActivationBroker
                     ingested = true;
                 }
                 catch (Exception exception) when (exception is IOException or UnauthorizedAccessException
-                                                 or JsonException or InvalidOperationException or KeyNotFoundException)
+                                                      or JsonException or InvalidOperationException
+                                                      or KeyNotFoundException)
                 {
                     WriteDiagnostic($"Could not ingest explorer share file '{file}'.", exception);
                 }

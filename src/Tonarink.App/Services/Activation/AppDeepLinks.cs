@@ -23,10 +23,12 @@ static class AppDeepLinks
     {
         if (value is null) return false;
         var text = value.Trim();
-        if (text.Length >= 2 && text[0] == '"' && text[^1] == '"') text = text[1..^1];
+        if (text is ['"', _, ..] && text[^1] == '"') text = text[1..^1];
         if (!text.StartsWith("tonarink:", StringComparison.OrdinalIgnoreCase)) return false;
         if (TryResolve(text, out var request)) AppNavigationService.Open(request!);
-        else AppDiagnostics.Report("Invalid Tonarink deep link", new ArgumentException("Unknown route or invalid navigation parameters."));
+        else
+            AppDiagnostics.Report("Invalid Tonarink deep link",
+                new ArgumentException("Unknown route or invalid navigation parameters."));
         return true;
     }
 
@@ -36,7 +38,8 @@ static class AppDeepLinks
     public static string ForHistory(Guid id) => "tonarink:///history?id=" + id.ToString("D");
 
     public static AppNavigationRequest Resolve(string value) =>
-        TryResolve(value, out var request) ? request!
+        TryResolve(value, out var request)
+            ? request!
             : throw new ArgumentException("Unknown Tonarink route or invalid navigation parameters.", nameof(value));
 
     private static bool TryResolve(string text, out AppNavigationRequest? request)
@@ -52,11 +55,13 @@ static class AppDeepLinks
             if (!result.Matched) return false;
             var target = result.Routes[^1];
             if (!HasValidQuery(uri, target.Route)) return false;
-            request = target.Route is { } route ? target with
-            {
-                Navigation = new NavigationState<AppRoute>(
-                    result.Routes[..^1].Select(parent => parent.Route!.Value).ToArray(), route, []),
-            } : target;
+            request = target.Route is { } route
+                ? target with
+                {
+                    Navigation = new NavigationState<AppRoute>(
+                        result.Routes[..^1].Select(parent => parent.Route!.Value).ToArray(), route, []),
+                }
+                : target;
             return true;
         }
         catch (FormatException) { return false; }
@@ -74,8 +79,9 @@ static class AppDeepLinks
     {
         if (args.QueryString("id") is null) return new(AppRoute.History);
         var id = args.Query<Guid>("id");
-        if (id == Guid.Empty) throw new FormatException("Invalid history identifier.");
-        return new(AppRoute.History, History: id);
+        return id == Guid.Empty
+            ? throw new FormatException("Invalid history identifier.")
+            : new(AppRoute.History, History: id);
     }
 
     private static bool HasValidQuery(Uri uri, AppRoute? route)
@@ -92,6 +98,6 @@ static class AppDeepLinks
                 or AppRoute.WebShare or AppRoute.WebReceive or AppRoute.DeviceDetails => null,
         };
         return allowed is not null && query.Count == 1 && query.AllKeys[0] == allowed
-            && query.GetValues(allowed) is { Length: 1 };
+               && query.GetValues(allowed) is { Length: 1 };
     }
 }

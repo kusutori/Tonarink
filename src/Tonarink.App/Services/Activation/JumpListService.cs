@@ -1,4 +1,3 @@
-using Tonarink.Utilities;
 using Windows.UI.StartScreen;
 
 namespace Tonarink.Services.Activation;
@@ -12,9 +11,11 @@ sealed record JumpListLabels(
 static class JumpListService
 {
     private const int ItemsPerGroup = 5;
+
     private static readonly string RemovedItemsPath = Path.Combine(
         AppPlatform.DataDirectory,
         "jump-list-removed.txt");
+
     private static readonly SemaphoreSlim UpdateGate = new(1, 1);
     private static readonly Lock RemovedItemsGate = new();
     private static HashSet<string>? _removedItems;
@@ -114,9 +115,7 @@ static class JumpListService
         lock (RemovedItemsGate)
         {
             var removed = _removedItems ??= LoadRemovedItems();
-            var changed = false;
-            foreach (var argument in arguments)
-                changed |= removed.Add(argument);
+            var changed = arguments.Aggregate(false, (current, argument) => current | removed.Add(argument));
 
             if (!changed)
                 return;
@@ -137,16 +136,18 @@ static class JumpListService
         try
         {
             return File.Exists(RemovedItemsPath)
-                ? new HashSet<string>(
-                    File.ReadAllLines(RemovedItemsPath)
-                        .Where(static value => !string.IsNullOrWhiteSpace(value)),
-                    StringComparer.Ordinal)
-                : new HashSet<string>(StringComparer.Ordinal);
+                ?
+                [
+                    with(File.ReadAllLines(RemovedItemsPath)
+                            .Where(static value => !string.IsNullOrWhiteSpace(value)),
+                        StringComparer.Ordinal)
+                ]
+                : [with(StringComparer.Ordinal)];
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
             AppDiagnostics.Report("Could not load removed jump-list items", exception);
-            return new HashSet<string>(StringComparer.Ordinal);
+            return [with(StringComparer.Ordinal)];
         }
     }
 }

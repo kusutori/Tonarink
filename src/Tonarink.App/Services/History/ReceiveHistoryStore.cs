@@ -1,6 +1,5 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using LocalSendDotNet;
 
 namespace Tonarink.Services.History;
 
@@ -98,14 +97,14 @@ static class ReceiveHistoryStore
 
     private sealed class PersistentSource : IReceiveHistoryStore
     {
-        public IReadOnlyList<ReceiveHistoryEntry> Entries => ReceiveHistoryStore.Entries;
-        public event Action? Changed
+        IReadOnlyList<ReceiveHistoryEntry> IReceiveHistoryStore.Entries => ReceiveHistoryStore.Entries;
+        event Action? IReceiveHistoryStore.Changed
         {
             add => ReceiveHistoryStore.Changed += value;
             remove => ReceiveHistoryStore.Changed -= value;
         }
-        public void Remove(Guid id) => ReceiveHistoryStore.Remove(id);
-        public void Clear() => ReceiveHistoryStore.Clear();
+        void IReceiveHistoryStore.Remove(Guid id) => ReceiveHistoryStore.Remove(id);
+        void IReceiveHistoryStore.Clear() => ReceiveHistoryStore.Clear();
     }
 }
 

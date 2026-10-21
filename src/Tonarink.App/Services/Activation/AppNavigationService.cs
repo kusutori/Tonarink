@@ -55,7 +55,13 @@ static class AppNavigationService
     {
         var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var culture = CultureInfo.CurrentUICulture;
-        if (ReactorApp.UIDispatcher is not { } dispatcher || !dispatcher.TryEnqueue(async () =>
+        if (ReactorApp.UIDispatcher is not { } dispatcher || !dispatcher.TryEnqueue(() => { _ = ExecuteAsync(); }))
+            completion.TrySetException(new CliException(CliText.Get("The app dispatcher is unavailable."), 3));
+        return completion.Task;
+
+        // Keep the dispatcher callback synchronous. This task catches failures and
+        // forwards them to the completion observed by OnUIAsync's caller.
+        async Task ExecuteAsync()
         {
             try
             {
@@ -66,9 +72,7 @@ static class AppNavigationService
             }
             catch (OperationCanceledException) when (token.IsCancellationRequested) { completion.TrySetCanceled(token); }
             catch (Exception exception) { completion.TrySetException(exception); }
-        }))
-            completion.TrySetException(new CliException(CliText.Get("The app dispatcher is unavailable."), 3));
-        return completion.Task;
+        }
     }
 
     private static void ScheduleDrain()
@@ -84,22 +88,25 @@ static class AppNavigationService
         try
         {
             while (Volatile.Read(ref _handler) is { } handler && Queue.TryDequeue(out var pending))
-            {
-                try
-                {
-                    using var language = CliText.UseCulture(pending.Culture);
-                    await OnUIAsync(() => handler(pending.Request, pending.Token), pending.Token).ConfigureAwait(false);
-                    pending.Completion.TrySetResult();
-                }
-                catch (OperationCanceledException) when (pending.Token.IsCancellationRequested)
-                { pending.Completion.TrySetCanceled(pending.Token); }
-                catch (Exception exception) { pending.Completion.TrySetException(exception); }
-            }
+                await ProcessAsync(handler, pending).ConfigureAwait(false);
         }
         finally
         {
             Interlocked.Exchange(ref _draining, 0);
             ScheduleDrain();
         }
+    }
+
+    private static async Task ProcessAsync(Func<AppNavigationRequest, CancellationToken, Task> handler, Pending pending)
+    {
+        try
+        {
+            using var language = CliText.UseCulture(pending.Culture);
+            await OnUIAsync(() => handler(pending.Request, pending.Token), pending.Token).ConfigureAwait(false);
+            pending.Completion.TrySetResult();
+        }
+        catch (OperationCanceledException) when (pending.Token.IsCancellationRequested)
+        { pending.Completion.TrySetCanceled(pending.Token); }
+        catch (Exception exception) { pending.Completion.TrySetException(exception); }
     }
 }

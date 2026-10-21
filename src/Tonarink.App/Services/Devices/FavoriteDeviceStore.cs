@@ -66,7 +66,7 @@ static class FavoriteDeviceStore
 
     public static void Remove(string fingerprint)
     {
-        var removed = false;
+        bool removed;
         lock (Gate)
         {
             var updated = (_cached ??= LoadCore()).ToDictionary(

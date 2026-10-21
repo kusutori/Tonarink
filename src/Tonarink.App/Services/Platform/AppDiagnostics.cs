@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Tonarink.Services.Platform;
 
-static class AppDiagnostics
+static partial class AppDiagnostics
 {
     private static readonly Lock Gate = new();
     private static bool _sessionStarted;
@@ -71,7 +71,7 @@ static class AppDiagnostics
         }
     }
 
-    private sealed class DiagnosticsLoggerProvider : ILoggerProvider
+    private sealed partial class DiagnosticsLoggerProvider : ILoggerProvider
     {
         public ILogger CreateLogger(string categoryName) => new DiagnosticsLogger(categoryName);
 
