@@ -87,23 +87,16 @@ sealed class AnimatedSelectAllToggle : Component<AnimatedSelectAllToggleProps>
                     return;
 
                 var source = new Tonarink.SelectAllToggleIcon();
-                AnimatedIconForeground.Apply(player, source, playback.Button, playback.CheckedState is true);
-                player.Loaded += (_, _) =>
-                {
-                    AnimatedIconForeground.Apply(player, source, playback.Button, playback.CheckedState is true);
-                    player.SetProgress(RestProgress(playback.CheckedState));
-                };
-                player.ActualThemeChanged += (_, _) =>
-                    AnimatedIconForeground.Apply(player, source, playback.Button, playback.CheckedState is true);
-                player.Source = source;
-                player.SetProgress(RestProgress(playback.CheckedState));
+                AnimatedPlayerLifecycle.Mount(player, source,
+                    () => AnimatedIconForeground.Apply(player, source, playback.Button, playback.CheckedState is true),
+                    () => player.SetProgress(RestProgress(playback.CheckedState)));
                 playback.Source = source;
                 playback.Player = player;
             })
             .OnUnmountAdd(element =>
             {
                 if (element is AnimatedVisualPlayer player)
-                    player.Stop();
+                    AnimatedPlayerLifecycle.Unmount(player);
 
                 playback.AnimationVersion++;
                 playback.Source = null;

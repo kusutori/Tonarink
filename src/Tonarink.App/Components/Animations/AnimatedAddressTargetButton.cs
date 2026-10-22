@@ -57,7 +57,7 @@ sealed class AnimatedAddressTargetButton : Component<AnimatedAddressTargetButton
                     toProgress: targetSeparated ? SeparatedProgress : HitProgress,
                     looped: false);
 
-                if (transitionVersion == transitionVersionRef.Current)
+                if (transitionVersion == transitionVersionRef.Current && playerRef.Current == player)
                 {
                     player.SetProgress(
                         separatedRef.Current ? SeparatedProgress : HitProgress);
@@ -77,23 +77,15 @@ sealed class AnimatedAddressTargetButton : Component<AnimatedAddressTargetButton
                         return;
 
                     var source = new Tonarink.AddressTargetIcon();
-                    AnimatedIconForeground.Apply(player, source);
-                    player.Loaded += (_, _) =>
-                    {
-                        AnimatedIconForeground.Apply(player, source);
-                        player.SetProgress(
-                            separatedRef.Current ? SeparatedProgress : HitProgress);
-                    };
-                    player.ActualThemeChanged += (_, _) => AnimatedIconForeground.Apply(player, source);
-                    player.Source = source;
-                    player.SetProgress(
-                        separatedRef.Current ? SeparatedProgress : HitProgress);
+                    AnimatedPlayerLifecycle.Mount(player, source,
+                        () => AnimatedIconForeground.Apply(player, source),
+                        () => player.SetProgress(separatedRef.Current ? SeparatedProgress : HitProgress));
                     playerRef.Current = player;
                 })
                 .OnUnmountAdd(element =>
                 {
                     if (element is AnimatedVisualPlayer player)
-                        player.Stop();
+                        AnimatedPlayerLifecycle.Unmount(player);
 
                     playerRef.Current = null;
                 }),

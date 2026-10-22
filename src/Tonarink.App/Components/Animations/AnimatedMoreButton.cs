@@ -31,21 +31,15 @@ sealed class AnimatedMoreButton : Component<AnimatedMoreButtonProps>
                         return;
 
                     var source = new Tonarink.MoreTriangleIcon();
-                    AnimatedIconForeground.Apply(player, source);
-                    player.Loaded += (_, _) =>
-                    {
-                        AnimatedIconForeground.Apply(player, source);
-                        player.SetProgress(0);
-                    };
-                    player.ActualThemeChanged += (_, _) => AnimatedIconForeground.Apply(player, source);
-                    player.Source = source;
-                    player.SetProgress(0);
+                    AnimatedPlayerLifecycle.Mount(player, source,
+                        () => AnimatedIconForeground.Apply(player, source),
+                        () => player.SetProgress(0));
                     playerRef.Current = player;
                 })
                 .OnUnmountAdd(element =>
                 {
                     if (element is AnimatedVisualPlayer player)
-                        player.Stop();
+                        AnimatedPlayerLifecycle.Unmount(player);
 
                     playerRef.Current = null;
                 }),

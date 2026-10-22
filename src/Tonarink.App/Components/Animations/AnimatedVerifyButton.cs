@@ -1,9 +1,7 @@
 using Microsoft.UI.Reactor;
-using Microsoft.UI.Reactor.Animation;
 using Microsoft.UI.Reactor.Core;
 using Microsoft.UI.Reactor.Hooks;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Hosting;
 using static Microsoft.UI.Reactor.Factories;
 
 namespace Tonarink.Components.Animations;
@@ -38,40 +36,10 @@ sealed class AnimatedVerifyButton : Component<AnimatedVerifyButtonProps>
 
         // Match AnimatedCopyButton's timings and easing: shrink the source icon,
         // pop in a check, hold it, then return to the original icon.
-        var verifyIcon = FeedbackIcon(AppIcons.Verify)
-            .Keyframes("verify-feedback-out", Props.SuccessVersion, keyframes => playing
-                ? keyframes
-                    .Duration(1433)
-                    .At(0.000f, opacity: 1, scale: new(1, 1, 1))
-                    .At(0.093f, opacity: 0, scale: new(0.273f, 0.273f, 1),
-                        easing: Easing.CubicBezier(0.13f, 0, 0, 1))
-                    .At(0.814f, opacity: 0, scale: new(0.273f, 0.273f, 1))
-                    .At(0.837f, opacity: 0, scale: new(1, 1, 1))
-                    .At(0.907f, opacity: 0, scale: new(1, 1, 1))
-                    .At(1.000f, opacity: 1, scale: new(1, 1, 1), easing: Easing.EaseOut)
-                : keyframes
-                    .Duration(1)
-                    .At(0f, opacity: 1, scale: new(1, 1, 1))
-                    .At(1f, opacity: 1, scale: new(1, 1, 1)));
-        var successIcon = FeedbackIcon(Props.Succeeded ? AppIcons.Success : AppIcons.Error)
-            .Opacity(0)
-            .Keyframes("verify-feedback-in", Props.SuccessVersion, keyframes => playing
-                ? keyframes
-                    .Duration(1433)
-                    .At(0.000f, opacity: 0, scale: new(0.385f, 0.385f, 1))
-                    .At(0.093f, opacity: 0, scale: new(0.385f, 0.385f, 1))
-                    .At(0.186f, opacity: 1, scale: new(1.146f, 1.146f, 1),
-                        easing: Easing.CubicBezier(0.39f, 0, 0.63f, 1))
-                    .At(0.232f, opacity: 1, scale: new(1, 1, 1),
-                        easing: Easing.CubicBezier(0.55f, 0, 0.02f, 1))
-                    .At(0.814f, opacity: 1, scale: new(1, 1, 1))
-                    .At(0.907f, opacity: 0, scale: new(0.385f, 0.385f, 1),
-                        easing: Easing.EaseIn)
-                    .At(1.000f, opacity: 0, scale: new(0.385f, 0.385f, 1))
-                : keyframes
-                    .Duration(1)
-                    .At(0f, opacity: 0, scale: new(0.385f, 0.385f, 1))
-                    .At(1f, opacity: 0, scale: new(0.385f, 0.385f, 1)));
+        var verifyIcon = AnimatedFeedback.Outgoing(FeedbackIcon(AppIcons.Verify),
+            "verify-feedback-out", Props.SuccessVersion, playing);
+        var successIcon = AnimatedFeedback.Incoming(FeedbackIcon(Props.Succeeded ? AppIcons.Success : AppIcons.Error),
+            "verify-feedback-in", Props.SuccessVersion, playing);
 
         return Button(
                 Grid(columns: [GridSize.Auto], rows: [GridSize.Auto],
@@ -99,14 +67,6 @@ sealed class AnimatedVerifyButton : Component<AnimatedVerifyButtonProps>
             .Size(24, 24)
             .HAlign(HorizontalAlignment.Center)
             .VAlign(VerticalAlignment.Center)
-            .OnMount(BindCompositionCenterPoint);
+            .OnMount(AnimatedFeedback.BindCompositionCenterPoint);
 
-    private static void BindCompositionCenterPoint(FrameworkElement element)
-    {
-        var visual = ElementCompositionPreview.GetElementVisual(element);
-        var centerPoint = visual.Compositor.CreateExpressionAnimation(
-            "Vector3(target.Size.X / 2, target.Size.Y / 2, 0)");
-        centerPoint.SetReferenceParameter("target", visual);
-        visual.StartAnimation("CenterPoint", centerPoint);
-    }
 }

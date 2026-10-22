@@ -89,23 +89,16 @@ sealed class AnimatedMultipleReceiversToggle : Component<AnimatedMultipleReceive
                     return;
 
                 var source = new Tonarink.MultipleReceiversIcon();
-                AnimatedIconForeground.Apply(player, source, playback.Button, playback.IsChecked);
-                player.Loaded += (_, _) =>
-                {
-                    AnimatedIconForeground.Apply(player, source, playback.Button, playback.IsChecked);
-                    player.SetProgress(playback.IsChecked ? OnRestProgress : OffRestProgress);
-                };
-                player.ActualThemeChanged += (_, _) =>
-                    AnimatedIconForeground.Apply(player, source, playback.Button, playback.IsChecked);
-                player.Source = source;
-                player.SetProgress(playback.IsChecked ? OnRestProgress : OffRestProgress);
+                AnimatedPlayerLifecycle.Mount(player, source,
+                    () => AnimatedIconForeground.Apply(player, source, playback.Button, playback.IsChecked),
+                    () => player.SetProgress(playback.IsChecked ? OnRestProgress : OffRestProgress));
                 playback.Source = source;
                 playback.Player = player;
             })
             .OnUnmountAdd(element =>
             {
                 if (element is AnimatedVisualPlayer player)
-                    player.Stop();
+                    AnimatedPlayerLifecycle.Unmount(player);
 
                 playback.Source = null;
                 playback.Player = null;

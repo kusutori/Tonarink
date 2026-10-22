@@ -57,7 +57,7 @@ sealed class AnimatedFavoritesButton : Component<AnimatedFavoritesButtonProps>
                     toProgress: targetSunk ? SunkProgress : RestoredProgress,
                     looped: false);
 
-                if (transitionVersion == transitionVersionRef.Current)
+                if (transitionVersion == transitionVersionRef.Current && playerRef.Current == player)
                 {
                     player.SetProgress(
                         sunkRef.Current ? SunkProgress : RestoredProgress);
@@ -76,23 +76,15 @@ sealed class AnimatedFavoritesButton : Component<AnimatedFavoritesButtonProps>
                         return;
 
                     var source = new Tonarink.FavoriteListIcon();
-                    AnimatedIconForeground.Apply(player, source);
-                    player.Loaded += (_, _) =>
-                    {
-                        AnimatedIconForeground.Apply(player, source);
-                        player.SetProgress(
-                            sunkRef.Current ? SunkProgress : RestoredProgress);
-                    };
-                    player.ActualThemeChanged += (_, _) => AnimatedIconForeground.Apply(player, source);
-                    player.Source = source;
-                    player.SetProgress(
-                        sunkRef.Current ? SunkProgress : RestoredProgress);
+                    AnimatedPlayerLifecycle.Mount(player, source,
+                        () => AnimatedIconForeground.Apply(player, source),
+                        () => player.SetProgress(sunkRef.Current ? SunkProgress : RestoredProgress));
                     playerRef.Current = player;
                 })
                 .OnUnmountAdd(element =>
                 {
                     if (element is AnimatedVisualPlayer player)
-                        player.Stop();
+                        AnimatedPlayerLifecycle.Unmount(player);
 
                     playerRef.Current = null;
                 }),

@@ -56,7 +56,7 @@ sealed class AnimatedLinkButton : Component<AnimatedLinkButtonProps>
                     toProgress: targetEnabled ? ConnectedProgress : DisconnectedProgress,
                     looped: false);
 
-                if (transitionVersion == transitionVersionRef.Current)
+                if (transitionVersion == transitionVersionRef.Current && playerRef.Current == player)
                 {
                     player.SetProgress(
                         enabledRef.Current ? ConnectedProgress : DisconnectedProgress);
@@ -76,23 +76,15 @@ sealed class AnimatedLinkButton : Component<AnimatedLinkButtonProps>
                         return;
 
                     var source = new Tonarink.LinkDisconnectIcon();
-                    AnimatedIconForeground.Apply(player, source);
-                    player.Loaded += (_, _) =>
-                    {
-                        AnimatedIconForeground.Apply(player, source);
-                        player.SetProgress(
-                            enabledRef.Current ? ConnectedProgress : DisconnectedProgress);
-                    };
-                    player.ActualThemeChanged += (_, _) => AnimatedIconForeground.Apply(player, source);
-                    player.Source = source;
-                    player.SetProgress(
-                        enabledRef.Current ? ConnectedProgress : DisconnectedProgress);
+                    AnimatedPlayerLifecycle.Mount(player, source,
+                        () => AnimatedIconForeground.Apply(player, source),
+                        () => player.SetProgress(enabledRef.Current ? ConnectedProgress : DisconnectedProgress));
                     playerRef.Current = player;
                 })
                 .OnUnmountAdd(element =>
                 {
                     if (element is AnimatedVisualPlayer player)
-                        player.Stop();
+                        AnimatedPlayerLifecycle.Unmount(player);
 
                     playerRef.Current = null;
                 }),
