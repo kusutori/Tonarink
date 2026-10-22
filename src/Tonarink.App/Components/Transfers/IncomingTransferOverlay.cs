@@ -24,7 +24,8 @@ sealed record IncomingTransferOverlayProps(
     bool VerifyChecksums,
     bool AutoReturnAfterReceive,
     ElementTheme Theme,
-    Action<Guid> Dismiss);
+    Action<Guid> Dismiss,
+    bool AcceptRequested = false);
 
 sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
 {
@@ -64,6 +65,7 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
         var (cancelRef, requestCancelFocus) = this.UseElementFocus();
         var (closeRef, requestCloseFocus) = this.UseElementFocus();
         var cancellationRef = UseRef<CancellationTokenSource?>();
+        var accepting = UseRef(false);
         var fileCardRef = UseRef<FrameworkElement?>();
         var fileOptionsDesiredRef = UseRef(false);
         var fileOptionsActualRef = UseRef(false);
@@ -209,6 +211,12 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
             t.Locale,
             canEdit));
         var showText = IsTextTransfer(request.Items);
+        UseEffect(() =>
+        {
+            if (Props.AcceptRequested && !view.IsDecided)
+                _ = AcceptAsync();
+        }, Props.AcceptRequested);
+
         var verificationButton = VerificationButton(
             t,
             () => setShowVerification(true),
@@ -473,6 +481,9 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
 
         async Task AcceptAsync()
         {
+            if (accepting.Current || view.IsDecided)
+                return;
+            accepting.Current = true;
             cancellationRef.Current?.Dispose();
             cancellationRef.Current = new CancellationTokenSource();
             dispatchView(new IncomingTransferAction.Started(
@@ -539,6 +550,7 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
             }
             finally
             {
+                accepting.Current = false;
                 cancellationRef.Current?.Dispose();
                 cancellationRef.Current = null;
             }

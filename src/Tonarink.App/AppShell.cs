@@ -426,7 +426,8 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
                         settings,
                         contentTheme,
                         nodeSession.DismissIncoming,
-                        () => setOutgoingTransfer(null)))
+                        () => setOutgoingTransfer(null),
+                        pendingIncoming is { } incoming && runtime.AcceptedTextRequests.Contains(incoming.RequestId)))
                     .Grid(row: 0, column: 0))
             .Flex(grow: 1, basis: 0);
 

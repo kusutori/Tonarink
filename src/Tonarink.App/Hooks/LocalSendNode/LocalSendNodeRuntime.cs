@@ -15,6 +15,8 @@ sealed record AppRuntimeState(
     IReadOnlyList<string>? AppliedNetworkWhitelist,
     IReadOnlyList<string>? AppliedNetworkBlacklist)
 {
+    public System.Collections.Immutable.ImmutableHashSet<Guid> AcceptedTextRequests { get; init; } = [];
+
     public static readonly AppRuntimeState Initial = new(
         LocalSendNodeState.Created,
         Identity: null,
@@ -37,6 +39,7 @@ union AppRuntimeAction(
     AppRuntimeAction.DevicesChanged,
     AppRuntimeAction.Refreshed,
     AppRuntimeAction.IncomingAdded,
+    AppRuntimeAction.IncomingTextAccepted,
     AppRuntimeAction.IncomingDismissed,
     AppRuntimeAction.ErrorReported,
     AppRuntimeAction.Failed)
@@ -67,6 +70,8 @@ union AppRuntimeAction(
 
     public sealed record IncomingAdded(IncomingTransferRequest Request);
 
+    public sealed record IncomingTextAccepted(Guid RequestId);
+
     public sealed record IncomingDismissed(Guid RequestId);
 
     public sealed record ErrorReported(string Message);
@@ -85,6 +90,7 @@ static class LocalSendNodeRuntimeReducer
     {
         AppRuntimeAction.Starting => state with
         {
+            AcceptedTextRequests = [],
             NodeState = LocalSendNodeState.Starting,
             Devices = [],
             IncomingTransfers = [],
@@ -93,6 +99,7 @@ static class LocalSendNodeRuntimeReducer
         },
         AppRuntimeAction.Stopping => state with
         {
+            AcceptedTextRequests = [],
             NodeState = LocalSendNodeState.Stopping,
             Devices = [],
             IncomingTransfers = [],
@@ -101,6 +108,7 @@ static class LocalSendNodeRuntimeReducer
         },
         AppRuntimeAction.Stopped => state with
         {
+            AcceptedTextRequests = [],
             NodeState = LocalSendNodeState.Stopped,
             Devices = [],
             IncomingTransfers = [],
@@ -136,10 +144,15 @@ static class LocalSendNodeRuntimeReducer
         },
         AppRuntimeAction.IncomingDismissed dismissed => state with
         {
+            AcceptedTextRequests = state.AcceptedTextRequests.Remove(dismissed.RequestId),
             IncomingTransfers = (IncomingTransferRequest[])
             [
                 .. state.IncomingTransfers.Where(request => request.RequestId != dismissed.RequestId)
             ],
+        },
+        AppRuntimeAction.IncomingTextAccepted accepted => state with
+        {
+            AcceptedTextRequests = state.AcceptedTextRequests.Add(accepted.RequestId),
         },
         AppRuntimeAction.ErrorReported reported => state with { Error = reported.Message },
         AppRuntimeAction.Failed failed => state with

@@ -13,7 +13,8 @@ sealed record TransferOverlayHostProps(
     AppSettings Settings,
     ElementTheme Theme,
     Action<Guid> DismissIncoming,
-    Action CloseOutgoing);
+    Action CloseOutgoing,
+    bool AcceptIncomingText = false);
 
 sealed class TransferOverlayHost : Component<TransferOverlayHostProps>
 {
@@ -30,7 +31,8 @@ sealed class TransferOverlayHost : Component<TransferOverlayHostProps>
                         Props.Settings.VerifyChecksumsOnReceive,
                         Props.Settings.AutoReturnAfterReceive,
                         Props.Theme,
-                        Props.DismissIncoming))
+                        Props.DismissIncoming,
+                        Props.AcceptIncomingText))
                     .WithKey(incoming.RequestId.ToString("N")),
 
             { Outgoing: { } outgoing } =>

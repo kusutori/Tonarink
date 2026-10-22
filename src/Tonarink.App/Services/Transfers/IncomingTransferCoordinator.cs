@@ -53,6 +53,14 @@ sealed class IncomingTransferCoordinator(
             { } request)
             return false;
 
+        if (action == "incoming-accept" && TransferOverlayVisuals.IsTextTransfer(request.Items))
+        {
+            // Let the overlay accept and retain the received text for reading.
+            // Returning false asks the activation host to restore the window.
+            dispatchRuntime(new AppRuntimeAction.IncomingTextAccepted(requestId));
+            return false;
+        }
+
         Dismiss(requestId);
         if (action == "incoming-accept")
         {
