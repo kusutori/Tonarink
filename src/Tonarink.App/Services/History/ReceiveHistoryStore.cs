@@ -23,7 +23,22 @@ static class ReceiveHistoryStore
         }
     }
 
-    public static void Record(string senderAlias, IncomingTransferResult.Completed result)
+    public static bool TryRecord(string senderAlias, IncomingTransferResult.Completed result)
+    {
+        try
+        {
+            Record(senderAlias, result);
+            return true;
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            // History is optional bookkeeping; the files have already been received.
+            AppDiagnostics.Report("Transfer completed, but receive history could not be saved", exception);
+            return false;
+        }
+    }
+
+    private static void Record(string senderAlias, IncomingTransferResult.Completed result)
     {
         var sender = string.IsNullOrWhiteSpace(senderAlias) ? "?" : senderAlias.Trim();
         var receivedAt = DateTimeOffset.UtcNow;
@@ -60,8 +75,8 @@ static class ReceiveHistoryStore
             var next = update(_entries ??= LoadUnlocked());
             if (next.Count > MaxEntries)
                 next = (ReceiveHistoryEntry[])[.. next.Take(MaxEntries)];
-            _entries = next;
             SaveUnlocked(next);
+            _entries = next;
         }
 
         Changed?.Invoke();

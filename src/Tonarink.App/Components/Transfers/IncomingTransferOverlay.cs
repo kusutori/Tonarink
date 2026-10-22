@@ -497,7 +497,7 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                 if (result is IncomingTransferResult.Completed completed)
                 {
                     if (Props.SaveReceiveHistory)
-                        ReceiveHistoryStore.Record(request.Sender.Alias, completed);
+                        ReceiveHistoryStore.TryRecord(request.Sender.Alias, completed);
                     AppNotificationService.ShowTransferComplete(
                         t.Message(new("App", "NotificationReceiveCompleteTitle")),
                         t.Message(

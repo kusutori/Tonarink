@@ -140,7 +140,7 @@ sealed class IncomingTransferCoordinator(
             }
 
             if (AppSettingsStore.Load().SaveReceiveHistory)
-                ReceiveHistoryStore.Record(request.Sender.Alias, completed);
+                ReceiveHistoryStore.TryRecord(request.Sender.Alias, completed);
             AppNotificationService.ShowTransferComplete(
                 t.Message(new("App", "NotificationReceiveCompleteTitle")),
                 t.Message(

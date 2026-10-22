@@ -121,7 +121,7 @@ sealed class AppCliRuntime(Func<CliBindings> bindings) : ICliRuntime
     }, token);
     public Task RecordReceiveAsync(IncomingTransferRequest request, ReceiveOutcome.Completed result, CancellationToken token) => CliUi.InvokeAsync(() =>
     {
-        if (CoreTransferOutcomeMapper.Map(result) is IncomingTransferResult.Completed saved) ReceiveHistoryStore.Record(request.Sender.Alias, saved);
+        if (CoreTransferOutcomeMapper.Map(result) is IncomingTransferResult.Completed saved) ReceiveHistoryStore.TryRecord(request.Sender.Alias, saved);
         return true;
     }, token);
     public Task DismissIncomingAsync(Guid id, CancellationToken token) => CliUi.InvokeAsync(() => { bindings().Session.DismissIncoming(id); return true; }, token);
