@@ -42,57 +42,13 @@ static class SendTransferHooks
             setIsSending(true);
             try
             {
-                var progressNotification = AppNotificationService.StartTransferProgress(
-                    request.TransferId,
-                    t.Message(new("App", "NotificationSendProgressTitle"), ("device", request.Device.Alias)),
-                    ContentSummary(t, request.Items),
-                    t.Message(new("App", "SendingTransferring")),
-                    0,
-                    request.TotalBytes,
-                    TransferProgressText(0, request.TotalBytes),
-                    "send-progress");
-                var progress = new Progress<TransferProgress>(value =>
+                return await OutgoingTransferService.SendAsync(node!, request, verifyChecksums, t, value =>
                 {
                     var next = new SendTransferStatus(
-                        value.State,
-                        request.Device.Alias,
-                        value.BytesTransferred,
-                        value.TotalBytes,
-                        ProgressMessage(t, value.State, request.Device.Alias),
-                        IsError: false);
-                    PublishTransferOverlay(
-                        request.Device,
-                        request.Items,
-                        next,
-                        new OutgoingOverlayUpdate.Pending());
-                    progressNotification?.Report(
-                        ContentSummary(t, request.Items),
-                        next.Message,
-                        value.BytesTransferred,
-                        value.TotalBytes,
-                        TransferProgressText(value.BytesTransferred, value.TotalBytes));
-                });
-
-                try
-                {
-                    var outcome = await node!.SendAsync(
-                            request.Device,
-                            request.Items,
-                            new SendOptions
-                            {
-                                Pin = request.Pin,
-                                ComputeSha256 = verifyChecksums,
-                            },
-                            progress,
-                            request.CancellationToken)
-                        .ConfigureAwait(true);
-                    return CoreTransferOutcomeMapper.Map(outcome);
-                }
-                finally
-                {
-                    if (progressNotification is not null)
-                        await progressNotification.RemoveAsync().ConfigureAwait(true);
-                }
+                        value.State, request.Device.Alias, value.BytesTransferred, value.TotalBytes,
+                        ProgressMessage(t, value.State, request.Device.Alias), IsError: false);
+                    PublishTransferOverlay(request.Device, request.Items, next, new OutgoingOverlayUpdate.Pending());
+                }, "send-progress");
             }
             finally
             {
@@ -195,18 +151,10 @@ static class SendTransferHooks
                     setRecentManualAddress(resolvedManualAddress);
                 }
 
-                AppNotificationService.ShowTransferComplete(
-                    t.Message(new("App", "NotificationSendCompleteTitle")),
-                    t.Message(
-                        new("App", "NotificationSendComplete"),
-                        ("count", batch.Count),
-                        ("device", device.Alias)),
-                    "send-complete",
+                OutgoingTransferService.NotifyCompleted(t, device.Alias, batch.Count,
                     batch.Where(static item => !string.IsNullOrWhiteSpace(item.LocalPath))
                         .Select(static item => item.LocalPath!),
-                    AppSettingsStore.Load().NotificationDefaultAction,
-                    t.Message(new("App", "NotificationOpenFile")),
-                    t.Message(new("App", "NotificationShowInFolder")));
+                    AppSettingsStore.Load().NotificationDefaultAction, "send-complete");
                 if (!keepItemsForMultipleReceivers)
                 {
                     var sentIds = batch.Select(item => item.Id).ToHashSet();

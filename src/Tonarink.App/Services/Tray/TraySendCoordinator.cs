@@ -1,6 +1,6 @@
 using LocalSendDotNet;
 using Microsoft.UI.Reactor.Localization;
-using static Tonarink.Utilities.ByteSize;
+using static Tonarink.Pages.Send.SendTransferPresentation;
 
 namespace Tonarink.Services.Tray;
 
@@ -21,16 +21,6 @@ static class TraySendCoordinator
         var transferId = Guid.NewGuid();
         using var cancellation = new CancellationTokenSource();
         var summary = ContentSummary(t, request.Items);
-        var progressNotification = AppNotificationService.StartTransferProgress(
-            transferId,
-            t.Message(new("App", "NotificationSendProgressTitle"), ("device", request.Device.Alias)),
-            summary,
-            t.Message(new("App", "SendingTransferring")),
-            0,
-            request.TotalBytes,
-            ProgressText(0, request.TotalBytes),
-            "tray-send-progress");
-
         OutgoingTransferSnapshot Snapshot(
             TransferState state,
             long bytesTransferred,
@@ -69,91 +59,28 @@ static class TraySendCoordinator
             request.TotalBytes,
             t.Message(new("App", "PreparingForDevice"), ("device", request.Device.Alias)));
 
-        var progress = new Progress<TransferProgress>(value =>
-        {
-            var status = ProgressMessage(t, value.State, request.Device.Alias);
-            PublishPending(
-                value.State,
-                value.BytesTransferred,
-                value.TotalBytes,
-                status);
-            progressNotification?.Report(
-                summary,
-                status,
-                value.BytesTransferred,
-                value.TotalBytes,
-                ProgressText(value.BytesTransferred, value.TotalBytes));
-        });
-
         try
         {
-            var result = CoreTransferOutcomeMapper.Map(await node.SendAsync(
-                    request.Device,
-                    request.Items,
-                    new SendOptions
-                    {
-                        Pin = request.Pin,
-                        ComputeSha256 = settings.VerifyChecksumsOnSend,
-                    },
-                    progress,
-                    cancellation.Token)
-                .ConfigureAwait(false));
+            var result = await OutgoingTransferService.SendAsync(node,
+                new(transferId, request.Device, request.Items, request.TotalBytes, request.Pin, cancellation.Token),
+                settings.VerifyChecksumsOnSend, t,
+                value => PublishPending(value.State, value.BytesTransferred, value.TotalBytes,
+                    ProgressMessage(t, value.State, request.Device.Alias)), "tray-send-progress");
             if (result is OutgoingTransferResult.PinRequired)
             {
                 setOutgoingTransfer(null);
                 return result;
             }
 
-            var (state, bytesTransferred, status, isError) = result switch
-            {
-                OutgoingTransferResult.Completed completed => (
-                    TransferState.Completed,
-                    completed.Items.Sum(static item => item.BytesTransferred),
-                    t.Message(new("App", "SentToDevice"), ("device", request.Device.Alias)),
-                    false),
-                OutgoingTransferResult.Cancelled cancelled => (
-                    TransferState.Cancelled,
-                    cancelled.Items.Sum(static item => item.BytesTransferred),
-                    t.Message(new("App", "TransferCancelled")),
-                    false),
-                OutgoingTransferResult.RateLimited => (
-                    TransferState.Failed,
-                    0,
-                    t.Message(new("App", "RateLimited")),
-                    true),
-                OutgoingTransferResult.Failed failed => (
-                    TransferState.Failed,
-                    failed.Items.Sum(static item => item.BytesTransferred),
-                    failed.Failure.Message,
-                    true),
-                OutgoingTransferResult.PeerBusy or OutgoingTransferResult.Declined => (
-                    TransferState.Failed,
-                    0,
-                    t.Message(new("App", "TransferFailed")),
-                    true),
-                OutgoingTransferResult.PinRequired =>
-                    throw new InvalidOperationException("PIN requests must be returned before publishing a finished transfer."),
-            };
-            PublishFinished(
-                state,
-                bytesTransferred,
-                state == TransferState.Completed ? bytesTransferred : request.TotalBytes,
-                status,
-                isError);
+            var finished = ResultState(t, result, request.Device.Alias, request.TotalBytes);
+            PublishFinished(finished.State, finished.BytesTransferred, finished.TotalBytes,
+                finished.Message, finished.IsError);
 
             if (result is OutgoingTransferResult.Completed)
             {
-                AppNotificationService.ShowTransferComplete(
-                    t.Message(new("App", "NotificationSendCompleteTitle")),
-                    t.Message(
-                        new("App", "NotificationSendComplete"),
-                        ("count", request.Items.Count),
-                        ("device", request.Device.Alias)),
-                    "tray-send-complete",
+                OutgoingTransferService.NotifyCompleted(t, request.Device.Alias, request.Items.Count,
                     request.LocalPaths ?? request.Items.OfType<SendFileItem>().Select(static item => item.Path).ToArray(),
-                    settings.NotificationDefaultAction,
-                    t.Message(new("App", "NotificationOpenFile")),
-                    t.Message(new("App", "NotificationShowInFolder")));
+                    settings.NotificationDefaultAction, "tray-send-complete");
             }
             return result;
         }
@@ -171,31 +98,5 @@ static class TraySendCoordinator
                 exception is not OperationCanceledException);
             throw;
         }
-        finally
-        {
-            if (progressNotification is not null)
-                await progressNotification.RemoveAsync();
-        }
     }
-
-    private static string ContentSummary(IntlAccessor t, IReadOnlyList<SendItem> items) => items.Count switch
-    {
-        1 when items[0] is SendTextItem => t.Message(new("App", "ContentOneTextMessage")),
-        1 => t.Message(new("App", "ContentOneFile"), ("file", items[0].FileName)),
-        _ => t.Message(new("App", "ContentItems"), ("count", items.Count)),
-    };
-
-    private static string ProgressMessage(IntlAccessor t, TransferState state, string deviceAlias) => state switch
-    {
-        TransferState.Preparing => t.Message(new("App", "PreparingForDevice"), ("device", deviceAlias)),
-        TransferState.WaitingForAcceptance => t.Message(new("App", "WaitingForDevice"), ("device", deviceAlias)),
-        TransferState.Transferring => t.Message(new("App", "SendingToDevice"), ("device", deviceAlias)),
-        TransferState.Completed => t.Message(new("App", "SentToDevice"), ("device", deviceAlias)),
-        TransferState.Cancelled => t.Message(new("App", "TransferCancelled")),
-        TransferState.Failed => t.Message(new("App", "TransferFailed")),
-    };
-
-    private static string ProgressText(long bytesTransferred, long totalBytes) => totalBytes > 0
-        ? $"{FormatBytes(bytesTransferred)} / {FormatBytes(totalBytes)}"
-        : FormatBytes(bytesTransferred);
 }

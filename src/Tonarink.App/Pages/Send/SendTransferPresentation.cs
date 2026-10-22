@@ -44,8 +44,10 @@ static class SendTransferPresentation
                 requestedBytes,
                 failed.Failure.Message,
                 IsError: true),
-            OutgoingTransferResult.PinRequired or OutgoingTransferResult.RateLimited
-                or OutgoingTransferResult.PeerBusy or OutgoingTransferResult.Declined => new SendTransferStatus(
+            OutgoingTransferResult.RateLimited => new SendTransferStatus(
+                TransferState.Failed, deviceAlias, 0, requestedBytes,
+                t.Message(new("App", "RateLimited")), IsError: true),
+            OutgoingTransferResult.PinRequired or OutgoingTransferResult.PeerBusy or OutgoingTransferResult.Declined => new SendTransferStatus(
                 TransferState.Failed,
                 deviceAlias,
                 0,
