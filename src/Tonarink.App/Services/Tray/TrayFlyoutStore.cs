@@ -21,7 +21,8 @@ sealed record TraySendRequest(
     LocalSendDevice Device,
     IReadOnlyList<SendItem> Items,
     long TotalBytes,
-    string? Pin);
+    string? Pin,
+    IReadOnlyList<string>? LocalPaths = null);
 
 static class TrayFlyoutStore
 {

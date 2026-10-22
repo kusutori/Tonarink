@@ -6,7 +6,8 @@ namespace Tonarink.Services.Tray;
 
 sealed record DroppedSendPayload(
     IReadOnlyList<SendItem> Items,
-    long TotalBytes);
+    long TotalBytes,
+    IReadOnlyList<string> LocalPaths);
 
 /// <summary>Turns files dropped from Windows into repeatable LocalSend items.</summary>
 static class DroppedSendItemReader
@@ -17,6 +18,7 @@ static class DroppedSendItemReader
     {
         var storageItems = await data.GetFilesAsync();
         var items = new List<SendItem>();
+        var localPaths = new List<string>();
         long totalBytes = 0;
 
         foreach (var storageItem in storageItems)
@@ -29,6 +31,7 @@ static class DroppedSendItemReader
             {
                 case StorageFile file:
                     {
+                        localPaths.Add(file.Path);
                         var properties = await file.GetBasicPropertiesAsync()
                             .AsTask(cancellationToken)
                             .ConfigureAwait(false);
@@ -49,13 +52,15 @@ static class DroppedSendItemReader
                     foreach (var item in ReadFolder(folder.Path, cancellationToken))
                     {
                         items.Add(item.Item);
+                        if (item.Item is SendFileItem fileItem)
+                            localPaths.Add(fileItem.Path);
                         totalBytes = checked(totalBytes + item.Length);
                     }
                     break;
             }
         }
 
-        return new(items, totalBytes);
+        return new(items, totalBytes, localPaths);
     }
 
     private static IEnumerable<(SendItem Item, long Length)> ReadFolder(

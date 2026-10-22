@@ -150,7 +150,7 @@ static class TraySendCoordinator
                         ("count", request.Items.Count),
                         ("device", request.Device.Alias)),
                     "tray-send-complete",
-                    request.Items.OfType<SendFileItem>().Select(static item => item.Path),
+                    request.LocalPaths ?? request.Items.OfType<SendFileItem>().Select(static item => item.Path).ToArray(),
                     settings.NotificationDefaultAction,
                     t.Message(new("App", "NotificationOpenFile")),
                     t.Message(new("App", "NotificationShowInFolder")));

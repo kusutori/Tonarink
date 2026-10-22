@@ -567,7 +567,8 @@ sealed class TrayFlyoutPanel : Component<TrayFlyoutPanelProps>
                         device,
                         payload.Items,
                         payload.TotalBytes,
-                        pin));
+                        pin,
+                        payload.LocalPaths));
                     TrayDropStatus? status = result switch
                     {
                         OutgoingTransferResult.Completed => new TrayDropStatus.Information(

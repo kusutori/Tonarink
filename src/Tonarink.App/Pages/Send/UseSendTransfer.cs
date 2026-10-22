@@ -216,9 +216,8 @@ static class SendTransferHooks
                         ("count", batch.Count),
                         ("device", device.Alias)),
                     "send-complete",
-                    items
-                        .OfType<SendFileItem>()
-                        .Select(static item => item.Path),
+                    batch.Where(static item => !string.IsNullOrWhiteSpace(item.LocalPath))
+                        .Select(static item => item.LocalPath!),
                     AppSettingsStore.Load().NotificationDefaultAction,
                     t.Message(new("App", "NotificationOpenFile")),
                     t.Message(new("App", "NotificationShowInFolder")));
