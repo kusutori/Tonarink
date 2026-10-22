@@ -33,18 +33,17 @@ sealed class AppShell : Component
             return (Action)cliHost.Dispose;
         });
 
-        UseEffect(() => AppSettingsStore.Save(settings), settings);
+        UseEffect(() => AppSettingsService.Save(settings), settings);
         UseEffect(() => TaskbarReceiveBadge.SetEnabled(settings.ShowReceiveBadge), settings.ShowReceiveBadge);
         UseEffect(() => TaskbarReceiveBadge.Clear);
         UseEffect(() =>
         {
-            if (AppPlatform.HasPackageIdentity()) return;
-            try { WindowsSendTo.SetEnabled(settings.ShowInSendToMenu); }
+            try { AppSettingsService.SynchronizeSendTo(); }
             catch (Exception exception)
             {
                 AppDiagnostics.Report("Could not synchronize the Send To shortcut", exception);
             }
-        }, settings.ShowInSendToMenu);
+        });
         UseEffect(() =>
         {
             if (settings.StartWithWindows)
@@ -306,7 +305,7 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
                         apply =>
                         {
                             var next = apply(settingsRef.Current);
-                            AppSettingsStore.Save(next);
+                            AppSettingsService.Save(next);
                             settingsRef.Current = next;
                             updateSettings(_ => next);
                             nodeSession.StartOrRestartWithSettings(next);

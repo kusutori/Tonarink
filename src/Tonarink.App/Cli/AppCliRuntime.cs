@@ -80,9 +80,8 @@ sealed class AppCliRuntime(Func<CliBindings> bindings) : ICliRuntime
                 {
                     if (AppPlatform.HasPackageIdentity())
                         throw new CliException(CliText.Get("Send To integration is only available in unpackaged builds."), 3);
-                    WindowsSendTo.SetEnabled(next.ShowInSendToMenu);
                 }
-                AppSettingsStore.Save(next); current.UpdateSettings(_ => next);
+                AppSettingsService.Save(next); current.UpdateSettings(_ => next);
                 AppNotificationService.SetEnabled(next.NotificationsEnabled);
                 return next;
             }, token).ConfigureAwait(false)).ConfigureAwait(false);
