@@ -28,7 +28,6 @@ static class SendItemSelectionHooks
         ShareTargetPayload? shareTargetPayload,
         Action<Guid> consumeShareTargetPayload,
         Action<Func<IReadOnlyList<SelectedSendItem>, IReadOnlyList<SelectedSendItem>>> updateSelectedItems,
-        Action resetTransfer,
         Action<SuggestedContactSend> requestSuggestedContactSend,
         IntlAccessor t)
     {
@@ -61,7 +60,6 @@ static class SendItemSelectionHooks
         {
             updateSelectedItems(current => (SelectedSendItem[])[.. current, .. newItems]);
             setMessage(t.Message(new("App", "ItemsAdded"), ("count", newItems.Count)));
-            resetTransfer();
         }
 
         async Task PickFileAsync()

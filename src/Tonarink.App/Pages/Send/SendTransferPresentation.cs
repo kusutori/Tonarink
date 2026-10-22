@@ -17,27 +17,27 @@ static class SendTransferPresentation
         ? $"{FormatBytes(bytesTransferred)} / {FormatBytes(totalBytes)}"
         : FormatBytes(bytesTransferred);
 
-    public static TransferUiState.Active ResultState(
+    public static SendTransferStatus ResultState(
         IntlAccessor t,
         OutgoingTransferResult result,
         string deviceAlias,
         long requestedBytes) => result switch
         {
-            OutgoingTransferResult.Completed completed => new TransferUiState.Active(
+            OutgoingTransferResult.Completed completed => new SendTransferStatus(
                 TransferState.Completed,
                 deviceAlias,
                 completed.Items.Sum(static item => item.BytesTransferred),
                 completed.Items.Sum(static item => item.BytesTransferred),
                 t.Message(new("App", "SentToDevice"), ("device", deviceAlias)),
                 IsError: false),
-            OutgoingTransferResult.Cancelled cancelled => new TransferUiState.Active(
+            OutgoingTransferResult.Cancelled cancelled => new SendTransferStatus(
                 TransferState.Cancelled,
                 deviceAlias,
                 cancelled.Items.Sum(static item => item.BytesTransferred),
                 requestedBytes,
                 t.Message(new("App", "TransferCancelled")),
                 IsError: false),
-            OutgoingTransferResult.Failed failed => new TransferUiState.Active(
+            OutgoingTransferResult.Failed failed => new SendTransferStatus(
                 TransferState.Failed,
                 deviceAlias,
                 failed.Items.Sum(static item => item.BytesTransferred),
@@ -45,7 +45,7 @@ static class SendTransferPresentation
                 failed.Failure.Message,
                 IsError: true),
             OutgoingTransferResult.PinRequired or OutgoingTransferResult.RateLimited
-                or OutgoingTransferResult.PeerBusy or OutgoingTransferResult.Declined => new TransferUiState.Active(
+                or OutgoingTransferResult.PeerBusy or OutgoingTransferResult.Declined => new SendTransferStatus(
                 TransferState.Failed,
                 deviceAlias,
                 0,

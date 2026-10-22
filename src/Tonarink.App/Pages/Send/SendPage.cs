@@ -75,7 +75,6 @@ sealed class SendPage : Component<SendPageProps>
             Props.ShareTargetPayload,
             Props.ConsumeShareTargetPayload,
             updateSelectedItems,
-            transfer.Reset,
             enqueueFavoriteShare,
             t);
 

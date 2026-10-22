@@ -8,7 +8,6 @@ namespace Tonarink.Pages.Send;
 
 sealed record SendTransferController(
     bool IsSending,
-    Action Reset,
     Func<LocalSendDevice, string?, string?, Task> StartAsync,
     Func<LocalSendDevice, string?, string?, IReadOnlyList<SelectedSendItem>, Task> StartItemsAsync,
     Func<bool> IsBusy);
@@ -28,23 +27,15 @@ static class SendTransferHooks
         Action<string?> setRecentManualAddress,
         IntlAccessor t)
     {
-        var (_, dispatchTransfer) = context.UseReducer<TransferUiState, SendTransferAction>(
-            SendTransferReducer.Reduce,
-            new TransferUiState.Idle(t.Message(new("App", "SendHint"))));
         var (isSending, setIsSending) = context.UseState(false);
         var sendCancellationRef = context.UseRef<CancellationTokenSource?>();
         var busy = context.UseRef(false);
+        var overlay = context.UseRef<OutgoingTransferViewState?>();
         var liveItems = context.UseRef(selectedItems);
         liveItems.Current = selectedItems;
 
-        return new(isSending, Reset, (device, pin, address) => StartItemsAsync(device, pin, address, selectedItems),
+        return new(isSending, (device, pin, address) => StartItemsAsync(device, pin, address, selectedItems),
             StartItemsAsync, () => busy.Current);
-
-        void Reset()
-        {
-            if (!busy.Current)
-                dispatchTransfer(new SendTransferAction.Reset(t.Message(new("App", "SendHint"))));
-        }
 
         async Task<OutgoingTransferResult> SendAsync(SendRequest request)
         {
@@ -62,14 +53,13 @@ static class SendTransferHooks
                     "send-progress");
                 var progress = new Progress<TransferProgress>(value =>
                 {
-                    var next = new TransferUiState.Active(
+                    var next = new SendTransferStatus(
                         value.State,
                         request.Device.Alias,
                         value.BytesTransferred,
                         value.TotalBytes,
                         ProgressMessage(t, value.State, request.Device.Alias),
                         IsError: false);
-                    dispatchTransfer(new SendTransferAction.Progressed(next));
                     PublishTransferOverlay(
                         request.Device,
                         request.Items,
@@ -126,14 +116,13 @@ static class SendTransferHooks
             var cancellation = new CancellationTokenSource();
             sendCancellationRef.Current?.Dispose();
             sendCancellationRef.Current = cancellation;
-            var startingState = new TransferUiState.Active(
+            var startingState = new SendTransferStatus(
                 TransferState.Preparing,
                 device.Alias,
                 0,
                 totalBytes,
                 t.Message(new("App", "PreparingForDevice"), ("device", device.Alias)),
                 IsError: false);
-            dispatchTransfer(new SendTransferAction.Started(startingState));
             PublishTransferOverlay(
                 device,
                 items,
@@ -151,14 +140,13 @@ static class SendTransferHooks
                     cancellation.Token));
                 if (result is OutgoingTransferResult.PinRequired pinRequired)
                 {
-                    var waitingState = new TransferUiState.Active(
+                    var waitingState = new SendTransferStatus(
                         TransferState.WaitingForAcceptance,
                         device.Alias,
                         0,
                         totalBytes,
                         t.Message(new("App", "TargetRequiresPin")),
                         pinRequired.InvalidPin);
-                    dispatchTransfer(new SendTransferAction.PinRequested(waitingState));
                     PublishTransferOverlay(
                         device,
                         items,
@@ -170,21 +158,20 @@ static class SendTransferHooks
                                 busy.Current = false;
                                 _ = StartItemsAsync(device, enteredPin, resolvedManualAddress, batch);
                             },
-                            () => { busy.Current = false; Reset(); })));
+                            () => { busy.Current = false; })));
                     awaitingPin = true;
                     return;
                 }
 
                 if (result is OutgoingTransferResult.RateLimited)
                 {
-                    var errorState = new TransferUiState.Active(
+                    var errorState = new SendTransferStatus(
                         TransferState.Failed,
                         device.Alias,
                         0,
                         totalBytes,
                         t.Message(new("App", "RateLimited")),
                         IsError: true);
-                    dispatchTransfer(new SendTransferAction.Failed(errorState));
                     PublishTransferOverlay(
                         device,
                         items,
@@ -194,7 +181,6 @@ static class SendTransferHooks
                 }
 
                 var resultState = ResultState(t, result, device.Alias, totalBytes);
-                dispatchTransfer(new SendTransferAction.Finished(resultState));
                 PublishTransferOverlay(
                     device,
                     items,
@@ -231,14 +217,13 @@ static class SendTransferHooks
             }
             catch (Exception exception)
             {
-                var errorState = new TransferUiState.Active(
+                var errorState = new SendTransferStatus(
                     TransferState.Failed,
                     device.Alias,
                     0,
                     totalBytes,
                     exception.Message,
                     IsError: true);
-                dispatchTransfer(new SendTransferAction.Failed(errorState));
                 PublishTransferOverlay(
                     device,
                     items,
@@ -257,31 +242,38 @@ static class SendTransferHooks
         void PublishTransferOverlay(
             LocalSendDevice device,
             IReadOnlyList<SendItem> items,
-            TransferUiState state,
+            SendTransferStatus state,
             OutgoingOverlayUpdate update)
         {
             var snapshot = new OutgoingTransferSnapshot(
                 runtime.Identity,
                 device,
                 ContentSummary(t, items),
-                state.State ?? TransferState.Preparing,
+                state.State,
                 state.BytesTransferred,
                 state.TotalBytes,
                 state.Message,
                 () =>
                 {
                     sendCancellationRef.Current?.Cancel();
-                    dispatchTransfer(new SendTransferAction.MessageChanged(
-                        t.Message(new("App", "CancellingTransfer"))));
+                    if (overlay.Current is OutgoingTransferViewState.Pending pending)
+                    {
+                        overlay.Current = pending with
+                        {
+                            Transfer = pending.Transfer with { Status = t.Message(new("App", "CancellingTransfer")) },
+                        };
+                        setTransferOverlay(overlay.Current);
+                    }
                 });
-            setTransferOverlay(update switch
+            overlay.Current = update switch
             {
                 OutgoingOverlayUpdate.Pending => new OutgoingTransferViewState.Pending(snapshot),
                 OutgoingOverlayUpdate.AwaitingPin(var prompt) =>
                     new OutgoingTransferViewState.AwaitingPin(snapshot, prompt),
                 OutgoingOverlayUpdate.Finished =>
                     new OutgoingTransferViewState.Finished(snapshot, state.IsError),
-            });
+            };
+            setTransferOverlay(overlay.Current);
         }
     }
 }
