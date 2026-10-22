@@ -30,6 +30,14 @@ sealed record HistoryFilter(
 {
     public static HistoryFilter Default { get; } = new();
 
+    // History stores saved paths, not the sender's clipboard/message provenance.
+    // Only offer categories that KindForPath can actually identify.
+    public static ImmutableArray<FileTypeGlyphKind> AvailableFileTypes { get; } =
+    [
+        .. Enum.GetValues<FileTypeGlyphKind>().Where(static kind =>
+            kind is not (FileTypeGlyphKind.TextMessage or FileTypeGlyphKind.Clipboard)),
+    ];
+
     // An empty set means all types; selected types are combined with OR.
     public ImmutableHashSet<FileTypeGlyphKind> FileTypes { get; init; } = [];
 
@@ -42,6 +50,7 @@ sealed record HistoryFilter(
     public HistoryFilter Normalize() => this with
     {
         Search = Search.Trim(),
+        FileTypes = FileTypes.Intersect(AvailableFileTypes),
         From = TimeRange == HistoryTimeRange.Custom ? From : null,
         To = TimeRange == HistoryTimeRange.Custom ? To : null,
     };

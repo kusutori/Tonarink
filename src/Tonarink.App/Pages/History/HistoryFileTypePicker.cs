@@ -24,7 +24,7 @@ sealed class HistoryFileTypePicker : Component<HistoryFileTypePickerProps>
     {
         var t = UseIntl();
         var state = UseMemo(() => new PickerState([
-            .. Enum.GetValues<FileTypeGlyphKind>()
+            .. HistoryFilter.AvailableFileTypes
                 .Select(kind => new FileTypeToken(kind, t.Message(new("App", LabelKey(kind)))))
         ], t.Message(new("App", "Remove")), t.Message(new("App", "SelectAll"))), t.Locale);
         state.Changed = Props.Changed;
