@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Text.Json;
+using Tonarink.Application;
 
 namespace Tonarink.WidgetProvider;
 
@@ -29,13 +30,13 @@ internal static class WidgetCommands
         {
             Process.Start(new ProcessStartInfo
             {
-                FileName = "tonarink:",
+                FileName = AppIntegrationIds.ProtocolScheme + ":",
                 UseShellExecute = true,
             });
         }
         catch (Exception exception)
         {
-            WidgetLog.Write($"Could not launch Tonarink: {exception.Message}");
+            WidgetLog.Write($"Could not launch {AppIdentity.Name}: {exception.Message}");
         }
     }
 

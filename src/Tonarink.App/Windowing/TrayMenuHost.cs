@@ -32,7 +32,7 @@ sealed partial class TrayMenuHost : IDisposable
         _window = ReactorApp.OpenWindow(new WindowSpec
         {
             Key = WindowKey.Of("tray-menu-host"),
-            Title = "Tonarink tray menu",
+            Title = $"{AppPlatform.DisplayName} tray menu",
             Width = 1,
             Height = 1,
             MinWidth = 1,
@@ -169,7 +169,7 @@ sealed partial class TrayMenuHost : IDisposable
             AppDiagnostics.Write(LogLevel.Information, "tray", "Opening the issue tracker from the tray menu");
             // Start URI activation on the UI thread while the menu host is
             // still foreground, then dismiss the menu without blocking it.
-            var launch = Windows.System.Launcher.LaunchUriAsync(new Uri("https://github.com/kusutori/Tonarink/issues"));
+            var launch = Windows.System.Launcher.LaunchUriAsync(AppIdentity.IssuesUri);
             DismissMenu();
             TrayFlyoutHost.Dismiss();
             if (!await launch)
@@ -206,7 +206,7 @@ sealed partial class TrayMenuHost : IDisposable
             {
                 Label = host._intl.Message(new("App", "NavSettings")),
                 Icon = new FontIconData(AppIcons.Settings),
-                Execute = () => host.Navigate(AppDeepLinks.Resolve("tonarink:///settings")),
+                Execute = () => host.Navigate(AppDeepLinks.Resolve($"{AppIntegrationIds.ProtocolScheme}:///settings")),
             });
             var reportBug = UseCommand(new Command
             {

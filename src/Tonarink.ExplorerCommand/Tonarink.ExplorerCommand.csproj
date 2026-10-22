@@ -22,4 +22,10 @@
         <ApplicationIcon>..\Tonarink.App\Assets\AppIcon.ico</ApplicationIcon>
     </PropertyGroup>
 
+    <ItemGroup>
+        <!-- Keep the native shell extension independent of the application
+             backend while sharing the same identity/IPC definitions. -->
+        <Compile Include="..\Tonarink.Application\AppIdentity.cs" Link="Shared\AppIdentity.cs" />
+        <Compile Include="..\Tonarink.Application\AppIntegrationIds.cs" Link="Shared\AppIntegrationIds.cs" />
+    </ItemGroup>
 </Project>

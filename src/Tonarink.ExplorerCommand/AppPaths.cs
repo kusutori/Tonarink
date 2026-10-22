@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text.Json;
+using Tonarink.Application;
 
 namespace Tonarink.ExplorerCommand;
 
@@ -11,19 +12,13 @@ internal static partial class AppPaths
     public const string SettingsFileName = "settings.json";
     public const string MenuSettingName = "ShowExplorerContextMenu";
     public const string FavoritesMenuSettingName = "ShowFavoriteDevicesInExplorerMenu";
-    public const string UnpackagedPublisher = "kusutori";
-    public const string UnpackagedProduct = "Tonarink";
-    public const string AppExeName = "Tonarink.exe";
-    public const string Protocol = "tonarink:explorer-share";
-    public const string ShareEventName = @"Local\Tonarink.ExplorerShare";
-    public const string ApplicationId = "App";
-    public const string PackageFolderPrefix = "Tonarink.App_";
+    public const string AppExeName = AppIntegrationIds.DesktopExecutableName;
+    public const string Protocol = AppIntegrationIds.ProtocolScheme + ":explorer-share";
+    public const string ShareEventName = AppIntegrationIds.ExplorerShareEvent;
+    public const string ApplicationId = AppIntegrationIds.PackageApplicationId;
+    public const string PackageFolderPrefix = AppIntegrationIds.DesktopPackageName + "_";
 
-    public static string SharedDataDirectory =>
-        Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            UnpackagedPublisher,
-            UnpackagedProduct);
+    public static string SharedDataDirectory => AppIdentity.SharedDataDirectory;
 
     public static string ShareDirectory => Path.Combine(SharedDataDirectory, ShareFolderName);
 
@@ -188,7 +183,7 @@ internal static partial class AppPaths
         catch (Exception exception) when (exception is InvalidOperationException
             or System.ComponentModel.Win32Exception)
         {
-            Report("Could not launch Tonarink from Explorer", exception);
+            Report($"Could not launch {AppIdentity.Name} from Explorer", exception);
         }
     }
 
@@ -287,7 +282,7 @@ internal static partial class AppPaths
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
-            Report("Could not resolve the Tonarink package family", exception);
+            Report($"Could not resolve the {AppIdentity.Name} package family", exception);
             return false;
         }
     }
@@ -351,7 +346,7 @@ internal static partial class AppPaths
     }
 
     internal static void Report(string operation, Exception exception) =>
-        Trace.WriteLine($"[Tonarink.ExplorerCommand] {operation}: {exception.GetType().Name}: {exception.Message}");
+        Trace.WriteLine($"[{AppIdentity.Name}.ExplorerCommand] {operation}: {exception.GetType().Name}: {exception.Message}");
 
     [LibraryImport("kernel32.dll")]
     private static unsafe partial int GetCurrentPackageFamilyName(ref uint packageFamilyNameLength, char* packageFamilyName);

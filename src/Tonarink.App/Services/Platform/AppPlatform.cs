@@ -10,21 +10,19 @@ namespace Tonarink.Services.Platform;
 static class AppPlatform
 {
     public const string MinimizedArgument = "--minimized";
-    public const string StartupTaskId = "TonarinkStartup";
-    private const string UnpackagedPublisher = "kusutori";
-    private const string UnpackagedProduct = "Tonarink";
+    public const string StartupTaskId = AppIntegrationIds.StartupTaskId;
 
     private static readonly Lazy<string> DataDirectoryValue = new(ResolveDataDirectory);
+    private static readonly Lazy<string> DisplayNameValue = new(
+        static () => HasPackageIdentity() ? Package.Current.DisplayName : AppIdentity.Name);
     private static readonly Lazy<string> DefaultDownloadDirectoryValue = new(ResolveDefaultDownloadDirectory);
     private static readonly Lazy<bool> StartHiddenValue = new(DetectStartHidden);
 
     public static string DataDirectory => DataDirectoryValue.Value;
 
-    public static string SharedDataDirectory =>
-        Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            UnpackagedPublisher,
-            UnpackagedProduct);
+    public static string SharedDataDirectory => AppIdentity.SharedDataDirectory;
+
+    public static string DisplayName => DisplayNameValue.Value;
 
     public static string ExplorerShareDirectory
     {
@@ -100,8 +98,8 @@ static class AppPlatform
         var directory = HasPackageIdentity()
             ? WinRtStorage.ApplicationData.Current.LocalFolder.Path
             : WinAppStorage.ApplicationData.GetForUnpackaged(
-                UnpackagedPublisher,
-                UnpackagedProduct).LocalPath;
+                AppIdentity.Publisher,
+                AppIdentity.Name).LocalPath;
         Directory.CreateDirectory(directory);
         return directory;
     }

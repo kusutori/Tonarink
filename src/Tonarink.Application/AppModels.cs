@@ -51,7 +51,7 @@ public sealed record TonarinkSettings(
     int Port = DeviceAddress.DefaultPort)
 {
     public static TonarinkSettings CreateDefault(string downloadDirectory, string? alias = null) => new(
-        string.IsNullOrWhiteSpace(alias) ? (string.IsNullOrWhiteSpace(Environment.UserName) ? "Tonarink" : Environment.UserName) : alias.Trim(),
+        string.IsNullOrWhiteSpace(alias) ? (string.IsNullOrWhiteSpace(Environment.UserName) ? AppIdentity.Name : Environment.UserName) : alias.Trim(),
         downloadDirectory,
         TonarinkTheme.System,
         TonarinkLanguage.System,

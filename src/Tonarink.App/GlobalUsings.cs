@@ -1,4 +1,5 @@
 global using Tonarink;
+global using Tonarink.Application;
 global using Tonarink.Components;
 global using Tonarink.Components.Animations;
 global using Tonarink.Components.Devices;

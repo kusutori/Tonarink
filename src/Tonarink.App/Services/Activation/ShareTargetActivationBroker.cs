@@ -12,9 +12,9 @@ namespace Tonarink.Services.Activation;
 
 static class ShareTargetActivationBroker
 {
-    private const string InstanceKey = "Tonarink.Primary";
-    private const string IngestedEventName = @"Local\Tonarink.ShareIngested";
-    private const string ShareEventName = @"Local\Tonarink.ExplorerShare";
+    private const string InstanceKey = AppIntegrationIds.PrimaryInstanceKey;
+    private const string IngestedEventName = AppIntegrationIds.ShareIngestedEvent;
+    private const string ShareEventName = AppIntegrationIds.ExplorerShareEvent;
     private static readonly ConcurrentQueue<ShareTargetPayload> PendingPayloads = new();
 
     private static readonly EventWaitHandle Ingested = new(

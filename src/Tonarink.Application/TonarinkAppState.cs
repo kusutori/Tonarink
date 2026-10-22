@@ -151,7 +151,7 @@ public sealed class TonarinkAppState
 
     private TonarinkSettings NormalizeSettings(TonarinkSettings settings) => settings with
     {
-        Alias = string.IsNullOrWhiteSpace(settings.Alias) ? "Tonarink" : settings.Alias.Trim(),
+        Alias = string.IsNullOrWhiteSpace(settings.Alias) ? AppIdentity.Name : settings.Alias.Trim(),
         DownloadDirectory = string.IsNullOrWhiteSpace(settings.DownloadDirectory) ? Platform.DownloadDirectory : settings.DownloadDirectory,
         ReceivePin = string.IsNullOrWhiteSpace(settings.ReceivePin) ? null : settings.ReceivePin.Trim(),
         Port = settings.Port is >= 1 and <= ushort.MaxValue ? settings.Port : DeviceAddress.DefaultPort,

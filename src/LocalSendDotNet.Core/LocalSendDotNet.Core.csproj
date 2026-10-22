@@ -7,14 +7,13 @@
     <PackageId>LocalSendDotNet.Core</PackageId>
     <Version>0.3.0-preview.1</Version>
     <Description>A UI-independent .NET implementation of the LocalSend v2.2 protocol.</Description>
-    <Authors>kusutori; LocalSendDotNet contributors</Authors>
+    <Authors>$(Company); LocalSendDotNet contributors</Authors>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageProjectUrl>https://github.com/kusutori/Tonarink</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/kusutori/Tonarink</RepositoryUrl>
+    <PackageProjectUrl>$(RepositoryUrl)</PackageProjectUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>localsend;file-transfer;lan;discovery;dotnet</PackageTags>
-    <PackageReleaseNotes>https://github.com/kusutori/Tonarink/blob/main/CHANGELOG.md</PackageReleaseNotes>
+    <PackageReleaseNotes>$(RepositoryUrl)/blob/main/CHANGELOG.md</PackageReleaseNotes>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <IncludeSymbols>true</IncludeSymbols>
     <!-- Ship the private shared text assembly with Core; no second NuGet package is required. -->

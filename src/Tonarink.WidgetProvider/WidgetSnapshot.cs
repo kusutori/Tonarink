@@ -46,7 +46,7 @@ internal static class WidgetSnapshot
 
         var data = new WidgetCardData
         {
-            Title = "Tonarink",
+            Title = AppIdentity.Name,
             AppRunning = appRunning,
             AppStatusLabel = appRunning ? Text(chrome.AppStatusOpen) : Text(chrome.AppStatusClosed),
             StatusIcon = appRunning ? WidgetPaths.StatusOnIcon : WidgetPaths.StatusOffIcon,

@@ -92,7 +92,7 @@ static partial class TrayFlyoutHost
         var window = ReactorApp.OpenWindow(
             new WindowSpec
             {
-                Title = "Tonarink",
+                Title = AppPlatform.DisplayName,
                 Width = AppLayout.TrayFlyoutWidth,
                 Height = AppLayout.TrayFlyoutHeight,
                 MinWidth = AppLayout.TrayFlyoutWidth,

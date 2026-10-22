@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
+using Tonarink.Application;
 
 namespace Tonarink.Cli;
 
@@ -45,7 +46,7 @@ static class CliProtocol
     public static string PipeName(string dataDirectory)
     {
         var directory = Path.TrimEndingDirectorySeparator(Path.GetFullPath(dataDirectory));
-        return "Tonarink.Cli." + Convert.ToHexString(SHA256.HashData(
+        return AppIntegrationIds.CliPipePrefix + Convert.ToHexString(SHA256.HashData(
             Encoding.UTF8.GetBytes(OperatingSystem.IsWindows() ? directory.ToUpperInvariant() : directory)))[..24];
     }
 

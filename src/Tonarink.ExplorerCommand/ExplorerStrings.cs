@@ -1,13 +1,14 @@
 using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Xml;
+using Tonarink.Application;
 
 namespace Tonarink.ExplorerCommand;
 
 internal static partial class ExplorerStrings
 {
     public const string TitleKey = "ExplorerCommandTitle";
-    public const string DefaultTitle = "Send with Tonarink";
+    public static string DefaultTitle => $"Send with {AppIdentity.Name}";
     public const string DefaultLocale = "en-US";
     private const string LanguageTagSetting = "Language";
 

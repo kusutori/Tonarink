@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Tonarink.Application;
 
 namespace Tonarink.WidgetProvider;
 
@@ -73,7 +74,7 @@ sealed class ReceiveHistoryItemFile
 
 sealed class WidgetCardData
 {
-    public string Title { get; set; } = "Tonarink";
+    public string Title { get; set; } = AppIdentity.Name;
     public bool AppRunning { get; set; }
     public string AppStatusLabel { get; set; } = "";
     public string StatusIcon { get; set; } = "";
@@ -125,4 +126,5 @@ sealed class WidgetCardRow
 [JsonSerializable(typeof(WidgetCardData))]
 [JsonSerializable(typeof(WidgetCardRow))]
 [JsonSerializable(typeof(List<WidgetCardRow>))]
+[JsonSerializable(typeof(string))]
 internal sealed partial class WidgetJsonContext : JsonSerializerContext;

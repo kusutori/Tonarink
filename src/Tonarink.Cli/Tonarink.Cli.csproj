@@ -11,12 +11,10 @@
     <ToolPackageRuntimeIdentifiers>win-x64;win-arm64;linux-x64;linux-arm64;osx-x64;osx-arm64</ToolPackageRuntimeIdentifiers>
     <ToolCommandName>tonarink-cli</ToolCommandName>
     <PackageId>tonarink-cli</PackageId>
-    <Authors>kusutori</Authors>
     <Description>Standalone LocalSend-compatible CLI for device discovery, file and text transfers, and server management.</Description>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageProjectUrl>https://github.com/kusutori/Tonarink</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/kusutori/Tonarink</RepositoryUrl>
+    <PackageProjectUrl>$(RepositoryUrl)</PackageProjectUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>localsend;cli;file-transfer;tonarink</PackageTags>
   </PropertyGroup>

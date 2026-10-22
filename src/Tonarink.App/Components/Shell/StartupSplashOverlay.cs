@@ -30,7 +30,7 @@ sealed class StartupSplashOverlay : Component<StartupSplashOverlayProps>
                 .Size(512, 256)
                 .HAlign(HorizontalAlignment.Center)
                 .VAlign(VerticalAlignment.Center)
-                .AutomationName("Tonarink")
+                .AutomationName(AppPlatform.DisplayName)
                 .OnMountAdd(element =>
                 {
                     if (element is AnimatedVisualPlayer player)

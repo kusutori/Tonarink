@@ -6,7 +6,6 @@ using Microsoft.UI.Reactor.Localization;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
-using Tonarink.Application;
 using static Microsoft.UI.Reactor.Factories;
 using static Tonarink.Controls.SettingsCardElement;
 using static Tonarink.Controls.SettingsExpanderElement;
@@ -735,22 +734,22 @@ sealed class SettingsPage : Component<SettingsPageProps>
             VStack(0,
                 HyperlinkButton(
                     t.Message(new("App", "SettingsAboutGitHub")),
-                    new Uri("https://github.com/kusutori/Tonarink")),
+                    AppIdentity.RepositoryUri),
                 HyperlinkButton(
                     t.Message(new("App", "SettingsAboutLocalSend")),
                     new Uri("https://localsend.org")),
                 HyperlinkButton(
                     t.Message(new("App", "SettingsAboutIssues")),
-                    new Uri("https://github.com/kusutori/Tonarink/issues")),
+                    AppIdentity.IssuesUri),
                 HyperlinkButton(
                     t.Message(new("App", "SettingsAboutThirdPartyLicenses")),
-                    new Uri("https://github.com/kusutori/Tonarink/blob/main/NOTICE"))));
+                    AppIdentity.NoticesUri)));
         var aboutSection = VStack(4,
             Subtitle(t.Message(new("App", "SettingsAbout")))
                 .HeadingLevel(AutomationHeadingLevel.Level2)
                 .Margin(bottom: 8),
             SettingsExpander(
-                    header: "Tonarink",
+                    header: AppPlatform.DisplayName,
                     description: t.Message(
                         new("App", "SettingsAboutCopyright"),
                         ("year", DateTime.Now.Year)),
@@ -775,7 +774,7 @@ sealed class SettingsPage : Component<SettingsPageProps>
             HStack(8,
                     HyperlinkButton(
                         t.Message(new("App", "SettingsAboutFeedback")),
-                        new Uri("https://github.com/kusutori/Tonarink/issues")),
+                        AppIdentity.IssuesUri),
                     HyperlinkButton(
                         t.Message(new("App", "SettingsAboutViewLogs")),
                         onClick: () =>

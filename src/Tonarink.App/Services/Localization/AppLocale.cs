@@ -1,4 +1,3 @@
-using Tonarink.Application;
 using Windows.System.UserProfile;
 
 namespace Tonarink.Services.Localization;

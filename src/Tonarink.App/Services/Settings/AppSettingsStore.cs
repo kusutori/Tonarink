@@ -3,7 +3,6 @@ using System.Net.Sockets;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using LocalSendDotNet;
-using Tonarink.Application;
 
 namespace Tonarink.Services.Settings;
 

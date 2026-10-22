@@ -1,16 +1,15 @@
 using System.Runtime.InteropServices;
+using Tonarink.Application;
 
 namespace Tonarink.WidgetProvider;
 
 internal static class WidgetPaths
 {
-    public const string MutexName = @"Local\Tonarink.App.Running";
-    public const string CommandEventName = @"Local\Tonarink.WidgetCommand";
+    public const string MutexName = AppIntegrationIds.RunningMutex;
+    public const string CommandEventName = AppIntegrationIds.WidgetCommandEvent;
     public const string SnapshotFileName = "widget-snapshot.json";
     public const string CommandFileName = "widget-command.json";
     public const string HistoryFileName = "receive-history.json";
-    private const string UnpackagedPublisher = "kusutori";
-    private const string UnpackagedProduct = "Tonarink";
     private const string AssetRoot = "ms-appx:///WidgetProvider/WidgetAssets/";
 
     public static string StatusOnIcon => AssetRoot + "status-on.png";
@@ -68,11 +67,7 @@ internal static class WidgetPaths
         yield return UnpackagedDirectory();
     }
 
-    private static string UnpackagedDirectory() =>
-        Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            UnpackagedPublisher,
-            UnpackagedProduct);
+    private static string UnpackagedDirectory() => AppIdentity.SharedDataDirectory;
 }
 
 internal static partial class WidgetNative

@@ -24,29 +24,29 @@ static class AppDeepLinks
         if (value is null) return false;
         var text = value.Trim();
         if (text is ['"', _, ..] && text[^1] == '"') text = text[1..^1];
-        if (!text.StartsWith("tonarink:", StringComparison.OrdinalIgnoreCase)) return false;
+        if (!text.StartsWith(AppIntegrationIds.ProtocolScheme + ":", StringComparison.OrdinalIgnoreCase)) return false;
         if (TryResolve(text, out var request)) AppNavigationService.Open(request!);
         else
-            AppDiagnostics.Report("Invalid Tonarink deep link",
+            AppDiagnostics.Report("Invalid application deep link",
                 new ArgumentException("Unknown route or invalid navigation parameters."));
         return true;
     }
 
     public static string ForFavorite(string fingerprint) =>
-        "tonarink:///send?favorite=" + Uri.EscapeDataString(fingerprint);
+        $"{AppIntegrationIds.ProtocolScheme}:///send?favorite=" + Uri.EscapeDataString(fingerprint);
 
-    public static string ForHistory(Guid id) => "tonarink:///history?id=" + id.ToString("D");
+    public static string ForHistory(Guid id) => $"{AppIntegrationIds.ProtocolScheme}:///history?id=" + id.ToString("D");
 
     public static AppNavigationRequest Resolve(string value) =>
         TryResolve(value, out var request)
             ? request!
-            : throw new ArgumentException("Unknown Tonarink route or invalid navigation parameters.", nameof(value));
+            : throw new ArgumentException("Unknown application route or invalid navigation parameters.", nameof(value));
 
     private static bool TryResolve(string text, out AppNavigationRequest? request)
     {
         request = null;
         if (!Uri.TryCreate(text, UriKind.Absolute, out var uri)
-            || !uri.Scheme.Equals("tonarink", StringComparison.OrdinalIgnoreCase)
+            || !uri.Scheme.Equals(AppIntegrationIds.ProtocolScheme, StringComparison.OrdinalIgnoreCase)
             || uri.Host.Length != 0 || uri.UserInfo.Length != 0
             || !uri.IsDefaultPort || uri.Fragment.Length != 0) return false;
         try

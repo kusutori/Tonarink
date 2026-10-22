@@ -1,15 +1,12 @@
 using System.Diagnostics;
+using Tonarink.Application;
 
 namespace Tonarink.WidgetProvider;
 
 internal static class WidgetLog
 {
     private static readonly string Path = System.IO.Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-        "AppData",
-        "Local",
-        "kusutori",
-        "Tonarink",
+        AppIdentity.SharedDataDirectory,
         "widget-provider.log");
 
     public static void Write(string message)

@@ -1,8 +1,11 @@
+using System.Text.Json;
+using Tonarink.Application;
+
 namespace Tonarink.WidgetProvider;
 
 internal sealed class ReceiveWidget
 {
-    public const string DefinitionId = "Tonarink_Receive";
+    public const string DefinitionId = AppIntegrationIds.WidgetDefinitionId;
     private static readonly string TemplatePath = Path.Combine(AppContext.BaseDirectory, "Templates", "ReceiveWidget.json");
     private static string? Template;
 
@@ -25,7 +28,7 @@ internal sealed class ReceiveWidget
 
         Template = File.Exists(TemplatePath)
             ? File.ReadAllText(TemplatePath)
-            : """{"type":"AdaptiveCard","version":"1.5","body":[{"type":"TextBlock","text":"Tonarink","weight":"bolder"}]}""";
+            : $$"""{"type":"AdaptiveCard","version":"1.5","body":[{"type":"TextBlock","text":{{JsonSerializer.Serialize(AppIdentity.Name, WidgetJsonContext.Default.String)}},"weight":"bolder"}]}""";
         return Template;
     }
 

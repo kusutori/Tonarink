@@ -1,4 +1,5 @@
 using System.Runtime.InteropServices;
+using System.Text.Json;
 using Microsoft.Windows.Widgets.Providers;
 
 namespace Tonarink.WidgetProvider;
@@ -157,7 +158,13 @@ public sealed partial class WidgetProvider : IWidgetProvider
         catch (Exception exception)
         {
             WidgetLog.Write($"GetData failed {exception}");
-            data = """{"title":"Tonarink","appRunning":false,"appStatusLabel":"","statusIcon":"","serverOn":false,"serverLabel":"","serverValue":"","serverColor":"default","serverHint":"","isNearby":true,"isHistory":false,"hasTransfer":false,"hasProgressBar":false,"hasDevices":false,"hasHistoryItems":false,"deviceCount":0,"deviceCountLabel":"","historyCountLabel":"","emptyLabel":"","historyEmptyLabel":"","nearbyTab":"","historyTab":"","nearbyWeight":"bolder","historyWeight":"default","nearbyColor":"accent","historyColor":"default","transferTitle":"","transferPeer":"","transferStatus":"","transferProgress":"","devices":[],"history":[]}""";
+            data = JsonSerializer.Serialize(new WidgetCardData
+            {
+                ServerValue = "",
+                IsNearby = true,
+                NearbyWeight = "bolder",
+                NearbyColor = "accent",
+            }, WidgetJsonContext.Default.WidgetCardData);
         }
 
         var options = new WidgetUpdateRequestOptions(widgetId)

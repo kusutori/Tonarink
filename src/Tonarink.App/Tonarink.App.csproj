@@ -14,8 +14,7 @@
         <OutputType>WinExe</OutputType>
         <AssemblyName>Tonarink</AssemblyName>
         <RootNamespace>Tonarink</RootNamespace>
-        <Product>Tonarink</Product>
-        <Title>Tonarink</Title>
+        <Title>$(Product)</Title>
         <Description>An unofficial LocalSend protocol client for Windows.</Description>
         <Version>1.2.0</Version>
         <TargetFramework>net11.0-windows10.0.22621.0</TargetFramework>

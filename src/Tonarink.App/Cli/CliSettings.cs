@@ -1,6 +1,5 @@
 using System.Globalization;
 using LocalSendDotNet;
-using Tonarink.Application;
 
 namespace Tonarink.Cli;
 

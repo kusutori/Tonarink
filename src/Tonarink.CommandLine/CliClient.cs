@@ -164,7 +164,11 @@ static class CliClient
             // dotnet run/framework-dependent DLL launches must restart this
             // assembly, not accidentally run the dotnet driver without a DLL.
             if (Path.GetFileNameWithoutExtension(context.ExecutablePath).Equals("dotnet", StringComparison.OrdinalIgnoreCase))
-                start.ArgumentList.Add(Path.Combine(AppContext.BaseDirectory, "Tonarink.Cli.dll"));
+            {
+                var assemblyName = System.Reflection.Assembly.GetEntryAssembly()?.GetName().Name
+                    ?? throw new InvalidOperationException("The CLI entry assembly name is unavailable.");
+                start.ArgumentList.Add(Path.Combine(AppContext.BaseDirectory, assemblyName + ".dll"));
+            }
             start.ArgumentList.Add("--cli-daemon"); start.ArgumentList.Add(context.DataDirectory);
             using var startup = Process.Start(start) ?? throw new CliException(CliText.Get("Could not start the independent host."), 3);
             // The headless host writes diagnostics to its profile's log, never

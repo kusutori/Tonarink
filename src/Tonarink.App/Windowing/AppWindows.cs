@@ -16,7 +16,7 @@ static class AppWindows
 
     public static WindowSpec MainSpec(bool startHidden) => new()
     {
-        Title = "Tonarink",
+        Title = AppPlatform.DisplayName,
         Width = AppLayout.WindowWidth,
         Height = AppLayout.WindowHeight,
         MinWidth = AppLayout.WindowMinWidth,

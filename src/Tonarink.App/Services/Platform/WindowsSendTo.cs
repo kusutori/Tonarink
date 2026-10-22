@@ -2,7 +2,7 @@ namespace Tonarink.Services.Platform;
 
 static class WindowsSendTo
 {
-    private const string OwnershipMarker = "Tonarink Send To integration";
+    private const string OwnershipMarker = AppIntegrationIds.SendToOwnershipMarker;
 
     public static void SetEnabled(bool enabled)
     {
@@ -13,7 +13,7 @@ static class WindowsSendTo
         var folder = Environment.GetFolderPath(Environment.SpecialFolder.SendTo);
         if (string.IsNullOrWhiteSpace(folder))
             throw new InvalidOperationException("The Windows Send To folder is unavailable.");
-        var shortcutPath = Path.Combine(folder, "Tonarink.lnk");
+        var shortcutPath = Path.Combine(folder, AppIntegrationIds.SendToShortcutName);
         if (File.Exists(shortcutPath))
         {
             using var existing = new WindowsShellLink();
@@ -22,7 +22,7 @@ static class WindowsSendTo
             {
                 // A user-created shortcut with the same name is not ours to
                 // replace or delete, even when this setting is switched off.
-                if (enabled) throw new InvalidOperationException("Tonarink.lnk already exists and is not managed by Tonarink.");
+                if (enabled) throw new InvalidOperationException($"{AppIntegrationIds.SendToShortcutName} already exists and is not managed by {AppIdentity.Name}.");
                 return;
             }
         }

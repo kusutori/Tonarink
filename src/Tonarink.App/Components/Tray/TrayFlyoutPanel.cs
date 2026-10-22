@@ -91,7 +91,7 @@ sealed class TrayFlyoutPanel : Component<TrayFlyoutPanelProps>
                 highContrast ? Theme.Ref("SystemColorButtonTextColorBrush") : Theme.Ref("SurfaceStrokeColorFlyoutBrush"),
                 highContrast ? 2 : 1)
             .CornerRadius(8)
-            .AutomationName("Tonarink")
+            .AutomationName(AppPlatform.DisplayName)
             .Landmark(AutomationLandmarkType.Main);
 
         void OpenApp()
@@ -110,7 +110,7 @@ sealed class TrayFlyoutPanel : Component<TrayFlyoutPanelProps>
         Action<bool> setPinned) =>
         (FlexRow(
                 VStack(2,
-                        SubHeading("Tonarink")
+                        SubHeading(AppPlatform.DisplayName)
                             .HeadingLevel(AutomationHeadingLevel.Level1),
                         HStack(8,
                                 StatusDot(statusColor),

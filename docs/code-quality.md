@@ -59,6 +59,17 @@ CI 的 `format` 是独立任务，格式不符仍使该任务失败，但不会�
 
 ## 维护原则
 
+### 应用名称与集成身份
+
+- 产品名、发布者和仓库地址统一在 `Directory.Build.props` 定义，通过程序集元数据供 `Tonarink.Application.AppIdentity` 读取；运行时不要重复写名称和 GitHub 地址
+- Windows 界面使用 `AppPlatform.DisplayName`：打包版读取包显示名，未打包版使用产品元数据
+- App、Explorer 扩展和 Widget 共享 `AppIdentity.SharedDataDirectory`；本轮保持原有 `kusutori/Tonarink` 路径，不迁移或删除已有数据
+- `Company`／`Product` 也组成未打包存储身份，后续更名必须单独规划数据迁移，不能只改显示文案
+- 协议、启动项、包名、互斥量、事件、管道前缀和快捷方式所有权标记属于持久化或跨进程契约，集中在 `AppIntegrationIds`，不能随显示名或语言改变
+- 包清单、COM GUID、资源逻辑名和翻译资源中的品牌文案是各自系统的声明，不做盲目替换；修改相关注册时必须同步检查对应契约
+
+### 后续规则调整
+
 1. 新规则先确认实际诊断的行为与项目适用范围，再开启并编译验证
 2. 少量明确问题就地修复；不要为引入规则进行无关功能重构
 3. 必要例外使用最小范围抑制并写明原因，不为通过构建关闭整个规则类别

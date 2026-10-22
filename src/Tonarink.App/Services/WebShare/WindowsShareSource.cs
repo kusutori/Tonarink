@@ -55,7 +55,7 @@ sealed class WindowsShareSource : IDisposable
         if (_storageItems is { Length: > 0 } storageItems)
         {
             var fileData = args.Request.Data;
-            fileData.Properties.Title = _title ?? "Tonarink";
+            fileData.Properties.Title = _title ?? AppPlatform.DisplayName;
             fileData.SetStorageItems(storageItems, readOnly: true);
             fileData.RequestedOperation = DataPackageOperation.Copy;
             return;
@@ -68,7 +68,7 @@ sealed class WindowsShareSource : IDisposable
         }
 
         var data = args.Request.Data;
-        data.Properties.Title = _title ?? "Tonarink";
+        data.Properties.Title = _title ?? AppPlatform.DisplayName;
         data.SetWebLink(link);
         data.RequestedOperation = DataPackageOperation.Copy;
     }

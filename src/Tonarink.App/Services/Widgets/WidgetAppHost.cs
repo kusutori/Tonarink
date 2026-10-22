@@ -9,8 +9,8 @@ namespace Tonarink.Services.Widgets;
 
 static class WidgetAppHost
 {
-    public const string MutexName = @"Local\Tonarink.App.Running";
-    public const string CommandEventName = @"Local\Tonarink.WidgetCommand";
+    public const string MutexName = AppIntegrationIds.RunningMutex;
+    public const string CommandEventName = AppIntegrationIds.WidgetCommandEvent;
     public const string SnapshotFileName = "widget-snapshot.json";
     public const string CommandFileName = "widget-command.json";
 

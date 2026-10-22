@@ -1,5 +1,11 @@
 <Project>
   <PropertyGroup>
+    <!-- Shared branding metadata. Keep runtime consumers on the generated
+         assembly attributes instead of repeating names and URLs in code. -->
+    <Product Condition="'$(Product)' == ''">Tonarink</Product>
+    <Company Condition="'$(Company)' == ''">kusutori</Company>
+    <Authors Condition="'$(Authors)' == ''">$(Company)</Authors>
+    <RepositoryUrl Condition="'$(RepositoryUrl)' == ''">https://github.com/kusutori/Tonarink</RepositoryUrl>
     <TargetFramework>net11.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>

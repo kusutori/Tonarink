@@ -8,7 +8,7 @@ static partial class AppDiagnostics
     private static readonly Lock Gate = new();
     private static bool _sessionStarted;
 
-    public static string LogFilePath => Path.Combine(AppPlatform.DataDirectory, "tonarink.log");
+    public static string LogFilePath => Path.Combine(AppPlatform.DataDirectory, $"{AppIdentity.Name.ToLowerInvariant()}.log");
 
     public static ILoggerFactory LoggerFactory { get; } =
         Microsoft.Extensions.Logging.LoggerFactory.Create(builder =>
@@ -30,18 +30,18 @@ static partial class AppDiagnostics
                 Directory.CreateDirectory(AppPlatform.DataDirectory);
                 File.AppendAllText(
                     LogFilePath,
-                    $"{Environment.NewLine}{DateTimeOffset.Now:O} [Information] [Tonarink] Session started{Environment.NewLine}");
+                    $"{Environment.NewLine}{DateTimeOffset.Now:O} [Information] [{AppIdentity.Name}] Session started{Environment.NewLine}");
                 _sessionStarted = true;
             }
             catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
             {
-                Debug.WriteLine($"[Tonarink] Could not initialize the application log: {exception.Message}");
+                Debug.WriteLine($"[{AppIdentity.Name}] Could not initialize the application log: {exception.Message}");
             }
         }
     }
 
     public static void Report(string operation, Exception exception) =>
-        Write(LogLevel.Warning, "Tonarink", operation, exception);
+        Write(LogLevel.Warning, AppIdentity.Name, operation, exception);
 
     public static void Write(
         LogLevel level,
@@ -66,7 +66,7 @@ static partial class AppDiagnostics
             }
             catch (Exception logException) when (logException is IOException or UnauthorizedAccessException)
             {
-                Debug.WriteLine($"[Tonarink] Could not write the application log: {logException.Message}");
+                Debug.WriteLine($"[{AppIdentity.Name}] Could not write the application log: {logException.Message}");
             }
         }
     }

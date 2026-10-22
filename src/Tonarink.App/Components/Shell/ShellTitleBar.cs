@@ -14,7 +14,7 @@ sealed class ShellTitleBar : Component<ShellTitleBarProps>
 {
     public override Element Render()
     {
-        return TitleBar("Tonarink")
+        return TitleBar(AppPlatform.DisplayName)
             .WithNavigation(Props.Navigation)
             .PaneToggleButtonVisible(Props.PaneToggleVisible)
             .PaneToggleRequested(Props.TogglePane)

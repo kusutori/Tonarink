@@ -8,7 +8,7 @@ namespace Tonarink.Services.Settings;
 static class WindowsStartup
 {
     private const string RunKeyPath = @"Software\Microsoft\Windows\CurrentVersion\Run";
-    private const string RunValueName = "Tonarink";
+    private const string RunValueName = AppIntegrationIds.StartupRegistryValue;
 
     public static async Task<bool> IsEnabledAsync()
     {

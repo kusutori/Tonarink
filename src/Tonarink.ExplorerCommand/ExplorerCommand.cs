@@ -1,6 +1,7 @@
 using System.Runtime.InteropServices.Marshalling;
 using System.Security.Cryptography;
 using System.Text;
+using Tonarink.Application;
 
 namespace Tonarink.ExplorerCommand;
 
@@ -73,7 +74,7 @@ internal sealed partial class ExplorerCommand : IExplorerCommand, IObjectWithSit
     public int GetCanonicalName(out Guid pguidCommandName)
     {
         pguidCommandName = _favorite is { } favorite
-            ? new Guid(SHA256.HashData(Encoding.UTF8.GetBytes("Tonarink.ExplorerFavorite:" + favorite.Fingerprint)).AsSpan(0, 16))
+            ? new Guid(SHA256.HashData(Encoding.UTF8.GetBytes(AppIntegrationIds.ExplorerFavoriteIdPrefix + favorite.Fingerprint)).AsSpan(0, 16))
             : _parent is not null ? new Guid("09B36B4B-35A8-4367-B3A8-AC5E9A0BF632") : new Guid(AppPaths.Clsid);
         return Ok;
     }

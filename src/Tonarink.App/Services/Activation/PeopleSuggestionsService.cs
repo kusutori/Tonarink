@@ -11,7 +11,7 @@ static class PeopleSuggestionsService
 {
     private const string PeopleContractName = "com.microsoft.peoplecontract";
     private const string WindowsSystemPackageFamilyName = "com.microsoft.windows.system";
-    private const string ContactListName = "Tonarink favorites";
+    private const string ContactListName = AppIntegrationIds.PeopleContactListName;
     private static readonly SemaphoreSlim Gate = new(1, 1);
     private static readonly string SyncMarkerPath = Path.Combine(
         AppPlatform.DataDirectory,
