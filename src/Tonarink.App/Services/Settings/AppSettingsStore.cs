@@ -10,10 +10,17 @@ static class AppSettingsStore
 {
     private static readonly string FilePath = Path.Combine(AppPlatform.DataDirectory, "settings.json");
     private static volatile AppSettings? _cached;
+    private static readonly Lock Gate = new();
 
     public static event Action? Changed;
 
     public static AppSettings Load()
+    {
+        lock (Gate)
+            return LoadCore();
+    }
+
+    private static AppSettings LoadCore()
     {
         if (_cached is { } cached)
             return cached;
@@ -59,22 +66,22 @@ static class AppSettingsStore
 
     public static void Save(AppSettings settings)
     {
-        var previous = _cached;
-        // Explicit apply saves before restarting; the subsequent render must not
-        // write the same snapshot again. Do not publish a failed disk write.
-        if (previous == settings)
-            return;
-
-        Write(settings);
-        _cached = settings;
+        lock (Gate)
+        {
+            // Explicit apply saves before restarting; the subsequent render must not
+            // write the same snapshot again. Do not publish a failed disk write.
+            if (_cached == settings)
+                return;
+            Write(settings);
+            _cached = settings;
+        }
         Changed?.Invoke();
     }
 
     private static void Write(AppSettings settings)
     {
-        Directory.CreateDirectory(AppPlatform.DataDirectory);
         var json = JsonSerializer.Serialize(AppSettingsFile.FromSettings(settings), AppSettingsJsonContext.Default.AppSettingsFile);
-        File.WriteAllText(FilePath, json);
+        AtomicFile.WriteAllText(FilePath, json);
     }
 }
 

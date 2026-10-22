@@ -103,11 +103,10 @@ static class ReceiveHistoryStore
 
     private static void SaveUnlocked(IReadOnlyList<ReceiveHistoryEntry> entries)
     {
-        Directory.CreateDirectory(AppPlatform.DataDirectory);
         var json = JsonSerializer.Serialize(
             ReceiveHistoryFile.FromEntries(entries),
             ReceiveHistoryJsonContext.Default.ReceiveHistoryFile);
-        File.WriteAllText(FilePath, json);
+        AtomicFile.WriteAllText(FilePath, json);
     }
 
     private sealed class PersistentSource : IReceiveHistoryStore

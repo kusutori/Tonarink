@@ -56,8 +56,8 @@ static class FavoriteDeviceStore
                 static pair => pair.Value,
                 StringComparer.Ordinal);
             updated[favorite.Fingerprint] = favorite;
-            _cached = updated;
             SaveCore(updated);
+            _cached = updated;
             _revision++;
         }
 
@@ -76,8 +76,8 @@ static class FavoriteDeviceStore
             removed = updated.Remove(fingerprint);
             if (removed)
             {
-                _cached = updated;
                 SaveCore(updated);
+                _cached = updated;
                 _revision++;
             }
         }
@@ -110,13 +110,10 @@ static class FavoriteDeviceStore
 
     private static void SaveCore(IReadOnlyDictionary<string, FavoriteDevice> entries)
     {
-        Directory.CreateDirectory(AppPlatform.DataDirectory);
         var json = JsonSerializer.Serialize(
             entries,
             FavoriteDeviceJsonContext.Default.IReadOnlyDictionaryStringFavoriteDevice);
-        var temporaryPath = FilePath + ".tmp";
-        File.WriteAllText(temporaryPath, json);
-        File.Move(temporaryPath, FilePath, overwrite: true);
+        AtomicFile.WriteAllText(FilePath, json);
     }
 
     private static IReadOnlyDictionary<string, FavoriteDevice> Empty() =>
