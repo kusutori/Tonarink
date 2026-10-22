@@ -11,6 +11,7 @@ using Windows.System;
 using static Microsoft.UI.Reactor.Factories;
 using static Tonarink.Components.Devices.DeviceVisuals;
 using static Tonarink.Components.Transfers.TransferOverlayVisuals;
+using static Tonarink.Services.Transfers.TransferPresentation;
 using static Tonarink.Utilities.ByteSize;
 using BasicConnectedAnimationConfiguration = Microsoft.UI.Xaml.Media.Animation.BasicConnectedAnimationConfiguration;
 
@@ -91,7 +92,7 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
         UseEffect(() => () => TaskbarReceiveBadge.Clear());
         UseEffect(() =>
         {
-            WidgetAppHost.SetIncoming(new WidgetTransferInfo(
+            IncomingTransferProgressStore.Publish(new IncomingTransferProgress(
                 Title: request.Items.Count == 1
                     ? request.Items[0].FileName
                     : view.Status,
@@ -101,13 +102,8 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                 TotalBytes: view.TotalBytes,
                 Indeterminate: view.TotalBytes <= 0
                                || view.State is TransferState.Preparing or TransferState.WaitingForAcceptance));
-            TrayFlyoutStore.NotifyIncoming();
-            return () =>
-            {
-                WidgetAppHost.SetIncoming(null);
-                TrayFlyoutStore.NotifyIncoming();
-            };
         }, view.State, view.BytesTransferred, view.TotalBytes, view.Status, request.RequestId);
+        UseEffect(() => () => IncomingTransferProgressStore.Publish(null));
 
         var acceptMutation =
             UseMutation<IncomingAcceptConfiguration, IncomingTransferResult>(async (configuration, mutationToken) =>
@@ -129,7 +125,7 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                     t.Message(new("App", "ReceivingContent")),
                     0,
                     totalBytes,
-                    ProgressText(0, totalBytes),
+                    TransferProgressText(0, totalBytes),
                     "receive-progress");
                 var progress = new Progress<TransferProgress>(value =>
                 {
@@ -141,7 +137,7 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                         t.Message(new("App", "ReceivingContent")),
                         value.BytesTransferred,
                         value.TotalBytes,
-                        ProgressText(value.BytesTransferred, value.TotalBytes));
+                        TransferProgressText(value.BytesTransferred, value.TotalBytes));
                 });
                 try
                 {
@@ -475,9 +471,6 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                         .HAlign(HorizontalAlignment.Center))
                 .HAlign(HorizontalAlignment.Center);
 
-        static string ProgressText(long bytesTransferred, long totalBytes) => totalBytes > 0
-            ? $"{FormatBytes(bytesTransferred)} / {FormatBytes(totalBytes)}"
-            : FormatBytes(bytesTransferred);
 
         async Task AcceptAsync()
         {

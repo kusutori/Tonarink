@@ -5,7 +5,7 @@ namespace Tonarink.Services.Tray;
 sealed record TrayFlyoutSnapshot(
     AppRuntimeState Runtime,
     OutgoingTransferViewState? Outgoing,
-    WidgetTransferInfo? IncomingProgress,
+    IncomingTransferProgress? IncomingProgress,
     AppSettings Settings,
     bool ServerDesired)
 {
@@ -28,6 +28,8 @@ static class TrayFlyoutStore
 {
     private static readonly Lock Gate = new();
     private static TrayFlyoutSnapshot _snapshot = TrayFlyoutSnapshot.Empty;
+
+    static TrayFlyoutStore() => IncomingTransferProgressStore.Changed += RefreshIncoming;
 
     public static event Action? Changed;
 
@@ -61,7 +63,7 @@ static class TrayFlyoutStore
             _snapshot = new(
                 runtime,
                 outgoing,
-                WidgetAppHost.Incoming,
+                IncomingTransferProgressStore.Current,
                 settings,
                 serverDesired);
         }
@@ -69,10 +71,10 @@ static class TrayFlyoutStore
         Changed?.Invoke();
     }
 
-    public static void NotifyIncoming()
+    private static void RefreshIncoming()
     {
         lock (Gate)
-            _snapshot = _snapshot with { IncomingProgress = WidgetAppHost.Incoming };
+            _snapshot = _snapshot with { IncomingProgress = IncomingTransferProgressStore.Current };
         Changed?.Invoke();
     }
 }

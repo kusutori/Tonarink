@@ -8,7 +8,7 @@ using Microsoft.UI.Xaml.Controls;
 using static Microsoft.UI.Reactor.Factories;
 using static Tonarink.Components.Transfers.TransferOverlayVisuals;
 using static Tonarink.Pages.Send.SelectedSendItemOperations;
-using static Tonarink.Pages.Send.SendDeviceResolver;
+using static Tonarink.Services.Devices.SendDeviceResolver;
 using static Tonarink.Pages.Send.SendPageVisuals;
 
 namespace Tonarink.Pages.Send;

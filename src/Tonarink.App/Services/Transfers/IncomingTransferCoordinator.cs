@@ -25,7 +25,7 @@ sealed class IncomingTransferCoordinator(
                 AutoSaveMode.Off => false,
             };
             // Text is read in the overlay, so it must not take the silent file-saving path.
-            if (autoAccept && !TransferOverlayVisuals.IsTextTransfer(request.Items))
+            if (autoAccept && !TransferPresentation.IsTextTransfer(request.Items))
             {
                 _ = AcceptAsync(
                     node,
@@ -39,7 +39,7 @@ sealed class IncomingTransferCoordinator(
             dispatchRuntime(new AppRuntimeAction.IncomingAdded(request));
             AppNotificationService.ShowIncomingRequest(
                 t.Message(new("App", "NotificationIncomingTitle"), ("device", request.Sender.Alias)),
-                TransferOverlayVisuals.IncomingSummary(t, request.Items),
+                TransferPresentation.IncomingSummary(t, request.Items),
                 request.RequestId,
                 t.Message(new("App", "Accept")),
                 t.Message(new("App", "Decline")));
@@ -53,7 +53,7 @@ sealed class IncomingTransferCoordinator(
             { } request)
             return false;
 
-        if (action == "incoming-accept" && TransferOverlayVisuals.IsTextTransfer(request.Items))
+        if (action == "incoming-accept" && TransferPresentation.IsTextTransfer(request.Items))
         {
             // Let the overlay accept and retain the received text for reading.
             // Returning false asks the activation host to restore the window.
@@ -96,7 +96,7 @@ sealed class IncomingTransferCoordinator(
     {
         var t = getIntl();
         var totalBytes = request.Items.Sum(static item => item.Size);
-        var progressTitle = TransferOverlayVisuals.IncomingSummary(t, request.Items);
+        var progressTitle = TransferPresentation.IncomingSummary(t, request.Items);
         var progressNotification = AppNotificationService.StartTransferProgress(
             request.RequestId,
             t.Message(new("App", "NotificationReceiveProgressTitle"), ("device", request.Sender.Alias)),
@@ -104,7 +104,7 @@ sealed class IncomingTransferCoordinator(
             t.Message(new("App", "ReceivingContent")),
             0,
             totalBytes,
-            ProgressText(0, totalBytes),
+            TransferPresentation.TransferProgressText(0, totalBytes),
             "receive-progress");
         try
         {
@@ -114,7 +114,7 @@ sealed class IncomingTransferCoordinator(
                     t.Message(new("App", "ReceivingContent")),
                     value.BytesTransferred,
                     value.TotalBytes,
-                    ProgressText(value.BytesTransferred, value.TotalBytes)));
+                    TransferPresentation.TransferProgressText(value.BytesTransferred, value.TotalBytes)));
             var result = CoreTransferOutcomeMapper.Map(await node.AcceptAsync(
                     request.RequestId,
                     new AcceptTransferOptions
@@ -172,7 +172,4 @@ sealed class IncomingTransferCoordinator(
         }
     }
 
-    private static string ProgressText(long bytesTransferred, long totalBytes) => totalBytes > 0
-        ? $"{Utilities.ByteSize.FormatBytes(bytesTransferred)} / {Utilities.ByteSize.FormatBytes(totalBytes)}"
-        : Utilities.ByteSize.FormatBytes(bytesTransferred);
 }

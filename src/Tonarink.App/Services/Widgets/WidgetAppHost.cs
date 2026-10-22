@@ -23,19 +23,9 @@ static class WidgetAppHost
     private static AppRuntimeState _runtime = AppRuntimeState.Initial;
     private static AppSettings _settings = AppSettings.Default;
     private static OutgoingTransferViewState? _outgoing;
-    private static WidgetTransferInfo? _incoming;
     private static bool _serverDesired = true;
 
     public static event Action<string>? CommandReceived;
-
-    public static WidgetTransferInfo? Incoming
-    {
-        get
-        {
-            lock (Gate)
-                return _incoming;
-        }
-    }
 
     public static void Start()
     {
@@ -45,6 +35,7 @@ static class WidgetAppHost
                 return;
 
             _started = true;
+            IncomingTransferProgressStore.Changed += WriteSnapshot;
             _runningMutex = new Mutex(initiallyOwned: true, MutexName, out _);
             _commandEvent = new EventWaitHandle(false, EventResetMode.AutoReset, CommandEventName);
             _commandWait = ThreadPool.RegisterWaitForSingleObject(
@@ -67,7 +58,7 @@ static class WidgetAppHost
                 return;
 
             _started = false;
-            _incoming = null;
+            IncomingTransferProgressStore.Changed -= WriteSnapshot;
             _outgoing = null;
             _serverDesired = false;
             _runtime = AppRuntimeState.Initial with { NodeState = LocalSendNodeState.Stopped };
@@ -100,13 +91,6 @@ static class WidgetAppHost
             _serverDesired = serverDesired;
         }
 
-        WriteSnapshot();
-    }
-
-    public static void SetIncoming(WidgetTransferInfo? incoming)
-    {
-        lock (Gate)
-            _incoming = incoming;
         WriteSnapshot();
     }
 
@@ -160,14 +144,14 @@ static class WidgetAppHost
         AppRuntimeState runtime;
         AppSettings settings;
         OutgoingTransferViewState? outgoing;
-        WidgetTransferInfo? incoming;
+        IncomingTransferProgress? incoming;
         bool serverDesired;
         lock (Gate)
         {
             runtime = _runtime;
             settings = _settings;
             outgoing = _outgoing;
-            incoming = _incoming;
+            incoming = _started ? IncomingTransferProgressStore.Current : null;
             serverDesired = _serverDesired;
         }
 
@@ -199,13 +183,8 @@ static class WidgetAppHost
 
         try
         {
-            Directory.CreateDirectory(AppPlatform.DataDirectory);
-            var path = Path.Combine(AppPlatform.DataDirectory, SnapshotFileName);
-            var temp = path + ".tmp";
-            File.WriteAllText(
-                temp,
+            AtomicFile.WriteAllText(Path.Combine(AppPlatform.DataDirectory, SnapshotFileName),
                 JsonSerializer.Serialize(snapshot, WidgetHostJsonContext.Default.WidgetSnapshotFile));
-            File.Move(temp, path, overwrite: true);
         }
         catch (Exception exception) when (exception is JsonException or IOException or UnauthorizedAccessException)
         {
@@ -213,7 +192,7 @@ static class WidgetAppHost
         }
     }
 
-    private static WidgetTransferFile ToFile(WidgetTransferInfo incoming) => new()
+    private static WidgetTransferFile ToFile(IncomingTransferProgress incoming) => new()
     {
         Incoming = true,
         Title = incoming.Title,
@@ -285,14 +264,6 @@ static class WidgetAppHost
     }
 
 }
-
-sealed record WidgetTransferInfo(
-    string Title,
-    string Peer,
-    string Status,
-    long BytesTransferred,
-    long TotalBytes,
-    bool Indeterminate);
 
 sealed class WidgetSnapshotFile
 {

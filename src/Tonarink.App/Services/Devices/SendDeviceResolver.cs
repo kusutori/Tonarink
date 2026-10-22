@@ -1,7 +1,7 @@
 using System.Net;
 using LocalSendDotNet;
 
-namespace Tonarink.Pages.Send;
+namespace Tonarink.Services.Devices;
 
 sealed record ResolvedDevice(LocalSendDevice Device);
 

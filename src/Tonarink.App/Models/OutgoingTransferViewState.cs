@@ -1,6 +1,6 @@
 using LocalSendDotNet;
 
-namespace Tonarink.Components.Transfers;
+namespace Tonarink.Models;
 
 sealed record OutgoingTransferSnapshot(
     LocalSendIdentity? Sender,

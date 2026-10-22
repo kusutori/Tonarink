@@ -3,7 +3,7 @@ using Microsoft.UI.Reactor.Input;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage;
 
-namespace Tonarink.Pages.Send;
+namespace Tonarink.Services.Transfers;
 
 static class SelectedSendItemReader
 {

@@ -1,3 +1,5 @@
+using Tonarink.Services.Transfers;
+using Tonarink.Models;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;

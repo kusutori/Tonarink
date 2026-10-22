@@ -1,5 +1,6 @@
 using LocalSendDotNet;
 using static Tonarink.Components.Transfers.TransferOverlayVisuals;
+using static Tonarink.Services.Transfers.TransferPresentation;
 
 namespace Tonarink.Components.Transfers;
 

@@ -2,10 +2,24 @@ using LocalSendDotNet;
 using Microsoft.UI.Reactor.Localization;
 using static Tonarink.Utilities.ByteSize;
 
-namespace Tonarink.Pages.Send;
+namespace Tonarink.Services.Transfers;
 
-static class SendTransferPresentation
+static class TransferPresentation
 {
+    public static bool IsText(IncomingItem item) =>
+        item.ContentType.StartsWith("text/", StringComparison.OrdinalIgnoreCase);
+
+    public static bool IsTextTransfer(IReadOnlyList<IncomingItem> items) =>
+        items is [var item] && IsText(item);
+
+    public static string IncomingSummary(IntlAccessor t, IReadOnlyList<IncomingItem> items) =>
+        items switch
+        {
+            [var item] when IsText(item) => t.Message(new("App", "IncomingTextSummary")),
+            [var item] => t.Message(new("App", "IncomingFileSummary"), ("file", item.FileName)),
+            _ => t.Message(new("App", "IncomingItemsSummary"), ("count", items.Count)),
+        };
+
     public static string ContentSummary(IntlAccessor t, IReadOnlyList<SendItem> items) => items.Count switch
     {
         1 when items[0] is SendTextItem => t.Message(new("App", "ContentOneTextMessage")),

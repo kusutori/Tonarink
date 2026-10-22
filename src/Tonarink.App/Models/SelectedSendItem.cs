@@ -1,6 +1,6 @@
 using LocalSendDotNet;
 
-namespace Tonarink.Pages.Send;
+namespace Tonarink.Models;
 
 // Presentation metadata only; stream/file behavior remains on SendItem.
 enum SelectedSendItemKind
