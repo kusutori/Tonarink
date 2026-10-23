@@ -58,6 +58,7 @@ static class AppIcons
     public const string Server = "\uE703";
     public const string Settings = "\uE713";
     public const string Share = "\uE72D";
+    public const string Shuffle = "\uE8B1";
     public const string Start = "\uE768";
     public const string StartWithWindows = "\uEC4A";
     public const string Stop = "\uE71A";
@@ -68,5 +69,6 @@ static class AppIcons
     public const string Unpin = "\uE77A";
     public const string Verify = "\uF760";
     public const string Web = "\uE774";
+    public const string WebSharePin = "\uE8D7";
     public const string Zoom = "\uE7F4";
 }

@@ -19,7 +19,6 @@ sealed class WebSharePage : Component<WebSharePageProps>
         var (share, setShare) = UseState(WebShareState.Inactive);
         var (autoAccept, setAutoAccept) = UseState(false);
         var (pin, setPin) = UseState<string?>(null);
-        var (pinDraft, setPinDraft) = UseState(RandomPin());
         var (pinDialogOpen, setPinDialogOpen) = UseState(false);
         var (encrypted, setEncrypted) = UseState(
             Props is { Mode: WebShareMode.Send, Runtime.Identity.Protocol: LocalSendProtocol.Https });
@@ -33,6 +32,14 @@ sealed class WebSharePage : Component<WebSharePageProps>
         var node = Props.Node;
         var window = UseWindow();
         var dialogTheme = AppTheme.ToElementTheme(Props.Settings.ThemeIndex);
+        var applyPin = UseMemo<Action<string>>(() => next =>
+        {
+            setPin(next);
+            Props.Node?.SetWebSharePin(next);
+        });
+        var closePinDialog = UseCallback(() => setPinDialogOpen(false));
+        var closeQrDialog = UseCallback(() => setQrUrl(null));
+        var closeZoomDialog = UseCallback(() => setZoomUrl(null));
 
         UseEffect(() => () =>
         {
@@ -162,7 +169,6 @@ sealed class WebSharePage : Component<WebSharePageProps>
                             {
                                 if (value)
                                 {
-                                    setPinDraft(RandomPin());
                                     setPinDialogOpen(true);
                                 }
                                 else
@@ -176,55 +182,12 @@ sealed class WebSharePage : Component<WebSharePageProps>
                             ? null
                             : TextBlock(t.Message(new("App", "WebSharePinHint"), ("pin", pin)))
                                 .Foreground(Theme.SystemCaution),
-                        (ContentDialog(
-                                t.Message(new("App", "WebSharePinTitle")),
-                                TextBox(pinDraft, setPinDraft)
-                                    .AutomationName(t.Message(new("App", "WebSharePinTitle")))
-                                    .Required(),
-                                primaryButtonText: t.Message(new("App", "Confirm"))) with
-                            {
-                                IsOpen = pinDialogOpen,
-                                SecondaryButtonText = t.Message(new("App", "Cancel")),
-                                DefaultButton = ContentDialogButton.Primary,
-                                OnClosed = result =>
-                                {
-                                    if (result == ContentDialogResult.Primary && !string.IsNullOrWhiteSpace(pinDraft))
-                                    {
-                                        var next = pinDraft.Trim();
-                                        setPin(next);
-                                        node?.SetWebSharePin(next);
-                                    }
-
-                                    setPinDialogOpen(false);
-                                },
-                            }).Themed(dialogTheme),
-                        (ContentDialog(
-                                t.Message(new("App", "WebShareQrTitle")),
-                                qrUrl is null
-                                    ? Empty()
-                                    : VStack(12,
-                                        QrCodeCanvas.Render(
-                                            qrUrl,
-                                            t.Message(new("App", "WebShareQrTitle"))),
-                                        TextBlock(qrUrl)
-                                            .TextWrapping(TextWrapping.WrapWholeWords)
-                                            .IsTextSelectionEnabled()),
-                                primaryButtonText: t.Message(new("App", "Close"))) with
-                            {
-                                IsOpen = qrUrl is not null,
-                                OnClosed = _ => setQrUrl(null),
-                            }).Themed(dialogTheme),
-                        (ContentDialog(
-                                t.Message(new("App", "WebShareZoomTitle")),
-                                Title(zoomUrl ?? "")
-                                    .TextWrapping(TextWrapping.WrapWholeWords)
-                                    .IsTextSelectionEnabled()
-                                    .AutomationName(t.Message(new("App", "WebShareZoomTitle"))),
-                                primaryButtonText: t.Message(new("App", "Close"))) with
-                            {
-                                IsOpen = zoomUrl is not null,
-                                OnClosed = _ => setZoomUrl(null),
-                            }).Themed(dialogTheme))
+                        Component<WebSharePinDialog, WebSharePinDialogProps>(new(
+                            pinDialogOpen, dialogTheme, applyPin, closePinDialog)),
+                        Component<WebShareQrDialog, WebShareQrDialogProps>(new(
+                            qrUrl, dialogTheme, closeQrDialog)),
+                        Component<WebShareZoomDialog, WebShareZoomDialogProps>(new(
+                            zoomUrl, pin, dialogTheme, closeZoomDialog)))
                     .Padding(AppLayout.PagePadding))
             .HorizontalContentAlignment(HorizontalAlignment.Stretch)
             .AutomationName(t.Message(new(
@@ -347,11 +310,4 @@ sealed class WebSharePage : Component<WebSharePageProps>
             .Background(Theme.CardBackground)
             .WithBorder(Theme.CardStroke);
 
-    private static string RandomPin()
-    {
-        const string alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789";
-        Span<char> chars = stackalloc char[6];
-        Random.Shared.GetItems(alphabet.AsSpan(), chars);
-        return new string(chars);
-    }
 }

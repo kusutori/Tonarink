@@ -459,6 +459,8 @@
   <data name="WebShareOpenLink" xml:space="preserve"><value>在浏览器中打开链接：</value></data>
   <data name="WebSharePinHint" xml:space="preserve"><value>PIN：{pin}</value></data>
   <data name="WebSharePinTitle" xml:space="preserve"><value>PIN</value></data>
+  <data name="WebSharePinLength" xml:space="preserve"><value>PIN 位数</value></data>
+  <data name="WebSharePinRegenerate" xml:space="preserve"><value>重新生成 PIN</value></data>
   <data name="WebShareQr" xml:space="preserve"><value>二维码</value></data>
   <data name="WebShareQrTitle" xml:space="preserve"><value>二维码</value></data>
   <data name="WebShareRequests" xml:space="preserve"><value>请求</value></data>

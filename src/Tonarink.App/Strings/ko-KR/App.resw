@@ -455,6 +455,8 @@
   <data name="WebShareOpenLink" xml:space="preserve"><value>브라우저에서 이 링크를 여세요:</value></data>
   <data name="WebSharePinHint" xml:space="preserve"><value>PIN: {pin}</value></data>
   <data name="WebSharePinTitle" xml:space="preserve"><value>PIN</value></data>
+  <data name="WebSharePinLength" xml:space="preserve"><value>PIN 길이</value></data>
+  <data name="WebSharePinRegenerate" xml:space="preserve"><value>PIN 다시 생성</value></data>
   <data name="WebShareQr" xml:space="preserve"><value>QR 코드</value></data>
   <data name="WebShareQrTitle" xml:space="preserve"><value>QR 코드</value></data>
   <data name="WebShareRequests" xml:space="preserve"><value>요청</value></data>

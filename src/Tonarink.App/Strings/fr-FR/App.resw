@@ -455,6 +455,8 @@
   <data name="WebShareOpenLink" xml:space="preserve"><value>Ouvrir ce lien dans un navigateur :</value></data>
   <data name="WebSharePinHint" xml:space="preserve"><value>PIN : {pin}</value></data>
   <data name="WebSharePinTitle" xml:space="preserve"><value>PIN</value></data>
+  <data name="WebSharePinLength" xml:space="preserve"><value>Longueur du PIN</value></data>
+  <data name="WebSharePinRegenerate" xml:space="preserve"><value>Générer un nouveau PIN</value></data>
   <data name="WebShareQr" xml:space="preserve"><value>Code QR</value></data>
   <data name="WebShareQrTitle" xml:space="preserve"><value>Code QR</value></data>
   <data name="WebShareRequests" xml:space="preserve"><value>Demandes</value></data>
