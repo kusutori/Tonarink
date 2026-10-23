@@ -30,9 +30,8 @@ static class AnimatedIconForeground
         }
 
         Color color;
-        if (critical && Microsoft.UI.Xaml.Application.Current.Resources.TryGetValue("SystemFillColorCritical", out var resource)
-            && resource is Color criticalColor)
-            color = criticalColor;
+        if (critical && ThemeRef.Resolve("SystemFillColorCriticalBrush", isDark) is SolidColorBrush criticalBrush)
+            color = criticalBrush.Color;
         else if (owner?.Foreground is SolidColorBrush foreground && (!isChecked || owner is ToggleButton))
             color = foreground.Color;
         else if (isChecked)
@@ -41,7 +40,10 @@ static class AnimatedIconForeground
             color = ThemeRef.Resolve("TextOnAccentFillColorPrimaryBrush", isDark) is SolidColorBrush selected
                 ? selected.Color : isDark ? Microsoft.UI.Colors.Black : Microsoft.UI.Colors.White;
         else
-            color = isDark ? Microsoft.UI.Colors.White : Microsoft.UI.Colors.Black;
+            // Match regular WinUI text instead of assuming every theme uses
+            // pure black/white. Keep a fallback for pre-mount resource lookup.
+            color = ThemeRef.Resolve("TextFillColorPrimaryBrush", isDark) is SolidColorBrush primary
+                ? primary.Color : isDark ? Microsoft.UI.Colors.White : Microsoft.UI.Colors.Black;
 
         source.SetColorProperty("Foreground", color);
     }
