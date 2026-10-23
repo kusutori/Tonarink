@@ -55,7 +55,7 @@ sealed class AnimatedUndoRedoButton : Component<AnimatedUndoRedoButtonProps>
 
     private static IAnimatedVisualSource2 CreateSource(UndoRedoIconKind kind) => kind switch
     {
-        UndoRedoIconKind.Undo => new Tonarink.UndoFlowIcon(),
-        UndoRedoIconKind.Redo => new Tonarink.RedoFlowIcon(),
+        UndoRedoIconKind.Undo => new UndoFlowIcon(),
+        UndoRedoIconKind.Redo => new RedoFlowIcon(),
     };
 }

@@ -3,7 +3,6 @@ using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Core;
 using Microsoft.UI.Reactor.Localization;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using static Microsoft.UI.Reactor.Factories;
 
@@ -69,7 +68,7 @@ sealed class NetworkStatusPane : Component<NetworkStatusPaneProps>
                                 Caption(t.Message(new("App", "NetworkStatus"))).SemiBold(),
                                 Caption(statusText)
                                     .Foreground(Theme.SecondaryText)
-                                    .LiveRegion(AutomationLiveSetting.Polite)
+                                    .LiveRegion()
                                     .TextWrapping(TextWrapping.WrapWholeWords))
                             .Margin(horizontal: 12, vertical: 0)
                             .Grid(column: 1),
@@ -124,7 +123,7 @@ sealed class NetworkStatusPane : Component<NetworkStatusPaneProps>
             if (element is not AnimatedVisualPlayer player)
                 return;
 
-            var source = new Tonarink.NetworkStatusIcon();
+            var source = new NetworkStatusIcon();
             AnimatedIconForeground.Apply(player, source);
             player.Loaded += (_, _) => AnimatedIconForeground.Apply(player, source);
             player.ActualThemeChanged += (_, _) => AnimatedIconForeground.Apply(player, source);
@@ -214,8 +213,7 @@ sealed class NetworkStatusPane : Component<NetworkStatusPaneProps>
     {
         while (playback.Generation == generation
                && ReferenceEquals(playback.Player, player)
-               && playback.State == LocalSendNodeState.Starting
-               && !playback.ReduceMotion)
+               && playback is { State: LocalSendNodeState.Starting, ReduceMotion: false })
         {
             await player.PlayAsync(
                 fromProgress: 0,
@@ -287,14 +285,14 @@ sealed class NetworkStatusPane : Component<NetworkStatusPaneProps>
         IntlAccessor t,
         LocalSendNodeState state,
         string? discoveryWarning) => state switch
-        {
-            LocalSendNodeState.Starting => t.Message(new("App", "NodeStarting")),
-            LocalSendNodeState.Running when discoveryWarning is not null =>
-                t.Message(new("App", "NodeDiscoveryLimited")),
-            LocalSendNodeState.Running => t.Message(new("App", "NodeRunning")),
-            LocalSendNodeState.Faulted => t.Message(new("App", "NodeFaulted")),
-            LocalSendNodeState.Stopping => t.Message(new("App", "NodeStopping")),
-            LocalSendNodeState.Created or LocalSendNodeState.Stopped or LocalSendNodeState.Disposed =>
-                t.Message(new("App", "NodeDisconnected")),
-        };
+    {
+        LocalSendNodeState.Starting => t.Message(new("App", "NodeStarting")),
+        LocalSendNodeState.Running when discoveryWarning is not null =>
+            t.Message(new("App", "NodeDiscoveryLimited")),
+        LocalSendNodeState.Running => t.Message(new("App", "NodeRunning")),
+        LocalSendNodeState.Faulted => t.Message(new("App", "NodeFaulted")),
+        LocalSendNodeState.Stopping => t.Message(new("App", "NodeStopping")),
+        LocalSendNodeState.Created or LocalSendNodeState.Stopped or LocalSendNodeState.Disposed =>
+            t.Message(new("App", "NodeDisconnected")),
+    };
 }

@@ -75,7 +75,7 @@ sealed class AnimatedLinkButton : Component<AnimatedLinkButtonProps>
                     if (element is not AnimatedVisualPlayer player)
                         return;
 
-                    var source = new Tonarink.LinkDisconnectIcon();
+                    var source = new LinkDisconnectIcon();
                     AnimatedPlayerLifecycle.Mount(player, source,
                         () => AnimatedIconForeground.Apply(player, source),
                         () => player.SetProgress(enabledRef.Current ? ConnectedProgress : DisconnectedProgress));

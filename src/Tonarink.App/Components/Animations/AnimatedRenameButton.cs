@@ -30,7 +30,7 @@ sealed class AnimatedRenameButton : Component<AnimatedRenameButtonProps>
                     if (element is not AnimatedVisualPlayer player)
                         return;
 
-                    var source = new Tonarink.RenameEraseIcon();
+                    var source = new RenameEraseIcon();
                     AnimatedPlayerLifecycle.Mount(player, source,
                         () => AnimatedIconForeground.Apply(player, source),
                         () => player.SetProgress(0));

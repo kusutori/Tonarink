@@ -46,7 +46,7 @@ sealed class StartupSplashOverlay : Component<StartupSplashOverlayProps>
             {
                 if (!reduceMotion)
                 {
-                    player.Source = new Tonarink.SplashLogo();
+                    player.Source = new SplashLogo();
                     await player.PlayAsync(fromProgress: 0, toProgress: 1, looped: false);
                 }
             }

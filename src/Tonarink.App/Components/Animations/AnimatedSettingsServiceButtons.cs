@@ -115,7 +115,7 @@ sealed class AnimatedSettingsServiceButtons : Component<AnimatedSettingsServiceB
                 if (element is not AnimatedVisualPlayer player)
                     return;
 
-                var source = new Tonarink.SettingsServiceActionIcon();
+                var source = new SettingsServiceActionIcon();
                 AnimatedIconForeground.Apply(player, source, playback.Button);
                 player.Loaded += (_, _) =>
                 {
@@ -188,7 +188,7 @@ sealed class AnimatedSettingsServiceButtons : Component<AnimatedSettingsServiceB
                 if (element is not AnimatedVisualPlayer player)
                     return;
 
-                var source = new Tonarink.SettingsStopIcon();
+                var source = new SettingsStopIcon();
                 AnimatedIconForeground.Apply(player, source, playback.Button);
                 player.Loaded += (_, _) => AnimatedIconForeground.Apply(player, source, playback.Button);
                 player.ActualThemeChanged += (_, _) =>
@@ -345,7 +345,7 @@ sealed class AnimatedSettingsServiceButtons : Component<AnimatedSettingsServiceB
     {
         public AnimatedVisualPlayer? Player { get; set; }
 
-        public Tonarink.SettingsServiceActionIcon? Source { get; set; }
+        public SettingsServiceActionIcon? Source { get; set; }
 
         public XamlButton? Button { get; set; }
 
@@ -371,7 +371,7 @@ sealed class AnimatedSettingsServiceButtons : Component<AnimatedSettingsServiceB
     {
         public AnimatedVisualPlayer? Player { get; set; }
 
-        public Tonarink.SettingsStopIcon? Source { get; set; }
+        public SettingsStopIcon? Source { get; set; }
 
         public XamlButton? Button { get; set; }
 

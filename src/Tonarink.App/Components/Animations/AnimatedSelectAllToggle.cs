@@ -86,7 +86,7 @@ sealed class AnimatedSelectAllToggle : Component<AnimatedSelectAllToggleProps>
                 if (element is not AnimatedVisualPlayer player)
                     return;
 
-                var source = new Tonarink.SelectAllToggleIcon();
+                var source = new SelectAllToggleIcon();
                 AnimatedPlayerLifecycle.Mount(player, source,
                     () => AnimatedIconForeground.Apply(player, source, playback.Button, playback.CheckedState is true),
                     () => player.SetProgress(RestProgress(playback.CheckedState)));
@@ -172,7 +172,7 @@ sealed class AnimatedSelectAllToggle : Component<AnimatedSelectAllToggleProps>
     {
         public AnimatedVisualPlayer? Player { get; set; }
 
-        public Tonarink.SelectAllToggleIcon? Source { get; set; }
+        public SelectAllToggleIcon? Source { get; set; }
 
         public Control? Button { get; set; }
 

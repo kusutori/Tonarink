@@ -35,18 +35,20 @@ sealed class TransientInfoBarStack : Component<TransientInfoBarStackProps>
         var reduceMotion = UseReducedMotion();
 
         return VStack(8,
-                [.. Props.Messages.Select(message =>
+            [
+                .. Props.Messages.Select(message =>
                     Component<TransientInfoBarItem, TransientInfoBarItemProps>(new(
                             message,
                             Props.MarkEntered,
                             Props.Remove))
                         .WithKey(message.Id.ToString("N"))
-                        .LayoutAnimation(reduceMotion ? TimeSpan.Zero : RepositionDuration))])
+                        .LayoutAnimation(reduceMotion ? TimeSpan.Zero : RepositionDuration))
+            ])
             .Margin(left: 24, top: 72, right: 24, bottom: 0)
             .MaxWidth(720)
             .HAlign(HorizontalAlignment.Center)
             .VAlign(VerticalAlignment.Top)
-            .IsHitTestVisible(true);
+            .IsHitTestVisible();
     }
 }
 
@@ -104,11 +106,11 @@ sealed class TransientInfoBarItem : Component<TransientInfoBarItemProps>
         }, message.Id);
 
         return (InfoBar(message.Title, message.Message) with
-        {
-            IsOpen = true,
-            IsClosable = true,
-            OnClosed = () => Props.Remove(message.Id),
-        })
+            {
+                IsOpen = true,
+                IsClosable = true,
+                OnClosed = () => Props.Remove(message.Id),
+            })
             .Severity(message.Severity)
             .Translation(0, message.HasEntered ? 0 : -72, 0)
             .TranslationTransition(new()

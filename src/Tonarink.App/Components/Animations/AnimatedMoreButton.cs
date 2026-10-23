@@ -30,7 +30,7 @@ sealed class AnimatedMoreButton : Component<AnimatedMoreButtonProps>
                     if (element is not AnimatedVisualPlayer player)
                         return;
 
-                    var source = new Tonarink.MoreTriangleIcon();
+                    var source = new MoreTriangleIcon();
                     AnimatedPlayerLifecycle.Mount(player, source,
                         () => AnimatedIconForeground.Apply(player, source),
                         () => player.SetProgress(0));

@@ -119,8 +119,8 @@ sealed class AnimatedTrayToggleButton : Component<AnimatedTrayToggleButtonProps>
 
     private static TrayToggleIconSource CreateSource(TrayToggleIconKind kind) => kind switch
     {
-        TrayToggleIconKind.Service => new Tonarink.TrayServiceToggleIcon(),
-        TrayToggleIconKind.Pin => new Tonarink.TrayPinToggleIcon(),
+        TrayToggleIconKind.Service => new TrayServiceToggleIcon(),
+        TrayToggleIconKind.Pin => new TrayPinToggleIcon(),
     };
 
     private static double RestProgress(TrayToggleIconKind kind, bool isChecked) => kind switch
@@ -181,12 +181,12 @@ sealed class AnimatedTrayToggleButton : Component<AnimatedTrayToggleButtonProps>
         if (version == playback.AnimationVersion && playback.Player == player)
             player.SetProgress(settledProgress);
     }
-    private union TrayToggleIconSource(Tonarink.TrayServiceToggleIcon, Tonarink.TrayPinToggleIcon)
+    private union TrayToggleIconSource(TrayServiceToggleIcon, TrayPinToggleIcon)
     {
         public IAnimatedVisualSource2 Visual => this switch
         {
-            Tonarink.TrayServiceToggleIcon service => service,
-            Tonarink.TrayPinToggleIcon pin => pin,
+            TrayServiceToggleIcon service => service,
+            TrayPinToggleIcon pin => pin,
         };
     }
 

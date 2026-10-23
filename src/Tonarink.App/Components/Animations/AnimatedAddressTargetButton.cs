@@ -76,7 +76,7 @@ sealed class AnimatedAddressTargetButton : Component<AnimatedAddressTargetButton
                     if (element is not AnimatedVisualPlayer player)
                         return;
 
-                    var source = new Tonarink.AddressTargetIcon();
+                    var source = new AddressTargetIcon();
                     AnimatedPlayerLifecycle.Mount(player, source,
                         () => AnimatedIconForeground.Apply(player, source),
                         () => player.SetProgress(separatedRef.Current ? SeparatedProgress : HitProgress));

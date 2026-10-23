@@ -88,7 +88,7 @@ sealed class AnimatedMultipleReceiversToggle : Component<AnimatedMultipleReceive
                 if (element is not AnimatedVisualPlayer player)
                     return;
 
-                var source = new Tonarink.MultipleReceiversIcon();
+                var source = new MultipleReceiversIcon();
                 AnimatedPlayerLifecycle.Mount(player, source,
                     () => AnimatedIconForeground.Apply(player, source, playback.Button, playback.IsChecked),
                     () => player.SetProgress(playback.IsChecked ? OnRestProgress : OffRestProgress));
@@ -187,7 +187,7 @@ sealed class AnimatedMultipleReceiversToggle : Component<AnimatedMultipleReceive
     {
         public AnimatedVisualPlayer? Player { get; set; }
 
-        public Tonarink.MultipleReceiversIcon? Source { get; set; }
+        public MultipleReceiversIcon? Source { get; set; }
 
         public Control? Button { get; set; }
 

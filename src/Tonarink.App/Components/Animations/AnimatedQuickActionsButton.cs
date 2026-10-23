@@ -32,7 +32,7 @@ sealed class AnimatedQuickActionsButton : Component<AnimatedQuickActionsButtonPr
                     if (element is not AnimatedVisualPlayer player)
                         return;
 
-                    var source = new Tonarink.QuickActionsSparkleIcon();
+                    var source = new QuickActionsSparkleIcon();
                     AnimatedPlayerLifecycle.Mount(player, source,
                         () => AnimatedIconForeground.Apply(player, source),
                         () => player.SetProgress(0));

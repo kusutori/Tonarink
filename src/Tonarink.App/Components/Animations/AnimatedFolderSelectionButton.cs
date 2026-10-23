@@ -30,7 +30,7 @@ sealed class AnimatedFolderSelectionButton : Component<AnimatedFolderSelectionBu
                         if (element is not AnimatedVisualPlayer player)
                             return;
 
-                        var source = new Tonarink.FolderOpenIcon();
+                        var source = new FolderOpenIcon();
                         AnimatedPlayerLifecycle.Mount(player, source,
                         () => AnimatedIconForeground.Apply(player, source),
                         () => player.SetProgress(0));

@@ -75,7 +75,7 @@ sealed class AnimatedFavoritesButton : Component<AnimatedFavoritesButtonProps>
                     if (element is not AnimatedVisualPlayer player)
                         return;
 
-                    var source = new Tonarink.FavoriteListIcon();
+                    var source = new FavoriteListIcon();
                     AnimatedPlayerLifecycle.Mount(player, source,
                         () => AnimatedIconForeground.Apply(player, source),
                         () => player.SetProgress(sunkRef.Current ? SunkProgress : RestoredProgress));

@@ -154,7 +154,7 @@ sealed class AnimatedDeleteButton : Component<AnimatedDeleteButtonProps>
             if (element is not AnimatedVisualPlayer player)
                 return;
 
-            var source = new Tonarink.DeleteIcon();
+            var source = new DeleteIcon();
             playback.Player = player;
             playback.Source = source;
             RefreshForeground(playback);
@@ -230,7 +230,7 @@ sealed class AnimatedDeleteButton : Component<AnimatedDeleteButtonProps>
     {
         public AnimatedVisualPlayer? Player { get; set; }
 
-        public Tonarink.DeleteIcon? Source { get; set; }
+        public DeleteIcon? Source { get; set; }
 
         public bool UseCriticalForeground { get; set; }
 

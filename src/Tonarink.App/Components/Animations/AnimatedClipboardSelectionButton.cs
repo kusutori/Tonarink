@@ -30,7 +30,7 @@ sealed class AnimatedClipboardSelectionButton : Component<AnimatedClipboardSelec
                         if (element is not AnimatedVisualPlayer player)
                             return;
 
-                        var source = new Tonarink.ClipboardPasteIcon();
+                        var source = new ClipboardPasteIcon();
                         AnimatedPlayerLifecycle.Mount(player, source,
                         () => AnimatedIconForeground.Apply(player, source),
                         () => player.SetProgress(0));

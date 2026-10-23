@@ -30,7 +30,7 @@ sealed class AnimatedQrCodeButton : Component<AnimatedQrCodeButtonProps>
                     if (element is not AnimatedVisualPlayer player)
                         return;
 
-                    var source = new Tonarink.QrRippleIcon();
+                    var source = new QrRippleIcon();
                     AnimatedPlayerLifecycle.Mount(player, source,
                         () => AnimatedIconForeground.Apply(player, source),
                         () => player.SetProgress(0));

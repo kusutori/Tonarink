@@ -30,7 +30,7 @@ sealed class AnimatedFileSelectionButton : Component<AnimatedFileSelectionButton
                         if (element is not AnimatedVisualPlayer player)
                             return;
 
-                        var source = new Tonarink.DocumentUnfoldIcon();
+                        var source = new DocumentUnfoldIcon();
                         AnimatedPlayerLifecycle.Mount(player, source,
                         () => AnimatedIconForeground.Apply(player, source),
                         () => player.SetProgress(0));

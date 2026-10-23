@@ -32,7 +32,7 @@ sealed class AnimatedOpenFolderButton : Component<AnimatedOpenFolderButtonProps>
                 if (element is not AnimatedVisualPlayer player)
                     return;
 
-                var source = new Tonarink.OpenFolderFlyIcon();
+                var source = new OpenFolderFlyIcon();
                 AnimatedPlayerLifecycle.Mount(player, source,
                         () => AnimatedIconForeground.Apply(player, source),
                         () => player.SetProgress(0));

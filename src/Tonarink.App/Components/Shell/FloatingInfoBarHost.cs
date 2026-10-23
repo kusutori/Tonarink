@@ -22,14 +22,12 @@ sealed class FloatingInfoBarHost : Component<FloatingInfoBarHostProps>
 
     public override Element Render()
     {
-        var reduceMotion = UseReducedMotion();
-
         return Border(Props.Content)
             .Margin(left: 24, top: 72, right: AppLayout.PageHeaderPaddingHorizontal)
             .MaxWidth(560)
             .HAlign(HorizontalAlignment.Right)
             .VAlign(VerticalAlignment.Top)
-            .IsHitTestVisible(true)
+            .IsHitTestVisible()
             .Transition(Transition.Exit(new FadeTransition()));
     }
 }

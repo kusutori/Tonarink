@@ -34,7 +34,7 @@ sealed class AnimatedAddButton : Component<AnimatedAddButtonProps>
                 if (element is not AnimatedVisualPlayer player)
                     return;
 
-                var source = new Tonarink.AddRippleIcon();
+                var source = new AddRippleIcon();
                 AnimatedPlayerLifecycle.Mount(player, source,
                         () => AnimatedIconForeground.Apply(player, source),
                         () => player.SetProgress(0));

@@ -30,7 +30,7 @@ sealed class AnimatedDisplayZoomButton : Component<AnimatedDisplayZoomButtonProp
                     if (element is not AnimatedVisualPlayer player)
                         return;
 
-                    var source = new Tonarink.DisplayZoomIcon();
+                    var source = new DisplayZoomIcon();
                     AnimatedPlayerLifecycle.Mount(player, source,
                         () => AnimatedIconForeground.Apply(player, source),
                         () => player.SetProgress(0));
