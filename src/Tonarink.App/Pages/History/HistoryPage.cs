@@ -154,40 +154,24 @@ sealed class HistoryPage : Component<HistoryPageProps>
                                 .LiveRegion()
                             : null,
                         list.Flex(grow: 1, basis: 0),
-                        (ContentDialog(
-                                t.Message(new("App", "HistoryDeleteAllConfirm")),
-                                TextBlock(t.Message(new("App", "HistoryDeleteAllConfirmMessage")))
-                                    .TextWrapping(TextWrapping.WrapWholeWords),
-                                primaryButtonText: t.Message(new("App", "HistoryDeleteAll"))) with
+                        Component<ClearHistoryDialog, ClearHistoryDialogProps>(new(
+                            confirmClear,
+                            Props.Theme,
+                            () =>
                             {
-                                IsOpen = confirmClear,
-                                SecondaryButtonText = t.Message(new("App", "Cancel")),
-                                DefaultButton = ContentDialogButton.Primary,
-                                OnClosed = result =>
-                                {
-                                    if (result == ContentDialogResult.Primary)
-                                    {
-                                        history.Clear();
-                                        setDeleteShakeVersion(deleteShakeVersion + 1);
-                                    }
-
-                                    setConfirmClear(false);
-                                },
-                            }).Themed(Props.Theme),
-                        (ContentDialog(
-                                t.Message(new("App", "HistoryInfoTitle")),
-                                infoEntry is null ? Empty() : HistoryInfoBody(infoEntry, t),
-                                primaryButtonText: t.Message(new("App", "Close"))) with
+                                history.Clear();
+                                setDeleteShakeVersion(deleteShakeVersion + 1);
+                            },
+                            () => setConfirmClear(false))),
+                        Component<HistoryInfoDialog, HistoryInfoDialogProps>(new(
+                            infoEntry,
+                            Props.Theme,
+                            () =>
                             {
-                                IsOpen = infoEntry is not null,
-                                DefaultButton = ContentDialogButton.Primary,
-                                OnClosed = _ =>
-                                {
-                                    setInfoEntry(null);
-                                    if (Props.NavigationHistoryId is { } historyId)
-                                        Props.ConsumeNavigationHistory(historyId);
-                                },
-                            }).Themed(Props.Theme)) with
+                                setInfoEntry(null);
+                                if (Props.NavigationHistoryId is { } historyId)
+                                    Props.ConsumeNavigationHistory(historyId);
+                            }))) with
                     {
                         RowGap = 20
                     })
@@ -262,23 +246,6 @@ sealed class HistoryPage : Component<HistoryPageProps>
             .WithBorder(Theme.CardStroke)
             .WithContextFlyout(MenuItems(EntryMenuItems()));
     }
-
-    private static Element HistoryInfoBody(
-        ReceiveHistoryEntry entry,
-        IntlAccessor t) =>
-        VStack(12,
-            HistoryInfoRow(t.Message(new("App", "HistoryInfoFileName")), entry.FileName),
-            HistoryInfoRow(t.Message(new("App", "HistoryInfoPath")), entry.Path),
-            HistoryInfoRow(t.Message(new("App", "HistoryInfoSize")), FormatBytes(entry.Size)),
-            HistoryInfoRow(t.Message(new("App", "HistoryInfoSender")), entry.SenderAlias),
-            HistoryInfoRow(
-                t.Message(new("App", "HistoryInfoTime")),
-                entry.ReceivedAt.ToLocalTime().ToString("F")));
-
-    private static Element HistoryInfoRow(string label, string value) =>
-        VStack(4,
-            Caption(label).Foreground(Theme.SecondaryText),
-            TextBlock(value).TextWrapping(TextWrapping.WrapWholeWords));
 
     private static string HistoryIcon(string path) =>
         FileTypeGlyphs.ForPath(path);

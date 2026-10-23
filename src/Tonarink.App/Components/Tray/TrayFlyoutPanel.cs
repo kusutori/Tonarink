@@ -484,48 +484,28 @@ sealed class TrayFlyoutPanel : Component<TrayFlyoutPanelProps>
                 columns: [GridSize.Star()],
                 rows: [GridSize.Star()],
                 content.Grid(row: 0, column: 0),
-                PinDialog().Grid(row: 0, column: 0));
+                Component<TransferPinDialog, TransferPinDialogProps>(new(
+                        theme,
+                        pendingPin is not null,
+                        pendingPin?.Device.Alias ?? string.Empty,
+                        pin,
+                        setPin,
+                        pendingPin?.Error,
+                        ClosePinDialog))
+                    .Grid(row: 0, column: 0));
 
-            Element PinDialog()
+            void ClosePinDialog(ContentDialogResult result)
             {
-                var pending = pendingPin;
-                return (ContentDialog(
-                        t.Message(new("App", "PinRequiredTitle")),
-                        VStack(8,
-                            TextBlock(t.Message(
-                                    new("App", "PinRequiredMessage"),
-                                    ("device", pending?.Device.Alias ?? string.Empty)))
-                                .TextWrapping(TextWrapping.WrapWholeWords),
-                            PasswordBox(pin, setPin, placeholderText: t.Message(new("App", "PinPlaceholder")))
-                                .Header(t.Message(new("App", "Pin")))
-                                .AutomationName(t.Message(new("App", "Pin")))
-                                .Required()
-                                .MaxLength(32),
-                            pending?.Error is null
-                                ? null
-                                : TextBlock(pending.Error)
-                                    .Foreground(Theme.SystemCritical)
-                                    .LiveRegion(AutomationLiveSetting.Assertive)),
-                        primaryButtonText: t.Message(new("App", "PinConfirm"))) with
-                    {
-                        IsOpen = pending is not null,
-                        SecondaryButtonText = t.Message(new("App", "Cancel")),
-                        DefaultButton = ContentDialogButton.Primary,
-                        IsPrimaryButtonEnabled = !string.IsNullOrWhiteSpace(pin),
-                        OnClosed = result =>
-                        {
-                            var request = pendingPin;
-                            var submittedPin = pin.Trim();
-                            setPendingPin(null);
-                            setPin(string.Empty);
-                            if (result == ContentDialogResult.Primary
-                                && request is not null
-                                && submittedPin.Length > 0)
-                            {
-                                _ = SendPayloadAsync(request.Device, request.Payload, submittedPin);
-                            }
-                        },
-                    }).Themed(theme);
+                var request = pendingPin;
+                var submittedPin = pin.Trim();
+                setPendingPin(null);
+                setPin(string.Empty);
+                if (result == ContentDialogResult.Primary
+                    && request is not null
+                    && submittedPin.Length > 0)
+                {
+                    _ = SendPayloadAsync(request.Device, request.Payload, submittedPin);
+                }
             }
 
             async Task SendDroppedAsync(

@@ -220,16 +220,10 @@ sealed class NetworkSettingsSection : Component<NetworkSettingsSectionProps>
                 });
 
         return VStack(0, cards,
-            (ContentDialog(
-                    t.Message(new("App", "SettingsEncryptionDisabledTitle")),
-                    TextBlock(t.Message(new("App", "SettingsEncryptionDisabledNotice")))
-                        .TextWrapping(TextWrapping.WrapWholeWords),
-                    primaryButtonText: t.Message(new("App", "Close"))) with
-                {
-                    IsOpen = encryptionNoticeOpen,
-                    DefaultButton = ContentDialogButton.Close,
-                    OnClosed = _ => setEncryptionNoticeOpen(false),
-                }).Themed(AppTheme.ToElementTheme(Props.Settings.ThemeIndex)));
+            Component<EncryptionDisabledDialog, EncryptionDisabledDialogProps>(new(
+                encryptionNoticeOpen,
+                AppTheme.ToElementTheme(Props.Settings.ThemeIndex),
+                () => setEncryptionNoticeOpen(false))));
     }
 
     private static Element DeviceTypeOption(LocalSendDeviceType type, string label) =>

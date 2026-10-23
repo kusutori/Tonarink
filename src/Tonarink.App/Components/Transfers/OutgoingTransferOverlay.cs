@@ -144,54 +144,34 @@ sealed class OutgoingTransferOverlay : Component<OutgoingTransferOverlayProps>
                     Props.Theme,
                     showVerification,
                     () => setShowVerification(false))),
-                PinDialog())
+                Component<TransferPinDialog, TransferPinDialogProps>(new(
+                    Props.Theme,
+                    connectedAnimationReady && transfer.PinPrompt is not null,
+                    transfer.Receiver.Alias,
+                    pin,
+                    setPin,
+                    transfer.PinPrompt?.Error,
+                    ClosePinDialog)))
             .Transition(new FadeTransition())
             .FocusTrap(focusTrap)
             .AutomationName(t.Message(new("App", "SendingTitle")))
             .Landmark(AutomationLandmarkType.Main);
 
-        Element PinDialog()
+        void ClosePinDialog(ContentDialogResult result)
         {
+            var submittedPin = pin.Trim();
+            setPin(string.Empty);
             var prompt = transfer.PinPrompt;
-            return (ContentDialog(
-                    t.Message(new("App", "PinRequiredTitle")),
-                    VStack(8,
-                        TextBlock(t.Message(
-                                new("App", "PinRequiredMessage"),
-                                ("device", transfer.Receiver.Alias)))
-                            .TextWrapping(TextWrapping.WrapWholeWords),
-                        PasswordBox(pin, setPin, placeholderText: t.Message(new("App", "PinPlaceholder")))
-                            .Header(t.Message(new("App", "Pin")))
-                            .AutomationName(t.Message(new("App", "Pin")))
-                            .Required()
-                            .MaxLength(32),
-                        prompt?.Error is null
-                            ? null
-                            : TextBlock(prompt.Error)
-                                .Foreground(Theme.SystemCritical)
-                                .LiveRegion(AutomationLiveSetting.Assertive)),
-                    primaryButtonText: t.Message(new("App", "PinConfirm"))) with
-                {
-                    IsOpen = connectedAnimationReady && prompt is not null,
-                    SecondaryButtonText = t.Message(new("App", "Cancel")),
-                    DefaultButton = ContentDialogButton.Primary,
-                    IsPrimaryButtonEnabled = !string.IsNullOrWhiteSpace(pin),
-                    OnClosed = result =>
-                    {
-                        var submittedPin = pin.Trim();
-                        setPin(string.Empty);
-                        if (prompt is null)
-                            return;
+            if (prompt is null)
+                return;
 
-                        if (result == ContentDialogResult.Primary && submittedPin.Length > 0)
-                            prompt.Submit(submittedPin);
-                        else
-                        {
-                            prompt.Cancel();
-                            CloseOverlay();
-                        }
-                    },
-                }).Themed(Props.Theme);
+            if (result == ContentDialogResult.Primary && submittedPin.Length > 0)
+                prompt.Submit(submittedPin);
+            else
+            {
+                prompt.Cancel();
+                CloseOverlay();
+            }
         }
 
         void CloseOverlay()
