@@ -384,6 +384,8 @@
   <data name="SettingsExplorerFavorites" xml:space="preserve"><value>在子菜单中显示收藏设备</value></data>
   <data name="SettingsExplorerFavoritesDescription" xml:space="preserve"><value>选择收藏设备直接发送，关闭后仅将所选文件加入发送列表</value></data>
   <data name="ExplorerCommandAddToList" xml:space="preserve"><value>添加到发送列表</value></data>
+  <data name="SettingsJumpList" xml:space="preserve"><value>任务栏跳转列表</value></data>
+  <data name="SettingsJumpListDescription" xml:space="preserve"><value>在任务栏右键菜单中显示收藏设备和接收历史，仅限 MSIX 安装版</value></data>
   <data name="SettingsSendTo" xml:space="preserve"><value>文件资源管理器“发送到”菜单</value></data>
   <data name="SettingsSendToDescription" xml:space="preserve"><value>在“发送到”菜单中添加 Tonarink，将所选文件加入发送列表，仅限未打包版</value></data>
   <data name="SettingsSendToFailed" xml:space="preserve"><value>无法更新“发送到”菜单：{error}</value></data>

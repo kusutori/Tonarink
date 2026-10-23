@@ -195,7 +195,7 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
             token => AppNavigationDialogs.PrepareAsync(window?.NativeWindow.Content?.XamlRoot,
                 t.Message(new("App", "FavoritesTitle")), t.Message(new("App", "HistoryInfoTitle")), token),
             canPresentDialogs: !Props.IsSplashVisible);
-        context.UseJumpListIntegration(t, Props.Locale);
+        context.UseJumpListIntegration(t, Props.Locale, settings.ShowJumpList);
 
         TrayFlyoutStore.Restore = windowController.Restore;
         TrayFlyoutStore.StartServer = nodeSession.StartOrRestart;

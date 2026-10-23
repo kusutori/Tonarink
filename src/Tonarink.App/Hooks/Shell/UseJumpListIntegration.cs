@@ -6,10 +6,12 @@ namespace Tonarink.Hooks.Shell;
 
 static class JumpListHooks
 {
-    public static void UseJumpListIntegration(this RenderContext context, IntlAccessor t, string locale)
+    public static void UseJumpListIntegration(this RenderContext context, IntlAccessor t, string locale,
+        bool isEnabled)
     {
         context.UseEffect(() =>
         {
+            JumpListService.SetEnabled(isEnabled);
             var labels = new JumpListLabels(
                 t.Message(new("App", "JumpListFavoriteDevicesGroup")),
                 t.Message(new("App", "JumpListHistoryGroup")),
@@ -18,14 +20,17 @@ static class JumpListHooks
 
             void Refresh() => _ = JumpListService.RefreshAsync(labels);
 
-            FavoriteDeviceStore.Changed += Refresh;
-            ReceiveHistoryStore.Changed += Refresh;
+            if (isEnabled)
+            {
+                FavoriteDeviceStore.Changed += Refresh;
+                ReceiveHistoryStore.Changed += Refresh;
+            }
             Refresh();
             return () =>
             {
                 FavoriteDeviceStore.Changed -= Refresh;
                 ReceiveHistoryStore.Changed -= Refresh;
             };
-        }, locale);
+        }, locale, isEnabled);
     }
 }

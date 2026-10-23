@@ -380,6 +380,8 @@
   <data name="SettingsExplorerFavorites" xml:space="preserve"><value>Mostrar dispositivos favoritos en el submenú</value></data>
   <data name="SettingsExplorerFavoritesDescription" xml:space="preserve"><value>Elegir un favorito para enviar directamente; si está desactivado, solo añadir archivos a la lista</value></data>
   <data name="ExplorerCommandAddToList" xml:space="preserve"><value>Añadir a la lista de envío</value></data>
+  <data name="SettingsJumpList" xml:space="preserve"><value>Lista de accesos de la barra de tareas</value></data>
+  <data name="SettingsJumpListDescription" xml:space="preserve"><value>Mostrar dispositivos favoritos y el historial de recepciones en el menú contextual de la barra de tareas; solo en la versión MSIX</value></data>
   <data name="SettingsSendTo" xml:space="preserve"><value>Menú Enviar a del Explorador</value></data>
   <data name="SettingsSendToDescription" xml:space="preserve"><value>Añadir Tonarink a Enviar a para añadir los archivos seleccionados a la lista; solo versiones sin empaquetar</value></data>
   <data name="SettingsSendToFailed" xml:space="preserve"><value>No se pudo actualizar el menú Enviar a: {error}</value></data>

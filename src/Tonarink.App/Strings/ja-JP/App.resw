@@ -380,6 +380,8 @@
   <data name="SettingsExplorerFavorites" xml:space="preserve"><value>サブメニューにお気に入りを表示</value></data>
   <data name="SettingsExplorerFavoritesDescription" xml:space="preserve"><value>お気に入りを選んで直接送信 · オフの場合は送信リストに追加のみ</value></data>
   <data name="ExplorerCommandAddToList" xml:space="preserve"><value>送信リストに追加</value></data>
+  <data name="SettingsJumpList" xml:space="preserve"><value>タスクバーのジャンプリスト</value></data>
+  <data name="SettingsJumpListDescription" xml:space="preserve"><value>タスクバーの右クリックメニューにお気に入りのデバイスと受信履歴を表示 · MSIX インストール版のみ</value></data>
   <data name="SettingsSendTo" xml:space="preserve"><value>エクスプローラーの「送る」メニュー</value></data>
   <data name="SettingsSendToDescription" xml:space="preserve"><value>「送る」に Tonarink を追加し、選択したファイルを送信リストへ追加 · 非パッケージ版のみ</value></data>
   <data name="SettingsSendToFailed" xml:space="preserve"><value>「送る」メニューを更新できませんでした: {error}</value></data>

@@ -55,6 +55,7 @@ sealed record AppSettings(
     // An explicit empty list means the user removed every tool.
     public IReadOnlyList<FilePreviewProvider>? PreviewProviders { get; init; }
     public bool ShowInSendToMenu { get; init; }
+    public bool ShowJumpList { get; init; } = true;
     public bool ShowFavoriteDevicesInExplorerMenu { get; init; }
     public bool AutoReturnAfterReceive { get; init; }
     public bool ShowReceiveBadge { get; init; } = true;

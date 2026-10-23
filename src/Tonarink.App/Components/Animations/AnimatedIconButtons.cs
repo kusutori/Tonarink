@@ -18,6 +18,9 @@ public static class AnimatedButtons
     public static Element SettingsTopNavigationIcon(bool isOn, double iconSize = 24) =>
         AnimatedSettingsToggleIcon.Create(SettingsToggleIconKind.TopNavigation, isOn, iconSize);
 
+    public static Element SettingsJumpListIcon(bool isOn, double iconSize = 24) =>
+        AnimatedSettingsToggleIcon.Create(SettingsToggleIconKind.JumpList, isOn, iconSize);
+
     public static Element SettingsSendToIcon(bool isOn, double iconSize = 24) =>
         AnimatedSettingsToggleIcon.Create(SettingsToggleIconKind.SendTo,
             isOn ? "Selected" : "Normal", iconSize);

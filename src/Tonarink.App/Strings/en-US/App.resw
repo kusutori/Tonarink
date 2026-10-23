@@ -384,6 +384,8 @@
   <data name="SettingsExplorerFavorites" xml:space="preserve"><value>Show favorite devices in the submenu</value></data>
   <data name="SettingsExplorerFavoritesDescription" xml:space="preserve"><value>Select a favorite to send directly; when off, selected files are only added to the send list</value></data>
   <data name="ExplorerCommandAddToList" xml:space="preserve"><value>Add to send list</value></data>
+  <data name="SettingsJumpList" xml:space="preserve"><value>Taskbar jump list</value></data>
+  <data name="SettingsJumpListDescription" xml:space="preserve"><value>Show favorite devices and receive history in the taskbar context menu; requires the MSIX app</value></data>
   <data name="SettingsSendTo" xml:space="preserve"><value>File Explorer Send to menu</value></data>
   <data name="SettingsSendToDescription" xml:space="preserve"><value>Add Tonarink to Send to and add selected files to the send list; unpackaged builds only</value></data>
   <data name="SettingsSendToFailed" xml:space="preserve"><value>Could not update the Send to menu: {error}</value></data>

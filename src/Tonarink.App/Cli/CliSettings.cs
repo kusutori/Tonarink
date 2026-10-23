@@ -27,6 +27,7 @@ static class CliSettings
         new("multicast", s.MulticastGroup), new("network-allowlist", string.Join(',', s.NetworkWhitelist ?? [])),
         new("network-blocklist", string.Join(',', s.NetworkBlacklist ?? [])), Flag("explorer-menu", s.ShowExplorerContextMenu),
         Flag("send-to-menu", s.ShowInSendToMenu),
+        Flag("jump-list", s.ShowJumpList),
         Flag("explorer-favorites", s.ShowFavoriteDevicesInExplorerMenu),
     ];
 
@@ -72,6 +73,7 @@ static class CliSettings
             "network-blocklist" => s with { NetworkBlacklist = string.IsNullOrWhiteSpace(value) ? null : Csv(value), NetworkWhitelist = null },
             "explorer-menu" => s with { ShowExplorerContextMenu = Boolean(value) },
             "send-to-menu" => s with { ShowInSendToMenu = Boolean(value) },
+            "jump-list" => s with { ShowJumpList = Boolean(value) },
             "explorer-favorites" => s with { ShowFavoriteDevicesInExplorerMenu = Boolean(value) },
             _ => throw new CliException(CliText.Get("Unknown settings key: {0}. Run tonarink settings list.", key)),
         };

@@ -19,6 +19,9 @@ static class JumpListService
     private static readonly SemaphoreSlim UpdateGate = new(1, 1);
     private static readonly Lock RemovedItemsGate = new();
     private static HashSet<string>? _removedItems;
+    private static volatile bool _enabled = true;
+
+    public static void SetEnabled(bool enabled) => _enabled = enabled;
 
     public static async Task RefreshAsync(JumpListLabels labels)
     {
@@ -32,6 +35,14 @@ static class JumpListService
             RememberRemovedItems(jumpList.Items.Where(static item => item.RemovedByUser));
             jumpList.SystemGroupKind = JumpListSystemGroupKind.None;
             jumpList.Items.Clear();
+
+            // Read the current preference inside the update gate: refreshes queued
+            // before disabling must not repopulate the list after it is cleared.
+            if (!_enabled)
+            {
+                await jumpList.SaveAsync();
+                return;
+            }
 
             var favoriteCount = 0;
             foreach (var favorite in FavoriteDeviceStore.Entries.Values

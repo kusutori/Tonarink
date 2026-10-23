@@ -28,6 +28,7 @@ enum SettingsToggleIconKind
     ReceiveBadge,
     TopNavigation,
     SendTo,
+    JumpList,
 }
 
 static class AnimatedSettingsToggleIcon
@@ -73,6 +74,7 @@ static class AnimatedSettingsToggleIcon
                         SettingsToggleIconKind.ReceiveBadge => AppIcons.Badge,
                         SettingsToggleIconKind.TopNavigation => AppIcons.TopNavigation,
                         SettingsToggleIconKind.SendTo => AppIcons.Send,
+                        SettingsToggleIconKind.JumpList => AppIcons.JumpList,
                     },
                 };
 
@@ -101,5 +103,6 @@ static class AnimatedSettingsToggleIcon
         SettingsToggleIconKind.ReceiveBadge => new Tonarink.SettingsReceiveBadgeToggleIcon(),
         SettingsToggleIconKind.TopNavigation => new Tonarink.SettingsTopNavigationToggleIcon(),
         SettingsToggleIconKind.SendTo => new Tonarink.NavigationSendIcon(),
+        SettingsToggleIconKind.JumpList => new Tonarink.SettingsJumpListToggleIcon(),
     };
 }

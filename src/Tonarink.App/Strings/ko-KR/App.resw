@@ -380,6 +380,8 @@
   <data name="SettingsExplorerFavorites" xml:space="preserve"><value>하위 메뉴에 즐겨찾는 기기 표시</value></data>
   <data name="SettingsExplorerFavoritesDescription" xml:space="preserve"><value>즐겨찾기를 선택하여 바로 전송하며 끄면 전송 목록에만 추가</value></data>
   <data name="ExplorerCommandAddToList" xml:space="preserve"><value>전송 목록에 추가</value></data>
+  <data name="SettingsJumpList" xml:space="preserve"><value>작업 표시줄 점프 목록</value></data>
+  <data name="SettingsJumpListDescription" xml:space="preserve"><value>작업 표시줄의 오른쪽 클릭 메뉴에 즐겨찾는 기기와 수신 기록 표시 · MSIX 설치 버전 전용</value></data>
   <data name="SettingsSendTo" xml:space="preserve"><value>파일 탐색기 보내기 메뉴</value></data>
   <data name="SettingsSendToDescription" xml:space="preserve"><value>보내기 메뉴에 Tonarink를 추가하여 선택한 파일을 전송 목록에 추가. 비패키지 버전에서만 사용 가능</value></data>
   <data name="SettingsSendToFailed" xml:space="preserve"><value>보내기 메뉴를 업데이트하지 못했습니다: {error}</value></data>

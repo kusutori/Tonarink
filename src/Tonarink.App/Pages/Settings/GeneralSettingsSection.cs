@@ -205,6 +205,20 @@ sealed class GeneralSettingsSection : Component<GeneralSettingsSectionProps>
                 Header = t.Message(new("App", "SettingsNotifications")),
                 Description = t.Message(new("App", "SettingsNotificationsDescription")),
             },
+            SettingsCard(
+                header: t.Message(new("App", "SettingsJumpList")),
+                description: t.Message(new("App", "SettingsJumpListDescription")),
+                headerIcon: AnimatedButtons.SettingsJumpListIcon(Props.Settings.ShowJumpList)
+                    .WithKey("settings-jump-list-icon"),
+                isClickEnabled: false,
+                isActionIconVisible: false,
+                content:
+                ToggleSwitch(Props.Settings.ShowJumpList,
+                        value => Props.UpdateSettings(settings => settings with { ShowJumpList = value }))
+                    .AutomationName(t.Message(new("App", "SettingsJumpList")))
+                    .AutomationId("Settings.JumpList.Enabled")
+                    .HelpText(t.Message(new("App", "SettingsJumpListDescription")))
+                    .IsEnabled(AppPlatform.HasPackageIdentity())),
             SettingsExpander(
                         headerIcon: AnimatedButtons.SettingsContextMenuIcon(Props.Settings.ShowExplorerContextMenu)
                             .WithKey("settings-context-menu-icon"),

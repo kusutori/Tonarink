@@ -33,6 +33,7 @@ static class AppIcons
     public const string HistorySettings = "\uE81C";
     public const string Home = "\uE80F";
     public const string IpAddress = "\uF272";
+    public const string JumpList = "\uEADF";
     public const string Language = "\uF2B7";
     public const string Link = "\uE71B";
     public const string MinimizeToTray = "\uF2AE";
