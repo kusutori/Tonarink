@@ -40,11 +40,11 @@ sealed class HistoryFileTypePicker : Component<HistoryFileTypePickerProps>
                     tokenDelimiter: string.Empty,
                     maximumTokens: state.Options.Length,
                     placeholderText: t.Message(new("App", "HistoryFilterTypeAll"))) with
-                {
-                    OnTokenItemAdding = state.ValidateToken,
-                    OnTokenItemAdded = _ => state.SelectionChanged(),
-                    OnTokenItemRemoved = _ => state.SelectionChanged(),
-                })
+        {
+            OnTokenItemAdding = state.ValidateToken,
+            OnTokenItemAdded = _ => state.SelectionChanged(),
+            OnTokenItemRemoved = _ => state.SelectionChanged(),
+        })
             .AutomationName(t.Message(new("App", "HistoryFilterFileType")))
             .AutomationId("History.Filter.FileType")
             .MinWidth(0)

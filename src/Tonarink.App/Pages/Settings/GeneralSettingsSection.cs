@@ -123,10 +123,10 @@ sealed class GeneralSettingsSection : Component<GeneralSettingsSectionProps>
                                     .MinWidth(180)),
                         ])
                     .AutomationId("Settings.Tray.Expander") with
-                {
-                    Header = t.Message(new("App", "SettingsMinimizeToTray")),
-                    Description = t.Message(new("App", "SettingsMinimizeToTrayDescription")),
-                },
+            {
+                Header = t.Message(new("App", "SettingsMinimizeToTray")),
+                Description = t.Message(new("App", "SettingsMinimizeToTrayDescription")),
+            },
             SettingsCard(
                 header: t.Message(new("App", "SettingsStartWithWindows")),
                 description: t.Message(new("App", "SettingsStartWithWindowsDescription")),
@@ -200,10 +200,10 @@ sealed class GeneralSettingsSection : Component<GeneralSettingsSectionProps>
                                     .IsEnabled(Props.Settings.NotificationsEnabled)),
                         ])
                     .AutomationId("Settings.Notifications.Expander") with
-                {
-                    Header = t.Message(new("App", "SettingsNotifications")),
-                    Description = t.Message(new("App", "SettingsNotificationsDescription")),
-                },
+            {
+                Header = t.Message(new("App", "SettingsNotifications")),
+                Description = t.Message(new("App", "SettingsNotificationsDescription")),
+            },
             SettingsExpander(
                         headerIcon: AnimatedButtons.SettingsContextMenuIcon(Props.Settings.ShowExplorerContextMenu)
                             .WithKey("settings-context-menu-icon"),
@@ -231,10 +231,10 @@ sealed class GeneralSettingsSection : Component<GeneralSettingsSectionProps>
                                                Props.Settings.ShowExplorerContextMenu)),
                         ])
                     .AutomationId("Settings.Explorer.Expander") with
-                {
-                    Header = t.Message(new("App", "SettingsExplorerContextMenu")),
-                    Description = t.Message(new("App", "SettingsExplorerContextMenuDescription")),
-                },
+            {
+                Header = t.Message(new("App", "SettingsExplorerContextMenu")),
+                Description = t.Message(new("App", "SettingsExplorerContextMenuDescription")),
+            },
             SettingsCard(
                 header: t.Message(new("App", "SettingsSendTo")),
                 description: t.Message(new("App", "SettingsSendToDescription")),

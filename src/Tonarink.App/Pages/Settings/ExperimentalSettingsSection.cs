@@ -113,10 +113,10 @@ sealed class ExperimentalSettingsSection : Component<ExperimentalSettingsSection
                                     .WithKey($"preview-provider-{provider}")),
                         ])
                     .AutomationId("Settings.Preview.Expander") with
-                {
-                    Header = t.Message(new("App", "SettingsFilePreview")),
-                    Description = t.Message(new("App", "SettingsFilePreviewDescription")),
-                });
+            {
+                Header = t.Message(new("App", "SettingsFilePreview")),
+                Description = t.Message(new("App", "SettingsFilePreviewDescription")),
+            });
 
         async Task OpenExecutionAliasSettingsAsync()
         {

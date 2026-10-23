@@ -8,8 +8,8 @@ using Microsoft.UI.Xaml.Controls;
 using static Microsoft.UI.Reactor.Factories;
 using static Tonarink.Components.Transfers.TransferOverlayVisuals;
 using static Tonarink.Pages.Send.SelectedSendItemOperations;
-using static Tonarink.Services.Devices.SendDeviceResolver;
 using static Tonarink.Pages.Send.SendPageVisuals;
+using static Tonarink.Services.Devices.SendDeviceResolver;
 
 namespace Tonarink.Pages.Send;
 
@@ -109,13 +109,13 @@ sealed class SendPage : Component<SendPageProps>
             {
                 _ = itemSelection.AddClipboardAsync();
             }) with
-            {
-                Label = t.Message(new("App", "Clipboard")),
-                Description = t.Message(
+        {
+            Label = t.Message(new("App", "Clipboard")),
+            Description = t.Message(
                     new("App", "ChooseItem"),
                     ("item", t.Message(new("App", "Clipboard")))),
-                DebounceMs = 250,
-            });
+            DebounceMs = 250,
+        });
 
         var selectionGrid = Grid(
                 columns:
@@ -155,9 +155,9 @@ sealed class SendPage : Component<SendPageProps>
                         () => pasteCommand.Execute?.Invoke(),
                         pasteCommand.IsEnabled)
                     .Grid(column: 3)) with
-            {
-                ColumnSpacing = 12,
-            };
+        {
+            ColumnSpacing = 12,
+        };
 
         Element selectedItemsCard = Component<SendItemsCard, SendItemsCardProps>(new(
                 selectedItems,
@@ -268,9 +268,9 @@ sealed class SendPage : Component<SendPageProps>
                             .HeadingLevel(AutomationHeadingLevel.Level2),
                         selectionGrid),
                     contentCards) with
-                {
-                    RowGap = 20,
-                })
+        {
+            RowGap = 20,
+        })
             .VAlign(isWideLayout ? VerticalAlignment.Stretch : VerticalAlignment.Top);
 
         var pageContainer = CommandHost(

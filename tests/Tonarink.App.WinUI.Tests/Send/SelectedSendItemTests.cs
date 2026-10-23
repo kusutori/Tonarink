@@ -1,11 +1,10 @@
-using Tonarink.Services.Transfers;
-using Tonarink.Models;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using LocalSendDotNet;
 using Microsoft.VisualStudio.TestTools.UnitTesting.AppContainer;
 using Tonarink.Pages.Send;
+using Tonarink.Services.Transfers;
 using Tonarink.TestSupport;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage;

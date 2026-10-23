@@ -118,10 +118,10 @@ sealed class ReceiveSettingsSection : Component<ReceiveSettingsSectionProps>
                                     .IsEnabled(Props.Settings.ReceivePinEnabled)),
                         ])
                     .AutomationId("Settings.Pin.Expander") with
-                {
-                    Header = t.Message(new("App", "SettingsReceivePinProtection")),
-                    Description = t.Message(new("App", "SettingsReceivePinProtectionDescription")),
-                });
+            {
+                Header = t.Message(new("App", "SettingsReceivePinProtection")),
+                Description = t.Message(new("App", "SettingsReceivePinProtectionDescription")),
+            });
 
         async Task PickDownloadDirectoryAsync()
         {

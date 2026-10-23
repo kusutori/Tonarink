@@ -52,10 +52,10 @@ sealed class SettingsPage : Component<SettingsPageProps>
                             (InfoBar(
                                     t.Message(new("App", "NodeDiscoveryLimited")),
                                     Props.Runtime.DiscoveryWarning) with
-                                {
-                                    IsOpen = true,
-                                    IsClosable = false,
-                                }).Severity(InfoBarSeverity.Warning)))
+                            {
+                                IsOpen = true,
+                                IsClosable = false,
+                            }).Severity(InfoBarSeverity.Warning)))
                         .WithKey("settings-discovery-warning"));
         UseEffect(
             () => floatingInfo.Invalidate(),

@@ -1,7 +1,7 @@
-using Tonarink.Services.Devices;
 using System.Net;
 using System.Net.Sockets;
 using LocalSendDotNet;
+using Tonarink.Services.Devices;
 using Tonarink.TestSupport;
 
 namespace Tonarink.App.WinUI.Tests;

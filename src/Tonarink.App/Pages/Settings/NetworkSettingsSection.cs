@@ -215,10 +215,10 @@ sealed class NetworkSettingsSection : Component<NetworkSettingsSectionProps>
                                     .MinWidth(180)),
                         ])
                     .AutomationId("Settings.Advanced.Expander") with
-                {
-                    Header = t.Message(new("App", "SettingsAdvanced")),
-                    Description = t.Message(new("App", "SettingsAdvancedDescription")),
-                });
+            {
+                Header = t.Message(new("App", "SettingsAdvanced")),
+                Description = t.Message(new("App", "SettingsAdvancedDescription")),
+            });
 
         return VStack(0, cards,
             (ContentDialog(
