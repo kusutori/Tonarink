@@ -1,9 +1,8 @@
 using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Core;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media;
 using static Microsoft.UI.Reactor.Factories;
-using XamlAnimatedIcon = Microsoft.UI.Xaml.Controls.AnimatedIcon;
+using XamlAnimatedVisualPlayer = Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer;
 
 namespace Tonarink.Components.Animations;
 
@@ -14,17 +13,14 @@ sealed class AnimatedShuffleSplitButton : Component<AnimatedShuffleSplitButtonPr
     public override Element Render()
     {
         var reduceMotion = UseReducedMotion();
-        var alternate = UseRef(false);
+        var animationVersion = UseRef(0);
+        var source = UseMemo(() => new ShufflePinIcon());
         // SplitButton currently exposes only a string Label, not an Element
-        // content slot. Keep one native AnimatedIcon for this unwrapped slot.
-        var icon = UseMemo(() => new XamlAnimatedIcon
+        // content slot. Keep one player for this unwrapped slot, just as the
+        // other click-triggered icons do, without relying on template states.
+        var player = UseMemo(() => new XamlAnimatedVisualPlayer
         {
-            Source = new ShufflePinIcon(),
-            FallbackIconSource = new FontIconSource
-            {
-                FontFamily = new FontFamily("Segoe Fluent Icons, Segoe MDL2 Assets"),
-                Glyph = AppIcons.Shuffle,
-            },
+            AutoPlay = false,
             Width = 20,
             Height = 20,
             IsHitTestVisible = false,
@@ -34,18 +30,43 @@ sealed class AnimatedShuffleSplitButton : Component<AnimatedShuffleSplitButtonPr
             {
                 if (!reduceMotion)
                 {
-                    alternate.Current = !alternate.Current;
-                    XamlAnimatedIcon.SetState(icon, alternate.Current ? "Shuffled" : "Normal");
+                    var version = ++animationVersion.Current;
+                    player.Stop();
+                    player.SetProgress(0);
+                    _ = PlayAndSettleAsync(version);
                 }
 
                 Props.OnClick();
-            }, Props.Flyout)
+            })
+            // Unlike the constructor Flyout slot, this modifier reconciles
+            // existing popup content in place while the slider is dragged.
+            .WithFlyout(Props.Flyout)
             .AutomationName(Props.AutomationName)
+            .AutomationId("WebShare.Pin.Shuffle")
             .ToolTip(Props.AutomationName)
             .Set(button =>
             {
-                if (!ReferenceEquals(button.Content, icon))
-                    button.Content = icon;
+                if (!ReferenceEquals(button.Content, player))
+                    button.Content = player;
+            })
+            .OnMountAdd(element =>
+            {
+                if (element is SplitButton button)
+                    AnimatedPlayerLifecycle.Mount(player, source,
+                        () => AnimatedIconForeground.Apply(player, source, button),
+                        () => player.SetProgress(0));
+            })
+            .OnUnmountAdd(_ =>
+            {
+                animationVersion.Current++;
+                AnimatedPlayerLifecycle.Unmount(player);
             });
+
+        async Task PlayAndSettleAsync(int version)
+        {
+            await player.PlayAsync(0, 1, looped: false);
+            if (version == animationVersion.Current)
+                player.SetProgress(0);
+        }
     }
 }

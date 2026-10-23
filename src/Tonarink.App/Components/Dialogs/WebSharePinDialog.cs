@@ -19,21 +19,29 @@ sealed class WebSharePinDialog : Component<WebSharePinDialogProps>
     public override Element Render()
     {
         var t = UseIntl();
-        var length = UseRef(6);
-        var setLength = UseMemo<Action<int>>(() => value => length.Current = value);
+        var (length, setLength) = UseState(6);
         var (draft, setDraft) = UseState("");
         UseEffect(() =>
         {
             if (Props.IsOpen)
-                setDraft(GeneratePin(length.Current));
+                setDraft(GeneratePin(length));
         }, Props.IsOpen);
 
-        // The flyout must remain stable while its slider changes. Keep the
-        // displayed length in that child, and read the latest value on shuffle.
-        var lengthOptions = UseMemo(() => ContentFlyout(
-            Component<WebSharePinLengthPicker, WebSharePinLengthPickerProps>(new(6, setLength)),
-            FlyoutPlacementMode.Bottom));
-        var regenerate = UseCallback(() => setDraft(GeneratePin(length.Current)));
+        var lengthLabel = t.Message(new("App", "WebSharePinLength"));
+        var lengthOptions = ContentFlyout(
+            VStack(12,
+                    HStack(8,
+                        BodyStrong(lengthLabel),
+                        BodyStrong(length.ToString(System.Globalization.CultureInfo.CurrentCulture))
+                            .AutomationId("WebShare.Pin.LengthValue")),
+                    Slider(length, 4, 16, value => setLength((int)Math.Round(value)))
+                        .StepFrequency(1)
+                        .SnapsTo(SliderSnapsTo.StepValues)
+                        .AutomationName(lengthLabel)
+                        .AutomationId("WebShare.Pin.Length"))
+                .Width(224),
+            FlyoutPlacementMode.Bottom);
+        var regenerate = UseCallback(() => setDraft(GeneratePin(length)), length);
 
         return (ContentDialog(
                 t.Message(new("App", "WebSharePinTitle")),
@@ -42,6 +50,7 @@ sealed class WebSharePinDialog : Component<WebSharePinDialogProps>
                     rows: [GridSize.Auto],
                     TextBox(draft, setDraft)
                         .AutomationName(t.Message(new("App", "WebSharePinTitle")))
+                        .AutomationId("WebShare.Pin.Input")
                         .Required()
                         .Grid(column: 0),
                     Component<AnimatedShuffleSplitButton, AnimatedShuffleSplitButtonProps>(new(
@@ -71,31 +80,5 @@ sealed class WebSharePinDialog : Component<WebSharePinDialogProps>
     {
         const string alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789";
         return RandomNumberGenerator.GetString(alphabet, length);
-    }
-}
-
-sealed record WebSharePinLengthPickerProps(int InitialLength, Action<int> Changed);
-
-sealed class WebSharePinLengthPicker : Component<WebSharePinLengthPickerProps>
-{
-    public override Element Render()
-    {
-        var t = UseIntl();
-        var (length, setLength) = UseState(Props.InitialLength);
-        var label = t.Message(new("App", "WebSharePinLength"));
-        return VStack(12,
-                BodyStrong(label),
-                TextBlock(length.ToString(System.Globalization.CultureInfo.CurrentCulture))
-                    .HAlign(HorizontalAlignment.Center),
-                Slider(length, 4, 16, value =>
-                    {
-                        var next = (int)Math.Round(value);
-                        setLength(next);
-                        Props.Changed(next);
-                    })
-                    .StepFrequency(1)
-                    .SnapsTo(SliderSnapsTo.StepValues)
-                    .AutomationName(label))
-            .Width(224);
     }
 }

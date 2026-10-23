@@ -55,11 +55,12 @@ def position(delay, direction):
     for frame, value in enumerate(samples):
         key = dict(t=frame, s=value)
         if frame < 27:
-            key.update(e=samples[frame + 1],
-                       o=dict(x=0, y=0), i=dict(x=1, y=1))
             # Both poses are outside the canvas: never tween the wrap across it.
             if frame == delay + 8:
                 key["h"] = 1
+            else:
+                key.update(e=samples[frame + 1],
+                           o=dict(x=[0], y=[0]), i=dict(x=[1], y=[1]))
         keys.append(key)
     return dict(a=1, k=keys)
 
