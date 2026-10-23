@@ -22,7 +22,8 @@ static class AppCommandActivation
             request: new([], Environment.CurrentDirectory, null), emit: (response, _) =>
             {
                 if (response.ExitCode != 0)
-                    AppDiagnostics.Report("Launch command failed", new CliException(response.Message ?? "Command failed", response.ExitCode));
+                    AppDiagnostics.Report("Launch command failed",
+                        new CliException(response.Message ?? "Command failed", response.ExitCode));
                 return ValueTask.CompletedTask;
             }, reportProgress: static _ => { });
         var parsed = model.Root.Parse(arguments);
@@ -30,16 +31,19 @@ static class AppCommandActivation
         if (!model.IsBusinessInvocation(parsed)) return;
         if (parsed.Errors.Count > 0)
         {
-            AppDiagnostics.Report("Invalid launch command", new CliException(string.Join('\n', parsed.Errors.Select(e => e.Message)), 2));
+            AppDiagnostics.Report("Invalid launch command",
+                new CliException(string.Join('\n', parsed.Errors.Select(e => e.Message))));
             return;
         }
+
         Pending.Enqueue(async () =>
         {
             using var language = CliText.UseLanguage(parsed.GetValue(model.Language));
             try
             {
                 using var cancellation = new CancellationTokenSource();
-                if (parsed.GetValue(model.Timeout) is { } seconds) cancellation.CancelAfter(TimeSpan.FromSeconds(seconds));
+                if (parsed.GetValue(model.Timeout) is { } seconds)
+                    cancellation.CancelAfter(TimeSpan.FromSeconds(seconds));
                 var exit = await parsed.InvokeAsync(new InvocationConfiguration
                 {
                     EnableDefaultExceptionHandler = false,
@@ -47,7 +51,8 @@ static class AppCommandActivation
                     Output = TextWriter.Null,
                     Error = TextWriter.Null
                 }, cancellation.Token).ConfigureAwait(false);
-                if (exit == 0 && model.IsQuit(parsed)) await runtime.QuitAsync(cancellation.Token).ConfigureAwait(false);
+                if (exit == 0 && model.IsQuit(parsed))
+                    await runtime.QuitAsync(cancellation.Token).ConfigureAwait(false);
             }
             catch (Exception exception) { AppDiagnostics.Report("Launch command failed", exception); }
         });

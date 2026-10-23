@@ -4,8 +4,6 @@ using Microsoft.UI.Reactor.Core;
 using Microsoft.UI.Reactor.Localization;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
-using Microsoft.UI.Xaml.Controls;
-using Tonarink.Components.Animations;
 using static Microsoft.UI.Reactor.Factories;
 using static Tonarink.Utilities.ByteSize;
 
@@ -83,9 +81,9 @@ static class IncomingFileCard
                         model.Expanded
                             ? ReceiveOptions(model).Grid(row: 1)
                             : VStack(8, CollapsedRows(model)).Grid(row: 1)) with
-                {
-                    RowSpacing = 12,
-                })
+                    {
+                        RowSpacing = 12,
+                    })
             .Width(model.Width)
             .HAlign(HorizontalAlignment.Center);
         if (model.Height is { } height)
@@ -96,7 +94,7 @@ static class IncomingFileCard
             .OnMountAdd(element =>
             {
                 model.SetFileCardElement(element);
-                if (!model.ReduceMotion && model.Animating)
+                if (model is { ReduceMotion: false, Animating: true })
                 {
                     DeviceConnectedAnimation.StartDestinationAfterLayout(
                         model.AnimationKey,
@@ -220,26 +218,29 @@ static class IncomingFileCard
     {
         var request = model.Request;
         var t = model.T;
-        return request.Items.Take(5).Select(item =>
-                Grid(
-                        columns: [GridSize.Star(), GridSize.Auto],
-                        rows: [GridSize.Auto],
-                        TextBlock(item.FileName)
-                            .TextTrimming(TextTrimming.CharacterEllipsis)
-                            .ToolTip(item.FileName)
-                            .Grid(column: 0),
-                        Caption(FormatBytes(item.Size))
-                            .Foreground(Theme.SecondaryText)
-                            .Grid(column: 1))
-                    .WithKey(item.Id))
-            .Cast<Element?>()
-            .Append(request.Items.Count > 5
+        return
+        [
+            .. request.Items.Take(5).Select(item =>
+                    Grid(
+                            columns: [GridSize.Star(), GridSize.Auto],
+                            rows: [GridSize.Auto],
+                            TextBlock(item.FileName)
+                                .TextTrimming(TextTrimming.CharacterEllipsis)
+                                .ToolTip(item.FileName)
+                                .Grid(column: 0),
+                            Caption(FormatBytes(item.Size))
+                                .Foreground(Theme.SecondaryText)
+                                .Grid(column: 1))
+                        .WithKey(item.Id))
+                .Cast<Element?>(),
+
+            request.Items.Count > 5
                 ? Caption(t.Message(
                         new("App", "MoreItems"),
                         ("count", request.Items.Count - 5)))
                     .Foreground(Theme.SecondaryText)
-                : null)
-            .ToArray<Element?>();
+                : null
+        ];
     }
 
     private static Element ReceiveOptions(IncomingFileCardModel model)
@@ -311,16 +312,16 @@ static class IncomingFileCard
                         static item => item.Id,
                         (item, index) => ReceiveItemRow(model, item)
                             .PositionInSet(index + 1, request.Items.Count)) with
-                {
-                    Spacing = 8,
-                })
-                    .Padding(left: 4, top: 4, right: 16, bottom: 4)
-                    .HAlign(HorizontalAlignment.Stretch)
-                    .VAlign(VerticalAlignment.Stretch)
-                    .Grid(row: 2)) with
-        {
-            RowSpacing = 12,
-        };
+                    {
+                        Spacing = 8,
+                    })
+                .Padding(left: 4, top: 4, right: 16, bottom: 4)
+                .HAlign(HorizontalAlignment.Stretch)
+                .VAlign(VerticalAlignment.Stretch)
+                .Grid(row: 2)) with
+            {
+                RowSpacing = 12,
+            };
     }
 
     private static Element ReceiveItemRow(IncomingFileCardModel model, IncomingItem item)
@@ -379,9 +380,9 @@ static class IncomingFileCard
                                         .HAlign(HorizontalAlignment.Stretch)
                                         .Grid(column: 1))
                                 with
-                            {
-                                ColumnSpacing = 12
-                            },
+                                {
+                                    ColumnSpacing = 12
+                                },
                             () => model.ToggleItem(item.Id))
                         .AutomationName(t.Message(
                             new("App", isSelected ? "DeselectIncomingFile" : "SelectIncomingFile"),

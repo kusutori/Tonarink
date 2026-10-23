@@ -7,13 +7,10 @@ using Microsoft.UI.Reactor.Localization;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
-using Windows.ApplicationModel.DataTransfer;
-using Windows.System;
 using static Microsoft.UI.Reactor.Factories;
 using static Tonarink.Components.Devices.DeviceVisuals;
 using static Tonarink.Components.Transfers.TransferOverlayVisuals;
 using static Tonarink.Utilities.ByteSize;
-using BasicConnectedAnimationConfiguration = Microsoft.UI.Xaml.Media.Animation.BasicConnectedAnimationConfiguration;
 
 namespace Tonarink.Components.Transfers;
 
@@ -79,7 +76,7 @@ sealed class OutgoingTransferOverlay : Component<OutgoingTransferOverlayProps>
         var status = VStack(12,
                 BodyLarge(OutgoingStatus(t, transfer.State))
                     .Foreground(transfer.IsError ? Theme.SystemCritical : Theme.PrimaryText)
-                    .LiveRegion(AutomationLiveSetting.Polite)
+                    .LiveRegion()
                     .HAlign(HorizontalAlignment.Center),
                 TextBlock(transfer.Status)
                     .Foreground(transfer.IsError ? Theme.SystemCritical : Theme.SecondaryText)
@@ -174,27 +171,27 @@ sealed class OutgoingTransferOverlay : Component<OutgoingTransferOverlayProps>
                                 .Foreground(Theme.SystemCritical)
                                 .LiveRegion(AutomationLiveSetting.Assertive)),
                     primaryButtonText: t.Message(new("App", "PinConfirm"))) with
-            {
-                IsOpen = connectedAnimationReady && prompt is not null,
-                SecondaryButtonText = t.Message(new("App", "Cancel")),
-                DefaultButton = ContentDialogButton.Primary,
-                IsPrimaryButtonEnabled = !string.IsNullOrWhiteSpace(pin),
-                OnClosed = result =>
                 {
-                    var submittedPin = pin.Trim();
-                    setPin(string.Empty);
-                    if (prompt is null)
-                        return;
-
-                    if (result == ContentDialogResult.Primary && submittedPin.Length > 0)
-                        prompt.Submit(submittedPin);
-                    else
+                    IsOpen = connectedAnimationReady && prompt is not null,
+                    SecondaryButtonText = t.Message(new("App", "Cancel")),
+                    DefaultButton = ContentDialogButton.Primary,
+                    IsPrimaryButtonEnabled = !string.IsNullOrWhiteSpace(pin),
+                    OnClosed = result =>
                     {
-                        prompt.Cancel();
-                        CloseOverlay();
-                    }
-                },
-            }).Themed(Props.Theme);
+                        var submittedPin = pin.Trim();
+                        setPin(string.Empty);
+                        if (prompt is null)
+                            return;
+
+                        if (result == ContentDialogResult.Primary && submittedPin.Length > 0)
+                            prompt.Submit(submittedPin);
+                        else
+                        {
+                            prompt.Cancel();
+                            CloseOverlay();
+                        }
+                    },
+                }).Themed(Props.Theme);
         }
 
         void CloseOverlay()

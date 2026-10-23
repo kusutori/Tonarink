@@ -112,11 +112,13 @@ static class ReceiveHistoryStore
     private sealed class PersistentSource : IReceiveHistoryStore
     {
         IReadOnlyList<ReceiveHistoryEntry> IReceiveHistoryStore.Entries => ReceiveHistoryStore.Entries;
+
         event Action? IReceiveHistoryStore.Changed
         {
             add => ReceiveHistoryStore.Changed += value;
             remove => ReceiveHistoryStore.Changed -= value;
         }
+
         void IReceiveHistoryStore.Remove(Guid id) => ReceiveHistoryStore.Remove(id);
         void IReceiveHistoryStore.Clear() => ReceiveHistoryStore.Clear();
     }

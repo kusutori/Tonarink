@@ -1,7 +1,6 @@
 using LocalSendDotNet;
 using Microsoft.UI.Reactor.Core;
 using Microsoft.UI.Reactor.Localization;
-using static Tonarink.Components.Transfers.TransferOverlayVisuals;
 using static Tonarink.Services.Transfers.TransferPresentation;
 
 namespace Tonarink.Pages.Send;

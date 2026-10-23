@@ -42,7 +42,8 @@ sealed record HistoryFilter(
     public ImmutableHashSet<FileTypeGlyphKind> FileTypes { get; init; } = [];
 
     public bool IsActive => Search.Length != 0 || FileTypes.Count != 0
-        || TimeRange != HistoryTimeRange.All || SortOrder != HistorySortOrder.Newest;
+                                               || TimeRange != HistoryTimeRange.All ||
+                                               SortOrder != HistorySortOrder.Newest;
 
     public bool IsValid => TimeRange != HistoryTimeRange.Custom
                            || From is null || To is null || From <= To;
@@ -72,8 +73,10 @@ sealed record HistoryFilter(
         {
             HistorySortOrder.Newest => matching.OrderByDescending(entry => entry.ReceivedAt),
             HistorySortOrder.Oldest => matching.OrderBy(entry => entry.ReceivedAt),
-            HistorySortOrder.NameAscending => matching.OrderBy(entry => entry.FileName, StringComparer.CurrentCultureIgnoreCase),
-            HistorySortOrder.NameDescending => matching.OrderByDescending(entry => entry.FileName, StringComparer.CurrentCultureIgnoreCase),
+            HistorySortOrder.NameAscending => matching.OrderBy(entry => entry.FileName,
+                StringComparer.CurrentCultureIgnoreCase),
+            HistorySortOrder.NameDescending => matching.OrderByDescending(entry => entry.FileName,
+                StringComparer.CurrentCultureIgnoreCase),
             HistorySortOrder.SizeAscending => matching.OrderBy(entry => entry.Size),
             HistorySortOrder.SizeDescending => matching.OrderByDescending(entry => entry.Size),
         };

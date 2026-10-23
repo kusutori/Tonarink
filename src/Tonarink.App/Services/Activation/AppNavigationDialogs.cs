@@ -10,14 +10,16 @@ static class AppNavigationDialogs
 {
     // WinUI permits one ContentDialog per XamlRoot. Finish the previous launch
     // dialog before navigating to another; never discard an unrelated editor.
-    public static async Task PrepareAsync(XamlRoot? root, string favoritesTitle, string historyTitle, CancellationToken token)
+    public static async Task PrepareAsync(XamlRoot? root, string favoritesTitle, string historyTitle,
+        CancellationToken token)
     {
         if (root is null) return;
         foreach (var popup in VisualTreeHelper.GetOpenPopupsForXamlRoot(root))
         {
             if (FindDialog(popup.Child) is not { } dialog) continue;
             if (dialog.Title is not string title || (title != favoritesTitle && title != historyTitle))
-                throw new CliException(CliText.Get("Close the current dialog before opening a device or history entry."), 4);
+                throw new CliException(
+                    CliText.Get("Close the current dialog before opening a device or history entry."), 4);
             var closed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             void OnClosed(ContentDialog sender, ContentDialogClosedEventArgs args) => closed.TrySetResult();
             dialog.Closed += OnClosed;
@@ -27,10 +29,12 @@ static class AppNavigationDialogs
                 await closed.Task.WaitAsync(token);
             }
             finally { dialog.Closed -= OnClosed; }
+
             // Let Reactor's ShowAsync continuation consume the old activation
             // and update its controlled IsOpen state before publishing the next.
             var settled = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-            if (ReactorApp.UIDispatcher is not { } dispatcher || !dispatcher.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low,
+            if (ReactorApp.UIDispatcher is not { } dispatcher || !dispatcher.TryEnqueue(
+                    Microsoft.UI.Dispatching.DispatcherQueuePriority.Low,
                     () => settled.TrySetResult()))
                 throw new CliException(CliText.Get("The app dispatcher is unavailable."), 3);
             await settled.Task.WaitAsync(token);
@@ -39,10 +43,17 @@ static class AppNavigationDialogs
 
     private static ContentDialog? FindDialog(DependencyObject? node)
     {
-        if (node is ContentDialog dialog) return dialog;
-        if (node is null) return null;
+        switch (node)
+        {
+            case ContentDialog dialog:
+                return dialog;
+            case null:
+                return null;
+        }
+
         for (var i = 0; i < VisualTreeHelper.GetChildrenCount(node); i++)
-            if (FindDialog(VisualTreeHelper.GetChild(node, i)) is { } found) return found;
+            if (FindDialog(VisualTreeHelper.GetChild(node, i)) is { } found)
+                return found;
         return null;
     }
 }

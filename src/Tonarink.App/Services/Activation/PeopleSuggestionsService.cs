@@ -13,6 +13,7 @@ static class PeopleSuggestionsService
     private const string WindowsSystemPackageFamilyName = "com.microsoft.windows.system";
     private const string ContactListName = AppIntegrationIds.PeopleContactListName;
     private static readonly SemaphoreSlim Gate = new(1, 1);
+
     private static readonly string SyncMarkerPath = Path.Combine(
         AppPlatform.DataDirectory,
         "people-suggestions.enabled");
@@ -57,7 +58,7 @@ static class PeopleSuggestionsService
             }
 
             Directory.CreateDirectory(AppPlatform.DataDirectory);
-            File.WriteAllText(SyncMarkerPath, account.Id);
+            await File.WriteAllTextAsync(SyncMarkerPath, account.Id, cancellationToken);
             var annotationCount = await ReplaceContactsAsync(
                     account,
                     favorites,
@@ -142,8 +143,11 @@ static class PeopleSuggestionsService
             {
                 ContactId = contact.Id,
                 SupportedOperations = ContactAnnotationOperations.Share,
+                ProviderProperties =
+                {
+                    ["Rank"] = rank--.ToString(CultureInfo.InvariantCulture)
+                }
             };
-            annotation.ProviderProperties["Rank"] = rank--.ToString(CultureInfo.InvariantCulture);
             if (!await annotationList.TrySaveAnnotationAsync(annotation))
                 throw new InvalidOperationException($"Windows rejected the share annotation for '{favorite.Name}'.");
             annotationCount++;

@@ -41,18 +41,17 @@ static class AppSettingsStore
                 detected = FilePreviewSettings.MigrateDetectedTools(loaded, paths.PowerToysPeek, paths.QuickLook,
                     clearDetectedPaths: stored?.FilePreviewPathsAreOverrides != true);
             }
+
             _cached = detected;
 
-            if (detected != loaded || stored?.FilePreviewPathsAreOverrides != true)
+            if (detected == loaded && stored?.FilePreviewPathsAreOverrides == true) return detected;
+            try
             {
-                try
-                {
-                    Write(detected);
-                }
-                catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
-                {
-                    AppDiagnostics.Report("Could not persist detected file preview tools", exception);
-                }
+                Write(detected);
+            }
+            catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+            {
+                AppDiagnostics.Report("Could not persist detected file preview tools", exception);
             }
 
             return detected;
@@ -75,12 +74,14 @@ static class AppSettingsStore
             Write(settings);
             _cached = settings;
         }
+
         Changed?.Invoke();
     }
 
     private static void Write(AppSettings settings)
     {
-        var json = JsonSerializer.Serialize(AppSettingsFile.FromSettings(settings), AppSettingsJsonContext.Default.AppSettingsFile);
+        var json = JsonSerializer.Serialize(AppSettingsFile.FromSettings(settings),
+            AppSettingsJsonContext.Default.AppSettingsFile);
         AtomicFile.WriteAllText(FilePath, json);
     }
 }
@@ -105,7 +106,9 @@ sealed class AppSettingsFile
     public bool? FilePreviewEnabled { get; set; }
     public string? FilePreviewProvider { get; set; }
     public string[]? FilePreviewProviders { get; set; }
+
     public bool? FilePreviewPathsAreOverrides { get; set; }
+
     // Kept only to migrate settings written before preview providers were introduced.
     public bool? PowerToysPeekPreviewEnabled { get; set; }
     public string? PowerToysPeekExecutablePath { get; set; }
@@ -198,14 +201,14 @@ sealed class AppSettingsFile
             TrayClickOpensFlyout = TrayClickOpensFlyout ?? defaults.TrayClickOpensFlyout,
             StartWithWindows = StartWithWindows ?? defaults.StartWithWindows,
             ShowFavoriteDevicesInWindowsShare = ShowFavoriteDevicesInWindowsShare
-                                               ?? defaults.ShowFavoriteDevicesInWindowsShare,
+                                                ?? defaults.ShowFavoriteDevicesInWindowsShare,
             NotificationsEnabled = NotificationsEnabled ?? defaults.NotificationsEnabled,
             NotificationDefaultAction = Enum.TryParse<NotificationDefaultAction>(
                 NotificationDefaultAction,
                 ignoreCase: true,
                 out var notificationDefaultAction)
-                    ? notificationDefaultAction
-                    : defaults.NotificationDefaultAction,
+                ? notificationDefaultAction
+                : defaults.NotificationDefaultAction,
             KeepItemsForMultipleReceivers = KeepItemsForMultipleReceivers ?? defaults.KeepItemsForMultipleReceivers,
             VerifyChecksumsOnSend = VerifyChecksumsOnSend ?? defaults.VerifyChecksumsOnSend,
             ExpandDragDropToEntireApp = ExpandDragDropToEntireApp ?? defaults.ExpandDragDropToEntireApp,
@@ -216,8 +219,8 @@ sealed class AppSettingsFile
                 FilePreviewProvider,
                 ignoreCase: true,
                 out var previewProvider)
-                    ? previewProvider
-                    : defaults.PreviewProvider,
+                ? previewProvider
+                : defaults.PreviewProvider,
             PreviewProviders = FilePreviewSettings.ParseProviders(FilePreviewProviders),
             PowerToysPeekExecutablePath = string.IsNullOrWhiteSpace(PowerToysPeekExecutablePath)
                 ? defaults.PowerToysPeekExecutablePath
@@ -249,7 +252,7 @@ sealed class AppSettingsFile
             ShowInSendToMenu = ShowInSendToMenu ?? defaults.ShowInSendToMenu,
             ShowJumpList = ShowJumpList ?? defaults.ShowJumpList,
             ShowFavoriteDevicesInExplorerMenu = ShowFavoriteDevicesInExplorerMenu
-                                               ?? defaults.ShowFavoriteDevicesInExplorerMenu,
+                                                ?? defaults.ShowFavoriteDevicesInExplorerMenu,
         };
     }
 

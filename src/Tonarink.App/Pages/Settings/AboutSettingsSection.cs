@@ -7,8 +7,6 @@ using static Microsoft.UI.Reactor.Factories;
 using static Tonarink.Controls.SettingsCardElement;
 using static Tonarink.Controls.SettingsExpanderElement;
 
-using static Tonarink.Pages.Settings.SettingsSectionVisuals;
-
 namespace Tonarink.Pages.Settings;
 
 sealed class AboutSettingsSection : Component

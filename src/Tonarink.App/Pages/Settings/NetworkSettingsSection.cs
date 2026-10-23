@@ -7,7 +7,6 @@ using Microsoft.UI.Xaml.Controls;
 using static Microsoft.UI.Reactor.Factories;
 using static Tonarink.Controls.SettingsCardElement;
 using static Tonarink.Controls.SettingsExpanderElement;
-
 using static Tonarink.Pages.Settings.SettingsSectionVisuals;
 
 namespace Tonarink.Pages.Settings;
@@ -30,8 +29,8 @@ sealed class NetworkSettingsSection : Component<NetworkSettingsSectionProps>
         var (deviceNameFocused, setDeviceNameFocused) = UseState(false);
         var (encryptionNoticeOpen, setEncryptionNoticeOpen) = UseState(false);
         var draft = Props.Draft;
-        var UpdateDraft = Props.UpdateDraft;
-        var ApplyAndRestart = Props.ApplyAndRestart;
+        var updateDraft = Props.UpdateDraft;
+        var applyAndRestart = Props.ApplyAndRestart;
         var hasDraftChanges = draft != SettingsInputDraft.FromSettings(Props.Settings);
         var nodeState = Props.Runtime.NodeState;
         var serverBusy = nodeState is LocalSendNodeState.Starting or LocalSendNodeState.Stopping;
@@ -100,7 +99,7 @@ sealed class NetworkSettingsSection : Component<NetworkSettingsSectionProps>
                     nodeState == LocalSendNodeState.Starting,
                     serverBusy,
                     serverRunning,
-                    ApplyAndRestart,
+                    applyAndRestart,
                     Props.StopServer,
                     startOrRestartName,
                     stopName)),
@@ -111,7 +110,7 @@ sealed class NetworkSettingsSection : Component<NetworkSettingsSectionProps>
                 isClickEnabled: false,
                 isActionIconVisible: false,
                 content:
-                TextBox(draft.Alias, value => UpdateDraft(current => current with { Alias = value }))
+                TextBox(draft.Alias, value => updateDraft(current => current with { Alias = value }))
                     .OnGotFocus((_, _) => setDeviceNameFocused(true))
                     .OnLostFocus((_, _) => setDeviceNameFocused(false))
                     .AutomationName(t.Message(new("App", "SettingsDeviceName")))
@@ -143,7 +142,7 @@ sealed class NetworkSettingsSection : Component<NetworkSettingsSectionProps>
                                 isActionIconVisible: false,
                                 content:
                                 TextBox(draft.DeviceModel,
-                                        value => UpdateDraft(current => current with { DeviceModel = value }),
+                                        value => updateDraft(current => current with { DeviceModel = value }),
                                         Environment.MachineName)
                                     .AutomationName(t.Message(new("App", "SettingsDeviceModel")))
                                     .MinWidth(240)),
@@ -156,7 +155,7 @@ sealed class NetworkSettingsSection : Component<NetworkSettingsSectionProps>
                                 isClickEnabled: false,
                                 isActionIconVisible: false,
                                 content:
-                                NumberBox(draft.Port, value => UpdateDraft(current => current with { Port = value }))
+                                NumberBox(draft.Port, value => updateDraft(current => current with { Port = value }))
                                     .Range(1, ushort.MaxValue)
                                     .SpinButtons()
                                     .AutomationName(t.Message(new("App", "SettingsPort")))
@@ -177,7 +176,7 @@ sealed class NetworkSettingsSection : Component<NetworkSettingsSectionProps>
                                 isActionIconVisible: false,
                                 content:
                                 NumberBox(draft.DiscoveryTimeoutMs,
-                                        value => UpdateDraft(current => current with { DiscoveryTimeoutMs = value }))
+                                        value => updateDraft(current => current with { DiscoveryTimeoutMs = value }))
                                     .Range(1, 60_000)
                                     .SpinButtons()
                                     .AutomationName(t.Message(new("App", "SettingsDiscoveryTimeout")))
@@ -210,27 +209,27 @@ sealed class NetworkSettingsSection : Component<NetworkSettingsSectionProps>
                                 isActionIconVisible: false,
                                 content:
                                 TextBox(draft.MulticastGroup,
-                                        value => UpdateDraft(current => current with { MulticastGroup = value }))
+                                        value => updateDraft(current => current with { MulticastGroup = value }))
                                     .AutomationName(t.Message(new("App", "SettingsMulticast")))
                                     .MinWidth(180)),
                         ])
                     .AutomationId("Settings.Advanced.Expander") with
-            {
-                Header = t.Message(new("App", "SettingsAdvanced")),
-                Description = t.Message(new("App", "SettingsAdvancedDescription")),
-            });
+                {
+                    Header = t.Message(new("App", "SettingsAdvanced")),
+                    Description = t.Message(new("App", "SettingsAdvancedDescription")),
+                });
 
         return VStack(0, cards,
             (ContentDialog(
-                t.Message(new("App", "SettingsEncryptionDisabledTitle")),
-                TextBlock(t.Message(new("App", "SettingsEncryptionDisabledNotice")))
-                    .TextWrapping(TextWrapping.WrapWholeWords),
-                primaryButtonText: t.Message(new("App", "Close"))) with
-            {
-                IsOpen = encryptionNoticeOpen,
-                DefaultButton = ContentDialogButton.Close,
-                OnClosed = _ => setEncryptionNoticeOpen(false),
-            }).Themed(AppTheme.ToElementTheme(Props.Settings.ThemeIndex)));
+                    t.Message(new("App", "SettingsEncryptionDisabledTitle")),
+                    TextBlock(t.Message(new("App", "SettingsEncryptionDisabledNotice")))
+                        .TextWrapping(TextWrapping.WrapWholeWords),
+                    primaryButtonText: t.Message(new("App", "Close"))) with
+                {
+                    IsOpen = encryptionNoticeOpen,
+                    DefaultButton = ContentDialogButton.Close,
+                    OnClosed = _ => setEncryptionNoticeOpen(false),
+                }).Themed(AppTheme.ToElementTheme(Props.Settings.ThemeIndex)));
     }
 
     private static Element DeviceTypeOption(LocalSendDeviceType type, string label) =>

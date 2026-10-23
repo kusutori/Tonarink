@@ -2,7 +2,6 @@ using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Core;
 using Microsoft.UI.Reactor.Input;
 using Microsoft.UI.Reactor.Layout;
-using Microsoft.UI.Reactor.Localization;
 using Microsoft.UI.Xaml;
 using Windows.ApplicationModel.DataTransfer;
 using static Microsoft.UI.Reactor.Factories;
@@ -56,49 +55,49 @@ sealed class SendItemsCard : Component<SendItemsCardProps>
                 .HorizontalContentAlignment(HorizontalAlignment.Stretch)
                 .VerticalContentAlignment(VerticalAlignment.Stretch),
             _ => (LazyVStack(
-                    items,
-                    static item => item.Id.ToString("N"),
-                    (item, index) =>
-                    Component<SelectedSendItemRow, SelectedSendItemRowProps>(new(
-                            item,
-                            selectedItemId == item.Id,
-                            Props.FilePreviewEnabled,
-                            isPreviewProviderAvailable
-                            && FilePreviewLauncher.CanPreview(item.LocalPath),
-                            Props.PreviewProvider,
-                            Props.PreviewExecutablePath,
-                            Props.HasNativeWindow
-                            && item.LocalPath is { } path
-                            && File.Exists(path),
-                            () => setSelectedItemId(
-                                selectedItemId == item.Id ? null : item.Id),
-                            () => Props.ShareItemAsync(item),
-                            () => Props.RenameItem(item),
-                            () => Props.UpdateItems(current => (SelectedSendItem[])
-                            [
-                                .. current.Select(candidate => candidate.Id == item.Id
-                                    ? UndoRename(candidate)
-                                    : candidate)
-                            ]),
-                            () => Props.UpdateItems(current => (SelectedSendItem[])
-                            [
-                                .. current.Select(candidate => candidate.Id == item.Id
-                                    ? RedoRename(candidate)
-                                    : candidate)
-                            ]),
-                            () =>
-                            {
-                                if (selectedItemId == item.Id)
-                                    setSelectedItemId(null);
-                                Props.UpdateItems(current => (SelectedSendItem[])
-                                [
-                                    .. current.Where(candidate => candidate.Id != item.Id)
-                                ]);
-                            }))
-                        .PositionInSet(index + 1, items.Count)) with
-            {
-                Spacing = 8,
-            })
+                        items,
+                        static item => item.Id.ToString("N"),
+                        (item, index) =>
+                            Component<SelectedSendItemRow, SelectedSendItemRowProps>(new(
+                                    item,
+                                    selectedItemId == item.Id,
+                                    Props.FilePreviewEnabled,
+                                    isPreviewProviderAvailable
+                                    && FilePreviewLauncher.CanPreview(item.LocalPath),
+                                    Props.PreviewProvider,
+                                    Props.PreviewExecutablePath,
+                                    Props.HasNativeWindow
+                                    && item.LocalPath is { } path
+                                    && File.Exists(path),
+                                    () => setSelectedItemId(
+                                        selectedItemId == item.Id ? null : item.Id),
+                                    () => Props.ShareItemAsync(item),
+                                    () => Props.RenameItem(item),
+                                    () => Props.UpdateItems(current => (SelectedSendItem[])
+                                    [
+                                        .. current.Select(candidate => candidate.Id == item.Id
+                                            ? UndoRename(candidate)
+                                            : candidate)
+                                    ]),
+                                    () => Props.UpdateItems(current => (SelectedSendItem[])
+                                    [
+                                        .. current.Select(candidate => candidate.Id == item.Id
+                                            ? RedoRename(candidate)
+                                            : candidate)
+                                    ]),
+                                    () =>
+                                    {
+                                        if (selectedItemId == item.Id)
+                                            setSelectedItemId(null);
+                                        Props.UpdateItems(current => (SelectedSendItem[])
+                                        [
+                                            .. current.Where(candidate => candidate.Id != item.Id)
+                                        ]);
+                                    }))
+                                .PositionInSet(index + 1, items.Count)) with
+                    {
+                        Spacing = 8,
+                    })
                 .HAlign(HorizontalAlignment.Stretch)
                 .VAlign(VerticalAlignment.Stretch),
         };
@@ -119,14 +118,14 @@ sealed class SendItemsCard : Component<SendItemsCardProps>
                                         setSelectedItemId(null);
                                         Props.SetPickerMessage(t.Message(new("App", "NothingSelected")));
                                     }).AutomationName(t.Message(new("App", "Clear")))) with
-                        {
-                            AlignItems = FlexAlign.Center,
-                            ColumnGap = 8,
-                        },
+                            {
+                                AlignItems = FlexAlign.Center,
+                                ColumnGap = 8,
+                            },
                         selectedItemsContent) with
-                {
-                    RowGap = 12,
-                })
+                    {
+                        RowGap = 12,
+                    })
             .HAlign(HorizontalAlignment.Stretch)
             .VAlign(VerticalAlignment.Stretch);
         if (!Props.ExpandDragDropToEntireApp)

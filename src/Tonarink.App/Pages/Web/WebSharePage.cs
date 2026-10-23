@@ -182,22 +182,22 @@ sealed class WebSharePage : Component<WebSharePageProps>
                                     .AutomationName(t.Message(new("App", "WebSharePinTitle")))
                                     .Required(),
                                 primaryButtonText: t.Message(new("App", "Confirm"))) with
-                        {
-                            IsOpen = pinDialogOpen,
-                            SecondaryButtonText = t.Message(new("App", "Cancel")),
-                            DefaultButton = ContentDialogButton.Primary,
-                            OnClosed = result =>
                             {
-                                if (result == ContentDialogResult.Primary && !string.IsNullOrWhiteSpace(pinDraft))
+                                IsOpen = pinDialogOpen,
+                                SecondaryButtonText = t.Message(new("App", "Cancel")),
+                                DefaultButton = ContentDialogButton.Primary,
+                                OnClosed = result =>
                                 {
-                                    var next = pinDraft.Trim();
-                                    setPin(next);
-                                    node?.SetWebSharePin(next);
-                                }
+                                    if (result == ContentDialogResult.Primary && !string.IsNullOrWhiteSpace(pinDraft))
+                                    {
+                                        var next = pinDraft.Trim();
+                                        setPin(next);
+                                        node?.SetWebSharePin(next);
+                                    }
 
-                                setPinDialogOpen(false);
-                            },
-                        }).Themed(dialogTheme),
+                                    setPinDialogOpen(false);
+                                },
+                            }).Themed(dialogTheme),
                         (ContentDialog(
                                 t.Message(new("App", "WebShareQrTitle")),
                                 qrUrl is null
@@ -210,10 +210,10 @@ sealed class WebSharePage : Component<WebSharePageProps>
                                             .TextWrapping(TextWrapping.WrapWholeWords)
                                             .IsTextSelectionEnabled()),
                                 primaryButtonText: t.Message(new("App", "Close"))) with
-                        {
-                            IsOpen = qrUrl is not null,
-                            OnClosed = _ => setQrUrl(null),
-                        }).Themed(dialogTheme),
+                            {
+                                IsOpen = qrUrl is not null,
+                                OnClosed = _ => setQrUrl(null),
+                            }).Themed(dialogTheme),
                         (ContentDialog(
                                 t.Message(new("App", "WebShareZoomTitle")),
                                 Title(zoomUrl ?? "")
@@ -221,10 +221,10 @@ sealed class WebSharePage : Component<WebSharePageProps>
                                     .IsTextSelectionEnabled()
                                     .AutomationName(t.Message(new("App", "WebShareZoomTitle"))),
                                 primaryButtonText: t.Message(new("App", "Close"))) with
-                        {
-                            IsOpen = zoomUrl is not null,
-                            OnClosed = _ => setZoomUrl(null),
-                        }).Themed(dialogTheme))
+                            {
+                                IsOpen = zoomUrl is not null,
+                                OnClosed = _ => setZoomUrl(null),
+                            }).Themed(dialogTheme))
                     .Padding(AppLayout.PagePadding))
             .HorizontalContentAlignment(HorizontalAlignment.Stretch)
             .AutomationName(t.Message(new(
@@ -307,9 +307,9 @@ sealed class WebSharePage : Component<WebSharePageProps>
                                 t.Message(new("App", "WebShareSystemShare")),
                                 share)
                             .Grid(column: 4)) with
-                {
-                    ColumnSpacing = 4,
-                })
+                    {
+                        ColumnSpacing = 4,
+                    })
             .Padding(horizontal: 16, vertical: 8)
             .CornerRadius(8)
             .Background(Theme.SubtleFill);
@@ -326,12 +326,14 @@ sealed class WebSharePage : Component<WebSharePageProps>
                         .Grid(column: 0),
                     (request.Pending
                         ? (Element)HStack(4,
-                            Button(Icon("Cancel").AccessibilityHidden(), () => node?.DeclineWebShareRequest(request.SessionId))
+                            Button(Icon("Cancel").AccessibilityHidden(),
+                                    () => node?.DeclineWebShareRequest(request.SessionId))
                                 .SubtleButton()
                                 .AutomationName(t.Message(new("App", "Decline")))
                                 .MinWidth(40)
                                 .MinHeight(40),
-                            Button(Icon("Accept").AccessibilityHidden(), () => node?.AcceptWebShareRequest(request.SessionId))
+                            Button(Icon("Accept").AccessibilityHidden(),
+                                    () => node?.AcceptWebShareRequest(request.SessionId))
                                 .SubtleButton()
                                 .AutomationName(t.Message(new("App", "Accept")))
                                 .MinWidth(40)
@@ -344,16 +346,6 @@ sealed class WebSharePage : Component<WebSharePageProps>
             .CornerRadius(8)
             .Background(Theme.CardBackground)
             .WithBorder(Theme.CardStroke);
-
-    private static Element IconButton(string glyph, string name, Action onClick) =>
-        Button(Icon(glyph).AccessibilityHidden(), onClick)
-            .SubtleButton()
-            .MinWidth(40)
-            .MinHeight(40)
-            .AutomationName(name)
-            .ToolTip(name)
-            .MinWidth(40)
-            .MinHeight(40);
 
     private static string RandomPin()
     {

@@ -1,7 +1,5 @@
 using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Core;
-using Microsoft.UI.Reactor.Input;
-using Microsoft.UI.Reactor.Layout;
 using Microsoft.UI.Reactor.Localization;
 using Microsoft.UI.Xaml;
 using Windows.System;
@@ -96,6 +94,7 @@ sealed class SelectedSendItemRow : Component<SelectedSendItemRowProps>
                 MenuSeparator(),
                 MenuItem(removeCommand),
             ]);
+
         var content = Grid(
             columns: [GridSize.Auto, GridSize.Star()],
             rows: [GridSize.Auto],
@@ -151,8 +150,7 @@ sealed class SelectedSendItemRow : Component<SelectedSendItemRowProps>
             .CornerRadius(8)
             .Background(Theme.SubtleFill)
             .WithBorder(
-                Props.IsSelected ? Theme.Accent : Theme.CardStroke,
-                1)
+                Props.IsSelected ? Theme.Accent : Theme.CardStroke)
             .WithContextFlyout(ContextMenu());
         return CommandHost(
             [previewCommand, shareCommand, renameCommand, undoRenameCommand, redoRenameCommand, removeCommand],

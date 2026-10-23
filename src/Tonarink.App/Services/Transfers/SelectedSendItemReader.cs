@@ -39,7 +39,7 @@ static class SelectedSendItemReader
         DragData data,
         CancellationToken cancellationToken = default)
     {
-        var storageItems = await data.GetFilesAsync();
+        var storageItems = await data.GetFilesAsync(cancellationToken);
         var selected = new List<SelectedSendItem>();
         foreach (var storageItem in storageItems)
         {

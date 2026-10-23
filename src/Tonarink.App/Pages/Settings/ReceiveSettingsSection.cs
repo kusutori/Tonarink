@@ -1,10 +1,8 @@
 using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Core;
-using Microsoft.UI.Xaml;
 using static Microsoft.UI.Reactor.Factories;
 using static Tonarink.Controls.SettingsCardElement;
 using static Tonarink.Controls.SettingsExpanderElement;
-
 using static Tonarink.Pages.Settings.SettingsSectionVisuals;
 
 namespace Tonarink.Pages.Settings;
@@ -25,7 +23,7 @@ sealed class ReceiveSettingsSection : Component<ReceiveSettingsSectionProps>
         var storagePicker = new StoragePicker(window?.NativeWindow, t.Message(new("App", "WindowUnavailable")));
         var setStatusMessage = Props.ReportError;
         var draft = Props.Draft;
-        var UpdateDraft = Props.UpdateDraft;
+        var updateDraft = Props.UpdateDraft;
         return SettingsGroup(
             t.Message(new("App", "SettingsReceive")),
             SettingsCard(
@@ -109,7 +107,7 @@ sealed class ReceiveSettingsSection : Component<ReceiveSettingsSectionProps>
                                 content:
                                 PasswordBox(
                                         draft.ReceivePin,
-                                        value => UpdateDraft(current => current with { ReceivePin = value }),
+                                        value => updateDraft(current => current with { ReceivePin = value }),
                                         placeholderText: t.Message(new("App", "PinPlaceholder")))
                                     .MaxLength(32)
                                     .Required()
@@ -118,10 +116,10 @@ sealed class ReceiveSettingsSection : Component<ReceiveSettingsSectionProps>
                                     .IsEnabled(Props.Settings.ReceivePinEnabled)),
                         ])
                     .AutomationId("Settings.Pin.Expander") with
-            {
-                Header = t.Message(new("App", "SettingsReceivePinProtection")),
-                Description = t.Message(new("App", "SettingsReceivePinProtectionDescription")),
-            });
+                {
+                    Header = t.Message(new("App", "SettingsReceivePinProtection")),
+                    Description = t.Message(new("App", "SettingsReceivePinProtectionDescription")),
+                });
 
         async Task PickDownloadDirectoryAsync()
         {

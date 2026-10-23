@@ -1,10 +1,7 @@
 using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Core;
-using Microsoft.UI.Xaml;
 using static Microsoft.UI.Reactor.Factories;
 using static Tonarink.Controls.SettingsCardElement;
-using static Tonarink.Controls.SettingsExpanderElement;
-
 using static Tonarink.Pages.Settings.SettingsSectionVisuals;
 
 namespace Tonarink.Pages.Settings;

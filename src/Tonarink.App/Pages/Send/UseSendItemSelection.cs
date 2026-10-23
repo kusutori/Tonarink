@@ -5,7 +5,6 @@ using Microsoft.UI.Reactor.Localization;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage;
 using static Tonarink.Pages.Send.SelectedSendItemOperations;
-using static Tonarink.Pages.Send.SendPageVisuals;
 
 namespace Tonarink.Pages.Send;
 
@@ -78,6 +77,7 @@ static class SendItemSelectionHooks
                         file.Name,
                         CancellationToken.None));
                 }
+
                 Add(selected);
             }
             catch (Exception exception)
@@ -215,6 +215,7 @@ static class SendItemSelectionHooks
                         payload.SuggestedContactFingerprint,
                         imported.ToArray()));
                 }
+
                 consumeShareTargetPayload(payload.Id);
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
@@ -234,12 +235,15 @@ static class SendItemSelectionHooks
                 ShareTargetItem.FileSystem { IsDirectory: true } directory =>
                     await SelectedSendItemReader.FromFolderPathAsync(directory.Path, cancellationToken),
                 ShareTargetItem.FileSystem file => (SelectedSendItem[])[ImportFile(file.Path)],
-                ShareTargetItem.Text text => (SelectedSendItem[])[new SelectedSendItem(
-                    Guid.NewGuid(),
-                    new SendTextItem(text.Value, text.FileName),
-                    text.FileName,
-                    TextLength(text.Value),
-                    SelectedSendItemKind.Text)],
+                ShareTargetItem.Text text => (SelectedSendItem[])
+                [
+                    new SelectedSendItem(
+                        Guid.NewGuid(),
+                        new SendTextItem(text.Value, text.FileName),
+                        text.FileName,
+                        TextLength(text.Value),
+                        SelectedSendItemKind.Text)
+                ],
             };
 
             static SelectedSendItem ImportFile(string path)

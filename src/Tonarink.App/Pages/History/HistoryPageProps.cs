@@ -1,5 +1,4 @@
 using Microsoft.UI.Xaml;
-using Tonarink.Services.History;
 
 namespace Tonarink.Pages.History;
 

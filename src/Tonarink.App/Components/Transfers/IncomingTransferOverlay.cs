@@ -3,10 +3,8 @@ using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Animation;
 using Microsoft.UI.Reactor.Core;
 using Microsoft.UI.Reactor.Hooks;
-using Microsoft.UI.Reactor.Localization;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
-using Microsoft.UI.Xaml.Controls;
 using Windows.System;
 using static Microsoft.UI.Reactor.Factories;
 using static Tonarink.Components.Devices.DeviceVisuals;
@@ -51,9 +49,9 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
         var (showVerification, setShowVerification) = UseState(false);
         var (showFileOptions, setShowFileOptions) = UseState(false);
         var (destinationDirectory, setDestinationDirectory) = UseState(Props.DownloadDirectory);
-        var (selectedItemIds, updateSelectedItemIds) = UseReducer<IReadOnlySet<string>>(
+        var (selectedItemIds, updateSelectedItemIds) = UseReducer(
             IncomingFileCard.AllItemIds(request.Items));
-        var (renameState, updateRenameState) = UseReducer<IncomingRenameState>(
+        var (renameState, updateRenameState) = UseReducer(
             IncomingFileCard.EmptyRenameState());
         var targetFileNames = renameState.TargetFileNames;
         var (renameItemId, setRenameItemId) = UseState<string?>(null);
@@ -89,7 +87,7 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
             ? (uint)selectedItemIds.Count
             : 0;
         UseEffect(() => TaskbarReceiveBadge.SetCount(receiveBadgeCount), receiveBadgeCount);
-        UseEffect(() => () => TaskbarReceiveBadge.Clear());
+        UseEffect(() => TaskbarReceiveBadge.Clear);
         UseEffect(() =>
         {
             IncomingTransferProgressStore.Publish(new IncomingTransferProgress(
@@ -175,35 +173,35 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
         var isPending = acceptMutation.IsPending || declineMutation.IsPending;
         var canEdit = !view.IsDecided && !isPending;
         var renameFileCommand = UseCommand(UseMemo(() => new Command<IncomingFileCommandTarget>
-        {
-            Label = t.Message(new("App", "Rename")),
-            Icon = new FontIconData(AppIcons.Rename),
-            Accelerator = Accelerator(VirtualKey.F2),
-            CanExecute = canEdit,
-            Execute = target => OpenRenameDialog(target.ItemId, target.DisplayName),
-        },
+            {
+                Label = t.Message(new("App", "Rename")),
+                Icon = new FontIconData(AppIcons.Rename),
+                Accelerator = Accelerator(VirtualKey.F2),
+                CanExecute = canEdit,
+                Execute = target => OpenRenameDialog(target.ItemId, target.DisplayName),
+            },
             t.Locale,
             canEdit));
         var undoRenameCommand = UseCommand(UseMemo(() => new Command<IncomingFileCommandTarget>
-        {
-            Label = t.Message(new("App", "Undo")),
-            Icon = new FontIconData(AppIcons.Undo),
-            Accelerator = Accelerator(VirtualKey.Z, VirtualKeyModifiers.Control),
-            CanExecute = canEdit,
-            Execute = target => updateRenameState(current =>
-                IncomingFileCard.UndoRename(current, target.ItemId)),
-        },
+            {
+                Label = t.Message(new("App", "Undo")),
+                Icon = new FontIconData(AppIcons.Undo),
+                Accelerator = Accelerator(VirtualKey.Z, VirtualKeyModifiers.Control),
+                CanExecute = canEdit,
+                Execute = target => updateRenameState(current =>
+                    IncomingFileCard.UndoRename(current, target.ItemId)),
+            },
             t.Locale,
             canEdit));
         var redoRenameCommand = UseCommand(UseMemo(() => new Command<IncomingFileCommandTarget>
-        {
-            Label = t.Message(new("App", "Redo")),
-            Icon = new FontIconData(AppIcons.Redo),
-            Accelerator = Accelerator(VirtualKey.Y, VirtualKeyModifiers.Control),
-            CanExecute = canEdit,
-            Execute = target => updateRenameState(current =>
-                IncomingFileCard.RedoRename(current, target.ItemId)),
-        },
+            {
+                Label = t.Message(new("App", "Redo")),
+                Icon = new FontIconData(AppIcons.Redo),
+                Accelerator = Accelerator(VirtualKey.Y, VirtualKeyModifiers.Control),
+                CanExecute = canEdit,
+                Execute = target => updateRenameState(current =>
+                    IncomingFileCard.RedoRename(current, target.ItemId)),
+            },
             t.Locale,
             canEdit));
         var showText = IsTextTransfer(request.Items);
@@ -395,7 +393,7 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
             VStack(12,
                 BodyLarge(view.Status)
                     .TextAlignment(TextAlignment.Center)
-                    .LiveRegion(AutomationLiveSetting.Polite)
+                    .LiveRegion()
                     .HAlign(HorizontalAlignment.Center)
                     .Transition(Transition.Enter(new FadeTransition())),
                 showFileOptions ? null : fileCard,
@@ -458,7 +456,7 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                     TextBlock(view.Status)
                         .Foreground(view.IsError ? Theme.SystemCritical : Theme.SecondaryText)
                         .TextAlignment(TextAlignment.Center)
-                        .LiveRegion(AutomationLiveSetting.Polite),
+                        .LiveRegion(),
                     Button(
                             HStack(8,
                                 Icon(AppIcons.Cancel).AccessibilityHidden(),
@@ -675,7 +673,6 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
 
         return texts.Count == 0 ? null : string.Join(Environment.NewLine, texts);
     }
-
 }
 
 sealed record IncomingAcceptConfiguration(

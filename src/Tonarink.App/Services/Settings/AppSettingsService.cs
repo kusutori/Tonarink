@@ -20,14 +20,14 @@ static class AppSettingsService
             }
             catch
             {
-                if (updateSendTo)
+                if (!updateSendTo) throw;
+                try { WindowsSendTo.SetEnabled(previous.ShowInSendToMenu); }
+                catch (Exception exception)
                 {
-                    try { WindowsSendTo.SetEnabled(previous.ShowInSendToMenu); }
-                    catch (Exception exception)
-                    {
-                        AppDiagnostics.Report("Could not restore the Send To shortcut after settings save failed", exception);
-                    }
+                    AppDiagnostics.Report("Could not restore the Send To shortcut after settings save failed",
+                        exception);
                 }
+
                 throw;
             }
         }

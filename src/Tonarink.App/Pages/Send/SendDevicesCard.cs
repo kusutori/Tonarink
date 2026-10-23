@@ -2,7 +2,6 @@ using LocalSendDotNet;
 using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Core;
 using Microsoft.UI.Reactor.Layout;
-using Microsoft.UI.Reactor.Localization;
 using Microsoft.UI.Xaml;
 using static Microsoft.UI.Reactor.Factories;
 using static Tonarink.Pages.Send.SendPageVisuals;
@@ -35,7 +34,7 @@ sealed class SendDevicesCard : Component<SendDevicesCardProps>
     {
         var t = UseIntl();
         var devices = Props.Runtime.Devices;
-        Element deviceBody = devices switch
+        var deviceBody = devices switch
         {
             [] => EmptyDevices(
                     t,
@@ -64,15 +63,14 @@ sealed class SendDevicesCard : Component<SendDevicesCardProps>
             ]),
         };
 
-        Element deviceContent = Props.IsWideLayout
+        var deviceContent = Props.IsWideLayout
             ? ScrollView(deviceBody)
                 .HorizontalContentAlignment(HorizontalAlignment.Stretch)
                 .VerticalContentAlignment(VerticalAlignment.Stretch)
                 .Flex(grow: 1, basis: 0)
             : deviceBody;
-        var canUseDeviceActions = !Props.IsSending
-                                  && !Props.IsResolvingAddress
-                                  && Props.Runtime.NodeState == LocalSendNodeState.Running;
+        var canUseDeviceActions = Props is
+            { IsSending: false, IsResolvingAddress: false, Runtime.NodeState: LocalSendNodeState.Running };
         var card = Card(
                 FlexColumn(
                         FlexRow(
@@ -95,22 +93,22 @@ sealed class SendDevicesCard : Component<SendDevicesCardProps>
                                 AnimatedButtons.Link(
                                     t.Message(new("App", "WebShareTitle")),
                                     Props.OpenWebShare,
-                                    isEnabled: !Props.IsSending
-                                               && Props.Runtime.NodeState == LocalSendNodeState.Running),
+                                    isEnabled: Props is
+                                        { IsSending: false, Runtime.NodeState: LocalSendNodeState.Running }),
                                 AnimatedButtons.MultipleReceivers(
                                     Props.KeepItemsForMultipleReceivers,
                                     Props.SetKeepItemsForMultipleReceivers,
                                     t.Message(new("App", "MultipleReceivers")),
                                     t.Message(new("App", "MultipleReceiversDescription")),
                                     isEnabled: !Props.IsSending)) with
-                        {
-                            AlignItems = FlexAlign.Center,
-                            ColumnGap = 8,
-                        },
+                            {
+                                AlignItems = FlexAlign.Center,
+                                ColumnGap = 8,
+                            },
                         deviceContent) with
-                {
-                    RowGap = 12,
-                })
+                    {
+                        RowGap = 12,
+                    })
             .VAlign(VerticalAlignment.Stretch);
         return card.HAlign(HorizontalAlignment.Stretch);
     }

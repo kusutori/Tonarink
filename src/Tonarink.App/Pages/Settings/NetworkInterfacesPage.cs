@@ -8,7 +8,6 @@ using Microsoft.UI.Reactor.Layout;
 using Microsoft.UI.Reactor.Localization;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
-using Tonarink.Components.Animations;
 using Windows.UI.Text;
 using static Microsoft.UI.Reactor.Factories;
 
@@ -24,16 +23,16 @@ sealed class NetworkInterfacesPage : Component<NetworkInterfacesPageProps>
         var adapters = ListAdapters();
 
         var previewCards = adapters.Count == 0
-            ? new Element[]
-            {
+            ?
+            [
                 Caption(t.Message(new("App", "SettingsNetworkInterfacesEmpty")))
                     .Foreground(Theme.SecondaryText),
-            }
+            ]
             : adapters.Select(adapter => AdapterCard(adapter, IsIgnored(adapter, settings)).WithKey(adapter.Id))
                 .ToArray();
 
         var patternRows = currentList is null
-            ? Array.Empty<Element>()
+            ? []
             : currentList.Select((pattern, index) =>
                     PatternRow(t, pattern, index, value => ReplacePattern(index, value), () => RemovePattern(index))
                         .WithKey($"pattern-{index}"))
@@ -159,15 +158,15 @@ sealed class NetworkInterfacesPage : Component<NetworkInterfacesPageProps>
                     .MinWidth(40)
                     .MinHeight(40)
                     .Grid(column: 1)) with
-        {
-            ColumnSpacing = 8,
-        };
+            {
+                ColumnSpacing = 8,
+            };
 
     private static Element AdapterCard(NetworkAdapterPreview adapter, bool ignored)
     {
         var name = TextBlock($"[#{adapter.Index}] {adapter.Name}")
             .TextWrapping(TextWrapping.WrapWholeWords);
-        var addresses = adapter.Addresses.Select(address => (Element)TextBlock(address)).ToArray();
+        var addresses = adapter.Addresses.Select(Element (address) => TextBlock(address)).ToArray();
         if (ignored)
         {
             name = name.Foreground(Theme.DisabledText).TextDecorations(TextDecorations.Strikethrough);

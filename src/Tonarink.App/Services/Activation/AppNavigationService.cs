@@ -8,19 +8,28 @@ namespace Tonarink.Services.Activation;
 
 // A null route only restores the current page. Entity requests also identify
 // the page to show; CLI syntax and URI parsing stay outside the navigator.
-sealed record AppNavigationRequest(AppRoute? Route = null, string? Favorite = null, Guid? History = null,
+sealed record AppNavigationRequest(
+    AppRoute? Route = null,
+    string? Favorite = null,
+    Guid? History = null,
     ShareTargetPayload? Payload = null)
 {
     public NavigationState<AppRoute>? Navigation { get; init; }
 
-    public static AppNavigationRequest ForFavorite(string fingerprint) => AppDeepLinks.Resolve(AppDeepLinks.ForFavorite(fingerprint));
+    public static AppNavigationRequest ForFavorite(string fingerprint) =>
+        AppDeepLinks.Resolve(AppDeepLinks.ForFavorite(fingerprint));
+
     public static AppNavigationRequest ForHistory(Guid id) => AppDeepLinks.Resolve(AppDeepLinks.ForHistory(id));
 }
 
 static class AppNavigationService
 {
-    private sealed record Pending(AppNavigationRequest Request, CancellationToken Token,
-        CultureInfo Culture, TaskCompletionSource Completion);
+    private sealed record Pending(
+        AppNavigationRequest Request,
+        CancellationToken Token,
+        CultureInfo Culture,
+        TaskCompletionSource Completion);
+
     private static readonly ConcurrentQueue<Pending> Queue = new();
     private static Func<AppNavigationRequest, CancellationToken, Task>? _handler;
     private static int _draining;
@@ -48,7 +57,10 @@ static class AppNavigationService
     private static async Task OpenAndReportAsync(AppNavigationRequest request)
     {
         try { await OpenAsync(request).ConfigureAwait(false); }
-        catch (Exception exception) { AppDiagnostics.Report("Could not navigate to the requested app page", exception); }
+        catch (Exception exception)
+        {
+            AppDiagnostics.Report("Could not navigate to the requested app page", exception);
+        }
     }
 
     internal static Task OnUIAsync(Func<Task> action, CancellationToken token)
@@ -70,7 +82,10 @@ static class AppNavigationService
                 await action();
                 completion.TrySetResult();
             }
-            catch (OperationCanceledException) when (token.IsCancellationRequested) { completion.TrySetCanceled(token); }
+            catch (OperationCanceledException) when (token.IsCancellationRequested)
+            {
+                completion.TrySetCanceled(token);
+            }
             catch (Exception exception) { completion.TrySetException(exception); }
         }
     }
@@ -78,7 +93,7 @@ static class AppNavigationService
     private static void ScheduleDrain()
     {
         if (Volatile.Read(ref _handler) is null || Queue.IsEmpty
-            || Interlocked.CompareExchange(ref _draining, 1, 0) != 0)
+                                                || Interlocked.CompareExchange(ref _draining, 1, 0) != 0)
             return;
         _ = DrainAsync();
     }
@@ -106,7 +121,9 @@ static class AppNavigationService
             pending.Completion.TrySetResult();
         }
         catch (OperationCanceledException) when (pending.Token.IsCancellationRequested)
-        { pending.Completion.TrySetCanceled(pending.Token); }
+        {
+            pending.Completion.TrySetCanceled(pending.Token);
+        }
         catch (Exception exception) { pending.Completion.TrySetException(exception); }
     }
 }

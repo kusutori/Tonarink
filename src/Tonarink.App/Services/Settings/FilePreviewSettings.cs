@@ -1,6 +1,3 @@
-using Tonarink.Models;
-using Tonarink.Services.Platform;
-
 namespace Tonarink.Services.Settings;
 
 static class FilePreviewSettings
@@ -21,9 +18,11 @@ static class FilePreviewSettings
                     provider == FilePreviewProvider.QuickLook ? quickLookPath : peekPath))),
         ];
         var peekOverride = clearDetectedPaths && SamePath(settings.PowerToysPeekExecutablePath, peekPath)
-            ? "" : settings.PowerToysPeekExecutablePath;
+            ? ""
+            : settings.PowerToysPeekExecutablePath;
         var quickLookOverride = clearDetectedPaths && SamePath(settings.QuickLookExecutablePath, quickLookPath)
-            ? "" : settings.QuickLookExecutablePath;
+            ? ""
+            : settings.QuickLookExecutablePath;
         if (ReferenceEquals(providers, settings.PreviewProviders)
             && peekOverride == settings.PowerToysPeekExecutablePath
             && quickLookOverride == settings.QuickLookExecutablePath)
@@ -110,13 +109,14 @@ static class FilePreviewSettings
         && string.Equals(Environment.ExpandEnvironmentVariables(NormalizePath(path)),
             NormalizePath(detected), StringComparison.OrdinalIgnoreCase);
 
-    public static IReadOnlyList<FilePreviewProvider>? ParseProviders(string[]? values) => values is null
-        ? null
-        : values.Select(value => Enum.TryParse<FilePreviewProvider>(value, true, out var provider)
-                                 && Enum.IsDefined(provider) ? provider : (FilePreviewProvider)(-1))
-            .Where(Enum.IsDefined)
-            .Distinct()
-            .ToArray();
+    public static IReadOnlyList<FilePreviewProvider>? ParseProviders(string[]? values) => values?.Select(value =>
+            Enum.TryParse<FilePreviewProvider>(value, true, out var provider)
+            && Enum.IsDefined(provider)
+                ? provider
+                : (FilePreviewProvider)(-1))
+        .Where(Enum.IsDefined)
+        .Distinct()
+        .ToArray();
 
     private static FilePreviewProvider[] InferProviders(AppSettings settings) =>
     [
