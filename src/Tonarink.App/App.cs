@@ -51,6 +51,7 @@ try
 }
 finally
 {
+    ShareTargetActivationBroker.StopExplorerShareWatch();
     AppNotificationService.Shutdown();
 }
 return 0;

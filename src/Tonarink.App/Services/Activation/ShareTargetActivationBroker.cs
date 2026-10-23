@@ -65,6 +65,16 @@ static class ShareTargetActivationBroker
     public static bool TryDequeue(out ShareTargetPayload? payload) =>
         PendingPayloads.TryDequeue(out payload);
 
+    public static void StopExplorerShareWatch()
+    {
+        _explorerShareWait?.Unregister(null);
+        _explorerShareWait = null;
+        _explorerShareWatcher?.Dispose();
+        _explorerShareWatcher = null;
+        _explorerShareEvent?.Dispose();
+        _explorerShareEvent = null;
+    }
+
     private static void OnActivated(object? sender, AppActivationArguments activation) =>
         _ = IngestAsync(activation);
 
