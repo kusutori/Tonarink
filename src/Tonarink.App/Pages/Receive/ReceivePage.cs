@@ -131,7 +131,21 @@ sealed class ReceivePage : Component<ReceivePageProps>
                                     });
                                 },
                                 items: autoSaveItems)
-                            .HAlign(HorizontalAlignment.Stretch)) with
+                            .HAlign(HorizontalAlignment.Stretch)
+                            .OnMountAdd(static element =>
+                            {
+                                if (element is not Segmented control)
+                                    return;
+
+                                control.Loaded += OnAutoSaveLoaded;
+                                if (control.IsLoaded)
+                                    RestoreAutoSaveLayout(control);
+                            })
+                            .OnUnmountAdd(static element =>
+                            {
+                                if (element is Segmented control)
+                                    control.Loaded -= OnAutoSaveLoaded;
+                            })) with
                 {
                     RowGap = 20
                 })
@@ -152,6 +166,24 @@ sealed class ReceivePage : Component<ReceivePageProps>
             .Landmark(AutomationLandmarkType.Main);
 
         return page;
+    }
+
+    private static void OnAutoSaveLoaded(object sender, RoutedEventArgs args)
+    {
+        if (sender is Segmented control)
+            RestoreAutoSaveLayout(control);
+    }
+
+    private static void RestoreAutoSaveLayout(Segmented control)
+    {
+        // WCT's default panel binds through an ancestor reference cleared on
+        // Unloaded. Keep this fixed horizontal layout independent of that
+        // binding when a cached receive page is reattached after navigation.
+        if (control.ItemsPanelRoot is EqualPanel panel)
+        {
+            panel.Orientation = Orientation.Horizontal;
+            panel.HorizontalAlignment = HorizontalAlignment.Stretch;
+        }
     }
 
     private static Element HeaderActions(
