@@ -15,6 +15,13 @@ public static class AnimatedButtons
     public static Element SettingsReceiveBadgeIcon(bool isOn, double iconSize = 24) =>
         AnimatedSettingsToggleIcon.Create(SettingsToggleIconKind.ReceiveBadge, isOn, iconSize);
 
+    public static Element SettingsTopNavigationIcon(bool isOn, double iconSize = 24) =>
+        AnimatedSettingsToggleIcon.Create(SettingsToggleIconKind.TopNavigation, isOn, iconSize);
+
+    public static Element SettingsSendToIcon(bool isOn, double iconSize = 24) =>
+        AnimatedSettingsToggleIcon.Create(SettingsToggleIconKind.SendTo,
+            isOn ? "Selected" : "Normal", iconSize);
+
     public static Element SettingsStartupIcon(bool trigger, double iconSize = 24) =>
         AnimatedSettingsToggleIcon.Create(SettingsToggleIconKind.Startup, trigger, iconSize);
 

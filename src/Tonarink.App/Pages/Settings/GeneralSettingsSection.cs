@@ -80,7 +80,8 @@ sealed class GeneralSettingsSection : Component<GeneralSettingsSectionProps>
             SettingsCard(
                 header: t.Message(new("App", "SettingsUseTopNavigationWhenNarrow")),
                 description: t.Message(new("App", "SettingsUseTopNavigationWhenNarrowDescription")),
-                headerIcon: HeaderGlyph("\uE8A4"),
+                headerIcon: AnimatedButtons.SettingsTopNavigationIcon(Props.Settings.UseTopNavigationWhenNarrow)
+                    .WithKey("settings-top-navigation-icon"),
                 isClickEnabled: false,
                 isActionIconVisible: false,
                 content:
@@ -238,7 +239,8 @@ sealed class GeneralSettingsSection : Component<GeneralSettingsSectionProps>
             SettingsCard(
                 header: t.Message(new("App", "SettingsSendTo")),
                 description: t.Message(new("App", "SettingsSendToDescription")),
-                headerIcon: HeaderGlyph(AppIcons.Send),
+                headerIcon: AnimatedButtons.SettingsSendToIcon(Props.Settings.ShowInSendToMenu)
+                    .WithKey("settings-send-to-icon"),
                 isClickEnabled: false,
                 isActionIconVisible: false,
                 content:

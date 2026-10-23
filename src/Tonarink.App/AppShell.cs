@@ -238,6 +238,7 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
 
         var paneStatus = Component<NetworkStatusPane, NetworkStatusPaneProps>(new(
             isNavigationPaneOpen,
+            useTopNavigation,
             runtime.NodeState,
             runtime.Error,
             runtime.DiscoveryWarning,

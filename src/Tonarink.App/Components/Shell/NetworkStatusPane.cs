@@ -11,6 +11,7 @@ namespace Tonarink.Components.Shell;
 
 sealed record NetworkStatusPaneProps(
     bool IsPaneOpen,
+    bool IsTopNavigation,
     LocalSendNodeState NodeState,
     string? Error,
     string? DiscoveryWarning,
@@ -46,6 +47,14 @@ sealed class NetworkStatusPane : Component<NetworkStatusPaneProps>
             Props.NodeState,
             reduceMotion);
 
+        if (Props.IsTopNavigation)
+        {
+            return HStack(0,
+                    Divider(isVertical: true),
+                    CompactStatus())
+                .VAlign(VerticalAlignment.Center);
+        }
+
         return Props.IsPaneOpen
             ? VStack(0,
                 Divider(),
@@ -70,9 +79,11 @@ sealed class NetworkStatusPane : Component<NetworkStatusPaneProps>
                     .ToolTip(statusText))
             : VStack(0,
                 Divider(),
-                Border(StatusButton(compact: false))
-                    .Size(56, 44)
-                    .HAlign(HorizontalAlignment.Center));
+                CompactStatus());
+
+        Element CompactStatus() => Border(StatusButton(compact: false))
+            .Size(56, 44)
+            .HAlign(HorizontalAlignment.Center);
 
         Element StatusButton(bool compact) =>
             Button(
@@ -88,10 +99,11 @@ sealed class NetworkStatusPane : Component<NetworkStatusPaneProps>
                 .IsEnabled(!isBusy);
     }
 
-    private static Element Divider() => Border(null)
-        .Height(1)
-        .Margin(horizontal: 12, vertical: 0)
+    private static Element Divider(bool isVertical = false) => (isVertical
+            ? Border(null).Size(1, 24).Margin(horizontal: 4, vertical: 0)
+            : Border(null).Height(1).Margin(horizontal: 12, vertical: 0))
         .Background(Theme.DividerStroke)
+        .VAlign(VerticalAlignment.Center)
         .AccessibilityHidden();
 
     private static Element StatusDot(ThemeRef color) => Border(null)
