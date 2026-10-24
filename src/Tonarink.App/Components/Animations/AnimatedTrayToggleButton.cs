@@ -48,7 +48,7 @@ sealed class AnimatedTrayToggleButton : Component<AnimatedTrayToggleButtonProps>
             if (wasChecked == Props.IsChecked)
                 return;
 
-            if (playback.Button is { } button && playback.Source.HasValue)
+            if (playback is { Button: { } button, Source: not null })
             {
                 var source = playback.Source.Value;
                 button.DispatcherQueue.TryEnqueue(() =>
@@ -181,6 +181,7 @@ sealed class AnimatedTrayToggleButton : Component<AnimatedTrayToggleButtonProps>
         if (version == playback.AnimationVersion && playback.Player == player)
             player.SetProgress(settledProgress);
     }
+
     private union TrayToggleIconSource(TrayServiceToggleIcon, TrayPinToggleIcon)
     {
         public IAnimatedVisualSource2 Visual => this switch

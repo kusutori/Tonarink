@@ -1,6 +1,5 @@
 using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Core;
-using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using static Microsoft.UI.Reactor.Factories;
 
@@ -64,5 +63,4 @@ sealed class AnimatedMoreButton : Component<AnimatedMoreButtonProps>
             .IsEnabled(Props.IsEnabled)
             .WithFlyout(Props.Flyout);
     }
-
 }

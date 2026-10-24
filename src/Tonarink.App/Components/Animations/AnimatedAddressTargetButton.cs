@@ -1,6 +1,5 @@
 using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Core;
-using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using static Microsoft.UI.Reactor.Factories;
 
@@ -49,6 +48,7 @@ sealed class AnimatedAddressTargetButton : Component<AnimatedAddressTargetButton
 
             var targetSeparated = isSeparated;
             _ = PlayAndSettleAsync();
+            return;
 
             async Task PlayAndSettleAsync()
             {
@@ -96,5 +96,4 @@ sealed class AnimatedAddressTargetButton : Component<AnimatedAddressTargetButton
             .Padding(0, 0)
             .IsEnabled(Props.IsEnabled);
     }
-
 }

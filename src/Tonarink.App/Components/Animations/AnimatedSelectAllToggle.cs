@@ -37,7 +37,7 @@ sealed class AnimatedSelectAllToggle : Component<AnimatedSelectAllToggleProps>
             if (previousState == Props.CheckedState)
                 return;
 
-            if (playback.Button is { } button && playback.Source is { } source)
+            if (playback is { Button: { } button, Source: { } source })
             {
                 button.DispatcherQueue.TryEnqueue(() =>
                     AnimatedIconForeground.Apply(button, source, button, playback.CheckedState is true));

@@ -1,7 +1,6 @@
 using System.Numerics;
 using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Core;
-using Microsoft.UI.Reactor.Hooks;
 using Microsoft.UI.Xaml;
 using static Microsoft.UI.Reactor.Factories;
 
@@ -22,7 +21,7 @@ sealed class AnimatedRefreshButton : Component<AnimatedRefreshButtonProps>
         var reduceMotion = UseReducedMotion();
 
         return Button(
-                Icon("Sync").AccessibilityHidden()
+                Icon(FontIcon(AppIcons.Sync)).AccessibilityHidden()
                     .RotationTransition(TimeSpan.FromMilliseconds(Props.DurationMilliseconds))
                     .Rotation(turns * 360f)
                     .OnSizeChanged(CenterRotation),

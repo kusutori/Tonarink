@@ -1,7 +1,5 @@
 using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Core;
-using Microsoft.UI.Reactor.Hooks;
-using Microsoft.UI.Xaml;
 using static Microsoft.UI.Reactor.Factories;
 
 namespace Tonarink.Components.Animations;
@@ -33,10 +31,10 @@ sealed class AnimatedCopyButton : Component<AnimatedCopyButtonProps>
             previousVersion.Current = Props.SuccessVersion;
         }, Props.SuccessVersion, Props.SuccessAnnouncement);
         var copyIcon = AnimatedFeedback.Outgoing(Border(Icon(AppIcons.Copy).AccessibilityHidden())
-            .OnMount(AnimatedFeedback.BindCompositionCenterPoint),
+                .OnMount(AnimatedFeedback.BindCompositionCenterPoint),
             "copy-feedback-out", Props.SuccessVersion, playing);
         var successIcon = AnimatedFeedback.Incoming(Border(Icon(AppIcons.Success).AccessibilityHidden())
-            .OnMount(AnimatedFeedback.BindCompositionCenterPoint),
+                .OnMount(AnimatedFeedback.BindCompositionCenterPoint),
             "copy-feedback-in", Props.SuccessVersion, playing);
 
         return Button(
@@ -54,5 +52,4 @@ sealed class AnimatedCopyButton : Component<AnimatedCopyButtonProps>
             .ToolTip(Props.ToolTip ?? Props.AutomationName)
             .IsEnabled(Props.IsEnabled);
     }
-
 }

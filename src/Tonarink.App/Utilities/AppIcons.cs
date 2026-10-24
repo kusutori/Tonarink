@@ -63,6 +63,7 @@ static class AppIcons
     public const string StartWithWindows = "\uEC4A";
     public const string Stop = "\uE71A";
     public const string Success = "\uE73E";
+    public const string Sync = "\uE895";
     public const string Theme = "\uE771";
     public const string TopNavigation = "\uE737";
     public const string Undo = "\uE7A7";

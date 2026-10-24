@@ -1,6 +1,5 @@
 using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Core;
-using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using static Microsoft.UI.Reactor.Factories;
 
@@ -71,5 +70,4 @@ sealed class AnimatedQuickActionsButton : Component<AnimatedQuickActionsButtonPr
                 player.SetProgress(0);
         }
     }
-
 }

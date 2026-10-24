@@ -1,6 +1,5 @@
 using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Core;
-using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using static Microsoft.UI.Reactor.Factories;
 
@@ -34,8 +33,8 @@ sealed class AnimatedOpenFolderButton : Component<AnimatedOpenFolderButtonProps>
 
                 var source = new OpenFolderFlyIcon();
                 AnimatedPlayerLifecycle.Mount(player, source,
-                        () => AnimatedIconForeground.Apply(player, source),
-                        () => player.SetProgress(0));
+                    () => AnimatedIconForeground.Apply(player, source),
+                    () => player.SetProgress(0));
                 playerRef.Current = player;
             })
             .OnUnmountAdd(element =>
@@ -82,5 +81,4 @@ sealed class AnimatedOpenFolderButton : Component<AnimatedOpenFolderButtonProps>
                 player.SetProgress(0);
         }
     }
-
 }

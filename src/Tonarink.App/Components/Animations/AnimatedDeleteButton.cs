@@ -30,7 +30,7 @@ sealed class AnimatedDeleteButton : Component<AnimatedDeleteButtonProps>
         var playback = playbackRef.Current ??= new DeleteButtonPlayback();
         var previousShakeVersionRef = UseRef(Props.ShakeVersion);
         var shouldShake = Props.ShakeVersion > previousShakeVersionRef.Current;
-        playback.UseCriticalForeground = Props.Critical && Props.IsEnabled;
+        playback.UseCriticalForeground = Props is { Critical: true, IsEnabled: true };
         playback.ReduceMotion = reduceMotion;
 
         UseEffect(() =>
@@ -48,7 +48,7 @@ sealed class AnimatedDeleteButton : Component<AnimatedDeleteButtonProps>
         }, Props.ShakeVersion);
 
         // Keyframes targets Composition's RotationAngle (radians), not degrees.
-        var player = DeleteIcon(playback, Props.IsEnabled, Props.IconSize)
+        var icon = DeleteIcon(playback, Props.IsEnabled, Props.IconSize)
             .Keyframes("delete-shake", (Props.ShakeVersion, reduceMotion), keyframes => shouldShake && !reduceMotion
                 ? keyframes
                     .Duration(340)
@@ -66,8 +66,8 @@ sealed class AnimatedDeleteButton : Component<AnimatedDeleteButtonProps>
             .HAlign(HorizontalAlignment.Center)
             .VAlign(VerticalAlignment.Center);
         Element content = Props.Label is null
-            ? player
-            : HStack(8, player, TextBlock(Props.Label));
+            ? icon
+            : HStack(8, icon, TextBlock(Props.Label));
 
         var button = Button(content, Props.OnClick)
             .AutomationName(Props.AutomationName)
@@ -85,11 +85,9 @@ sealed class AnimatedDeleteButton : Component<AnimatedDeleteButtonProps>
             .OnUnmountAdd(_ =>
             {
                 playback.IsHovered = false;
-                if (playback.Player is { } player)
-                {
-                    player.Stop();
-                    ResetShake(player);
-                }
+                if (playback.Player is not { } player) return;
+                player.Stop();
+                ResetShake(player);
                 // Only the player clears its own reference. The button and its
                 // content can be reconciled/unmounted in different orders.
             });
@@ -161,7 +159,7 @@ sealed class AnimatedDeleteButton : Component<AnimatedDeleteButtonProps>
             player.Loaded += (_, _) =>
             {
                 RefreshForeground(playback);
-                if (playback.IsHovered && !playback.ReduceMotion)
+                if (playback is { IsHovered: true, ReduceMotion: false })
                     PlayHover(playback);
             };
             player.ActualThemeChanged += (_, _) => RefreshForeground(playback);
@@ -222,7 +220,7 @@ sealed class AnimatedDeleteButton : Component<AnimatedDeleteButtonProps>
 
     private static void RefreshForeground(DeleteButtonPlayback playback)
     {
-        if (playback.Player is { } player && playback.Source is { } source)
+        if (playback is { Player: { } player, Source: { } source })
             AnimatedIconForeground.Apply(player, source, critical: playback.UseCriticalForeground);
     }
 

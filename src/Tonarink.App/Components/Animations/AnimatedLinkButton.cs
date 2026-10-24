@@ -1,6 +1,5 @@
 using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Core;
-using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using static Microsoft.UI.Reactor.Factories;
 
@@ -48,6 +47,7 @@ sealed class AnimatedLinkButton : Component<AnimatedLinkButtonProps>
 
             var targetEnabled = Props.IsEnabled;
             _ = PlayAndSettleAsync();
+            return;
 
             async Task PlayAndSettleAsync()
             {
@@ -95,5 +95,4 @@ sealed class AnimatedLinkButton : Component<AnimatedLinkButtonProps>
             .Padding(0, 0)
             .IsEnabled(Props.IsEnabled);
     }
-
 }

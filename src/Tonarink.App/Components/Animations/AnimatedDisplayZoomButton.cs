@@ -1,6 +1,5 @@
 using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Core;
-using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using static Microsoft.UI.Reactor.Factories;
 
@@ -65,5 +64,4 @@ sealed class AnimatedDisplayZoomButton : Component<AnimatedDisplayZoomButtonProp
             .Padding(0, 0)
             .IsEnabled(Props.IsEnabled);
     }
-
 }

@@ -37,8 +37,7 @@ sealed class AnimatedMultipleReceiversToggle : Component<AnimatedMultipleReceive
             if (wasChecked == Props.IsChecked)
                 return;
 
-            if (playback.Button is { } button
-                && playback.Source is { } source)
+            if (playback is { Button: { } button, Source: { } source })
             {
                 button.DispatcherQueue.TryEnqueue(() =>
                     AnimatedIconForeground.Apply(button, source, button, playback.IsChecked));
@@ -53,7 +52,10 @@ sealed class AnimatedMultipleReceiversToggle : Component<AnimatedMultipleReceive
             .Size(44, 40)
             .Padding(0, 0)
             .IsEnabled(Props.IsEnabled)
-            .OnPointerEntered((_, _) => { if (Props.IsEnabled) PlayHover(playback); })
+            .OnPointerEntered((_, _) =>
+            {
+                if (Props.IsEnabled) PlayHover(playback);
+            })
             .OnPointerExited((_, _) => RestoreRestPosition(playback))
             .OnPointerCanceled((_, _) => RestoreRestPosition(playback))
             .OnPointerCaptureLost((_, _) => RestoreRestPosition(playback))
@@ -156,7 +158,9 @@ sealed class AnimatedMultipleReceiversToggle : Component<AnimatedMultipleReceive
 
         var fromProgress = isChecked
             ? wasExpanded ? OffHoverProgress : OffRestProgress
-            : wasExpanded ? OnHoverProgress : OnRestProgress;
+            : wasExpanded
+                ? OnHoverProgress
+                : OnRestProgress;
         var toProgress = isChecked ? OnRestProgress : OffReturnProgress;
         var settledProgress = isChecked ? OnRestProgress : OffRestProgress;
         _ = PlayAndSettleAsync(
@@ -198,6 +202,5 @@ sealed class AnimatedMultipleReceiversToggle : Component<AnimatedMultipleReceive
         public bool HoverExpanded { get; set; }
 
         public int AnimationVersion { get; set; }
-
     }
 }

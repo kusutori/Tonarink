@@ -1,6 +1,5 @@
 using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Core;
-using Microsoft.UI.Reactor.Hooks;
 using Microsoft.UI.Xaml;
 using static Microsoft.UI.Reactor.Factories;
 
@@ -68,5 +67,4 @@ sealed class AnimatedVerifyButton : Component<AnimatedVerifyButtonProps>
             .HAlign(HorizontalAlignment.Center)
             .VAlign(VerticalAlignment.Center)
             .OnMount(AnimatedFeedback.BindCompositionCenterPoint);
-
 }

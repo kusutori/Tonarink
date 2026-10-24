@@ -1,6 +1,5 @@
 using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Core;
-using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using static Microsoft.UI.Reactor.Factories;
 
@@ -49,6 +48,7 @@ sealed class AnimatedFavoritesButton : Component<AnimatedFavoritesButtonProps>
 
             var targetSunk = isSunk;
             _ = PlayAndSettleAsync();
+            return;
 
             async Task PlayAndSettleAsync()
             {
@@ -95,5 +95,4 @@ sealed class AnimatedFavoritesButton : Component<AnimatedFavoritesButtonProps>
             .Padding(0, 0)
             .IsEnabled(Props.IsEnabled);
     }
-
 }

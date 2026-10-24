@@ -5,7 +5,6 @@ using Microsoft.UI.Reactor.Core;
 using Microsoft.UI.Reactor.Localization;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
-using Microsoft.UI.Xaml.Controls;
 using static Microsoft.UI.Reactor.Factories;
 
 namespace Tonarink.Pages.Web;
@@ -289,13 +288,13 @@ sealed class WebSharePage : Component<WebSharePageProps>
                         .Grid(column: 0),
                     (request.Pending
                         ? (Element)HStack(4,
-                            Button(Icon("Cancel").AccessibilityHidden(),
+                            Button(Icon(FontIcon(AppIcons.Cancel)).AccessibilityHidden(),
                                     () => node?.DeclineWebShareRequest(request.SessionId))
                                 .SubtleButton()
                                 .AutomationName(t.Message(new("App", "Decline")))
                                 .MinWidth(40)
                                 .MinHeight(40),
-                            Button(Icon("Accept").AccessibilityHidden(),
+                            Button(Icon(FontIcon(AppIcons.Accept)).AccessibilityHidden(),
                                     () => node?.AcceptWebShareRequest(request.SessionId))
                                 .SubtleButton()
                                 .AutomationName(t.Message(new("App", "Accept")))
@@ -309,5 +308,4 @@ sealed class WebSharePage : Component<WebSharePageProps>
             .CornerRadius(8)
             .Background(Theme.CardBackground)
             .WithBorder(Theme.CardStroke);
-
 }
