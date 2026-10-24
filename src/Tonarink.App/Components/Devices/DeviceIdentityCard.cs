@@ -54,16 +54,16 @@ sealed class DeviceIdentityCard : Component<DeviceIdentityCardProps>
                                 .Flex(shrink: 1),
                             Props.IsFavorite
                                 ? TextBlock(AppIcons.FavoriteIndicator)
-                                    .FontFamily("Segoe Fluent Icons")
+                                    .FontFamily(AppFonts.Symbols)
                                     .FontSize(16)
                                     .Foreground(Theme.AccentText)
                                     .AccessibilityHidden()
                                     .Flex(shrink: 0)
                                 : null) with
-                    {
-                        AlignItems = FlexAlign.Center,
-                        ColumnGap = 8,
-                    },
+                        {
+                            AlignItems = FlexAlign.Center,
+                            ColumnGap = 8,
+                        },
                     HStack(8,
                         DeviceTag(Props.Number),
                         DeviceTag(DeviceModel(t, Props.Model, Props.Type))))
@@ -116,7 +116,7 @@ sealed class DeviceIdentityCard : Component<DeviceIdentityCardProps>
                         throw new ArgumentOutOfRangeException();
                 }
             })
-            .OnUnmountAdd(element => ReleaseCard(element as FrameworkElement));
+            .OnUnmountAdd(ReleaseCard);
 
         if (Props.OnSecondaryClick is null || Props.SecondaryGlyph is null)
             return card;

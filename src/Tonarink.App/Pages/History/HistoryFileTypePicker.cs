@@ -125,7 +125,6 @@ sealed class HistoryFileTypePicker : Component<HistoryFileTypePickerProps>
         {
             var icon = new FontIcon
             {
-                FontFamily = new FontFamily("Segoe Fluent Icons"),
                 FontSize = 16,
             };
             icon.SetBinding(FontIcon.GlyphProperty, new Binding

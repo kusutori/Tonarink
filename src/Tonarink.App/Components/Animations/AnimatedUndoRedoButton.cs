@@ -1,7 +1,6 @@
 using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Core;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media;
 using static Microsoft.UI.Reactor.Factories;
 
 namespace Tonarink.Components.Animations;
@@ -27,7 +26,6 @@ sealed class AnimatedUndoRedoButton : Component<AnimatedUndoRedoButtonProps>
         var source = UseMemo(() => CreateSource(Props.Kind), Props.Kind);
         var fallback = UseMemo(() => new FontIconSource
         {
-            FontFamily = new FontFamily("Segoe Fluent Icons"),
             Glyph = Props.Kind switch
             {
                 UndoRedoIconKind.Undo => AppIcons.Undo,

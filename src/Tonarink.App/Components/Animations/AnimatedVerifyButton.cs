@@ -61,7 +61,7 @@ sealed class AnimatedVerifyButton : Component<AnimatedVerifyButtonProps>
     }
 
     private static Element FeedbackIcon(string glyph) =>
-        Border(Icon(new FontIconData(glyph, "Segoe Fluent Icons", 20))
+        Border(Icon(FontIcon(glyph, fontSize: 20))
                 .AccessibilityHidden())
             .Size(24, 24)
             .HAlign(HorizontalAlignment.Center)

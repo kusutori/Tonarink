@@ -119,7 +119,7 @@ sealed class HistoryFilterButton : Component<HistoryFilterButtonProps>
                 // Opening the editor must not check the toggle before filters are applied.
                 setResetVersion(resetVersion + 1);
             })
-            .FontFamily("Segoe Fluent Icons")
+            .FontFamily(AppFonts.Symbols)
             .FontSize(20)
             .Height(40)
             .Padding(12, 0)

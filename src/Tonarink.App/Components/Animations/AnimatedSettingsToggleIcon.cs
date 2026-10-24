@@ -1,7 +1,6 @@
 using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Core;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media;
 using static Microsoft.UI.Reactor.Factories;
 
 namespace Tonarink.Components.Animations;
@@ -51,7 +50,6 @@ static class AnimatedSettingsToggleIcon
                 icon.Source ??= CreateSource(kind);
                 icon.FallbackIconSource ??= new FontIconSource
                 {
-                    FontFamily = new FontFamily("Segoe Fluent Icons"),
                     Glyph = kind switch
                     {
                         SettingsToggleIconKind.History => "\uE81C",

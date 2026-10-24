@@ -1,7 +1,6 @@
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.AnimatedVisuals;
-using Microsoft.UI.Xaml.Media;
 
 namespace Tonarink.Components.Shell;
 
@@ -29,7 +28,6 @@ static class NavigationAnimatedIcons
             Source = source,
             FallbackIconSource = new FontIconSource
             {
-                FontFamily = new FontFamily("Segoe Fluent Icons"),
                 Glyph = fallbackGlyph,
             },
         };
