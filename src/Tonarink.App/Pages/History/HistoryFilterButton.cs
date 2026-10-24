@@ -22,6 +22,8 @@ sealed class HistoryFilterButton : Component<HistoryFilterButtonProps>
         var flyoutCleanup = UseRef<Action?>();
         var alignedOpening = UseRef(false);
         var (resetVersion, setResetVersion) = UseState(0);
+        var nextFilter = draft.Normalize();
+        var canApply = nextFilter is { IsValid: true, IsActive: true };
 
         var fields = VStack(16,
             Field(Message("HistoryFilterSearch"),
@@ -89,14 +91,13 @@ sealed class HistoryFilterButton : Component<HistoryFilterButtonProps>
                     rows: [GridSize.Auto],
                     Button(Message("HistoryFilterApply"), () =>
                         {
-                            if (!draft.IsValid) return;
-                            var next = draft.Normalize();
+                            if (!canApply) return;
                             Close();
-                            Props.Apply(next);
+                            Props.Apply(nextFilter);
                         })
                         .AccentButton()
                         .AutomationName(Message("HistoryFilterApply"))
-                        .IsEnabled(draft.IsValid)
+                        .IsEnabled(canApply)
                         .HAlign(HorizontalAlignment.Stretch)
                         .AutomationId("History.Filter.Apply")
                         .Margin(right: 8)

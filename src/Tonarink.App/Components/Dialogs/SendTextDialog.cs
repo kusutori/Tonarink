@@ -1,6 +1,5 @@
 using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Core;
-using Microsoft.UI.Reactor.Localization;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using static Microsoft.UI.Reactor.Factories;
@@ -33,19 +32,19 @@ sealed class SendTextDialog : Component<SendTextDialogProps>
                     .TextWrapping()
                     .MinHeight(160),
                 primaryButtonText: t.Message(new("App", "Add"))) with
-        {
-            IsOpen = Props.IsOpen,
-            SecondaryButtonText = t.Message(new("App", "Cancel")),
-            OnClosed = result =>
             {
-                if (result == ContentDialogResult.Primary && !string.IsNullOrWhiteSpace(Props.Text))
+                IsOpen = Props.IsOpen,
+                SecondaryButtonText = t.Message(new("App", "Cancel")),
+                OnClosed = result =>
                 {
-                    Props.AddText(Props.Text);
-                    Props.SetText(string.Empty);
-                }
+                    if (result == ContentDialogResult.Primary && !string.IsNullOrWhiteSpace(Props.Text))
+                    {
+                        Props.AddText(Props.Text);
+                        Props.SetText(string.Empty);
+                    }
 
-                Props.Close();
-            },
-        }).Themed(Props.Theme);
+                    Props.Close();
+                },
+            }).Themed(Props.Theme);
     }
 }
