@@ -1,0 +1,30 @@
+{
+  "shortDescription": "Transferencias rápidas y privadas de archivos y texto en tu red local.",
+  "description": "Tonarink es una aplicación independiente para Windows que transfiere archivos, carpetas, texto y el contenido del portapapeles directamente entre dispositivos cercanos en tu red local. No hace falta una cuenta ni subir nada a la nube.\n\nDescubre automáticamente los dispositivos compatibles con LocalSend, revisa los archivos antes de aceptarlos o envíalos directamente a una dirección guardada. Tonarink también se integra con Compartir de Windows, el Explorador de archivos, las notificaciones, la barra de tareas y la bandeja del sistema.\n\nCompartir y recibir mediante un enlace permite que otro dispositivo use el navegador cuando no conviene instalar una aplicación. La protección con PIN opcional, la verificación por suma de comprobación, los favoritos, el historial de transferencias y la recepción selectiva te dan el control de cada transferencia.\n\nTonarink es una implementación no oficial del protocolo LocalSend. No está afiliada al proyecto oficial de LocalSend ni cuenta con su respaldo.",
+  "features": [
+    "Envía y recibe archivos, carpetas, texto y el portapapeles por la red local",
+    "Descubre automáticamente dispositivos cercanos compatibles con LocalSend",
+    "Revisa, cambia el nombre, selecciona y elige la carpeta antes de recibir",
+    "Comparte o recibe mediante una página web local temporal",
+    "Protección con PIN opcional y verificación por suma de comprobación",
+    "Integración con Compartir de Windows, el Explorador, las notificaciones, la barra de tareas y la bandeja",
+    "Guarda favoritos, direcciones manuales y un historial de recepción opcional",
+    "Inglés, chino simplificado, japonés, coreano, francés y español, y el tema de Windows"
+  ],
+  "releaseNotes": "Tonarink está listo para su primera publicación en Microsoft Store, con transferencia local de archivos y texto, integración con Windows, uso compartido y recepción web, verificación de dispositivos y opciones de privacidad configurables.",
+  "searchTerms": [
+    "transferencia local",
+    "compartir cercano",
+    "compartir LAN",
+    "LocalSend",
+    "compartir archivos",
+    "portapapeles"
+  ],
+  "copyright": "© 2026 kusutori. Distribuido bajo la licencia Apache 2.0. Tonarink es una implementación no oficial del protocolo LocalSend.",
+  "screenshotCaption": "Inicio de recepción de Tonarink",
+  "trailerTitles": [
+    "Resumen de funciones",
+    "Integración del sistema",
+    "Envío y recepción"
+  ]
+}

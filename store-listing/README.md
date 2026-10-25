@@ -2,9 +2,8 @@
 
 `en-US/listing.json` is the source of truth for translatable Microsoft Store
 copy. Crowdin project `929895` manages translations and writes supported locales
-to `%locale%/listing.json`. The app currently publishes English and Simplified
-Chinese resources, so CI intentionally downloads only `zh-CN`; additional Store
-languages should be enabled when the corresponding app language is ready.
+to `%locale%/listing.json`. Checked-in locales are `en-US`, `zh-CN`, `ja-JP`,
+`ko-KR`, `fr-FR`, and `es-ES`. CI still downloads only `zh-CN` from Crowdin.
 
 These JSON files are a stable, reviewable source format, not a Partner Center
 submission export. After the first Store product is created, the publishing

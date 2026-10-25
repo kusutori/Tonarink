@@ -1,0 +1,30 @@
+{
+  "shortDescription": "Transferts rapides et privés de fichiers et de texte sur votre réseau local.",
+  "description": "Tonarink est une application Windows indépendante qui transfère directement des fichiers, des dossiers, du texte et le contenu du Presse-papiers entre des appareils proches, sur votre réseau local. Aucun compte ni envoi vers le cloud n’est nécessaire.\n\nDécouvrez automatiquement les appareils compatibles avec LocalSend, vérifiez les fichiers avant de les accepter, ou envoyez-les directement vers une adresse enregistrée. Tonarink s’intègre aussi au partage Windows, à l’Explorateur de fichiers, aux notifications, à la barre des tâches et à la zone de notification.\n\nLe partage et la réception par lien permettent à un autre appareil d’utiliser un navigateur lorsqu’il n’est pas pratique d’installer une application. Une protection par PIN facultative, la vérification par somme de contrôle, les favoris, l’historique des transferts et la réception sélective vous donnent le contrôle de chaque transfert.\n\nTonarink est une implémentation non officielle du protocole LocalSend. Elle n’est ni affiliée au projet LocalSend officiel, ni approuvée par celui-ci.",
+  "features": [
+    "Envoyer et recevoir des fichiers, des dossiers, du texte et le Presse-papiers sur le réseau local",
+    "Découvrir automatiquement les appareils LocalSend compatibles à proximité",
+    "Vérifier, renommer, sélectionner et choisir la destination avant réception",
+    "Partager ou recevoir via une page web locale temporaire",
+    "Protection par PIN facultative et vérification par somme de contrôle",
+    "Intégration au partage Windows, à l’Explorateur, aux notifications, à la barre des tâches et à la zone de notification",
+    "Enregistrer des favoris, des adresses manuelles et un historique de réception facultatif",
+    "Anglais, chinois simplifié, japonais, coréen, français et espagnol, avec le thème Windows"
+  ],
+  "releaseNotes": "Tonarink est prêt pour sa première publication sur le Microsoft Store, avec le transfert local de fichiers et de texte, l’intégration Windows, le partage et la réception sur le web, la vérification des appareils et des options de confidentialité configurables.",
+  "searchTerms": [
+    "transfert local",
+    "partage proche",
+    "partage LAN",
+    "LocalSend",
+    "partage fichiers",
+    "presse-papiers"
+  ],
+  "copyright": "© 2026 kusutori. Distribué sous la licence Apache 2.0. Tonarink est une implémentation non officielle du protocole LocalSend.",
+  "screenshotCaption": "Accueil de réception Tonarink",
+  "trailerTitles": [
+    "Aperçu des fonctions",
+    "Intégration système",
+    "Envoi et réception"
+  ]
+}

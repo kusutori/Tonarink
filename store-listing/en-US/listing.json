@@ -9,7 +9,7 @@
     "Use optional PIN protection and checksum verification",
     "Integrate with Windows Share, File Explorer, notifications, the taskbar, and the system tray",
     "Save favorite devices, manual addresses, and optional receive history",
-    "Choose English or Simplified Chinese and follow the Windows light or dark theme"
+    "Support English, Simplified Chinese, Japanese, Korean, French, and Spanish, and follow the Windows theme"
   ],
   "releaseNotes": "Tonarink is ready for its first Microsoft Store release, with local file and text transfer, Windows integration, web sharing and receiving, device verification, and configurable privacy controls.",
   "searchTerms": [
@@ -19,5 +19,12 @@
     "LocalSend",
     "file sharing",
     "clipboard transfer"
+  ],
+  "copyright": "© 2026 kusutori. Licensed under the Apache License 2.0. Tonarink is an unofficial implementation of the LocalSend protocol.",
+  "screenshotCaption": "Tonarink home screen",
+  "trailerTitles": [
+    "Feature overview",
+    "System integration",
+    "Send and receive"
   ]
 }

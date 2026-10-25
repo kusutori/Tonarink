@@ -6,8 +6,9 @@ enable automatic production submission before the product identities exist.
 
 ## Prepared in the repository
 
-- English and Simplified Chinese Store copy under `store-listing/`, synchronized
-  through Crowdin project `929895`.
+- English, Simplified Chinese, Japanese, Korean, French, and Spanish Store copy
+  under `store-listing/`. Crowdin project `929895` is set up for this copy, and
+  CI still downloads only `zh-CN`.
 - Structural validation in `.github/workflows/store-listing.yml`.
 - Public privacy, security, and code-signing policies at the repository root.
 - Existing automated GitHub Release builds for x64 and ARM64.
@@ -59,10 +60,10 @@ the protected environment approves submission.
 
 ## Crowdin and Store languages
 
-The source language is `en-US`. The Windows app supports `en-US`, `zh-CN`,
-`ja-JP`, `ko-KR`, `fr-FR`, and `es-ES`. Store listing copy is separate from app
-UI resources; CI currently downloads only the `zh-CN` listing. To add another
-Store listing language:
+The source language is `en-US`. The Windows app and the checked-in Store copy
+support `en-US`, `zh-CN`, `ja-JP`, `ko-KR`, `fr-FR`, and `es-ES`. Store listing
+copy is separate from app UI resources; CI currently downloads only the `zh-CN`
+listing from Crowdin. To add another Store listing language:
 
 1. Finish and review that locale in Crowdin.
 2. Ensure the matching app resources and package manifest language are present.
