@@ -1,40 +1,32 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+<svg xmlns="http://www.w3.org/2000/svg" width="384" height="384" viewBox="0 0 384 384" fill="none" role="img" aria-labelledby="title description">
+  <title id="title">Tonarink</title>
+  <desc id="description">Tonarink logo: an aqua rear panel overlaps a lower teal front panel, connected by a light transfer arrow.</desc>
   <defs>
-    <linearGradient id="plate" x1="0.18" y1="0" x2="0.82" y2="1">
-      <stop offset="0%" stop-color="#14C4C2"/>
-      <stop offset="48%" stop-color="#009BA3"/>
-      <stop offset="100%" stop-color="#0B6570"/>
+    <linearGradient id="rearPanel" x1="1106" y1="162" x2="1247" y2="352" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#A2FAF4"/>
+      <stop offset="0.48" stop-color="#70EBEE"/>
+      <stop offset="1" stop-color="#27BED2"/>
     </linearGradient>
-    <radialGradient id="spot" cx="28%" cy="18%" r="70%">
-      <stop offset="0%" stop-color="#FFFFFF" stop-opacity=".16"/>
-      <stop offset="40%" stop-color="#FFFFFF" stop-opacity=".04"/>
-      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
-    </radialGradient>
-    <linearGradient id="rim" x1="0.5" y1="0" x2="0.5" y2="1">
-      <stop offset="0%" stop-color="#FFFFFF" stop-opacity=".36"/>
-      <stop offset="52%" stop-color="#FFFFFF" stop-opacity=".10"/>
-      <stop offset="100%" stop-color="#002E34" stop-opacity=".20"/>
+    <linearGradient id="frontPanel" x1="1393" y1="151" x2="1238" y2="411" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#00AFBB"/>
+      <stop offset="0.5" stop-color="#008C9C"/>
+      <stop offset="1" stop-color="#006273"/>
     </linearGradient>
-    <linearGradient id="glyph" x1="0.5" y1="0" x2="0.5" y2="1">
-      <stop offset="0%" stop-color="#FFFFFF"/>
-      <stop offset="100%" stop-color="#E7FFFC"/>
+    <linearGradient id="transferArrow" x1="1164" y1="312" x2="1325" y2="249" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#74E6EA" stop-opacity="0"/>
+      <stop offset="0.34" stop-color="#B0EAF0" stop-opacity="0.92"/>
+      <stop offset="0.72" stop-color="#E6F4F7"/>
+      <stop offset="1" stop-color="#F2F8FA"/>
     </linearGradient>
-    <filter id="lift" x="-25%" y="-25%" width="150%" height="150%">
-      <feDropShadow dx="0" dy="3" stdDeviation="2.4" flood-color="#014247" flood-opacity=".28"/>
-    </filter>
-    <clipPath id="clip"><rect width="256" height="256" rx="56"/></clipPath>
+    <linearGradient id="rearEdge" x1="1115" y1="155" x2="1282" y2="118" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#C4FFFB" stop-opacity="0.7"/>
+      <stop offset="1" stop-color="#C4FFFB" stop-opacity="0"/>
+    </linearGradient>
   </defs>
-  <g clip-path="url(#clip)">
-    <rect width="256" height="256" rx="56" fill="url(#plate)"/>
-    <rect width="256" height="256" fill="url(#spot)"/>
-  </g>
-  <rect x="1.25" y="1.25" width="253.5" height="253.5" rx="54.75" fill="none" stroke="url(#rim)" stroke-width="2.5"/>
-  <g fill="none" stroke="url(#glyph)" stroke-width="18" stroke-linecap="round" stroke-linejoin="round" filter="url(#lift)">
-    <path d="M204 128a76 76 0 0 1-40.109 66.991"/>
-    <path d="M143.276 202.449a76 76 0 0 1-73.686-25.825"/>
-    <path d="M58.141 157.928a76 76 0 0 1 10.487-77.373"/>
-    <path d="M84.641 65.582a76 76 0 0 1 77.902-5.278"/>
-    <path d="M180.429 72.98A76 76 0 0 1 204 128"/>
-    <path d="M79 128h98m-27-29 29 29-29 29"/>
+  <g transform="translate(-1070 -68)">
+    <path fill="url(#rearPanel)" d="M1096 206C1096 174 1110 153 1139 141L1237 107C1268 96 1292 111 1292 141V295C1292 321 1278 339 1252 348L1143 379C1116 388 1096 373 1096 347V206Z"/>
+    <path fill="url(#frontPanel)" d="M1223 248C1223 216 1238 193 1269 183L1375 152C1405 142 1428 157 1428 188V337C1428 363 1416 380 1391 388L1278 420C1247 429 1223 412 1223 382V248Z"/>
+    <path fill="url(#transferArrow)" d="M1148 271C1183 287 1217 245 1263 245C1267 244 1269 242 1269 238V216C1269 209 1274 207 1279 212L1344 272C1351 279 1351 285 1344 292L1280 348C1275 353 1269 351 1269 344V324C1269 320 1266 318 1262 319C1224 319 1205 356 1165 351C1154 329 1149 297 1148 271Z"/>
+    <path d="M1097 205C1097 175 1111 154 1139 142L1237 108C1266 98 1290 111 1291 140" stroke="url(#rearEdge)" stroke-width="1.2"/>
   </g>
 </svg>

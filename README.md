@@ -34,13 +34,17 @@
 
 ## 功能演示
 
-| **动态启动画面** | **设备卡片连通动画** |
-| :---: | :---: |
-| ![Tonarink 启动动画](docs/assets/readme/splash.gif) | ![设备卡片进入传输覆盖层的连通动画](docs/assets/readme/connected-animation.gif) |
-| **查看与选择接收文件** | **Windows 系统分享集成** |
-| ![展开接收卡片并选择要接收的文件](docs/assets/readme/receive-card-expand.gif) | ![通过 Windows 分享界面发送文件](docs/assets/readme/windows-share.gif) |
+| **功能概览** |
+| :---: |
+| ![Tonarink 功能概览](docs/assets/readme/01-overview.gif)<br>[观看视频](docs/assets/readme/01-overview.mp4) |
 
-[观看 Tonarink 1.0.5 完整演示视频](https://github.com/kusutori/Tonarink/releases/download/app-v1.0.5/Tonarink-1.0.5-demo.mp4)。
+| **发送与接收** |
+| :---: |
+| ![发送与接收](docs/assets/readme/02-transfer.gif)<br>[观看视频](docs/assets/readme/02-transfer.mp4) |
+
+| **系统集成** |
+| :---: |
+| ![系统集成](docs/assets/readme/03-integration.gif)<br>[观看视频](docs/assets/readme/03-integration.mp4) |
 
 ## 功能亮点
 

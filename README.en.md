@@ -35,13 +35,17 @@
 
 ## See it in action
 
-| **Animated startup** | **Connected device transition** |
-| :---: | :---: |
-| ![Tonarink splash animation](docs/assets/readme/splash.gif) | ![Connected animation from a nearby device into the transfer overlay](docs/assets/readme/connected-animation.gif) |
-| **Review an incoming transfer** | **Share directly from Windows** |
-| ![Expanding an incoming transfer to review and select files](docs/assets/readme/receive-card-expand.gif) | ![Sending a file through the Windows Share interface](docs/assets/readme/windows-share.gif) |
+| **Feature overview** |
+| :---: |
+| ![Tonarink feature overview](docs/assets/readme/01-overview.gif)<br>[Watch the video](docs/assets/readme/01-overview.mp4) |
 
-[Watch the full Tonarink 1.0.5 demonstration](https://github.com/kusutori/Tonarink/releases/download/app-v1.0.5/Tonarink-1.0.5-demo.mp4).
+| **Send and receive** |
+| :---: |
+| ![Send and receive](docs/assets/readme/02-transfer.gif)<br>[Watch the video](docs/assets/readme/02-transfer.mp4) |
+
+| **System integration** |
+| :---: |
+| ![System integration](docs/assets/readme/03-integration.gif)<br>[Watch the video](docs/assets/readme/03-integration.mp4) |
 
 ## Highlights
 
