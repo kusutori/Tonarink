@@ -1,9 +1,20 @@
+import { dirname, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vitepress'
 import enUS from '../locales/en-US.json'
 import zhCN from '../locales/zh-CN.json'
 
 const repository = 'https://github.com/kusutori/Tonarink'
-const base = process.env.VITEPRESS_BASE ?? '/Tonarink/'
+const directory = dirname(fileURLToPath(import.meta.url))
+
+// GitHub Pages reports the project base without a trailing slash.
+// Keep one so head links do not become /Tonarinklogo.svg.
+function withTrailingSlash(value: string) {
+  const prefixed = value.startsWith('/') ? value : `/${value}`
+  return prefixed.endsWith('/') ? prefixed : `${prefixed}/`
+}
+
+const base = withTrailingSlash(process.env.VITEPRESS_BASE ?? '/Tonarink/')
 
 export default defineConfig({
   title: 'Tonarink',
@@ -13,6 +24,10 @@ export default defineConfig({
   cleanUrls: true,
   srcDir: './content',
   srcExclude: ['README.md'],
+  // The build root is srcDir, so the default public folder would be content/public.
+  vite: {
+    publicDir: resolve(directory, '../public')
+  },
   rewrites: {
     'zh-CN/:path*': ':path*',
     'en-US/:path*': 'en/:path*'
