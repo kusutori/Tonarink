@@ -6,6 +6,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using static Microsoft.UI.Reactor.Factories;
+using static Tonarink.Controls.AnimatedReflowPanelElement;
 using static Tonarink.Components.Transfers.TransferOverlayVisuals;
 using static Tonarink.Pages.Send.SelectedSendItemOperations;
 using static Tonarink.Pages.Send.SendPageVisuals;
@@ -241,26 +242,19 @@ sealed class SendPage : Component<SendPageProps>
             .HAlign(HorizontalAlignment.Stretch)
             .VAlign(VerticalAlignment.Stretch);
 
-        if (isWideLayout)
+        // Stable native slots let Composition animate the same cards across breakpoints.
+        Element contentCards = (AnimatedReflowPanel(children:
+            [
+                Border(selectedItemsCard).WithKey("selected-items"),
+                Border(nearbyDevicesCard).WithKey("nearby-devices"),
+            ]) with
         {
-            selectedItemsCard = selectedItemsCard.Flex(grow: 1, shrink: 1, basis: 320);
-            nearbyDevicesCard = nearbyDevicesCard.Flex(grow: 1, shrink: 1, basis: 320);
-        }
-
-        Element contentCards = isWideLayout
-            ? (FlexRow(selectedItemsCard, nearbyDevicesCard) with
-            {
-                AlignItems = FlexAlign.Stretch,
-                AlignContent = FlexAlign.Stretch,
-                ColumnGap = 16,
-            })
-            .VAlign(VerticalAlignment.Stretch)
-            .Flex(grow: 1, basis: 0)
-            : (FlexColumn(selectedItemsCard, nearbyDevicesCard) with
-            {
-                RowGap = 16,
-            })
-            .HAlign(HorizontalAlignment.Stretch);
+            Orientation = isWideLayout ? Orientation.Horizontal : Orientation.Vertical,
+            Spacing = 16,
+            AnimationsEnabled = !reduceMotion,
+        }).HAlign(HorizontalAlignment.Stretch);
+        if (isWideLayout)
+            contentCards = contentCards.VAlign(VerticalAlignment.Stretch).Flex(grow: 1, basis: 0);
 
         var pageBody = (FlexColumn(
                     VStack(12,
@@ -408,11 +402,15 @@ sealed class SendPage : Component<SendPageProps>
                     .WithKey(verificationDevice.Fingerprint)
                     .Grid(row: 0, column: 0));
 
-        return isWideLayout
-            ? page
-            : ScrollView(page)
-                .HorizontalContentAlignment(HorizontalAlignment.Stretch)
-                .VerticalContentAlignment(VerticalAlignment.Top);
+        // Keep the scroll host mounted in both modes; replacing it would remount the cards.
+        return (ScrollView(page) with
+            {
+                VerticalScrollBarVisibility = isWideLayout ? ScrollingScrollBarVisibility.Hidden : ScrollingScrollBarVisibility.Auto,
+            })
+            .ContentOrientation(isWideLayout ? ScrollingContentOrientation.None : ScrollingContentOrientation.Vertical)
+            .VerticalScrollMode(isWideLayout ? ScrollingScrollMode.Disabled : ScrollingScrollMode.Auto)
+            .HorizontalContentAlignment(HorizontalAlignment.Stretch)
+            .VerticalContentAlignment(isWideLayout ? VerticalAlignment.Stretch : VerticalAlignment.Top);
 
         Element SearchingDevicesAnimation() =>
             (AnimatedVisualPlayer() with { AutoPlay = false })
