@@ -21,10 +21,14 @@
 </p>
 
 <p align="center">
-  <a href="https://apps.microsoft.com/detail/9P29ZJGFWPJR"><img alt="从 Microsoft Store 获取" src="https://img.shields.io/badge/Microsoft_Store-获取应用-0078D4?logo=microsoft&logoColor=white"></a>
   <a href="https://github.com/kusutori/Tonarink/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/kusutori/Tonarink?display_name=tag&sort=semver"></a>
   <a href="LICENSE"><img alt="Apache-2.0 license" src="https://img.shields.io/github/license/kusutori/Tonarink"></a>
   <img alt="Windows 11" src="https://img.shields.io/badge/Windows-11-0078D4?logo=windows11">
+</p>
+<p align="center">
+  <a href="https://apps.microsoft.com/detail/9p29zjgfwpjr?referrer=appbadge&mode=full" target="_blank"  rel="noopener noreferrer">
+  	<img src="https://get.microsoft.com/images/zh-cn%20dark.svg" width="200"/>
+  </a>
 </p>
 
 > [!IMPORTANT]
