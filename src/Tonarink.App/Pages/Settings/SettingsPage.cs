@@ -12,7 +12,7 @@ sealed class SettingsPage : Component<SettingsPageProps>
     public override Element Render()
     {
         var t = UseIntl();
-        var (_, refreshCachedPage) = UseReducer(0);
+        var (navigationRevision, refreshCachedPage) = UseReducer(0);
         // Refresh only once NavigationHost has committed the restored page.
         // Rendering in the destination guard can re-enter cache restoration before
         // CurrentChildControl/LastRenderedRoute are committed, mounting a second page.
@@ -74,20 +74,24 @@ sealed class SettingsPage : Component<SettingsPageProps>
             if (rebased != draftRef.Current)
                 UpdateDraft(_ => rebased);
         }, savedInputs);
+        // Render general settings first so the remaining controls, templates and
+        // animations don't block the entrance transition. Navigation completion
+        // fills in the rest; cached visits keep every section mounted.
+        var includeAllSections = navigationRevision > 0;
         return ScrollView(
                 VStack(24,
                         Component<GeneralSettingsSection, GeneralSettingsSectionProps>(new(
                             Props.Settings, Props.UpdateSettings, setStatusMessage)),
-                        Component<ReceiveSettingsSection, ReceiveSettingsSectionProps>(new(
-                            Props.Settings, draft, Props.UpdateSettings, UpdateDraft, setStatusMessage)),
-                        Component<SendSettingsSection, SendSettingsSectionProps>(new(
-                            Props.Settings, Props.UpdateSettings)),
-                        Component<NetworkSettingsSection, NetworkSettingsSectionProps>(new(
+                        includeAllSections ? Component<ReceiveSettingsSection, ReceiveSettingsSectionProps>(new(
+                            Props.Settings, draft, Props.UpdateSettings, UpdateDraft, setStatusMessage)) : null,
+                        includeAllSections ? Component<SendSettingsSection, SendSettingsSectionProps>(new(
+                            Props.Settings, Props.UpdateSettings)) : null,
+                        includeAllSections ? Component<NetworkSettingsSection, NetworkSettingsSectionProps>(new(
                             Props.Settings, Props.Runtime, draft, Props.UpdateSettings, UpdateDraft,
-                            ApplyAndRestart, Props.StopServer)),
-                        Component<ExperimentalSettingsSection, ExperimentalSettingsSectionProps>(new(
-                            Props.Settings, Props.UpdateSettings, setStatusMessage)),
-                        Component<AboutSettingsSection>())
+                            ApplyAndRestart, Props.StopServer)) : null,
+                        includeAllSections ? Component<ExperimentalSettingsSection, ExperimentalSettingsSectionProps>(new(
+                            Props.Settings, Props.UpdateSettings, setStatusMessage)) : null,
+                        includeAllSections ? Component<AboutSettingsSection>() : null)
                     .Padding(AppLayout.PagePadding))
             .HorizontalContentAlignment(HorizontalAlignment.Stretch)
             .AutomationName(t.Message(new("App", "SettingsTitle")))
