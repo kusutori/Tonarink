@@ -1,5 +1,6 @@
 using LocalSendDotNet;
 using Microsoft.UI.Reactor;
+using Microsoft.UI.Reactor.Animation;
 using Microsoft.UI.Reactor.Core;
 using Microsoft.UI.Xaml;
 using static Microsoft.UI.Reactor.Factories;
@@ -20,6 +21,7 @@ sealed class TransferOverlayHost : Component<TransferOverlayHostProps>
 {
     public override Element Render()
     {
+        var reduceMotion = UseReducedMotion();
         Element? overlay = Props switch
         {
             { Incoming: { } incoming, Node: { } node } =>
@@ -45,7 +47,15 @@ sealed class TransferOverlayHost : Component<TransferOverlayHostProps>
             _ => null,
         };
 
-        return Border(overlay)
+        // Exit belongs on the direct child of the panel: a decorator's content
+        // replacement would otherwise remove the component immediately.
+        if (Props.Incoming is not null && overlay is not null && !reduceMotion)
+            overlay = overlay.Transition(Transition.Exit(new FadeTransition()));
+
+        return Grid(
+                columns: [GridSize.Star()],
+                rows: [GridSize.Star()],
+                overlay)
             .IsHitTestVisible(overlay is not null);
     }
 }
