@@ -54,10 +54,6 @@ sealed class SendPage : Component<SendPageProps>
                 return () => FavoriteDeviceStore.Changed -= listener;
             },
             static () => FavoriteDeviceStore.Entries);
-        var searchingPlayerRef = context.UseRef<AnimatedVisualPlayer?>();
-        var playSearchingAnimation = Props.Runtime.NodeState == LocalSendNodeState.Running && !reduceMotion;
-        context.UseEffect(() => PlaySearchingAnimation(searchingPlayerRef.Current,
-            playSearchingAnimation && navigation.CurrentRoute == AppRoute.Send), playSearchingAnimation);
         var shareSource = context.UseRef<WindowsShareSource?>();
         var transfer = context.UseSendTransfer(
             Props.Node,
@@ -92,10 +88,7 @@ sealed class SendPage : Component<SendPageProps>
         // Reconcile it before the transition and read the live window bounds so a resize
         // performed on another page is reflected immediately when Send becomes visible.
         context.UseNavigationLifecycle(
-            onNavigatingTo: _ => refreshCachedPage(value => value + 1),
-            onNavigatedTo: _ =>
-                PlaySearchingAnimation(searchingPlayerRef.Current, playSearchingAnimation),
-            onNavigatedFrom: _ => PlaySearchingAnimation(searchingPlayerRef.Current, play: false));
+            onNavigatingTo: _ => refreshCachedPage(value => value + 1));
 
         var previousNavigationFavorite = context.UseRef<string?>();
         context.UseEffect(() =>
@@ -195,7 +188,6 @@ sealed class SendPage : Component<SendPageProps>
                 showFavoritesDialog,
                 Props.KeepItemsForMultipleReceivers,
                 Props.SetKeepItemsForMultipleReceivers,
-                SearchingDevicesAnimation(),
                 Props.RefreshAsync,
                 OpenAddressDialog,
                 OpenFavoritesDialog,
@@ -415,28 +407,6 @@ sealed class SendPage : Component<SendPageProps>
             .VerticalScrollMode(isWideLayout ? ScrollingScrollMode.Disabled : ScrollingScrollMode.Auto)
             .HorizontalContentAlignment(HorizontalAlignment.Stretch)
             .VerticalContentAlignment(isWideLayout ? VerticalAlignment.Stretch : VerticalAlignment.Top);
-
-        Element SearchingDevicesAnimation() =>
-            (AnimatedVisualPlayer() with { AutoPlay = false })
-            .Size(144, 144)
-            .AccessibilityHidden()
-            .OnMountAdd(element =>
-            {
-                if (element is not AnimatedVisualPlayer player)
-                    return;
-
-                searchingPlayerRef.Current = player;
-                PlaySearchingAnimation(player, playSearchingAnimation);
-            })
-            .OnUnmountAdd(element =>
-            {
-                if (element is AnimatedVisualPlayer player
-                    && ReferenceEquals(searchingPlayerRef.Current, player))
-                {
-                    player.Stop();
-                    searchingPlayerRef.Current = null;
-                }
-            });
 
         Element RenameDialog()
             => Component<RenameItemDialog, RenameItemDialogProps>(new(

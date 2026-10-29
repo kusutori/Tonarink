@@ -4,7 +4,6 @@ using Microsoft.UI.Reactor.Core;
 using Microsoft.UI.Reactor.Layout;
 using Microsoft.UI.Reactor.Localization;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
 using static Microsoft.UI.Reactor.Factories;
 using static Tonarink.Components.Devices.DeviceVisuals;
 using static Tonarink.Components.Transfers.TransferOverlayVisuals;
@@ -120,19 +119,8 @@ static class SendPageVisuals
     public static Element EmptyDevices(
         IntlAccessor t,
         LocalSendNodeState state,
-        string? discoveryWarning,
-        Element searchingAnimation)
+        string? discoveryWarning)
     {
-        var illustration = state switch
-        {
-            LocalSendNodeState.Running => searchingAnimation,
-            LocalSendNodeState.Faulted => Image("ms-appx:///Assets/Illustrations/DevicesFaulted.svg")
-                .Size(144, 144).AccessibilityHidden(),
-            LocalSendNodeState.Created or LocalSendNodeState.Starting or LocalSendNodeState.Stopping
-                or LocalSendNodeState.Stopped or LocalSendNodeState.Disposed =>
-                Image("ms-appx:///Assets/Illustrations/DevicesStopped.svg")
-                    .Size(144, 144).AccessibilityHidden(),
-        };
         var description = state switch
         {
             LocalSendNodeState.Running =>
@@ -144,7 +132,7 @@ static class SendPageVisuals
         };
 
         return FlexColumn(
-                illustration,
+                Component<SendDiscoveryVisual, SendDiscoveryVisualProps>(new(state)),
                 Subtitle(state switch
                 {
                     LocalSendNodeState.Running => t.Message(new("App", "SearchingDevices")),
@@ -161,18 +149,5 @@ static class SendPageVisuals
             AlignItems = FlexAlign.Center,
             JustifyContent = FlexJustify.Center,
         };
-    }
-
-    public static void PlaySearchingAnimation(AnimatedVisualPlayer? player, bool play)
-    {
-        if (player is null)
-            return;
-
-        player.Source ??= new SearchingDevices();
-        player.Stop();
-        if (play)
-            _ = player.PlayAsync(fromProgress: 0, toProgress: 1, looped: true);
-        else
-            player.SetProgress(0.25);
     }
 }

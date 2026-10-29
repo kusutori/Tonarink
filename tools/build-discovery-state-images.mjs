@@ -1,4 +1,4 @@
-// Derive static discovery states from the existing SearchingDevices artwork.
+// Derive discovery state images and the scan layer from SearchingDevices.
 // node tools/build-discovery-state-images.mjs
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
@@ -40,18 +40,42 @@ function inactiveRows() {
   }).join('\n  ');
 }
 
-const stopped = `${computer(true)}
-  <g fill="none" stroke="#a3c5c6" stroke-width="4.5" stroke-linecap="round">
+const power = `<g fill="none" stroke="#a3c5c6" stroke-width="4.5" stroke-linecap="round">
     <path d="M 117 108 A 17 17 0 1 0 139 108"/>
     <path d="M 128 101 V 118"/>
   </g>`;
-const faulted = `${computer(false)}
-  ${inactiveRows()}
-  <circle cx="182" cy="151" r="22" fill="#59343b" stroke="#ff9ba5" stroke-width="3"/>
+const error = `<circle cx="182" cy="151" r="22" fill="#59343b" stroke="#ff9ba5" stroke-width="3"/>
   <path d="M 174 143 L 190 159 M 190 143 L 174 159" fill="none" stroke="#ffe9eb" stroke-width="4.5" stroke-linecap="round"/>`;
 
-for (const [name, artwork] of [['DevicesStopped', stopped], ['DevicesFaulted', faulted]]) {
+for (const [name, artwork] of [
+  ['DevicesStopped', `${computer(true)}\n  ${power}`],
+  ['DevicesFaulted', `${computer(false)}\n  ${inactiveRows()}\n  ${error}`],
+  ['DiscoveryMonitorStopped', computer(true)],
+  ['DiscoveryMonitor', computer(false)],
+  ['DiscoveryPower', power],
+  ['DiscoveryError', error],
+  ['DiscoveryFaultRows', inactiveRows()],
+]) {
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${source.w}" height="${source.h}" viewBox="0 0 ${source.w} ${source.h}">\n  ${artwork}\n</svg>\n`;
   writeFileSync(join(output, `${name}.svg`), svg);
   console.log(`Generated ${name}.svg from ${source.nm}`);
 }
+
+// Keep the original scan motion and row timing, with a shared static monitor
+// behind it so state transitions cannot move or double the screen silhouette.
+const overlay = structuredClone(source);
+overlay.nm = 'Tonarink Discovery Search Overlay';
+overlay.layers = overlay.layers.filter(layer => layer.nm !== 'Monitor');
+if (overlay.layers.length !== 2) throw new Error('Expected the magnifier and rows layers');
+// Give each primitive its own paint group. LottieGen cannot combine the dot
+// and rectangle under one fill, while Skottie accepts the original grouping.
+const identity = monitor.shapes[0].it.find(item => item.ty === 'tr');
+for (const row of overlay.layers.find(layer => layer.nm === 'Rows').shapes) {
+  const [dot, dotFill, bar, barFill, transform] = row.it;
+  row.it = [
+    { ty: 'gr', nm: 'Status dot', it: [dot, dotFill, structuredClone(identity)] },
+    { ty: 'gr', nm: 'Status text', it: [bar, barFill, structuredClone(identity)] },
+    transform,
+  ];
+}
+writeFileSync(join(root, 'src/Tonarink.App/Assets/Lottie/SearchingDevicesOverlay.json'), JSON.stringify(overlay) + '\n');

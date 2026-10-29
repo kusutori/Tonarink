@@ -18,7 +18,6 @@ sealed record SendDevicesCardProps(
     bool IsFavoritesDialogOpen,
     bool KeepItemsForMultipleReceivers,
     Action<bool> SetKeepItemsForMultipleReceivers,
-    Element SearchingAnimation,
     Func<Task> RefreshAsync,
     Action OpenAddress,
     Action OpenFavorites,
@@ -39,8 +38,7 @@ sealed class SendDevicesCard : Component<SendDevicesCardProps>
             [] => EmptyDevices(
                     t,
                     Props.Runtime.NodeState,
-                    Props.Runtime.DiscoveryWarning,
-                    Props.SearchingAnimation)
+                    Props.Runtime.DiscoveryWarning)
                 .VAlign(VerticalAlignment.Stretch),
             _ => VStack(8,
             [
