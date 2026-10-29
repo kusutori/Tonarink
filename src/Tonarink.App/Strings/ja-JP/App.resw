@@ -241,6 +241,7 @@
   <data name="SameNetworkHint" xml:space="preserve"><value>両方のデバイスが同じローカルネットワークに接続されているか確認してください</value></data>
   <data name="Save" xml:space="preserve"><value>保存</value></data>
   <data name="SearchingDevices" xml:space="preserve"><value>近くのデバイスを検索中</value></data>
+  <data name="StartServerToDiscover" xml:space="preserve"><value>ネットワークサービスを開始すると、近くのデバイスを検索できます</value></data>
   <data name="SelectContentFirst" xml:space="preserve"><value>先に送信する内容を選択してください</value></data>
   <data name="SelectedItems" xml:space="preserve"><value>{count, plural, other {# 件}}選択済み · {size}</value></data>
   <data name="SelectedIncomingFiles" xml:space="preserve"><value>{count, plural, other {# ファイル}}中 {selected, number} 件を選択</value></data>

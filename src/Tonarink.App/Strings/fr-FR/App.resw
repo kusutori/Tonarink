@@ -241,6 +241,7 @@
   <data name="SameNetworkHint" xml:space="preserve"><value>Vérifiez que les deux appareils sont connectés au même réseau local</value></data>
   <data name="Save" xml:space="preserve"><value>Enregistrer</value></data>
   <data name="SearchingDevices" xml:space="preserve"><value>Recherche d’appareils à proximité</value></data>
+  <data name="StartServerToDiscover" xml:space="preserve"><value>Démarrez le service réseau pour découvrir les appareils à proximité</value></data>
   <data name="SelectContentFirst" xml:space="preserve"><value>Choisir d’abord le contenu à envoyer</value></data>
   <data name="SelectedItems" xml:space="preserve"><value>{count, plural, one {# élément sélectionné} other {# éléments sélectionnés}} · {size}</value></data>
   <data name="SelectedIncomingFiles" xml:space="preserve"><value>Fichiers sélectionnés : {selected, number} sur {count, plural, one {# fichier} other {# fichiers}}</value></data>

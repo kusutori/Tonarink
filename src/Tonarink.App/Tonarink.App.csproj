@@ -289,6 +289,9 @@
         <Content Include="Assets\FileDrop.svg"
                  CopyToOutputDirectory="PreserveNewest"
                  CopyToPublishDirectory="PreserveNewest" />
+        <Content Include="Assets\Illustrations\*.svg"
+                 CopyToOutputDirectory="PreserveNewest"
+                 CopyToPublishDirectory="PreserveNewest" />
         <Content Include="Assets\MaterialIcons-Regular.ttf"
                  CopyToOutputDirectory="PreserveNewest"
                  CopyToPublishDirectory="PreserveNewest" />

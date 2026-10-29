@@ -55,6 +55,9 @@ sealed class SendPage : Component<SendPageProps>
             },
             static () => FavoriteDeviceStore.Entries);
         var searchingPlayerRef = context.UseRef<AnimatedVisualPlayer?>();
+        var playSearchingAnimation = Props.Runtime.NodeState == LocalSendNodeState.Running && !reduceMotion;
+        context.UseEffect(() => PlaySearchingAnimation(searchingPlayerRef.Current,
+            playSearchingAnimation && navigation.CurrentRoute == AppRoute.Send), playSearchingAnimation);
         var shareSource = context.UseRef<WindowsShareSource?>();
         var transfer = context.UseSendTransfer(
             Props.Node,
@@ -91,7 +94,8 @@ sealed class SendPage : Component<SendPageProps>
         context.UseNavigationLifecycle(
             onNavigatingTo: _ => refreshCachedPage(value => value + 1),
             onNavigatedTo: _ =>
-                PlaySearchingAnimation(searchingPlayerRef.Current, play: !reduceMotion));
+                PlaySearchingAnimation(searchingPlayerRef.Current, playSearchingAnimation),
+            onNavigatedFrom: _ => PlaySearchingAnimation(searchingPlayerRef.Current, play: false));
 
         var previousNavigationFavorite = context.UseRef<string?>();
         context.UseEffect(() =>
@@ -422,13 +426,14 @@ sealed class SendPage : Component<SendPageProps>
                     return;
 
                 searchingPlayerRef.Current = player;
-                PlaySearchingAnimation(player, play: !reduceMotion);
+                PlaySearchingAnimation(player, playSearchingAnimation);
             })
             .OnUnmountAdd(element =>
             {
                 if (element is AnimatedVisualPlayer player
                     && ReferenceEquals(searchingPlayerRef.Current, player))
                 {
+                    player.Stop();
                     searchingPlayerRef.Current = null;
                 }
             });

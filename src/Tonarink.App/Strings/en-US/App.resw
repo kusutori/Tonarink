@@ -245,6 +245,7 @@
   <data name="SameNetworkHint" xml:space="preserve"><value>Make sure both devices are connected to the same local network</value></data>
   <data name="Save" xml:space="preserve"><value>Save</value></data>
   <data name="SearchingDevices" xml:space="preserve"><value>Looking for nearby devices</value></data>
+  <data name="StartServerToDiscover" xml:space="preserve"><value>Start the network service to discover nearby devices</value></data>
   <data name="SelectContentFirst" xml:space="preserve"><value>Select content to send first</value></data>
   <data name="SelectedItems" xml:space="preserve"><value>{count, plural, one {# item} other {# items}} selected · {size}</value></data>
   <data name="SelectedIncomingFiles" xml:space="preserve"><value>{selected, number} of {count, plural, one {# file} other {# files}} selected</value></data>

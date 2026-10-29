@@ -121,44 +121,58 @@ static class SendPageVisuals
         IntlAccessor t,
         LocalSendNodeState state,
         string? discoveryWarning,
-        Element searchingAnimation) =>
-        FlexColumn(
-                state switch
-                {
-                    LocalSendNodeState.Faulted => Icon(AppIcons.Error).AccessibilityHidden(),
-                    LocalSendNodeState.Created or LocalSendNodeState.Starting or LocalSendNodeState.Running
-                        or LocalSendNodeState.Stopping or LocalSendNodeState.Stopped or LocalSendNodeState.Disposed =>
-                        searchingAnimation,
-                },
+        Element searchingAnimation)
+    {
+        var illustration = state switch
+        {
+            LocalSendNodeState.Running => searchingAnimation,
+            LocalSendNodeState.Faulted => Image("ms-appx:///Assets/Illustrations/DevicesFaulted.svg")
+                .Size(144, 144).AccessibilityHidden(),
+            LocalSendNodeState.Created or LocalSendNodeState.Starting or LocalSendNodeState.Stopping
+                or LocalSendNodeState.Stopped or LocalSendNodeState.Disposed =>
+                Image("ms-appx:///Assets/Illustrations/DevicesStopped.svg")
+                    .Size(144, 144).AccessibilityHidden(),
+        };
+        var description = state switch
+        {
+            LocalSendNodeState.Running =>
+                t.Message(new("App", discoveryWarning is not null ? "DiscoveryScanHint" : "SameNetworkHint")),
+            LocalSendNodeState.Faulted => t.Message(new("App", "PortInUseHint")),
+            LocalSendNodeState.Created or LocalSendNodeState.Stopped or LocalSendNodeState.Disposed =>
+                t.Message(new("App", "StartServerToDiscover")),
+            LocalSendNodeState.Starting or LocalSendNodeState.Stopping => null,
+        };
+
+        return FlexColumn(
+                illustration,
                 Subtitle(state switch
                 {
+                    LocalSendNodeState.Running => t.Message(new("App", "SearchingDevices")),
                     LocalSendNodeState.Faulted => t.Message(new("App", "NetworkStartFailed")),
-                    LocalSendNodeState.Created or LocalSendNodeState.Starting or LocalSendNodeState.Running
-                        or LocalSendNodeState.Stopping or LocalSendNodeState.Stopped or LocalSendNodeState.Disposed =>
-                        t.Message(new("App", "SearchingDevices")),
+                    LocalSendNodeState.Starting => t.Message(new("App", "NodeStarting")),
+                    LocalSendNodeState.Stopping => t.Message(new("App", "NodeStopping")),
+                    LocalSendNodeState.Created or LocalSendNodeState.Stopped or LocalSendNodeState.Disposed =>
+                        t.Message(new("App", "SettingsServerStopped")),
                 }),
-                TextBlock(state switch
-                {
-                    LocalSendNodeState.Faulted => t.Message(new("App", "PortInUseHint")),
-                    LocalSendNodeState.Created or LocalSendNodeState.Starting or LocalSendNodeState.Running
-                        or LocalSendNodeState.Stopping or LocalSendNodeState.Stopped or LocalSendNodeState.Disposed =>
-                        t.Message(new("App", discoveryWarning is not null ? "DiscoveryScanHint" : "SameNetworkHint")),
-                })
-                    .Foreground(Theme.SecondaryText)
-                    .TextWrapping(TextWrapping.WrapWholeWords)) with
+                description is null ? null : TextBlock(description)
+                    .Foreground(Theme.SecondaryText).TextWrapping(TextWrapping.WrapWholeWords)) with
         {
             RowGap = 12,
             AlignItems = FlexAlign.Center,
             JustifyContent = FlexJustify.Center,
         };
+    }
 
     public static void PlaySearchingAnimation(AnimatedVisualPlayer? player, bool play)
     {
         if (player is null)
             return;
 
-        player.Source = new SearchingDevices();
+        player.Source ??= new SearchingDevices();
+        player.Stop();
         if (play)
             _ = player.PlayAsync(fromProgress: 0, toProgress: 1, looped: true);
+        else
+            player.SetProgress(0.25);
     }
 }
