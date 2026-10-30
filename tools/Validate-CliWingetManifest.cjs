@@ -20,10 +20,10 @@ async function main() {
     const manifests = [];
     for (const file of files) {
         const manifest = YAML.parse(await fs.readFile(path.join(manifestDirectory, file), 'utf8'), { uniqueKeys: true });
-        if (!['version', 'installer', 'defaultLocale'].includes(manifest.ManifestType) || manifest.ManifestVersion !== '1.12.0') {
+        if (!['version', 'installer', 'defaultLocale'].includes(manifest.ManifestType) || manifest.ManifestVersion !== '1.28.0') {
             throw new Error(`Unexpected manifest type or schema version: ${file}`);
         }
-        const url = `https://raw.githubusercontent.com/microsoft/winget-cli/master/schemas/JSON/manifests/v1.12.0/manifest.${manifest.ManifestType}.1.12.0.json`;
+        const url = `https://raw.githubusercontent.com/microsoft/winget-cli/master/schemas/JSON/manifests/v1.28.0/manifest.${manifest.ManifestType}.1.28.0.json`;
         const response = await fetch(url);
         if (!response.ok) throw new Error(`Could not fetch official schema: ${response.status} ${url}`);
         const validate = ajv.compile(await response.json());

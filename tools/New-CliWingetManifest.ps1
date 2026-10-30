@@ -15,7 +15,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $identifier = 'kusutori.tonarink-cli'
-$schema = '1.12.0'
+$schema = '1.28.0'
 $directory = Join-Path ([IO.Path]::GetFullPath($OutputDirectory)) "manifests/k/kusutori/tonarink-cli/$Version"
 $null = New-Item -ItemType Directory -Path $directory -Force
 $url = "https://github.com/$Repository"
