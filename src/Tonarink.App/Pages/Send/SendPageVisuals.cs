@@ -119,7 +119,8 @@ static class SendPageVisuals
     public static Element EmptyDevices(
         IntlAccessor t,
         LocalSendNodeState state,
-        string? discoveryWarning)
+        string? discoveryWarning,
+        bool isWideLayout)
     {
         var description = state switch
         {
@@ -131,23 +132,33 @@ static class SendPageVisuals
             LocalSendNodeState.Starting or LocalSendNodeState.Stopping => null,
         };
 
-        return FlexColumn(
-                Component<SendDiscoveryVisual, SendDiscoveryVisualProps>(new(state)),
-                Subtitle(state switch
-                {
-                    LocalSendNodeState.Running => t.Message(new("App", "SearchingDevices")),
-                    LocalSendNodeState.Faulted => t.Message(new("App", "NetworkStartFailed")),
-                    LocalSendNodeState.Starting => t.Message(new("App", "NodeStarting")),
-                    LocalSendNodeState.Stopping => t.Message(new("App", "NodeStopping")),
-                    LocalSendNodeState.Created or LocalSendNodeState.Stopped or LocalSendNodeState.Disposed =>
-                        t.Message(new("App", "SettingsServerStopped")),
-                }),
-                description is null ? null : TextBlock(description)
-                    .Foreground(Theme.SecondaryText).TextWrapping(TextWrapping.WrapWholeWords)) with
-        {
-            RowGap = 12,
-            AlignItems = FlexAlign.Center,
-            JustifyContent = FlexJustify.Center,
-        };
+        // Keep text independent of the illustration's anchor. Wide cards place
+        // that anchor lower; compact cards retain their existing proportions.
+        return Grid(
+                columns: [GridSize.Star()],
+                rows: [GridSize.Star(isWideLayout ? 3 : 1), GridSize.Star(isWideLayout ? 2 : 1)],
+                Component<SendDiscoveryVisual, SendDiscoveryVisualProps>(new(state))
+                    .HAlign(HorizontalAlignment.Center)
+                    .VAlign(VerticalAlignment.Bottom)
+                    .Grid(row: 0),
+                VStack(12,
+                        Subtitle(state switch
+                        {
+                            LocalSendNodeState.Running => t.Message(new("App", "SearchingDevices")),
+                            LocalSendNodeState.Faulted => t.Message(new("App", "NetworkStartFailed")),
+                            LocalSendNodeState.Starting => t.Message(new("App", "NodeStarting")),
+                            LocalSendNodeState.Stopping => t.Message(new("App", "NodeStopping")),
+                            LocalSendNodeState.Created or LocalSendNodeState.Stopped or LocalSendNodeState.Disposed =>
+                                t.Message(new("App", "SettingsServerStopped")),
+                        })
+                            .TextAlignment(TextAlignment.Center)
+                            .TextWrapping(TextWrapping.WrapWholeWords),
+                        description is null ? null : TextBlock(description)
+                            .Foreground(Theme.SecondaryText)
+                            .TextAlignment(TextAlignment.Center)
+                            .TextWrapping(TextWrapping.WrapWholeWords))
+                    .Margin(top: 12)
+                    .VAlign(VerticalAlignment.Top)
+                    .Grid(row: 1));
     }
 }

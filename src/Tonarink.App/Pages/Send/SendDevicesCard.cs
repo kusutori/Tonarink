@@ -38,7 +38,8 @@ sealed class SendDevicesCard : Component<SendDevicesCardProps>
             [] => EmptyDevices(
                     t,
                     Props.Runtime.NodeState,
-                    Props.Runtime.DiscoveryWarning)
+                    Props.Runtime.DiscoveryWarning,
+                    Props.IsWideLayout)
                 .VAlign(VerticalAlignment.Stretch),
             _ => VStack(8,
             [
