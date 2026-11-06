@@ -35,7 +35,7 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
         var announce = this.UseAnnounce();
         var window = UseWindow();
         var highContrast = UseHighContrast();
-        var (windowWidth, windowHeight) = UseWindowSize();
+        var (_, windowHeight) = UseWindowSize();
         var request = Props.Request;
         var (view, dispatchView) = UseReducer<IncomingTransferViewState, IncomingTransferAction>(
             IncomingTransferReducer.Reduce,
@@ -208,13 +208,6 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
             t,
             () => setShowVerification(true),
             isEnabled: !isPending);
-        var availableContentWidth = windowWidth > 0
-            ? Math.Max(AppLayout.OverlayMinContentWidth, windowWidth - AppLayout.OverlayHorizontalChrome)
-            : AppLayout.OverlayContentMaxWidth;
-        // Keep the coordinate space stable while the card itself changes size.
-        // Changing the parent width in the same render shifts both destination
-        // coordinates and makes the connected animation appear off-centre.
-        var overlayContentWidth = Math.Min(AppLayout.OverlayContentMaxWidth, availableContentWidth);
         var expandedFileCardHeight = windowHeight > 0
             ? Math.Clamp(
                 windowHeight - AppLayout.OverlayExpandedHeightChrome,
@@ -227,7 +220,7 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
             t,
             expanded,
             canEdit,
-            Math.Min(expanded ? AppLayout.OverlayFileCardExpandedWidth : AppLayout.OverlayFileCardWidth, overlayContentWidth),
+            expanded ? AppLayout.OverlayFileCardExpandedWidth : AppLayout.OverlayFileCardWidth,
             expanded ? expandedFileCardHeight : null,
             fileCardAnimationKey,
             destinationDirectory,
@@ -273,8 +266,14 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                         VStack(28,
                                 expanded && !showText ? null : sender,
                                 expanded && !showText ? null : showText ? TextContent() : FileContent(BuildFileCard(false)))
-                            .Width(overlayContentWidth)
-                            .HAlign(HorizontalAlignment.Center))
+                            .HAlign(HorizontalAlignment.Stretch))
+                    // Keep the content as wide as its viewport: centering narrower
+                    // content inside ScrollPresenter shifts the animation target
+                    // after its first layout. Native constraints also resize in
+                    // the same layout pass, without waiting for a hook render.
+                    .MaxWidth(AppLayout.OverlayContentMaxWidth)
+                    .HAlign(HorizontalAlignment.Stretch)
+                    .Margin(horizontal: AppLayout.OverlayHorizontalChrome / 2, vertical: 0)
                     .Padding(horizontal: 0, vertical: 40)
                     .HorizontalContentAlignment(HorizontalAlignment.Stretch)
                     .IsHitTestVisible(!expanded)
@@ -284,7 +283,7 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                     .Grid(row: 1),
                 expanded && !showText
                     ? Border(BuildFileCard(true))
-                        .Padding(horizontal: 40, vertical: 24)
+                        .Padding(horizontal: AppLayout.OverlayHorizontalChrome / 2, vertical: 24)
                         .HAlign(HorizontalAlignment.Stretch)
                         .VAlign(VerticalAlignment.Stretch)
                         .Grid(row: 0)

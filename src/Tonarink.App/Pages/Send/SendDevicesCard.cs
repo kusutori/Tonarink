@@ -62,12 +62,14 @@ sealed class SendDevicesCard : Component<SendDevicesCardProps>
             ]),
         };
 
-        var deviceContent = Props.IsWideLayout
-            ? ScrollView(deviceBody)
-                .HorizontalContentAlignment(HorizontalAlignment.Stretch)
-                .VerticalContentAlignment(VerticalAlignment.Stretch)
-                .Flex(grow: 1, basis: 0)
-            : deviceBody;
+        // Keep the device cards attached when crossing the responsive breakpoint.
+        // Replacing their ScrollView with its content unmounts connected-animation
+        // sources, including while this page is hidden by an incoming transfer.
+        Element deviceContent = ScrollView(deviceBody)
+            .HorizontalContentAlignment(HorizontalAlignment.Stretch)
+            .VerticalContentAlignment(VerticalAlignment.Stretch);
+        if (Props.IsWideLayout)
+            deviceContent = deviceContent.Flex(grow: 1, basis: 0);
         var canUseDeviceActions = Props is
             { IsSending: false, IsResolvingAddress: false, Runtime.NodeState: LocalSendNodeState.Running };
         var card = Card(

@@ -14,8 +14,8 @@ sealed record IncomingFileCardModel(
     IntlAccessor T,
     bool Expanded,
     bool CanEdit,
-    double Width,
-    double? Height,
+    double MaxWidth,
+    double? MaxHeight,
     string AnimationKey,
     string DestinationDirectory,
     IReadOnlySet<string> SelectedItemIds,
@@ -78,10 +78,10 @@ static class IncomingFileCard
                     {
                         RowSpacing = 12,
                     })
-            .Width(model.Width)
-            .HAlign(HorizontalAlignment.Center);
-        if (model.Height is { } height)
-            fileCard = fileCard.Height(height);
+            .MaxWidth(model.MaxWidth)
+            .HAlign(HorizontalAlignment.Stretch);
+        if (model.MaxHeight is { } height)
+            fileCard = fileCard.MaxHeight(height);
 
         return fileCard
             .WithKey(model.Expanded ? "incoming-file-options-expanded" : "incoming-file-options-collapsed")
