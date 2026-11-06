@@ -296,8 +296,8 @@
                  CopyToOutputDirectory="PreserveNewest"
                  CopyToPublishDirectory="PreserveNewest" />
         <!-- Replace SDK-default entries so each asset has explicit publish metadata. -->
-        <Content Remove="Assets\AppIcon.ico;Assets\**\*.png" />
-        <Content Include="Assets\AppIcon.ico"
+        <Content Remove="Assets\AppIcon.ico;Assets\JumpList\*.ico;Assets\**\*.png" />
+        <Content Include="Assets\AppIcon.ico;Assets\JumpList\*.ico"
                  CopyToOutputDirectory="PreserveNewest"
                  CopyToPublishDirectory="PreserveNewest" />
         <!-- AOT MSIX is packed from an unpackaged publish layout. Include PNGs

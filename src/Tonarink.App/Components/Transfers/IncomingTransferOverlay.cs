@@ -568,9 +568,14 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
 
         void ToggleFileOptions()
         {
-            fileOptionsNavigation.Navigate(!fileOptionsNavigation.CurrentRoute, new NavigateOptions
+            if (fileOptionsNavigation.CurrentRoute)
             {
-                PushToBackStack = false,
+                fileOptionsNavigation.GoBack();
+                return;
+            }
+
+            fileOptionsNavigation.Navigate(true, new NavigateOptions
+            {
                 Transition = NavigationTransition.None,
                 ConnectedAnimationKey = fileCardAnimationKey,
             });

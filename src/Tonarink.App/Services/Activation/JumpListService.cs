@@ -1,5 +1,6 @@
 using System.Runtime.InteropServices;
 using Microsoft.UI.Reactor;
+using Windows.UI.ViewManagement;
 
 namespace Tonarink.Services.Activation;
 
@@ -116,9 +117,25 @@ static partial class JumpListService
             .ToHashSet());
     }
 
-    private static WindowIcon ItemIcon(Uri logo) => AppPlatform.HasPackageIdentity()
-        ? WindowIcon.FromResource(logo.AbsoluteUri)
-        : AppPlatform.AppWindowIcon;
+    private static WindowIcon ItemIcon(Uri logo)
+    {
+        if (AppPlatform.HasPackageIdentity())
+            return WindowIcon.FromResource(logo.AbsoluteUri);
+
+        // IShellLink.SetIconLocation needs a file containing native icons, not
+        // the PNG/ms-appx URI consumed by the packaged JumpListItem.Logo API.
+        var path = Path.ChangeExtension(Path.Combine(
+            AppContext.BaseDirectory, logo.AbsolutePath.TrimStart('/')), ".ico");
+        var foreground = new UISettings().GetColorValue(UIColorType.Foreground);
+        if (foreground.R + foreground.G + foreground.B > 3 * 128)
+        {
+            var darkPath = Path.ChangeExtension(path, ".theme-dark.ico");
+            if (File.Exists(darkPath))
+                path = darkPath;
+        }
+
+        return File.Exists(path) ? WindowIcon.FromPath(path) : AppPlatform.AppWindowIcon;
+    }
 
     private static Uri FileLogo(string path)
     {
