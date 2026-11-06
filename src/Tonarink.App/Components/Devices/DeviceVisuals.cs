@@ -13,6 +13,8 @@ static class DeviceVisuals
     public const double AvatarSize = 64;
     public const double OverlayAvatarSize = 88;
 
+    public static string DeviceDetailsAnimationKey(string fingerprint) => $"device-details:{fingerprint}";
+
     public static Element DeviceAvatar(LocalSendDeviceType type, double size = AvatarSize) =>
         Border(
                 Icon(FontIcon(DeviceTypeGlyph(type), fontSize: size * 0.5))

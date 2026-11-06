@@ -8,7 +8,6 @@ using static Microsoft.UI.Reactor.Factories;
 namespace Tonarink.Components.Dialogs;
 
 sealed record TransferPinDialogProps(
-    ElementTheme Theme,
     bool IsOpen,
     string DeviceName,
     string Pin,
@@ -44,6 +43,6 @@ sealed class TransferPinDialog : Component<TransferPinDialogProps>
             DefaultButton = ContentDialogButton.Primary,
             IsPrimaryButtonEnabled = !string.IsNullOrWhiteSpace(Props.Pin),
             OnClosed = Props.Closed,
-        }).Themed(Props.Theme);
+        });
     }
 }

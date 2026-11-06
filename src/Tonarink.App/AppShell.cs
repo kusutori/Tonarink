@@ -75,16 +75,7 @@ sealed class AppShell : Component
             }
         });
 
-        UseEffect(() =>
-        {
-            NativeSystemMenuTheme.Apply(settings.ThemeIndex);
-            window?.AppWindow.TitleBar.PreferredTheme = settings.ThemeIndex switch
-            {
-                1 => TitleBarTheme.Light,
-                2 => TitleBarTheme.Dark,
-                _ => TitleBarTheme.UseDefaultAppMode,
-            };
-        }, settings.ThemeIndex);
+        UseEffect(() => NativeSystemMenuTheme.Apply(settings.ThemeIndex), settings.ThemeIndex);
 
         var locale = AppLocale.Resolve(settings.LanguageIndex);
         var theme = AppTheme.ToElementTheme(settings.ThemeIndex);
@@ -141,7 +132,6 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
         var useTitleBarPaneToggle = isNarrowWindow && !useTopNavigation;
         var settingsRef = context.UseRef(settings);
         settingsRef.Current = settings;
-        var contentTheme = AppTheme.ToElementTheme(settings.ThemeIndex);
         var updateSettings = Props.UpdateSettings;
         var navigation = context.UseNavigation(AppRoute.Receive);
         var favoriteRevision = context.UseExternalStore(
@@ -248,6 +238,7 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
 
         var titleBar = Component<ShellTitleBar, ShellTitleBarProps>(new(
             navigation,
+            settings.ThemeIndex,
             useTitleBarPaneToggle,
             () =>
             {
@@ -265,13 +256,11 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
                     AppRoute.History => Component<HistoryPage, HistoryPageProps>(
                         new(
                             settings.DownloadDirectory,
-                            contentTheme,
                             activations.NavigationHistoryId,
                             activations.ConsumeNavigationHistory)),
                     AppRoute.Send => Component<SendPage, SendPageProps>(new(
                         runtime,
                         nodeSession.Node,
-                        contentTheme,
                         nodeSession.RefreshAsync,
                         setOutgoingTransfer,
                         activations.ShareTargetPayload,
@@ -295,7 +284,11 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
                         device =>
                         {
                             setDetailsDevice(device);
-                            navigation.Navigate(AppRoute.DeviceDetails, AppNavigation.DrillIn);
+                            navigation.Navigate(AppRoute.DeviceDetails, new NavigateOptions
+                            {
+                                Transition = NavigationTransition.DrillIn(),
+                                ConnectedAnimationKey = DeviceVisuals.DeviceDetailsAnimationKey(device.Fingerprint),
+                            });
                         },
                         activations.NavigationFavoriteFingerprint,
                         activations.ConsumeNavigationFavorite)),
@@ -329,8 +322,7 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
                     AppRoute.DeviceDetails when detailsDevice is not null =>
                         Component<DeviceDetailsPage, DeviceDetailsPageProps>(new(
                                 runtime,
-                                detailsDevice,
-                                contentTheme))
+                                detailsDevice))
                             .WithKey(detailsDevice.Fingerprint),
                     AppRoute.DeviceDetails => TextBlock(t.Message(new("App", "PageNotFound"))),
                 }))) with
@@ -368,12 +360,9 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
                     .AlwaysShowHeader()
                     .BackButtonVisible(false)
                     .TitleBarAutoPadding(false)
-                    .Set(static navigationView =>
-                    {
-                        navigationView.Resources["NavigationViewHeaderMargin"] = AppLayout.PageHeaderMargin;
-                        navigationView.Resources["NavigationViewMinimalHeaderMargin"] =
-                            AppLayout.PageHeaderMargin;
-                    })
+                    .Resources(static resources => resources
+                        .Set("NavigationViewHeaderMargin", AppLayout.PageHeaderMargin)
+                        .Set("NavigationViewMinimalHeaderMargin", AppLayout.PageHeaderMargin))
                     .OnMountAdd(element =>
                     {
                         if (element is not NavigationView navigationView)
@@ -401,32 +390,26 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
             .Provide(FloatingInfoBarHost.Slot, floatingInfo.Current!);
 
         var pendingIncoming = runtime.IncomingTransfers.FirstOrDefault();
-        var overlayVisible = pendingIncoming is not null && nodeSession.Node is not null
-                             || outgoingTransfer is not null;
         var navigationLayer = Grid(
                 columns: [GridSize.Star()],
                 rows: [GridSize.Star()],
                 navigationView.Grid(row: 0, column: 0))
-            .Opacity(overlayVisible ? 0 : 1)
             .IsVisible(pendingIncoming is null)
-            .IsHitTestVisible(!overlayVisible);
-        // Sending still needs this fade: instant Opacity(0) on the ancestor
-        // crashes WinUI connected animation. Incoming has no connected animation.
-        if (pendingIncoming is null)
-            navigationLayer = navigationLayer.OpacityTransition(TimeSpan.FromMilliseconds(300));
+            .IsHitTestVisible(pendingIncoming is null);
 
         var contentLayer = Grid(
                 columns: [GridSize.Star()],
                 rows: [GridSize.Star()],
-                navigationLayer.Grid(row: 0, column: 0),
+                Component<OutgoingOverlayNavigator, OutgoingOverlayNavigatorProps>(new(
+                        navigationLayer, outgoingTransfer, () => setOutgoingTransfer(null),
+                        IsPresented: pendingIncoming is null))
+                    .IsVisible(pendingIncoming is null)
+                    .Grid(row: 0, column: 0),
                 Component<TransferOverlayHost, TransferOverlayHostProps>(new(
                         nodeSession.Node,
                         pendingIncoming,
-                        outgoingTransfer,
                         settings,
-                        contentTheme,
                         nodeSession.DismissIncoming,
-                        () => setOutgoingTransfer(null),
                         pendingIncoming is { } incoming && runtime.AcceptedTextRequests.Contains(incoming.RequestId)))
                     .Grid(row: 0, column: 0))
             .Flex(grow: 1, basis: 0);

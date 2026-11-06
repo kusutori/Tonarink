@@ -14,8 +14,6 @@ sealed record IncomingFileCardModel(
     IntlAccessor T,
     bool Expanded,
     bool CanEdit,
-    bool ReduceMotion,
-    bool Animating,
     double Width,
     double? Height,
     string AnimationKey,
@@ -24,11 +22,7 @@ sealed record IncomingFileCardModel(
     IReadOnlyDictionary<string, string> TargetFileNames,
     IReadOnlyDictionary<string, string> RedoFileNames,
     string? FolderError,
-    ElementTheme Theme,
     Action ToggleExpanded,
-    Action CompleteAnimation,
-    Action<FrameworkElement?> SetFileCardElement,
-    Action<FrameworkElement> ClearFileCardElement,
     Action<string> ToggleItem,
     Action ToggleSelectAll,
     Action Reset,
@@ -91,18 +85,7 @@ static class IncomingFileCard
 
         return fileCard
             .WithKey(model.Expanded ? "incoming-file-options-expanded" : "incoming-file-options-collapsed")
-            .OnMountAdd(element =>
-            {
-                model.SetFileCardElement(element);
-                if (model is { ReduceMotion: false, Animating: true })
-                {
-                    DeviceConnectedAnimation.StartDestinationAfterLayout(
-                        model.AnimationKey,
-                        element,
-                        _ => model.CompleteAnimation());
-                }
-            })
-            .OnUnmountAdd(element => model.ClearFileCardElement(element));
+            .ConnectedAnimation(model.AnimationKey);
     }
 
     public static IReadOnlySet<string> ToggleItem(IReadOnlySet<string> current, string itemId)

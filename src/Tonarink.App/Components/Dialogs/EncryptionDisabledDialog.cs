@@ -6,7 +6,7 @@ using static Microsoft.UI.Reactor.Factories;
 
 namespace Tonarink.Components.Dialogs;
 
-sealed record EncryptionDisabledDialogProps(bool IsOpen, ElementTheme Theme, Action Close);
+sealed record EncryptionDisabledDialogProps(bool IsOpen, Action Close);
 
 sealed class EncryptionDisabledDialog : Component<EncryptionDisabledDialogProps>
 {
@@ -22,6 +22,6 @@ sealed class EncryptionDisabledDialog : Component<EncryptionDisabledDialogProps>
             IsOpen = Props.IsOpen,
             DefaultButton = ContentDialogButton.Close,
             OnClosed = _ => Props.Close(),
-        }).Themed(Props.Theme);
+        });
     }
 }

@@ -2,7 +2,6 @@ using LocalSendDotNet;
 using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Animation;
 using Microsoft.UI.Reactor.Core;
-using Microsoft.UI.Xaml;
 using static Microsoft.UI.Reactor.Factories;
 
 namespace Tonarink.Components.Shell;
@@ -10,11 +9,8 @@ namespace Tonarink.Components.Shell;
 sealed record TransferOverlayHostProps(
     LocalSendNode? Node,
     IncomingTransferRequest? Incoming,
-    OutgoingTransferViewState? Outgoing,
     AppSettings Settings,
-    ElementTheme Theme,
     Action<Guid> DismissIncoming,
-    Action CloseOutgoing,
     bool AcceptIncomingText = false);
 
 sealed class TransferOverlayHost : Component<TransferOverlayHostProps>
@@ -32,17 +28,9 @@ sealed class TransferOverlayHost : Component<TransferOverlayHostProps>
                         Props.Settings.SaveReceiveHistory,
                         Props.Settings.VerifyChecksumsOnReceive,
                         Props.Settings.AutoReturnAfterReceive,
-                        Props.Theme,
                         Props.DismissIncoming,
                         Props.AcceptIncomingText))
                     .WithKey(incoming.RequestId.ToString("N")),
-
-            { Outgoing: { } outgoing } =>
-                Component<OutgoingTransferOverlay, OutgoingTransferOverlayProps>(new(
-                        outgoing,
-                        Props.Theme,
-                        Props.CloseOutgoing))
-                    .WithKey(outgoing.Receiver.Fingerprint),
 
             _ => null,
         };

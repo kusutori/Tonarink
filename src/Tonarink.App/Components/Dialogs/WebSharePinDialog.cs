@@ -10,7 +10,6 @@ namespace Tonarink.Components.Dialogs;
 
 sealed record WebSharePinDialogProps(
     bool IsOpen,
-    ElementTheme Theme,
     Action<string> Apply,
     Action Close);
 
@@ -73,7 +72,7 @@ sealed class WebSharePinDialog : Component<WebSharePinDialogProps>
                     Props.Apply(draft.Trim());
                 Props.Close();
             },
-        }).Themed(Props.Theme);
+        });
     }
 
     private static string GeneratePin(int length)

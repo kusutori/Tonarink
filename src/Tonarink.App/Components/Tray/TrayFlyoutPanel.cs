@@ -485,7 +485,6 @@ sealed class TrayFlyoutPanel : Component<TrayFlyoutPanelProps>
                 rows: [GridSize.Star()],
                 content.Grid(row: 0, column: 0),
                 Component<TransferPinDialog, TransferPinDialogProps>(new(
-                        theme,
                         pendingPin is not null,
                         pendingPin?.Device.Alias ?? string.Empty,
                         pin,

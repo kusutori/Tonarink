@@ -51,12 +51,9 @@ sealed class PageHeader : Component<PageHeaderProps>
             })
             .Resources(static resources => resources
                 .Set("BreadcrumbBarItemThemeFontSize", TitleFontSize)
-                .Set("BreadcrumbBarChevronFontSize", 16d))
-            .Set(static breadcrumb =>
-            {
-                breadcrumb.Resources["BreadcrumbBarItemFontWeight"] = TitleWeight;
-                breadcrumb.Resources["BreadcrumbBarChevronPadding"] = new Thickness(8, 4, 8, 0);
-            })
+                .Set("BreadcrumbBarChevronFontSize", 16d)
+                .Set("BreadcrumbBarItemFontWeight", TitleWeight)
+                .Set("BreadcrumbBarChevronPadding", new Thickness(8, 4, 8, 0)))
             .AutomationName(title)
             .MinHeight(AppLayout.PageHeaderRowMinHeight)
             .VAlign(VerticalAlignment.Center);

@@ -5,7 +5,7 @@ using static Microsoft.UI.Reactor.Factories;
 
 namespace Tonarink.Components.Dialogs;
 
-sealed record WebShareQrDialogProps(string? Url, ElementTheme Theme, Action Close);
+sealed record WebShareQrDialogProps(string? Url, Action Close);
 
 sealed class WebShareQrDialog : Component<WebShareQrDialogProps>
 {
@@ -25,6 +25,6 @@ sealed class WebShareQrDialog : Component<WebShareQrDialogProps>
         {
             IsOpen = Props.Url is not null,
             OnClosed = _ => Props.Close(),
-        }).Themed(Props.Theme);
+        });
     }
 }

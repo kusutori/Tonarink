@@ -5,7 +5,7 @@ using static Microsoft.UI.Reactor.Factories;
 
 namespace Tonarink.Components.Dialogs;
 
-sealed record WebShareZoomDialogProps(string? Url, string? Pin, ElementTheme Theme, Action Close);
+sealed record WebShareZoomDialogProps(string? Url, string? Pin, Action Close);
 
 sealed class WebShareZoomDialog : Component<WebShareZoomDialogProps>
 {
@@ -40,6 +40,6 @@ sealed class WebShareZoomDialog : Component<WebShareZoomDialogProps>
         {
             IsOpen = Props.Url is not null,
             OnClosed = _ => Props.Close(),
-        }).Themed(Props.Theme);
+        });
     }
 }

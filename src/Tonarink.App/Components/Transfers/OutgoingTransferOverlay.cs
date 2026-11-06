@@ -16,8 +16,8 @@ namespace Tonarink.Components.Transfers;
 
 sealed record OutgoingTransferOverlayProps(
     OutgoingTransferViewState Transfer,
-    ElementTheme Theme,
-    Action Close);
+    Action Close,
+    bool IsPresented = true);
 
 sealed class OutgoingTransferOverlay : Component<OutgoingTransferOverlayProps>
 {
@@ -25,25 +25,50 @@ sealed class OutgoingTransferOverlay : Component<OutgoingTransferOverlayProps>
     {
         var t = UseIntl();
         var window = UseWindow();
-        var reduceMotion = UseReducedMotion();
         var transfer = Props.Transfer;
         var (showVerification, setShowVerification) = UseState(false);
         var (connectedAnimationReady, setConnectedAnimationReady) = UseState(false);
+        var (isActive, setActive) = UseState(true);
+        var isPresented = isActive && Props.IsPresented;
         var (pin, setPin) = UseState(string.Empty);
         var focusTrap = this.UseFocusTrap(
-            !showVerification && !(connectedAnimationReady && transfer.PinPrompt is not null));
+            isPresented && !showVerification && !(connectedAnimationReady && transfer.PinPrompt is not null));
         var (cancelRef, requestCancelFocus) = this.UseElementFocus();
         var (closeRef, requestCloseFocus) = this.UseElementFocus();
-        var receiverCardRef = UseRef<FrameworkElement?>();
-        var connectedAnimationKey = DeviceConnectedKey(transfer.Receiver.Fingerprint);
+        UseNavigationLifecycle(
+            onNavigatingTo: _ =>
+            {
+                setActive(true);
+                setConnectedAnimationReady(false);
+            },
+            onNavigatedTo: _ =>
+            {
+                setConnectedAnimationReady(true);
+                if (!Props.IsPresented) return;
+                if (transfer.IsPending) requestCancelFocus();
+                else requestCloseFocus();
+            },
+            onNavigatedFrom: _ =>
+            {
+                setActive(false);
+                setConnectedAnimationReady(false);
+                setShowVerification(false);
+                if (Props.IsPresented) ClearTaskbarProgress(window);
+            });
         var taskbarProgress = new TaskbarTransferProgress(
             transfer.State,
             transfer.BytesTransferred,
             transfer.TotalBytes,
             transfer.Status);
 
-        UseEffect(() => UpdateTaskbarProgress(window, taskbarProgress), taskbarProgress);
-        UseEffect(() => () => ClearTaskbarProgress(window));
+        UseEffect(() =>
+        {
+            if (isPresented) UpdateTaskbarProgress(window, taskbarProgress);
+        }, taskbarProgress, isPresented);
+        UseEffect(() => () =>
+        {
+            if (Props.IsPresented) ClearTaskbarProgress(window);
+        });
 
         var progress = transfer.TotalBytes <= 0
             ? 0
@@ -64,10 +89,7 @@ sealed class OutgoingTransferOverlay : Component<OutgoingTransferOverlayProps>
                     transfer.Receiver.DeviceModel,
                     transfer.Receiver.DeviceType,
                     RemoteDeviceNumber(transfer.Receiver),
-                    connectedAnimationKey,
-                    AnimationRole: DeviceIdentityCardAnimationRole.Destination,
-                    AnimationCompleted: _ => setConnectedAnimationReady(true),
-                    ElementChanged: element => receiverCardRef.Current = element)),
+                    NavigationAnimationKey: DeviceDetailsAnimationKey(transfer.Receiver.Fingerprint))),
                 VerificationButton(t, () => setShowVerification(true))
                     .HAlign(HorizontalAlignment.Center))
             .MaxWidth(AppLayout.OverlayDevicesMaxWidth)
@@ -141,18 +163,15 @@ sealed class OutgoingTransferOverlay : Component<OutgoingTransferOverlayProps>
                 Component<DeviceVerificationDialog, DeviceVerificationDialogProps>(new(
                     transfer.Receiver,
                     transfer.Sender?.Fingerprint,
-                    Props.Theme,
-                    showVerification,
+                    isPresented && showVerification,
                     () => setShowVerification(false))),
                 Component<TransferPinDialog, TransferPinDialogProps>(new(
-                    Props.Theme,
-                    connectedAnimationReady && transfer.PinPrompt is not null,
+                    isPresented && connectedAnimationReady && transfer.PinPrompt is not null,
                     transfer.Receiver.Alias,
                     pin,
                     setPin,
                     transfer.PinPrompt?.Error,
                     ClosePinDialog)))
-            .Transition(new FadeTransition())
             .FocusTrap(focusTrap)
             .AutomationName(t.Message(new("App", "SendingTitle")))
             .Landmark(AutomationLandmarkType.Main);
@@ -176,15 +195,6 @@ sealed class OutgoingTransferOverlay : Component<OutgoingTransferOverlayProps>
 
         void CloseOverlay()
         {
-            if (!reduceMotion && receiverCardRef.Current is { } receiverCard)
-            {
-                DeviceConnectedAnimation.ReturnToSource(
-                    connectedAnimationKey,
-                    receiverCard,
-                    Props.Close);
-                return;
-            }
-
             Props.Close();
         }
     }

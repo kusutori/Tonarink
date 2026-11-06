@@ -16,6 +16,7 @@ try
     }
 
     ToolkitXamlMetadata.Register();
+    JumpListService.Initialize();
     NativeSystemMenuTheme.Apply(startupSettings.ThemeIndex);
     WidgetAppHost.Start();
     try

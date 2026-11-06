@@ -155,7 +155,6 @@ sealed class HistoryPage : Component<HistoryPageProps>
                         list.Flex(grow: 1, basis: 0),
                         Component<ClearHistoryDialog, ClearHistoryDialogProps>(new(
                             confirmClear,
-                            Props.Theme,
                             () =>
                             {
                                 history.Clear();
@@ -164,7 +163,6 @@ sealed class HistoryPage : Component<HistoryPageProps>
                             () => setConfirmClear(false))),
                         Component<HistoryInfoDialog, HistoryInfoDialogProps>(new(
                             infoEntry,
-                            Props.Theme,
                             () =>
                             {
                                 setInfoEntry(null);

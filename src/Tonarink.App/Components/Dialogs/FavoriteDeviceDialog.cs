@@ -11,7 +11,6 @@ namespace Tonarink.Components.Dialogs;
 sealed record FavoriteDeviceDialogProps(
     FavoriteDevice Device,
     bool IsNew,
-    ElementTheme Theme,
     Action<FavoriteDevice> Save,
     Action Close);
 
@@ -85,6 +84,6 @@ sealed class FavoriteDeviceDialog : Component<FavoriteDeviceDialogProps>
 
                 Props.Close();
             },
-        }).Themed(Props.Theme);
+        });
     }
 }

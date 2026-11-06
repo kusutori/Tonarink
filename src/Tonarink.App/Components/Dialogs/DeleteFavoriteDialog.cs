@@ -8,7 +8,6 @@ namespace Tonarink.Components.Dialogs;
 
 sealed record DeleteFavoriteDialogProps(
     string DeviceName,
-    ElementTheme Theme,
     bool IsOpen,
     Action Confirm,
     Action Close);
@@ -35,6 +34,6 @@ sealed class DeleteFavoriteDialog : Component<DeleteFavoriteDialogProps>
                     Props.Confirm();
                 Props.Close();
             },
-        }).Themed(Props.Theme);
+        });
     }
 }

@@ -2,6 +2,7 @@ using LocalSendDotNet;
 using Microsoft.UI.Reactor.Core;
 using Microsoft.UI.Reactor.Input;
 using Microsoft.UI.Reactor.Localization;
+using Microsoft.Windows.Storage.Pickers;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage;
 using static Tonarink.Pages.Send.SelectedSendItemOperations;
@@ -21,7 +22,6 @@ static class SendItemSelectionHooks
 {
     public static SendItemSelectionController UseSendItemSelection(
         this RenderContext context,
-        StoragePicker storagePicker,
         string message,
         Action<string> setMessage,
         ShareTargetPayload? shareTargetPayload,
@@ -65,13 +65,16 @@ static class SendItemSelectionHooks
         {
             try
             {
-                var files = await storagePicker.PickFilesAsync(t.Message(new("App", "Add")));
+                var files = await context.PickMultipleFilesAsync(new(
+                    SuggestedStartLocation: PickerLocationId.Downloads,
+                    CommitButtonText: t.Message(new("App", "Add"))));
                 if (files.Count == 0)
                     return;
 
                 var selected = new List<SelectedSendItem>(files.Count);
-                foreach (var file in files)
+                foreach (var result in files)
                 {
+                    var file = await StorageFile.GetFileFromPathAsync(result.Path);
                     selected.Add(await SelectedSendItemReader.FromStorageFileAsync(
                         file,
                         file.Name,
@@ -92,11 +95,13 @@ static class SendItemSelectionHooks
         {
             try
             {
-                var folder = await storagePicker.PickFolderAsync(t.Message(new("App", "AddFolder")));
+                var folder = await context.PickFolderAsync(new(
+                    SuggestedStartLocation: PickerLocationId.Downloads,
+                    CommitButtonText: t.Message(new("App", "AddFolder"))));
                 if (folder is null)
                     return;
 
-                var selected = await SelectedSendItemReader.FromFolderAsync(folder, CancellationToken.None);
+                var selected = await SelectedSendItemReader.FromFolderPathAsync(folder.Path, CancellationToken.None);
                 if (selected.Count == 0)
                 {
                     setMessage(t.Message(new("App", "FolderEmpty")));

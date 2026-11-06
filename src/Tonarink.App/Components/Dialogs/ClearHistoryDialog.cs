@@ -6,7 +6,7 @@ using static Microsoft.UI.Reactor.Factories;
 
 namespace Tonarink.Components.Dialogs;
 
-sealed record ClearHistoryDialogProps(bool IsOpen, ElementTheme Theme, Action Confirm, Action Close);
+sealed record ClearHistoryDialogProps(bool IsOpen, Action Confirm, Action Close);
 
 sealed class ClearHistoryDialog : Component<ClearHistoryDialogProps>
 {
@@ -28,6 +28,6 @@ sealed class ClearHistoryDialog : Component<ClearHistoryDialogProps>
                     Props.Confirm();
                 Props.Close();
             },
-        }).Themed(Props.Theme);
+        });
     }
 }

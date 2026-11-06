@@ -10,7 +10,6 @@ using static Microsoft.UI.Reactor.Factories;
 namespace Tonarink.Components.Dialogs;
 
 sealed record SendAddressDialogProps(
-    ElementTheme Theme,
     bool IsOpen,
     string Address,
     Action<string> SetAddress,
@@ -88,6 +87,6 @@ sealed class SendAddressDialog : Component<SendAddressDialogProps>
                 if (result == ContentDialogResult.Primary)
                     Props.Confirm(Props.Address);
             },
-        }).Themed(Props.Theme);
+        });
     }
 }

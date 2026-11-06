@@ -8,7 +8,7 @@ using static Tonarink.Utilities.ByteSize;
 
 namespace Tonarink.Components.Dialogs;
 
-sealed record HistoryInfoDialogProps(ReceiveHistoryEntry? Entry, ElementTheme Theme, Action Close);
+sealed record HistoryInfoDialogProps(ReceiveHistoryEntry? Entry, Action Close);
 
 sealed class HistoryInfoDialog : Component<HistoryInfoDialogProps>
 {
@@ -23,7 +23,7 @@ sealed class HistoryInfoDialog : Component<HistoryInfoDialogProps>
             IsOpen = Props.Entry is not null,
             DefaultButton = ContentDialogButton.Primary,
             OnClosed = _ => Props.Close(),
-        }).Themed(Props.Theme);
+        });
     }
 
     private static Element InfoBody(ReceiveHistoryEntry entry, IntlAccessor t) =>

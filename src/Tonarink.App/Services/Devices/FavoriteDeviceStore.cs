@@ -9,7 +9,10 @@ sealed record FavoriteDevice(
     string Name,
     string Address,
     int Port,
-    LocalSendDeviceType? DeviceType = null);
+    LocalSendDeviceType? DeviceType = null)
+{
+    public bool JumpListRemoved { get; init; }
+}
 
 static class FavoriteDeviceStore
 {
@@ -55,7 +58,7 @@ static class FavoriteDeviceStore
                 static pair => pair.Key,
                 static pair => pair.Value,
                 StringComparer.Ordinal);
-            updated[favorite.Fingerprint] = favorite;
+            updated[favorite.Fingerprint] = favorite with { JumpListRemoved = false };
             SaveCore(updated);
             _cached = updated;
             _revision++;
@@ -84,6 +87,26 @@ static class FavoriteDeviceStore
 
         if (removed)
             Changed?.Invoke();
+    }
+
+    public static void HideFromJumpList(IReadOnlySet<string> fingerprints)
+    {
+        lock (Gate)
+        {
+            var current = _cached ??= LoadCore();
+            if (!current.Values.Any(favorite => !favorite.JumpListRemoved && fingerprints.Contains(favorite.Fingerprint)))
+                return;
+
+            var updated = current.ToDictionary(
+                static pair => pair.Key,
+                pair => fingerprints.Contains(pair.Key) ? pair.Value with { JumpListRemoved = true } : pair.Value,
+                StringComparer.Ordinal);
+            SaveCore(updated);
+            _cached = updated;
+            _revision++;
+        }
+
+        Changed?.Invoke();
     }
 
     private static IReadOnlyDictionary<string, FavoriteDevice> LoadCore()

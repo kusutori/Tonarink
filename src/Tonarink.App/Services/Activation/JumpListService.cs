@@ -1,4 +1,5 @@
-using Windows.UI.StartScreen;
+using System.Runtime.InteropServices;
+using Microsoft.UI.Reactor;
 
 namespace Tonarink.Services.Activation;
 
@@ -8,79 +9,39 @@ sealed record JumpListLabels(
     Func<string, string> FavoriteDescription,
     Func<string, string> HistoryDescription);
 
-static class JumpListService
+static partial class JumpListService
 {
     private const int ItemsPerGroup = 5;
-
-    private static readonly string RemovedItemsPath = Path.Combine(
-        AppPlatform.DataDirectory,
-        "jump-list-removed.txt");
-
     private static readonly SemaphoreSlim UpdateGate = new(1, 1);
-    private static readonly Lock RemovedItemsGate = new();
-    private static HashSet<string>? _removedItems;
     private static volatile bool _enabled = true;
+
+    public static void Initialize()
+    {
+        if (AppPlatform.HasPackageIdentity())
+            return;
+
+        var appId = typeof(AppPlatform).Assembly.GetName().Name
+            ?? throw new InvalidOperationException("The application assembly name is unavailable.");
+        JumpList.AppUserModelId = appId;
+        try
+        {
+            Marshal.ThrowExceptionForHR(SetCurrentProcessExplicitAppUserModelID(appId));
+        }
+        catch (COMException exception)
+        {
+            AppDiagnostics.Report("Could not set the Windows jump-list identity", exception);
+        }
+    }
 
     public static void SetEnabled(bool enabled) => _enabled = enabled;
 
     public static async Task RefreshAsync(JumpListLabels labels)
     {
-        if (!AppPlatform.HasPackageIdentity() || !JumpList.IsSupported())
-            return;
-
         await UpdateGate.WaitAsync().ConfigureAwait(false);
         try
         {
-            var jumpList = await JumpList.LoadCurrentAsync();
-            RememberRemovedItems(jumpList.Items.Where(static item => item.RemovedByUser));
-            jumpList.SystemGroupKind = JumpListSystemGroupKind.None;
-            jumpList.Items.Clear();
-
-            // Read the current preference inside the update gate: refreshes queued
-            // before disabling must not repopulate the list after it is cleared.
-            if (!_enabled)
-            {
-                await jumpList.SaveAsync();
-                return;
-            }
-
-            var favoriteCount = 0;
-            foreach (var favorite in FavoriteDeviceStore.Entries.Values
-                         .OrderBy(static favorite => favorite.Name, StringComparer.CurrentCultureIgnoreCase))
-            {
-                var arguments = AppDeepLinks.ForFavorite(favorite.Fingerprint);
-                if (WasRemoved(arguments))
-                    continue;
-
-                jumpList.Items.Add(CreateItem(
-                    arguments,
-                    favorite.Name,
-                    labels.FavoritesGroup,
-                    labels.FavoriteDescription(favorite.Name),
-                    DeviceIconAssets.ForDeviceType(favorite.DeviceType)));
-                if (++favoriteCount == ItemsPerGroup)
-                    break;
-            }
-
-            var historyCount = 0;
-            foreach (var entry in ReceiveHistoryStore.Entries
-                         .Where(static entry => File.Exists(entry.Path) || Directory.Exists(entry.Path)))
-            {
-                var arguments = AppDeepLinks.ForHistory(entry.Id);
-                if (WasRemoved(arguments))
-                    continue;
-
-                jumpList.Items.Add(CreateItem(
-                    arguments,
-                    entry.FileName,
-                    labels.HistoryGroup,
-                    labels.HistoryDescription(entry.FileName),
-                    FileLogo(entry.Path)));
-                if (++historyCount == ItemsPerGroup)
-                    break;
-            }
-
-            await jumpList.SaveAsync();
+            await AppNavigationService.OnUIAsync(() => PublishAsync(labels), CancellationToken.None)
+                .ConfigureAwait(false);
         }
         catch (Exception exception)
         {
@@ -92,19 +53,72 @@ static class JumpListService
         }
     }
 
-    private static JumpListItem CreateItem(
-        string arguments,
-        string displayName,
-        string groupName,
-        string description,
-        Uri logo)
+    private static async Task PublishAsync(JumpListLabels labels)
     {
-        var item = JumpListItem.CreateWithArguments(arguments, displayName);
-        item.GroupName = groupName;
-        item.Description = description;
-        item.Logo = logo;
-        return item;
+        JumpList.ShowRecent = false;
+        JumpList.ShowFrequent = false;
+
+        // Observe the preference inside the gate, after dispatching to the UI:
+        // refreshes queued before disabling must not repopulate the list.
+        if (!_enabled)
+        {
+            ApplyRemovedArguments(await JumpList.ClearAsync());
+            return;
+        }
+
+        List<JumpListItem> items = [];
+        foreach (var favorite in FavoriteDeviceStore.Entries.Values
+                     .Where(static favorite => !favorite.JumpListRemoved)
+                     .OrderBy(static favorite => favorite.Name, StringComparer.CurrentCultureIgnoreCase)
+                     .Take(ItemsPerGroup))
+        {
+            items.Add(JumpListItem.ForUri(
+                favorite.Name,
+                AppDeepLinks.ForFavorite(favorite.Fingerprint),
+                labels.FavoriteDescription(favorite.Name),
+                ItemIcon(DeviceIconAssets.ForDeviceType(favorite.DeviceType)),
+                labels.FavoritesGroup));
+        }
+
+        foreach (var entry in ReceiveHistoryStore.Entries
+                     .Where(static entry => !entry.JumpListRemoved &&
+                         (File.Exists(entry.Path) || Directory.Exists(entry.Path)))
+                     .Take(ItemsPerGroup))
+        {
+            items.Add(JumpListItem.ForUri(
+                entry.FileName,
+                AppDeepLinks.ForHistory(entry.Id),
+                labels.HistoryDescription(entry.FileName),
+                ItemIcon(FileLogo(entry.Path)),
+                labels.HistoryGroup));
+        }
+
+        // Windows consumes removal records when the transaction commits.
+        // Track the returned observations on existing destinations, not in a
+        // permanent blacklist. Editing a favorite or receiving a new file
+        // creates fresh user activity eligible for the list.
+        ApplyRemovedArguments(await JumpList.UpdateAsync(items));
     }
+
+    private static void ApplyRemovedArguments(IReadOnlyList<string> arguments)
+    {
+        if (arguments.Count == 0)
+            return;
+
+        var removed = new HashSet<string>(arguments, StringComparer.Ordinal);
+        FavoriteDeviceStore.HideFromJumpList(FavoriteDeviceStore.Entries.Values
+            .Where(favorite => removed.Contains(AppDeepLinks.ForFavorite(favorite.Fingerprint)))
+            .Select(static favorite => favorite.Fingerprint)
+            .ToHashSet(StringComparer.Ordinal));
+        ReceiveHistoryStore.HideFromJumpList(ReceiveHistoryStore.Entries
+            .Where(entry => removed.Contains(AppDeepLinks.ForHistory(entry.Id)))
+            .Select(static entry => entry.Id)
+            .ToHashSet());
+    }
+
+    private static WindowIcon ItemIcon(Uri logo) => AppPlatform.HasPackageIdentity()
+        ? WindowIcon.FromResource(logo.AbsoluteUri)
+        : AppPlatform.AppWindowIcon;
 
     private static Uri FileLogo(string path)
     {
@@ -114,51 +128,6 @@ static class JumpListService
         return new($"ms-appx:///Assets/JumpList/JumpList.File.{kind}.png");
     }
 
-    private static void RememberRemovedItems(IEnumerable<JumpListItem> items)
-    {
-        var arguments = items
-            .Select(static item => item.Arguments)
-            .Where(static value => !string.IsNullOrWhiteSpace(value))
-            .ToArray();
-        if (arguments.Length == 0)
-            return;
-
-        lock (RemovedItemsGate)
-        {
-            var removed = _removedItems ??= LoadRemovedItems();
-            var changed = arguments.Aggregate(false, (current, argument) => current | removed.Add(argument));
-
-            if (!changed)
-                return;
-
-            Directory.CreateDirectory(AppPlatform.DataDirectory);
-            File.WriteAllLines(RemovedItemsPath, removed.Order(StringComparer.Ordinal));
-        }
-    }
-
-    private static bool WasRemoved(string arguments)
-    {
-        lock (RemovedItemsGate)
-            return (_removedItems ??= LoadRemovedItems()).Contains(arguments);
-    }
-
-    private static HashSet<string> LoadRemovedItems()
-    {
-        try
-        {
-            return File.Exists(RemovedItemsPath)
-                ?
-                [
-                    with(File.ReadAllLines(RemovedItemsPath)
-                            .Where(static value => !string.IsNullOrWhiteSpace(value)),
-                        StringComparer.Ordinal)
-                ]
-                : [with(StringComparer.Ordinal)];
-        }
-        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
-        {
-            AppDiagnostics.Report("Could not load removed jump-list items", exception);
-            return [with(StringComparer.Ordinal)];
-        }
-    }
+    [LibraryImport("shell32.dll", StringMarshalling = StringMarshalling.Utf16)]
+    private static partial int SetCurrentProcessExplicitAppUserModelID(string appId);
 }

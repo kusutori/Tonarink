@@ -41,7 +41,8 @@ sealed class DeviceDetailsPage : Component<DeviceDetailsPageProps>
                         displayName,
                         currentDevice.DeviceModel,
                         currentDevice.DeviceType,
-                        RemoteDeviceNumber(currentDevice)))
+                        RemoteDeviceNumber(currentDevice),
+                        NavigationAnimationKey: DeviceDetailsAnimationKey(currentDevice.Fingerprint)))
                     .MaxWidth(AppLayout.NarrowContentWidth)
                     .HAlign(HorizontalAlignment.Stretch),
                 HStack(12,
@@ -68,7 +69,6 @@ sealed class DeviceDetailsPage : Component<DeviceDetailsPageProps>
                 Component<DeviceVerificationDialog, DeviceVerificationDialogProps>(new(
                     currentDevice,
                     Props.Runtime.Identity?.Fingerprint,
-                    Props.Theme,
                     showVerification,
                     () => setShowVerification(false))),
                 favoriteDraft is null
@@ -76,12 +76,10 @@ sealed class DeviceDetailsPage : Component<DeviceDetailsPageProps>
                     : Component<FavoriteDeviceDialog, FavoriteDeviceDialogProps>(new(
                         favoriteDraft,
                         IsNew: true,
-                        Props.Theme,
                         FavoriteDeviceStore.Upsert,
                         () => setFavoriteDraft(null))),
                 Component<DeleteFavoriteDialog, DeleteFavoriteDialogProps>(new(
                     displayName,
-                    Props.Theme,
                     showRemoveFavorite,
                     () => FavoriteDeviceStore.Remove(currentDevice.Fingerprint),
                     () => setShowRemoveFavorite(false)))) with

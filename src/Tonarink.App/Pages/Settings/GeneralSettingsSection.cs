@@ -215,8 +215,7 @@ sealed class GeneralSettingsSection : Component<GeneralSettingsSectionProps>
                         value => Props.UpdateSettings(settings => settings with { ShowJumpList = value }))
                     .AutomationName(t.Message(new("App", "SettingsJumpList")))
                     .AutomationId("Settings.JumpList.Enabled")
-                    .HelpText(t.Message(new("App", "SettingsJumpListDescription")))
-                    .IsEnabled(AppPlatform.HasPackageIdentity())),
+                    .HelpText(t.Message(new("App", "SettingsJumpListDescription")))),
             SettingsExpander(
                         headerIcon: AnimatedButtons.SettingsContextMenuIcon(Props.Settings.ShowExplorerContextMenu)
                             .WithKey("settings-context-menu-icon"),

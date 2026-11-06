@@ -205,7 +205,7 @@ public sealed class HistoryPageTests
                 var (currentNavigationId, setNavigationId) = context.UseState(navigationId);
                 _replaceStore = setStore;
                 return LocaleProvider("en-US", Component<HistoryPage, HistoryPageProps>(new(
-                    directory, ElementTheme.Light, currentNavigationId, id =>
+                    directory, currentNavigationId, id =>
                     {
                         Consumed.Add(id);
                         setNavigationId(null);

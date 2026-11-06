@@ -222,7 +222,6 @@ sealed class NetworkSettingsSection : Component<NetworkSettingsSectionProps>
         return VStack(0, cards,
             Component<EncryptionDisabledDialog, EncryptionDisabledDialogProps>(new(
                 encryptionNoticeOpen,
-                AppTheme.ToElementTheme(Props.Settings.ThemeIndex),
                 () => setEncryptionNoticeOpen(false))));
     }
 

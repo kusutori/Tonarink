@@ -8,7 +8,7 @@ using Windows.Foundation;
 namespace Tonarink.Controls;
 
 /// <summary>Keeps children mounted while their layout changes between a row and a column.</summary>
-public sealed class AnimatedReflowPanel : Panel
+public sealed partial class AnimatedReflowPanel : Panel
 {
     private readonly Dictionary<UIElement, ChildMotion> _motions = [];
     private readonly Dictionary<UIElement, Rect> _slots = [];

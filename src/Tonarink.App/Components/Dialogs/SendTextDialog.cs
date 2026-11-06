@@ -7,7 +7,6 @@ using static Microsoft.UI.Reactor.Factories;
 namespace Tonarink.Components.Dialogs;
 
 sealed record SendTextDialogProps(
-    ElementTheme Theme,
     bool IsOpen,
     string Text,
     Action<string> SetText,
@@ -45,6 +44,6 @@ sealed class SendTextDialog : Component<SendTextDialogProps>
 
                     Props.Close();
                 },
-            }).Themed(Props.Theme);
+            });
     }
 }

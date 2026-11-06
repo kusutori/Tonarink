@@ -30,7 +30,6 @@ sealed class WebSharePage : Component<WebSharePageProps>
         var alive = UseRef(true);
         var node = Props.Node;
         var window = UseWindow();
-        var dialogTheme = AppTheme.ToElementTheme(Props.Settings.ThemeIndex);
         var applyPin = UseMemo<Action<string>>(() => next =>
         {
             setPin(next);
@@ -182,11 +181,11 @@ sealed class WebSharePage : Component<WebSharePageProps>
                             : TextBlock(t.Message(new("App", "WebSharePinHint"), ("pin", pin)))
                                 .Foreground(Theme.SystemCaution),
                         Component<WebSharePinDialog, WebSharePinDialogProps>(new(
-                            pinDialogOpen, dialogTheme, applyPin, closePinDialog)),
+                            pinDialogOpen, applyPin, closePinDialog)),
                         Component<WebShareQrDialog, WebShareQrDialogProps>(new(
-                            qrUrl, dialogTheme, closeQrDialog)),
+                            qrUrl, closeQrDialog)),
                         Component<WebShareZoomDialog, WebShareZoomDialogProps>(new(
-                            zoomUrl, pin, dialogTheme, closeZoomDialog)))
+                            zoomUrl, pin, closeZoomDialog)))
                     .Padding(AppLayout.PagePadding))
             .HorizontalContentAlignment(HorizontalAlignment.Stretch)
             .AutomationName(t.Message(new(

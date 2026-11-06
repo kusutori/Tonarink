@@ -14,7 +14,6 @@ namespace Tonarink.Components.Dialogs;
 sealed record DeviceVerificationDialogProps(
     LocalSendDevice Device,
     string? LocalFingerprint,
-    ElementTheme Theme,
     bool IsOpen,
     Action Close);
 
@@ -44,7 +43,7 @@ sealed class DeviceVerificationDialog : Component<DeviceVerificationDialogProps>
         {
             IsOpen = Props.IsOpen,
             OnClosed = _ => Props.Close(),
-        }).Themed(Props.Theme);
+        });
 
         Element VerifiedContent(string fingerprint)
         {

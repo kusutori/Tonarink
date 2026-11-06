@@ -68,11 +68,20 @@ static class ReceiveHistoryStore
 
     public static void Clear() => Mutate(_ => []);
 
+    public static void HideFromJumpList(IReadOnlySet<Guid> ids) =>
+        Mutate(current => current.Any(entry => !entry.JumpListRemoved && ids.Contains(entry.Id))
+            ? (ReceiveHistoryEntry[])[.. current.Select(entry => ids.Contains(entry.Id)
+                ? entry with { JumpListRemoved = true }
+                : entry)]
+            : current);
+
     private static void Mutate(Func<IReadOnlyList<ReceiveHistoryEntry>, IReadOnlyList<ReceiveHistoryEntry>> update)
     {
         lock (Gate)
         {
             var next = update(_entries ??= LoadUnlocked());
+            if (ReferenceEquals(next, _entries))
+                return;
             if (next.Count > MaxEntries)
                 next = (ReceiveHistoryEntry[])[.. next.Take(MaxEntries)];
             SaveUnlocked(next);
@@ -140,6 +149,7 @@ sealed class ReceiveHistoryFile
                 Size = entry.Size,
                 SenderAlias = entry.SenderAlias,
                 ReceivedAt = entry.ReceivedAt,
+                JumpListRemoved = entry.JumpListRemoved,
             })
         ],
     };
@@ -165,7 +175,10 @@ sealed class ReceiveHistoryFile
                         path,
                         item.Size,
                         string.IsNullOrWhiteSpace(item.SenderAlias) ? "?" : item.SenderAlias,
-                        item.ReceivedAt == default ? DateTimeOffset.UtcNow : item.ReceivedAt);
+                        item.ReceivedAt == default ? DateTimeOffset.UtcNow : item.ReceivedAt)
+                    {
+                        JumpListRemoved = item.JumpListRemoved,
+                    };
                 })
         ];
     }
@@ -179,6 +192,7 @@ sealed class ReceiveHistoryItemFile
     public long Size { get; set; }
     public string? SenderAlias { get; set; }
     public DateTimeOffset ReceivedAt { get; set; }
+    public bool JumpListRemoved { get; set; }
 }
 
 [JsonSourceGenerationOptions(WriteIndented = true, PropertyNameCaseInsensitive = true)]

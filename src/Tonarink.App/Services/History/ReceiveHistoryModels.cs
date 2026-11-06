@@ -6,4 +6,7 @@ sealed record ReceiveHistoryEntry(
     string Path,
     long Size,
     string SenderAlias,
-    DateTimeOffset ReceivedAt);
+    DateTimeOffset ReceivedAt)
+{
+    public bool JumpListRemoved { get; init; }
+}

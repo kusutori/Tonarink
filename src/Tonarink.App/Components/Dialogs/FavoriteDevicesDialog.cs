@@ -9,7 +9,6 @@ namespace Tonarink.Components.Dialogs;
 sealed record FavoriteDevicesDialogProps(
     IReadOnlyDictionary<string, FavoriteDevice> Devices,
     string? PreferredFingerprint,
-    ElementTheme Theme,
     bool IsOpen,
     Action<FavoriteDevice> Send,
     Action Hide,
@@ -79,7 +78,7 @@ sealed class FavoriteDevicesDialog : Component<FavoriteDevicesDialogProps>
                 };
                 finish();
             },
-        }).Themed(Props.Theme);
+        });
 
         Element FavoriteRow(FavoriteDevice favorite) =>
             Card(

@@ -2,11 +2,13 @@
 
 审计日期：2026-10-16。对象：Tonarink `main` 的 `src/Tonarink.App` 手写 C# 代码。
 
-首次扫描只检查和分类。下面保留扫描时的发现与判断，整改情况见文末；编译确认不代表已验证实际交互效果。
+首次扫描只检查和分类。下面保留初次审计背景，并更新已完成的依赖升级项；编译确认不代表已验证实际交互效果。
+
+2026-11-06 已接入 **Microsoft.UI.Reactor 0.1.0-preview.17**；具体移植与待实测项目见 [TODO](../TODO.md)。
 
 ## 依据与边界
 
-以项目实际引用的 **Microsoft.UI.Reactor 0.1.0-preview.16** 为可用能力基准，而不是以上游最新源码存在某 API 为依据：
+初次审计以项目当时引用的 **Microsoft.UI.Reactor 0.1.0-preview.16** 为可用能力基准，而不是以上游最新源码存在某 API 为依据：
 
 - `Directory.Packages.props`
 - 本机 NuGet 包的 `agentkit/reactor.api.txt`：Factories、Modifiers、Hooks 和相关类型定义
@@ -55,13 +57,14 @@
 
 ### 设备连接动画
 
-[DeviceConnectedAnimation](../src/Tonarink.App/Services/Devices/DeviceConnectedAnimation.cs) 与框架 `ConnectedAnimation` / `NavigationTransition.Connected` 存在能力重叠，但它还负责：
+2026-11-06 随 preview.17 接入 #1415：
 
-- 页面之外的传输覆盖层及返回原卡片
-- 目标挂载、布局就绪后的有限帧重试
-- 自定义配置、完成/失败反馈，以及源卡片引用管理
-
-可以优先研究“普通设备详情导航”是否交给框架，但不能据此直接删除整个服务；覆盖层不是 NavigationHost 的一次页面跳转。
+- 设备详情导航使用 `NavigateOptions.ConnectedAnimationKey` 与卡片的 `ConnectedAnimation`
+- 发送覆盖层由 [OutgoingOverlayNavigator](../src/Tonarink.App/Components/Shell/OutgoingOverlayNavigator.cs)
+  管理进入/返回，保留主界面缓存，页面级淡入由应用显式配置
+- 接收文件卡片展开/收起使用局部 NavigationHost，目标就绪等待和快照释放交给框架
+- 删除旧 DeviceConnectedAnimation 服务及手动原生引用/重试/完成标记，保留接收覆盖层退出淡出
+- 旧实验分支已实测；本轮正式 NuGet 接入后的交互效果仍待用户确认
 
 ### 分段内容切换与图标旋转中心
 
@@ -84,23 +87,27 @@
 | `AnimatedVisualPlayer.Source/PlayAsync/Stop/SetProgress` | 当前播放器声明面主要提供 AutoPlay 等，未覆盖这些精确播放操作、区间播放和完成等待 |
 | [AnimatedSettingsToggleIcon](../src/Tonarink.App/Components/Animations/AnimatedSettingsToggleIcon.cs:73) 的 `AnimatedIcon.SetState` | 当前没有对应状态 modifier。Source/FallbackIconSource 有声明属性，可做局部整理，但要维持动画源身份；状态调用仍需原生接口 |
 | [NavigationAnimatedIcons](../src/Tonarink.App/Components/Shell/NavigationAnimatedIcons.cs:28) | NavItem 的 IconElement 接受 IconData，不是任意 Element；当前 IconData 没有 AnimatedIcon 变体。原生项还负责继承状态、自动化标识和单项资源，不能简单用一个普通 Icon 工厂取代 |
-| [ContentDialogStyleExtensions](../src/Tonarink.App/Styling/ContentDialogStyleExtensions.cs:10) | 虽有通用 RequestedTheme modifier，ContentDialog 的真实弹窗与其树内占位节点不同。`.Set` 明确作用于真实 dialog，不能仅按属性同名就替换 |
 | [TrayMenuHost](../src/Tonarink.App/Windowing/TrayMenuHost.cs:95) | 菜单内容已由 Reactor 构造；剩余 XamlRoot、鼠标位置 ShowAt、辅助窗口激活和菜单关闭收尾属于原生托盘边界。当前 MenuFlyoutContentElement 没有 Closed 回调，不能套用普通 Flyout 的 Closed 接口 |
 | [AppNavigationDialogs](../src/Tonarink.App/Services/Activation/AppNavigationDialogs.cs:14) | 枚举当前打开的弹窗、识别并关闭特定弹窗，再等待其原生关闭；不是某个已声明 dialog 的一般 Closed 处理。后续可随弹窗所有权集中管理再研究消除视觉树查询 |
 | [QrCodeCanvas](../src/Tonarink.App/Utilities/QrCodeCanvas.cs:30) | 已使用 Win2DCanvas 工厂，原生部分是绘制与 Composition 裁剪，不能因为存在普通 CornerRadius 就认为能够等价替代 |
-| NativeSystemMenuTheme、共享面板、徽标/通知、跳转列表、执行别名、Explorer/SendTo、激活处理、剪贴板与外部启动 | 系统/WinRT/COM 集成。当前 API 未提供对应完整封装，不应归类为“漏用了 On 回调” |
+| NativeSystemMenuTheme、共享面板、徽标/通知、执行别名、Explorer/SendTo、激活处理、剪贴板与外部启动 | 系统/WinRT/COM 集成。当前 API 未提供对应完整封装，不应归类为“漏用了 On 回调”；跳转列表已在第四节改用框架封装 |
 | `Thickness/FontWeight/FontFamily/Colors`、控件枚举和类型判断 | Reactor 的 API 本身使用原生值类型。完整命名空间通常只是避免名称冲突，可做命名整理，但不是架构问题 |
 
-## 四、等待依赖版本后再收敛
+## 四、依赖升级后的收敛结果
 
-以下项目不能因为本机上游检出已有实现，就直接在当前主分支使用：
+2026-11-06 升级三个 Reactor 包至 **0.1.0-preview.17**，依赖仍来自 NuGet.org：
 
-| 位置 | 当前缺口与后续动作 |
+| 位置 | 已完成改造 |
 | --- | --- |
-| [SettingsExpanderItems](../src/Tonarink.App/Controls/SettingsExpanderItems.cs) 与 [ToolkitControls](../src/Tonarink.App/Controls/ToolkitControls.cs) | 当前发布包尚需手写动态 Items/Content 协调和 AOT 适配。升级到包含相关上游修复的版本后，再验证自动 wrapper 并删适配；与上文 Header/Description 的声明属性整理是两件事 |
-| PageHeader / AppShell 的资源字典写入 | 当前 ResourceBuilder 缺 Thickness/FontWeight 等重载，不能直接改成同名 Set。等待对应资源重载版本后收敛 |
-| [StoragePicker](../src/Tonarink.App/Services/Platform/StoragePicker.cs) | preview.16 只有单文件和文件夹 hook，没有多文件接口；当前服务还明确指定窗口 HWND、保留 WinRT 集合以适配 AOT。后续升级时一并核对多文件、owner 和返回类型，不宜只为文件夹拆出两套路径 |
-| AppShell 的 TitleBar.PreferredTheme | 当前 WindowSpec API 没有相应配置，后续使用包含该配置的版本；NativeSystemMenuTheme 仍是另一个系统菜单主题问题，不随之删除 |
+| [ToolkitControls](../src/Tonarink.App/Controls/ToolkitControls.cs) | SettingsExpander 使用生成 ItemsHost 和 Content 槽，删除手写 SettingsExpanderItems 和 AOT 适配 |
+| PageHeader / AppShell | Thickness / FontWeight 与导航边距统一使用 ResourceBuilder 重载，保留布局数值 |
+| 发送页、接收覆盖层、接收设置 | 统一使用新版多文件/文件夹 picker 与 options，删除 StoragePicker；在需要旧存储模型的边界按路径转换 |
+| ShellTitleBar | 用 PreferredTheme 声明标题栏按钮主题；保留 NativeSystemMenuTheme |
+| Components/Dialogs | 删除 Themed 补丁及主题参数，使用框架默认主题继承 |
+| [JumpListService](../src/Tonarink.App/Services/Activation/JumpListService.cs) | 使用 Reactor 统一打包/非打包和 AOT 接口；消费更新/清空事务返回的删除记录，按已有条目元数据保留用户意图 |
+
+上述项目不再等待上游发布。未进行的 UI / Windows Shell / x86 验证单独列在
+[TODO](../TODO.md)，不把编译通过视为运行效果已验证。
 
 ## 推荐顺序
 
@@ -124,4 +131,4 @@
 
 核对关键帧单位与焦点调度时，还对照了 NuGet 包 nuspec 标注的源码提交 `459f7234dc2b0b72125f833ba86c051a554c12cf`。
 
-验证仅执行 x64 Debug 编译，不新增或运行测试用例，不进行 UI 自动化；第二至四节标记为保留/待升级的部分未改动。
+验证仅执行 x64 Debug 编译，不新增或运行测试用例，不进行 UI 自动化；这是 2026-10-16 的验证记录；后续依赖接入情况见第四节及 TODO。

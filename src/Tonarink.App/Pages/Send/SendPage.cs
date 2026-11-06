@@ -20,9 +20,6 @@ sealed class SendPage : Component<SendPageProps>
     {
         var t = context.UseIntl();
         var window = context.UseWindow();
-        var storagePicker = new StoragePicker(
-            window?.NativeWindow,
-            t.Message(new("App", "WindowUnavailable")));
         var reduceMotion = context.UseReducedMotion();
         var (observedWindowWidth, _) = context.UseWindowSize();
         var currentWindowWidth = window?.NativeWindow.Bounds.Width ?? observedWindowWidth;
@@ -69,7 +66,6 @@ sealed class SendPage : Component<SendPageProps>
         var enqueueFavoriteShare = context.UseFavoriteShareSend(Props.Node, Props.Runtime, transfer,
             t, setPickerMessage, setResolvingAddress);
         var itemSelection = context.UseSendItemSelection(
-            storagePicker,
             pickerMessage,
             setPickerMessage,
             Props.ShareTargetPayload,
@@ -215,16 +211,7 @@ sealed class SendPage : Component<SendPageProps>
                         return;
                     }
 
-                    if (source is null || reduceMotion)
-                    {
-                        _ = transfer.StartAsync(device, null, null);
-                        return;
-                    }
-
-                    DeviceConnectedAnimation.NavigateToDestination(
-                        DeviceConnectedKey(device.Fingerprint),
-                        source,
-                        () => _ = transfer.StartAsync(device, null, null));
+                    _ = transfer.StartAsync(device, null, null);
                 },
                 Props.OpenDeviceDetails,
                 (device, favorite) =>
@@ -278,7 +265,6 @@ sealed class SendPage : Component<SendPageProps>
             rows: [GridSize.Star()],
             pageContainer.Grid(row: 0, column: 0),
             Component<SendTextDialog, SendTextDialogProps>(new(
-                    Props.Theme,
                     showTextDialog,
                     text,
                     setText,
@@ -298,7 +284,6 @@ sealed class SendPage : Component<SendPageProps>
                     () => setShowTextDialog(false)))
                 .Grid(row: 0, column: 0),
             Component<SendAddressDialog, SendAddressDialogProps>(new(
-                    Props.Theme,
                     showAddressDialog,
                     manualAddress,
                     setManualAddress,
@@ -315,7 +300,6 @@ sealed class SendPage : Component<SendPageProps>
             Component<FavoriteDevicesDialog, FavoriteDevicesDialogProps>(new(
                     favorites,
                     Props.NavigationFavoriteFingerprint,
-                    Props.Theme,
                     showFavoritesDialog,
                     SendFavorite,
                     () => setShowFavoritesDialog(false),
@@ -343,7 +327,6 @@ sealed class SendPage : Component<SendPageProps>
                             FavoriteDeviceEdit.Update(var device) => device,
                         },
                         favoriteEdit is FavoriteDeviceEdit.Create,
-                        Props.Theme,
                         FavoriteDeviceStore.Upsert,
                         () =>
                         {
@@ -353,7 +336,6 @@ sealed class SendPage : Component<SendPageProps>
                     .Grid(row: 0, column: 0),
             Component<DeleteFavoriteDialog, DeleteFavoriteDialogProps>(new(
                     favoriteToDelete?.Name ?? string.Empty,
-                    Props.Theme,
                     favoriteToDelete is not null,
                     () =>
                     {
@@ -371,14 +353,12 @@ sealed class SendPage : Component<SendPageProps>
                 : Component<FavoriteDeviceDialog, FavoriteDeviceDialogProps>(new(
                         deviceFavoriteDraft,
                         IsNew: true,
-                        Props.Theme,
                         FavoriteDeviceStore.Upsert,
                         () => setDeviceFavoriteDraft(null)))
                     .WithKey(deviceFavoriteDraft.Fingerprint)
                     .Grid(row: 0, column: 0),
             Component<DeleteFavoriteDialog, DeleteFavoriteDialogProps>(new(
                     deviceFavoriteToDelete?.Name ?? string.Empty,
-                    Props.Theme,
                     deviceFavoriteToDelete is not null,
                     () =>
                     {
@@ -392,7 +372,6 @@ sealed class SendPage : Component<SendPageProps>
                 : Component<DeviceVerificationDialog, DeviceVerificationDialogProps>(new(
                         verificationDevice,
                         Props.Runtime.Identity?.Fingerprint,
-                        Props.Theme,
                         IsOpen: true,
                         () => setVerificationDevice(null)))
                     .WithKey(verificationDevice.Fingerprint)
@@ -410,7 +389,6 @@ sealed class SendPage : Component<SendPageProps>
 
         Element RenameDialog()
             => Component<RenameItemDialog, RenameItemDialogProps>(new(
-                Props.Theme,
                 renameItemId is not null,
                 renameFileName,
                 setRenameFileName,

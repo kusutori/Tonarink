@@ -8,8 +8,6 @@ namespace Tonarink.Components.Transfers;
 
 static class TransferOverlayVisuals
 {
-    public static string DeviceConnectedKey(string fingerprint) => $"device:{fingerprint}";
-
     public static void UpdateTaskbarProgress(
         ReactorWindow? window,
         TaskbarTransferProgress transfer)

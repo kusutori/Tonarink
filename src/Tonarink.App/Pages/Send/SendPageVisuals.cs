@@ -88,18 +88,17 @@ static class SendPageVisuals
                 device.DeviceModel,
                 device.DeviceType,
                 RemoteDeviceNumber(device),
-                DeviceConnectedKey(device.Fingerprint),
-                onClick,
-                t.Message(new("App", "SendToDevice"), ("device", displayName)),
-                isEnabled,
+                OnClick: onClick,
+                AutomationName: t.Message(new("App", "SendToDevice"), ("device", displayName)),
+                IsEnabled: isEnabled,
                 TrailingReserve: 64,
-                AnimationRole: DeviceIdentityCardAnimationRole.Source,
                 SecondaryGlyph: AppIcons.Details,
                 SecondaryAutomationName: t.Message(
                     new("App", "OpenDeviceDetails"),
                     ("device", displayName)),
                 OnSecondaryClick: _ => onDetails(),
-                IsFavorite: favorite is not null))
+                IsFavorite: favorite is not null,
+                NavigationAnimationKey: DeviceDetailsAnimationKey(device.Fingerprint)))
             .WithContextFlyout(MenuItems(
                 MenuItem(favoriteCommand),
                 MenuItem(verifyCommand)));

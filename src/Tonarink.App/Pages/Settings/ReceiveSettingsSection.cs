@@ -1,5 +1,6 @@
 using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Core;
+using Microsoft.Windows.Storage.Pickers;
 using static Microsoft.UI.Reactor.Factories;
 using static Tonarink.Controls.SettingsCardElement;
 using static Tonarink.Controls.SettingsExpanderElement;
@@ -19,8 +20,6 @@ sealed class ReceiveSettingsSection : Component<ReceiveSettingsSectionProps>
     public override Element Render()
     {
         var t = UseIntl();
-        var window = UseWindow();
-        var storagePicker = new StoragePicker(window?.NativeWindow, t.Message(new("App", "WindowUnavailable")));
         var setStatusMessage = Props.ReportError;
         var draft = Props.Draft;
         var updateDraft = Props.UpdateDraft;
@@ -125,7 +124,9 @@ sealed class ReceiveSettingsSection : Component<ReceiveSettingsSectionProps>
         {
             try
             {
-                var folder = await storagePicker.PickFolderAsync(t.Message(new("App", "Change")));
+                var folder = await PickFolderAsync(new(
+                    SuggestedStartLocation: PickerLocationId.Downloads,
+                    CommitButtonText: t.Message(new("App", "Change"))));
                 if (folder is null)
                     return;
 

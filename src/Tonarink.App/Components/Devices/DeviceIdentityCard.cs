@@ -13,25 +13,15 @@ sealed record DeviceIdentityCardProps(
     string? Model,
     LocalSendDeviceType Type,
     string Number,
-    string? ConnectedAnimationKey = null,
     Action<FrameworkElement?>? OnClick = null,
     string? AutomationName = null,
     bool IsEnabled = true,
     double TrailingReserve = 0,
-    DeviceIdentityCardAnimationRole AnimationRole = DeviceIdentityCardAnimationRole.None,
-    Action<bool>? AnimationCompleted = null,
-    Action<FrameworkElement?>? ElementChanged = null,
     string? SecondaryGlyph = null,
     string? SecondaryAutomationName = null,
     Action<FrameworkElement?>? OnSecondaryClick = null,
-    bool IsFavorite = false);
-
-enum DeviceIdentityCardAnimationRole
-{
-    None,
-    Source,
-    Destination,
-}
+    bool IsFavorite = false,
+    string? NavigationAnimationKey = null);
 
 sealed class DeviceIdentityCard : Component<DeviceIdentityCardProps>
 {
@@ -92,31 +82,11 @@ sealed class DeviceIdentityCard : Component<DeviceIdentityCardProps>
             .OnMountAdd(element =>
             {
                 cardRef.Current = element;
-                Props.ElementChanged?.Invoke(element);
-
-                if (Props.ConnectedAnimationKey is not { } key)
-                    return;
-
-                switch (Props.AnimationRole)
-                {
-                    case DeviceIdentityCardAnimationRole.Source:
-
-                        DeviceConnectedAnimation.RegisterSource(key, element);
-                        break;
-                    case DeviceIdentityCardAnimationRole.Destination:
-
-                        DeviceConnectedAnimation.StartDestinationWhenReady(
-                            key,
-                            element,
-                            Props.AnimationCompleted);
-                        break;
-                    case DeviceIdentityCardAnimationRole.None:
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
             })
             .OnUnmountAdd(ReleaseCard);
+
+        if (Props.NavigationAnimationKey is { } navigationKey)
+            card = card.ConnectedAnimation(navigationKey);
 
         if (Props.OnSecondaryClick is null || Props.SecondaryGlyph is null)
             return card;
@@ -143,9 +113,6 @@ sealed class DeviceIdentityCard : Component<DeviceIdentityCardProps>
                 return;
 
             cardRef.Current = null;
-            if (Props is { ConnectedAnimationKey: { } key, AnimationRole: DeviceIdentityCardAnimationRole.Source })
-                DeviceConnectedAnimation.UnregisterSource(key, element);
-            Props.ElementChanged?.Invoke(null);
         }
     }
 }

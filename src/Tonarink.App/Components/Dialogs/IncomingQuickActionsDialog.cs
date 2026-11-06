@@ -14,7 +14,6 @@ sealed record IncomingQuickActionFile(string Id, string FileName);
 
 sealed record IncomingQuickActionsDialogProps(
     IReadOnlyList<IncomingQuickActionFile> Files,
-    ElementTheme Theme,
     bool IsOpen,
     Action Close,
     Action<IReadOnlyDictionary<string, string>> Apply);
@@ -89,7 +88,7 @@ sealed class IncomingQuickActionsDialog : Component<IncomingQuickActionsDialogPr
                     Props.Apply(BuildNames());
                 Props.Close();
             },
-        }).Themed(Props.Theme);
+        });
 
         Element CounterModeContent() =>
             VStack(8,

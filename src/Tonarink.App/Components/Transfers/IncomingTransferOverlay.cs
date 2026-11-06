@@ -3,15 +3,17 @@ using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Animation;
 using Microsoft.UI.Reactor.Core;
 using Microsoft.UI.Reactor.Hooks;
+using Microsoft.UI.Reactor.Navigation;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
+using Microsoft.Windows.Storage.Pickers;
 using Windows.System;
+using FadeTransition = Microsoft.UI.Reactor.Animation.FadeTransition;
 using static Microsoft.UI.Reactor.Factories;
 using static Tonarink.Components.Devices.DeviceVisuals;
 using static Tonarink.Components.Transfers.TransferOverlayVisuals;
 using static Tonarink.Services.Transfers.TransferPresentation;
 using static Tonarink.Utilities.ByteSize;
-using BasicConnectedAnimationConfiguration = Microsoft.UI.Xaml.Media.Animation.BasicConnectedAnimationConfiguration;
 
 namespace Tonarink.Components.Transfers;
 
@@ -22,7 +24,6 @@ sealed record IncomingTransferOverlayProps(
     bool SaveReceiveHistory,
     bool VerifyChecksums,
     bool AutoReturnAfterReceive,
-    ElementTheme Theme,
     Action<Guid> Dismiss,
     bool AcceptRequested = false);
 
@@ -33,12 +34,8 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
         var t = UseIntl();
         var announce = this.UseAnnounce();
         var window = UseWindow();
-        var storagePicker = new StoragePicker(
-            window?.NativeWindow,
-            t.Message(new("App", "WindowUnavailable")));
         var highContrast = UseHighContrast();
         var (windowWidth, windowHeight) = UseWindowSize();
-        var reduceMotion = UseReducedMotion();
         var request = Props.Request;
         var (view, dispatchView) = UseReducer<IncomingTransferViewState, IncomingTransferAction>(
             IncomingTransferReducer.Reduce,
@@ -47,7 +44,8 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
         var alive = UseRef(true);
         var copyInProgress = UseRef(false);
         var (showVerification, setShowVerification) = UseState(false);
-        var (showFileOptions, setShowFileOptions) = UseState(false);
+        var fileOptionsNavigation = UseNavigation(false);
+        var showFileOptions = fileOptionsNavigation.CurrentRoute;
         var (destinationDirectory, setDestinationDirectory) = UseState(Props.DownloadDirectory);
         var (selectedItemIds, updateSelectedItemIds) = UseReducer(
             IncomingFileCard.AllItemIds(request.Items));
@@ -65,11 +63,6 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
         var (closeRef, requestCloseFocus) = this.UseElementFocus();
         var cancellationRef = UseRef<CancellationTokenSource?>();
         var accepting = UseRef(false);
-        var fileCardRef = UseRef<FrameworkElement?>();
-        var fileOptionsDesiredRef = UseRef(false);
-        var fileOptionsActualRef = UseRef(false);
-        var fileOptionsAnimatingRef = UseRef(false);
-        fileOptionsActualRef.Current = showFileOptions;
         var taskbarProgress = new TaskbarTransferProgress(
             view.State,
             view.BytesTransferred,
@@ -222,9 +215,6 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
         // Changing the parent width in the same render shifts both destination
         // coordinates and makes the connected animation appear off-centre.
         var overlayContentWidth = Math.Min(AppLayout.OverlayContentMaxWidth, availableContentWidth);
-        var fileCardWidth = Math.Min(
-            showFileOptions ? AppLayout.OverlayFileCardExpandedWidth : AppLayout.OverlayFileCardWidth,
-            overlayContentWidth);
         var expandedFileCardHeight = windowHeight > 0
             ? Math.Clamp(
                 windowHeight - AppLayout.OverlayExpandedHeightChrome,
@@ -232,30 +222,20 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                 AppLayout.OverlayExpandedHeightMax)
             : AppLayout.OverlayExpandedHeightFallback;
         var fileCardAnimationKey = $"incoming-file-options:{request.RequestId:N}";
-        var fileCard = IncomingFileCard.Build(new(
+        Element BuildFileCard(bool expanded) => IncomingFileCard.Build(new(
             request,
             t,
-            showFileOptions,
+            expanded,
             canEdit,
-            reduceMotion,
-            fileOptionsAnimatingRef.Current,
-            fileCardWidth,
-            showFileOptions ? expandedFileCardHeight : null,
+            Math.Min(expanded ? AppLayout.OverlayFileCardExpandedWidth : AppLayout.OverlayFileCardWidth, overlayContentWidth),
+            expanded ? expandedFileCardHeight : null,
             fileCardAnimationKey,
             destinationDirectory,
             selectedItemIds,
             targetFileNames,
             renameState.RedoFileNames,
             folderError,
-            Props.Theme,
             ToggleFileOptions,
-            CompleteFileOptionsTransition,
-            element => fileCardRef.Current = element,
-            element =>
-            {
-                if (ReferenceEquals(fileCardRef.Current, element))
-                    fileCardRef.Current = null;
-            },
             itemId => updateSelectedItemIds(current => IncomingFileCard.ToggleItem(current, itemId)),
             () => updateSelectedItemIds(current => IncomingFileCard.ToggleSelectAll(current, request.Items)),
             ResetFileOptions,
@@ -279,7 +259,6 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
             .HAlign(HorizontalAlignment.Center)
             .Transition(Transition.Enter(new FadeTransition()));
 
-        Element content = showText ? TextContent() : FileContent();
         var actions = (view.IsDecided, acceptMutation.IsPending) switch
         {
             (false, _) => UndecidedActions(),
@@ -287,33 +266,37 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
             (true, false) => FinishedActions(),
         };
 
-        return Grid(
+        Element BuildScene(bool expanded) => Grid(
                 columns: [GridSize.Star()],
                 rows: [GridSize.Star(), GridSize.Auto],
                 ScrollView(
                         VStack(28,
-                                showFileOptions && !showText ? null : sender,
-                                showFileOptions && !showText ? null : content)
+                                expanded && !showText ? null : sender,
+                                expanded && !showText ? null : showText ? TextContent() : FileContent(BuildFileCard(false)))
                             .Width(overlayContentWidth)
                             .HAlign(HorizontalAlignment.Center))
                     .Padding(horizontal: 0, vertical: 40)
                     .HorizontalContentAlignment(HorizontalAlignment.Stretch)
-                    .IsHitTestVisible(!showFileOptions)
+                    .IsHitTestVisible(!expanded)
                     .Grid(row: 0),
                 Border(actions)
                     .Padding(horizontal: 40, vertical: 24)
                     .Grid(row: 1),
-                showFileOptions && !showText
-                    ? Border(fileCard)
+                expanded && !showText
+                    ? Border(BuildFileCard(true))
                         .Padding(horizontal: 40, vertical: 24)
                         .HAlign(HorizontalAlignment.Stretch)
                         .VAlign(VerticalAlignment.Stretch)
                         .Grid(row: 0)
-                    : null,
+                    : null);
+
+        return Grid(
+                columns: [GridSize.Star()],
+                rows: [GridSize.Star()],
+                NavigationHost(fileOptionsNavigation, BuildScene),
                 Component<DeviceVerificationDialog, DeviceVerificationDialogProps>(new(
                     request.Sender,
                     Props.Node.Identity?.Fingerprint,
-                    Props.Theme,
                     showVerification,
                     () => setShowVerification(false))),
                 showQuickActions
@@ -326,7 +309,6 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                                         ? renamed
                                         : item.FileName))
                                 .ToArray(),
-                            Props.Theme,
                             IsOpen: true,
                             () => setShowQuickActions(false),
                             names => updateRenameState(current =>
@@ -334,7 +316,6 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                         .WithKey($"incoming-quick-actions:{request.RequestId:N}")
                     : null,
                 Component<RenameItemDialog, RenameItemDialogProps>(new(
-                    Props.Theme,
                     renameItemId is not null,
                     renameFileName,
                     setRenameFileName,
@@ -389,14 +370,14 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
                             .MinWidth(120))
                     .HAlign(HorizontalAlignment.Center));
 
-        Element FileContent() =>
+        Element FileContent(Element fileCard) =>
             VStack(12,
                 BodyLarge(view.Status)
                     .TextAlignment(TextAlignment.Center)
                     .LiveRegion()
                     .HAlign(HorizontalAlignment.Center)
                     .Transition(Transition.Enter(new FadeTransition())),
-                showFileOptions ? null : fileCard,
+                fileCard,
                 verificationButton
                     .HAlign(HorizontalAlignment.Center)
                     .Transition(Transition.Enter(new FadeTransition())));
@@ -587,46 +568,12 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
 
         void ToggleFileOptions()
         {
-            var desired = !fileOptionsDesiredRef.Current;
-            fileOptionsDesiredRef.Current = desired;
-
-            if (fileOptionsAnimatingRef.Current)
-                return;
-
-            BeginFileOptionsTransition(desired);
-        }
-
-        void BeginFileOptionsTransition(bool desired)
-        {
-            if (fileOptionsActualRef.Current == desired)
-                return;
-
-            void ApplyState() => setShowFileOptions(desired);
-
-            if (reduceMotion || fileCardRef.Current is not { } source)
+            fileOptionsNavigation.Navigate(!fileOptionsNavigation.CurrentRoute, new NavigateOptions
             {
-                ApplyState();
-                return;
-            }
-
-            fileOptionsAnimatingRef.Current = true;
-
-            // Capture the source while it is still attached. Reactor's automatic
-            // keyed connected animation can otherwise prepare it during unmount,
-            // after the card has already left the visual tree.
-            DeviceConnectedAnimation.NavigateToDestination(
-                fileCardAnimationKey,
-                source,
-                ApplyState,
-                new BasicConnectedAnimationConfiguration());
-        }
-
-        void CompleteFileOptionsTransition()
-        {
-            fileOptionsAnimatingRef.Current = false;
-            var desired = fileOptionsDesiredRef.Current;
-            if (desired != fileOptionsActualRef.Current)
-                BeginFileOptionsTransition(desired);
+                PushToBackStack = false,
+                Transition = NavigationTransition.None,
+                ConnectedAnimationKey = fileCardAnimationKey,
+            });
         }
 
         void OpenRenameDialog(string itemId, string currentName)
@@ -645,7 +592,9 @@ sealed class IncomingTransferOverlay : Component<IncomingTransferOverlayProps>
         {
             try
             {
-                var folder = await storagePicker.PickFolderAsync(t.Message(new("App", "Change")));
+                var folder = await PickFolderAsync(new(
+                    SuggestedStartLocation: PickerLocationId.Downloads,
+                    CommitButtonText: t.Message(new("App", "Change"))));
                 if (folder is null)
                     return;
 

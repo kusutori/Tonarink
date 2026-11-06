@@ -8,7 +8,6 @@ using static Microsoft.UI.Reactor.Factories;
 namespace Tonarink.Components.Dialogs;
 
 sealed record RenameItemDialogProps(
-    ElementTheme Theme,
     bool IsOpen,
     string FileName,
     Action<string> SetFileName,
@@ -50,7 +49,7 @@ sealed class RenameItemDialog : Component<RenameItemDialogProps>
 
                 Props.Close();
             },
-        }).Themed(Props.Theme);
+        });
     }
 
     public static bool IsValidFileName(string value)
