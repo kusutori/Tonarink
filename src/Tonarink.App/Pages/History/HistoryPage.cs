@@ -36,7 +36,8 @@ sealed class HistoryPage : Component<HistoryPageProps>
         var (deleteShakeVersion, setDeleteShakeVersion) = UseState(0);
         var (filter, setFilter) = UseState(HistoryFilter.Default);
         var today = DateOnly.FromDateTime(DateTime.Today);
-        var visibleEntries = UseMemo(() => filter.FilterEntries(entries, today), entries, filter, today);
+        var result = UseMemo(() => filter.Apply(entries, today), entries, filter, today);
+        var visibleEntries = result.Entries;
         var entryCommands = new HistoryEntryCommands(
             UseCommand(UseMemo(() => new Command<ReceiveHistoryEntry>
                 {
@@ -127,8 +128,15 @@ sealed class HistoryPage : Component<HistoryPageProps>
         Element list = visibleEntries switch
         {
             [] => ScrollView(
-                    Caption(t.Message(new("App", entries.Count == 0 ? "HistoryEmpty" : "HistoryNoMatches")))
-                        .Foreground(Theme.SecondaryText))
+                    Caption(t.Message(new("App", result.Error switch
+                        {
+                            HistorySearchError.InvalidPattern => "HistoryFilterInvalidRegex",
+                            HistorySearchError.Timeout => "HistoryFilterRegexTimeout",
+                            HistorySearchError.None => entries.Count == 0 ? "HistoryEmpty" : "HistoryNoMatches",
+                        })))
+                        .Foreground(result.Error == HistorySearchError.None ? Theme.SecondaryText : Theme.SystemCritical)
+                        .TextWrapping(TextWrapping.WrapWholeWords)
+                        .LiveRegion())
                 .HorizontalContentAlignment(HorizontalAlignment.Stretch),
             _ => (LazyVStack(
                         visibleEntries,

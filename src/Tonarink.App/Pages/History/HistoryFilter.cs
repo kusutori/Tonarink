@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.Text.RegularExpressions;
 
 namespace Tonarink.Pages.History;
 
@@ -21,6 +22,17 @@ enum HistorySortOrder
     SizeDescending,
 }
 
+enum HistorySearchError
+{
+    None,
+    InvalidPattern,
+    Timeout,
+}
+
+sealed record HistoryFilterResult(
+    IReadOnlyList<ReceiveHistoryEntry> Entries,
+    HistorySearchError Error = HistorySearchError.None);
+
 sealed record HistoryFilter(
     string Search = "",
     HistoryTimeRange TimeRange = HistoryTimeRange.All,
@@ -41,31 +53,42 @@ sealed record HistoryFilter(
     // An empty set means all types; selected types are combined with OR.
     public ImmutableHashSet<FileTypeGlyphKind> FileTypes { get; init; } = [];
 
+    public bool MatchCase { get; init; }
+    public bool WholeWord { get; init; }
+    public bool UseRegex { get; init; }
+
     public bool IsActive => Search.Length != 0 || FileTypes.Count != 0
                                                || TimeRange != HistoryTimeRange.All ||
                                                SortOrder != HistorySortOrder.Newest;
 
-    public bool IsValid => TimeRange != HistoryTimeRange.Custom
-                           || From is null || To is null || From <= To;
+    public bool IsDateRangeValid => TimeRange != HistoryTimeRange.Custom
+                                   || From is null || To is null || From <= To;
+
+    public bool IsSearchValid => TryCreateSearchExpression(out _);
+
+    public bool IsValid => IsDateRangeValid && IsSearchValid;
 
     public HistoryFilter Normalize() => this with
     {
-        Search = Search.Trim(),
+        Search = SearchQuery,
         FileTypes = FileTypes.Intersect(AvailableFileTypes),
         From = TimeRange == HistoryTimeRange.Custom ? From : null,
         To = TimeRange == HistoryTimeRange.Custom ? To : null,
     };
 
-    public IReadOnlyList<ReceiveHistoryEntry> FilterEntries(
+    public HistoryFilterResult Apply(
         IReadOnlyList<ReceiveHistoryEntry> entries,
         DateOnly today)
     {
-        var query = Search.Trim();
+        var query = SearchQuery;
+        if (!TryCreateSearchExpression(out var expression))
+            return new([], HistorySearchError.InvalidPattern);
+
         var matching = entries.Where(entry =>
             (query.Length == 0
-             || entry.FileName.Contains(query, StringComparison.OrdinalIgnoreCase)
-             || entry.SenderAlias.Contains(query, StringComparison.OrdinalIgnoreCase)
-             || entry.Path.Contains(query, StringComparison.OrdinalIgnoreCase))
+             || Matches(entry.FileName)
+             || Matches(entry.SenderAlias)
+             || Matches(entry.Path))
             && (FileTypes.Count == 0 || FileTypes.Contains(FileTypeGlyphs.KindForPath(entry.Path)))
             && MatchesDate(DateOnly.FromDateTime(entry.ReceivedAt.LocalDateTime), today));
 
@@ -80,7 +103,45 @@ sealed record HistoryFilter(
             HistorySortOrder.SizeAscending => matching.OrderBy(entry => entry.Size),
             HistorySortOrder.SizeDescending => matching.OrderByDescending(entry => entry.Size),
         };
-        return ordered.ThenBy(entry => entry.Id).ToArray();
+        try
+        {
+            return new(ordered.ThenBy(entry => entry.Id).ToArray());
+        }
+        catch (RegexMatchTimeoutException)
+        {
+            // Abort the whole query on the first timeout, rather than spending
+            // another timeout on every remaining field or history entry.
+            return new([], HistorySearchError.Timeout);
+        }
+
+        bool Matches(string value) => expression is not null
+            ? expression.IsMatch(value)
+            : value.Contains(query, MatchCase ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase);
+    }
+
+    // Whitespace can be meaningful in a regular expression.
+    private string SearchQuery => UseRegex ? Search : Search.Trim();
+
+    private bool TryCreateSearchExpression(out Regex? expression)
+    {
+        expression = null;
+        var query = SearchQuery;
+        if (query.Length == 0 || (!UseRegex && !WholeWord)) return true;
+
+        var pattern = UseRegex ? query : Regex.Escape(query);
+        if (WholeWord)
+            pattern = $@"(?<!\w)(?:{pattern})(?!\w)";
+        var options = RegexOptions.CultureInvariant;
+        if (!MatchCase) options |= RegexOptions.IgnoreCase;
+        try
+        {
+            expression = new Regex(pattern, options, TimeSpan.FromMilliseconds(100));
+            return true;
+        }
+        catch (ArgumentException)
+        {
+            return false;
+        }
     }
 
     private bool MatchesDate(DateOnly date, DateOnly today) => TimeRange switch

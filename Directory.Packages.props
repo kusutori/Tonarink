@@ -11,7 +11,6 @@
     <PackageVersion Include="LocalSendDotNet.Core" Version="0.3.0-preview.1" />
     <PackageVersion Include="CommunityToolkit.WinUI.Controls.SettingsControls" Version="8.3.260402-preview2" />
     <PackageVersion Include="CommunityToolkit.WinUI.Controls.Segmented" Version="8.3.260402-preview2" />
-    <PackageVersion Include="CommunityToolkit.WinUI.Controls.TokenizingTextBox" Version="8.3.260402-preview2" />
     <PackageVersion Include="Microsoft.Graphics.Win2D" Version="1.4.0" />
     <PackageVersion Include="Microsoft.UI.Reactor.Advanced" Version="0.1.0-preview.17" />
     <PackageVersion Include="LottieGen.MsBuild" Version="8.2.250604" />

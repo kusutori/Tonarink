@@ -517,4 +517,10 @@
   <data name="HistoryFilterApply" xml:space="preserve"><value>Aplicar</value></data>
   <data name="HistoryNoMatches" xml:space="preserve"><value>No hay registros que coincidan con los filtros</value></data>
   <data name="HistoryFilterResults" xml:space="preserve"><value>{visible, number} de {total, plural, one {# registro} other {# registros}}</value></data>
+  <data name="HistoryFilterMatchCase" xml:space="preserve"><value>Distinguir mayúsculas y minúsculas</value></data>
+  <data name="HistoryFilterWholeWord" xml:space="preserve"><value>Palabra completa</value></data>
+  <data name="HistoryFilterRegex" xml:space="preserve"><value>Usar expresión regular</value></data>
+  <data name="HistoryFilterInvalidRegex" xml:space="preserve"><value>Expresión regular no válida</value></data>
+  <data name="HistoryFilterRegexTimeout" xml:space="preserve"><value>La búsqueda agotó el tiempo — simplifica la expresión regular</value></data>
+  <data name="HistoryFilterMoreTypes" xml:space="preserve"><value>Más tipos de archivo</value></data>
 </root>

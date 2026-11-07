@@ -27,10 +27,7 @@ sealed class HistoryFilterButton : Component<HistoryFilterButtonProps>
 
         var fields = VStack(16,
             Field(Message("HistoryFilterSearch"),
-                TextBox(draft.Search, value => setDraft(draft with { Search = value }))
-                    .PlaceholderText(Message("HistoryFilterSearchPlaceholder"))
-                    .AutomationName(Message("HistoryFilterSearch"))
-                    .AutomationId("History.Filter.Search")),
+                Component<HistorySearchBox, HistorySearchBoxProps>(new(draft, setDraft))),
             Field(Message("HistoryFilterFileType"),
                 Component<HistoryFileTypePicker, HistoryFileTypePickerProps>(
                     new(draft.FileTypes, types => setDraft(draft with { FileTypes = types })))),
@@ -66,7 +63,7 @@ sealed class HistoryFilterButton : Component<HistoryFilterButtonProps>
                                     .AutomationId("History.Filter.To"))
                             .MinWidth(0)
                             .Grid(column: 1)),
-                    draft.IsValid
+                    draft.IsDateRangeValid
                         ? null
                         : Caption(Message("HistoryFilterInvalidRange"))
                             .Foreground(Theme.SystemCritical)
@@ -107,7 +104,7 @@ sealed class HistoryFilterButton : Component<HistoryFilterButtonProps>
                         .HAlign(HorizontalAlignment.Stretch)
                         .AutomationId("History.Filter.Cancel")
                         .Grid(column: 1)))
-            .Width(320);
+            .Width(360);
 
         return ToggleSplitButton(AppIcons.Filter, Props.Filter.IsActive, _ =>
             {

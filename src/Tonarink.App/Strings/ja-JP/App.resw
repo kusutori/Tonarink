@@ -517,4 +517,10 @@
   <data name="HistoryFilterApply" xml:space="preserve"><value>適用</value></data>
   <data name="HistoryNoMatches" xml:space="preserve"><value>条件に一致する履歴はありません</value></data>
   <data name="HistoryFilterResults" xml:space="preserve"><value>{total, number} 件中 {visible, number} 件を表示</value></data>
+  <data name="HistoryFilterMatchCase" xml:space="preserve"><value>大文字と小文字を区別</value></data>
+  <data name="HistoryFilterWholeWord" xml:space="preserve"><value>単語単位で一致</value></data>
+  <data name="HistoryFilterRegex" xml:space="preserve"><value>正規表現を使用</value></data>
+  <data name="HistoryFilterInvalidRegex" xml:space="preserve"><value>無効な正規表現</value></data>
+  <data name="HistoryFilterRegexTimeout" xml:space="preserve"><value>検索がタイムアウトしました — 正規表現を簡略化してください</value></data>
+  <data name="HistoryFilterMoreTypes" xml:space="preserve"><value>その他の種類</value></data>
 </root>
