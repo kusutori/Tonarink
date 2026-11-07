@@ -1,5 +1,18 @@
 # TODO
 
+## 待 Reactor 按钮组合内容支持发版后接入
+
+2026-11-07：已在本地框架分支 `codex/button-element-content` 补齐按钮家族和
+CheckBox/RadioButton 的 `Element` 内容入口，保留原字符串接口；验证了内容更新、
+状态保留、回调与子组件清理，并通过 Tonarink 筛选器实测。尚未提交 issue/PR。
+
+- 本地 App 验证版本保存在 `codex/test-button-element-content`（`e585b3a`）
+- main 继续使用 NuGet.org 的 preview.17，类型筛选暂用生成式
+  `ContentToggleButtonElement`，不依赖本地包源
+- [ ] 后续按贡献流程提交上游 issue/PR，记录链接
+- [ ] 修复正式进入 NuGet 后，升级 Reactor，改用 `ToggleButton(HStack(...), ...)`
+- [ ] 删除 `Controls/ContentToggleButtonElement.cs`，复查筛选按钮的多选、主题和展开动画
+
 ## Reactor preview.17 接入记录
 
 接入日期：2026-11-06。主线的 `Microsoft.UI.Reactor`、
@@ -50,8 +63,8 @@ Native AOT 验证产物位于 `artifacts/reactor-preview17/win-x64`，未进行�
 
 [#1390 模板 DSL 讨论](https://github.com/microsoft/microsoft-ui-reactor/issues/1390) 和
 [#1125 代码模板探索](https://github.com/microsoft/microsoft-ui-reactor/pull/1125)
-不等于上游已承诺提供 DSL。当前 `HistoryFileTypePicker` 保持原生代码模板、
-稳定模板实例和 `SetCompiledBinding`，不移植 `try-reactor-templates` 的实验 DSL。
+不等于上游已承诺提供 DSL。历史类型筛选现已改为原生 ToggleButton 组合，
+删除 TokenizingTextBox、代码模板及其包依赖，不再需要这部分模板接入。
 
 ## 发布前升级 .NET SDK 安全修复
 

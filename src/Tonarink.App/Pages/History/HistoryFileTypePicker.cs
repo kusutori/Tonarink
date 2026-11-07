@@ -17,7 +17,14 @@ sealed class HistoryFileTypePicker : Component<HistoryFileTypePickerProps>
     public override Element Render()
     {
         var t = UseIntl();
-        var (showAll, setShowAll) = UseState(false);
+        var reduceMotion = UseReducedMotion();
+        var reveal = UseMemo(static () => new HistoryTypeReveal());
+        var (phase, setPhase) = UseState(RevealPhase.Collapsed);
+        var showAll = phase != RevealPhase.Collapsed;
+        UseEffect(() =>
+        {
+            if (reduceMotion) reveal.Complete();
+        }, reduceMotion);
         var types = HistoryFilter.AvailableFileTypes;
         var buttons = types
             .Where((kind, index) => showAll || index < CommonTypeCount || Props.Selected.Contains(kind))
@@ -35,18 +42,25 @@ sealed class HistoryFileTypePicker : Component<HistoryFileTypePickerProps>
                     .Padding(10, 6)
                     .AutomationName(label)
                     .AutomationId($"History.Filter.Type.{kind}")
+                    .OnMountAdd(element => reveal.AttachItem(kind, element))
+                    .OnUnmountAdd(element => reveal.DetachItem(kind, element))
                     .WithKey(kind.ToString());
             })
             .Cast<Element?>()
             .ToList();
 
-        if (!showAll && types.Skip(CommonTypeCount).Any(kind => !Props.Selected.Contains(kind)))
+        if (phase == RevealPhase.Revealing
+            || (!showAll && types.Skip(CommonTypeCount).Any(kind => !Props.Selected.Contains(kind))))
         {
             var more = t.Message(new("App", "HistoryFilterMoreTypes"));
-            buttons.Add(Button(Icon(AppIcons.More).AccessibilityHidden(), () => setShowAll(true))
+            buttons.Add(Button(Icon(AppIcons.More).AccessibilityHidden(), Expand)
+                .IsHitTestVisible(phase != RevealPhase.Revealing)
+                .IsTabStop(phase != RevealPhase.Revealing)
                 .AutomationName(more)
                 .ToolTip(more)
                 .AutomationId("History.Filter.MoreTypes")
+                .OnMountAdd(reveal.AttachMore)
+                .OnUnmountAdd(reveal.DetachMore)
                 .WithKey("more-types"));
         }
 
@@ -58,8 +72,19 @@ sealed class HistoryFileTypePicker : Component<HistoryFileTypePickerProps>
             })
             .AutomationName(t.Message(new("App", "HistoryFilterFileType")))
             .HelpText(t.Message(new("App", "HistoryFilterTypeAll")))
+            .OnMountAdd(reveal.AttachRoot)
+            .OnUnmountAdd(reveal.DetachRoot)
             .AutomationId("History.Filter.FileType");
+
+        void Expand()
+        {
+            if (phase != RevealPhase.Collapsed) return;
+            var animate = !reduceMotion && reveal.Begin(() => setPhase(RevealPhase.Expanded));
+            setPhase(animate ? RevealPhase.Revealing : RevealPhase.Expanded);
+        }
     }
+
+    private enum RevealPhase { Collapsed, Revealing, Expanded }
 
     private static string LabelKey(FileTypeGlyphKind kind) => kind switch
     {
