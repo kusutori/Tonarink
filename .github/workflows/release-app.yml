@@ -39,7 +39,7 @@ jobs:
       - name: Set up .NET
         uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: 11.0.100-rc.1.26425.128
+          dotnet-version: 11.0.100-rc.3.26522.148
 
       - name: Resolve release version
         id: release
@@ -132,7 +132,7 @@ jobs:
       - name: Set up .NET
         uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: 11.0.100-rc.1.26425.128
+          dotnet-version: 11.0.100-rc.3.26522.148
 
       - name: Install WinApp CLI
         shell: pwsh
@@ -325,7 +325,7 @@ jobs:
       - name: Set up .NET
         uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: 11.0.100-rc.1.26425.128
+          dotnet-version: 11.0.100-rc.3.26522.148
 
       - name: Install WinApp CLI
         shell: pwsh
@@ -538,7 +538,7 @@ jobs:
       - name: Set up .NET
         uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: 11.0.100-rc.1.26425.128
+          dotnet-version: 11.0.100-rc.3.26522.148
 
       - name: Resolve release version
         id: release
@@ -590,7 +590,7 @@ jobs:
       - name: Set up .NET
         uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: 11.0.100-rc.1.26425.128
+          dotnet-version: 11.0.100-rc.3.26522.148
 
       - name: Set up Java
         uses: actions/setup-java@v4

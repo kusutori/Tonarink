@@ -88,7 +88,7 @@
 | Blazor.Shared | MSTest + bUnit | 原 4 个 Razor 文本结构检查改为实际生产组件渲染、更新与事件案例；CSS 引用检查保留为明确的宿主资产契约，不计为 UI 自动化 |
 | Interop | 移除伪功能套件 | 原案例只读取文档标题；人工官方客户端记录仍在 `src/LocalSendDotNet.Core/docs/interop-matrix.md`，未声明自动互通通过 |
 
-仓库测试项目统一使用 `MSTest.Sdk` 4.4.1，`global.json` 已启用 MTP runner；原 xUnit、runner、VSTest-only SDK、coverlet collector 的直接配置已移除。WinUI 自宿主能引用生产组件并运行异步 dispatcher；其他打包模型和完整 4.5 支持矩阵仍需单独核验。
+仓库测试项目统一使用 `MSTest.Sdk`，`global.json` 已启用 MTP runner；原 xUnit、runner、VSTest-only SDK、coverlet collector 的直接配置已移除。迁移时使用 4.4.1，2026-11-07 依赖维护升级至 4.5.2，本次仅编译确认，未重跑以下测试记录。WinUI 自宿主能引用生产组件并运行异步 dispatcher；其他打包模型和完整 4.5 支持矩阵仍需单独核验。
 
 ## 实际运行证据
 

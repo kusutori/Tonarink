@@ -223,9 +223,8 @@
                           GeneratePathProperty="true"
                           PrivateAssets="all" />
         <PackageReference Include="Microsoft.Graphics.Win2D" />
-        <PackageReference Include="Microsoft.WindowsAppSDK.Runtime"
-                          GeneratePathProperty="true"
-                          PrivateAssets="all" />
+        <!-- Align Reactor's transitive Runtime dependency with our component packages. -->
+        <PackageReference Include="Microsoft.WindowsAppSDK.Runtime" PrivateAssets="all" />
         <PackageReference Include="Microsoft.WindowsAppSDK.WinUI" />
         <PackageReference Include="Microsoft.WindowsAppSDK.InteractiveExperiences" />
         <PackageReference Include="Microsoft.UI.Reactor" />
@@ -234,45 +233,6 @@
         <ProjectReference Include="..\LocalSendDotNet.Core\LocalSendDotNet.Core.csproj" />
         <ProjectReference Include="..\Tonarink.Application\Tonarink.Application.csproj" />
         <ProjectReference Include="..\Tonarink.CommandLine\Tonarink.CommandLine.csproj" />
-    </ItemGroup>
-
-    <!-- Windows App SDK 2.5.1's self-contained payload still omits this
-         aggregate-runtime resource even though AppNotificationManager.Register
-         loads it (WindowsAppSDK #6774). Extract the architecture-matched copy
-         from the SDK runtime MSIX until the upstream fix ships. -->
-    <PropertyGroup>
-        <_WinAppRuntimeArchitecture>x64</_WinAppRuntimeArchitecture>
-        <_WinAppRuntimeArchitecture Condition="'$(RuntimeIdentifier)' == 'win-x86' Or '$(Platform)' == 'X86' Or '$(Platform)' == 'x86'">x86</_WinAppRuntimeArchitecture>
-        <_WinAppRuntimeArchitecture Condition="'$(RuntimeIdentifier)' == 'win-arm64' Or '$(Platform)' == 'ARM64' Or '$(Platform)' == 'arm64'">arm64</_WinAppRuntimeArchitecture>
-        <_WinAppRuntimeMsixDirectory>$(PkgMicrosoft_WindowsAppSDK_Runtime)\tools\MSIX\win10-$(_WinAppRuntimeArchitecture)</_WinAppRuntimeMsixDirectory>
-        <_WinAppRuntimePackageVersion>$([System.IO.Path]::GetFileName('$(PkgMicrosoft_WindowsAppSDK_Runtime)'))</_WinAppRuntimePackageVersion>
-        <_WinAppRuntimeInsightsResource>$(BaseIntermediateOutputPath)winappruntime\$(_WinAppRuntimePackageVersion)\$(_WinAppRuntimeArchitecture)\Microsoft.WindowsAppRuntime.Insights.Resource.dll</_WinAppRuntimeInsightsResource>
-    </PropertyGroup>
-
-    <!-- Self-contained builds don't import WinAppSDKPackageName. Resolve the
-         aggregate framework package from the SDK payload, excluding auxiliary
-         packages; stable and experimental channels use different file names. -->
-    <ItemGroup Condition="'$(WindowsAppSDKSelfContained)' == 'true'">
-        <_WinAppRuntimeMsix Include="$(_WinAppRuntimeMsixDirectory)\Microsoft.WindowsAppRuntime.*.msix"
-                            Exclude="$(_WinAppRuntimeMsixDirectory)\Microsoft.WindowsAppRuntime.DDLM.*.msix;$(_WinAppRuntimeMsixDirectory)\Microsoft.WindowsAppRuntime.Main.*.msix;$(_WinAppRuntimeMsixDirectory)\Microsoft.WindowsAppRuntime.Singleton.*.msix" />
-    </ItemGroup>
-
-    <Target Name="_PrepareWinAppRuntimeInsightsResource"
-            BeforeTargets="AssignTargetPaths"
-            Inputs="@(_WinAppRuntimeMsix)"
-            Outputs="$(_WinAppRuntimeInsightsResource)"
-            Condition="'$(WindowsAppSDKSelfContained)' == 'true'">
-        <Error Condition="'@(_WinAppRuntimeMsix->Count())' != '1'"
-               Text="Expected one Windows App Runtime framework MSIX in '$(_WinAppRuntimeMsixDirectory)', found @(_WinAppRuntimeMsix->Count()). Restore the matching runtime package." />
-        <Exec Command="powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File &quot;$(MSBuildThisFileDirectory)..\..\tools\Extract-ZipEntry.ps1&quot; -Source &quot;@(_WinAppRuntimeMsix)&quot; -Entry &quot;Microsoft.WindowsAppRuntime.Insights.Resource.dll&quot; -Destination &quot;$(_WinAppRuntimeInsightsResource)&quot;" />
-    </Target>
-
-    <ItemGroup Condition="'$(WindowsAppSDKSelfContained)' == 'true'">
-        <Content Include="$(_WinAppRuntimeInsightsResource)">
-            <Link>Microsoft.WindowsAppRuntime.Insights.Resource.dll</Link>
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-            <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-        </Content>
     </ItemGroup>
 
     <!-- ReswResourceProvider reads the source .resw files at runtime. -->

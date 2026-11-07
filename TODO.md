@@ -66,33 +66,44 @@ Native AOT 验证产物位于 `artifacts/reactor-preview17/win-x64`，未进行�
 不等于上游已承诺提供 DSL。历史类型筛选现已改为原生 ToggleButton 组合，
 删除 TokenizingTextBox、代码模板及其包依赖，不再需要这部分模板接入。
 
-## 发布前升级 .NET SDK 安全修复
+## .NET SDK 安全修复接入记录
 
 2026-11-06 Native AOT 还原报告 `Microsoft.DotNet.ILCompiler 11.0.0-rc.1.26425.128`
 存在 [GHSA-p3jp-9v83-76w9](https://github.com/advisories/GHSA-p3jp-9v83-76w9)。
-本轮仅在本地验证命令传入 `-p:WarningsNotAsErrors=NU1903`，保留审计警告以完成 Reactor
+当时仅在本地验证命令传入 `-p:WarningsNotAsErrors=NU1903`，保留审计警告以完成 Reactor
 AOT 编译确认；仓库未添加安全警告抑制配置，产物未发布。
 
-- [ ] 发布前将 `global.json` 及相关 .NET 依赖升级至包含修复的版本，正常安全门禁下重新编译发布
+- [x] 2026-11-07：`global.json`、CI/发布流程统一升级至本机已安装的
+  `11.0.100-rc.3.26522.148`，相关 .NET/F# 包同步升级
+- 该版本对应的 `Microsoft.DotNet.ILCompiler 11.0.0-rc.3.26522.148` 已列入上述公告的修复版本
+- [ ] 发布前正常执行 Native AOT 发布及安全审计；本轮仅做编译确认，不运行测试或发布产物
 
-## 升级 Windows App SDK 后移除通知兼容代码
+## Windows App SDK 通知兼容代码已移除，待实测
 
-当前 Windows App SDK 2.5.1 的自包含输出仍可能缺少
-`Microsoft.WindowsAppRuntime.Insights.Resource.dll`，导致非打包应用注册系统通知失败。
-项目暂时会从 Runtime MSIX 中提取并携带该 DLL。
+2026-11-07：Windows App SDK 从 `2.5.4-experimental` 升级至
+`2.6.6-experimental`，WinUI 与 InteractiveExperiences 组件版本同步。
+主 App 继续按需引用组件，不引入完整 SDK 的 AI/ML 载荷。
 
-最初的修复 [WindowsAppSDK #6725](https://github.com/microsoft/WindowsAppSDK/pull/6725)
-已包含在 2.5.1 中，但该版本仍可复现此问题，微软已重新跟踪为
-[WindowsAppSDK #6774](https://github.com/microsoft/WindowsAppSDK/issues/6774)。该问题目前已标记为
-`Status: Pending release`，等待后续稳定版本发布修复。
+官方在 [2.6.4 发布说明](https://learn.microsoft.com/en-us/windows/apps/windows-app-sdk/release-notes/windows-app-sdk-2-0#version-264)
+列出了 `VersionInfo_MissingInsightsResourceDll` 修复；
+[2.6.6 实验版](https://github.com/microsoft/WindowsAppSDK/releases/tag/v2.6.6-exp)
+继承 2.6.5 稳定版修复。此前的跟踪项为
+[#6774](https://github.com/microsoft/WindowsAppSDK/issues/6774)。
+修复允许组件部署缺少聚合 Runtime 资源 DLL，不要求继续手动携带它。
 
-升级到真正修复 #6774 的稳定版本后：
+- 保留 Runtime 显式版本对齐：Reactor preview.17 仍间接依赖 Runtime 2.2.0，
+  此处统一至 2.6.6-experimental，不再通过它定位 MSIX 或提取资源
+- [x] 删除 `_PrepareWinAppRuntimeInsightsResource`、相关属性/内容项和 `tools/Extract-ZipEntry.ps1`
+- [ ] 用户实测普通非打包、portable、AOT、MSIX 和 AOT + MSIX 的通知注册、显示和点击激活
+- 本轮仅编译确认，不将官方修复说明或编译结果视为运行验证
 
-- 删除 `Tonarink.App.csproj` 中的 `Microsoft.WindowsAppSDK.Runtime` 显式引用。
-- 删除 `Directory.Packages.props` 中对应的中央包版本。
-- 删除 `_PrepareWinAppRuntimeInsightsResource` 及相关 MSBuild 属性和内容项。
-- 删除 `tools/Extract-ZipEntry.ps1`。
-- 验证普通非打包、portable、AOT、MSIX 和 AOT + MSIX 版本均可发送测试通知。
+### 同轮依赖维护与编译范围
+
+- 已更新 FSharp.Core、SourceLink、System.CommandLine、bUnit、Blazor/Extensions、MAUI、Fluent UI 及 MSTest.Sdk
+- 正式版依赖只追踪正式版；已有预览依赖继续追踪预览版。Reactor、社区控件、Win2D、LottieGen、二维码库和 FsToolkit 当前版本未变
+- 主 App x64 Release、Core/CLI 解决方案（含纯托管测试项目）、F# Core、Web 和 Blazor 测试项目已编译通过，均为 0 警告、0 错误，未执行测试
+- 已核对主 App 的 Base/Foundation/InteractiveExperiences/Runtime/WinUI 均解析为 2.6.6-experimental；Release 输出不再手动携带 Insights.Resource DLL
+- [ ] MAUI/Android/iOS/MacCatalyst 编译：当前 .NET 11 SDK 未安装移动端工作负载，本轮不下载或安装，保留未验证说明
 
 ## 优化托盘面板动画曲线
 
@@ -100,7 +111,7 @@ AOT 编译确认；仓库未添加安全警告抑制配置，产物未发布。
 XAML 预渲染后再上浮。现有上浮动画使用三次方减速曲线，下沉动画使用二次方
 加速曲线，窗口层级、Mica 渲染和双向动画均已正常工作。
 
-Windows App SDK 2.5.1 未公开 Windows 11 系统面板的具体动画参数或对应 API，
+当前仍未采用 Windows 11 系统面板的官方动画参数或对应 API，
 因此这一项仍需保留。
 
 后续如果能够获得或可靠复现 Windows 11 操作中心等系统面板的具体动画参数：

@@ -3,30 +3,30 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
-    <PackageVersion Include="FSharp.Core" Version="11.0.101-rc1.26425.128" />
+    <PackageVersion Include="FSharp.Core" Version="11.0.101-rc3.26522.148" />
     <PackageVersion Include="FsToolkit.ErrorHandling" Version="5.2.0" />
-    <PackageVersion Include="System.CommandLine" Version="2.0.12" />
-    <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="11.0.100-rc.1.26425.128" />
-    <PackageVersion Include="bunit" Version="2.11.3" />
+    <PackageVersion Include="System.CommandLine" Version="2.0.14" />
+    <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="11.0.100-rc.3.26522.148" />
+    <PackageVersion Include="bunit" Version="2.14.0" />
     <PackageVersion Include="LocalSendDotNet.Core" Version="0.3.0-preview.1" />
     <PackageVersion Include="CommunityToolkit.WinUI.Controls.SettingsControls" Version="8.3.260402-preview2" />
     <PackageVersion Include="CommunityToolkit.WinUI.Controls.Segmented" Version="8.3.260402-preview2" />
     <PackageVersion Include="Microsoft.Graphics.Win2D" Version="1.4.0" />
     <PackageVersion Include="Microsoft.UI.Reactor.Advanced" Version="0.1.0-preview.17" />
     <PackageVersion Include="LottieGen.MsBuild" Version="8.2.250604" />
-    <PackageVersion Include="Microsoft.WindowsAppSDK" Version="2.5.4-experimental" />
-    <PackageVersion Include="Microsoft.WindowsAppSDK.Runtime" Version="2.5.4-experimental" />
-    <PackageVersion Include="Microsoft.WindowsAppSDK.WinUI" Version="2.3.10-experimental" />
-    <PackageVersion Include="Microsoft.WindowsAppSDK.InteractiveExperiences" Version="2.1.10-experimental" />
+    <PackageVersion Include="Microsoft.WindowsAppSDK" Version="2.6.6-experimental" />
+    <PackageVersion Include="Microsoft.WindowsAppSDK.Runtime" Version="2.6.6-experimental" />
+    <PackageVersion Include="Microsoft.WindowsAppSDK.WinUI" Version="2.6.6-experimental" />
+    <PackageVersion Include="Microsoft.WindowsAppSDK.InteractiveExperiences" Version="2.6.6-experimental" />
     <PackageVersion Include="Microsoft.UI.Reactor" Version="0.1.0-preview.17" />
     <PackageVersion Include="Microsoft.UI.Reactor.Devtools" Version="0.1.0-preview.17" />
     <PackageVersion Include="Net.Codecrete.QrCodeGenerator" Version="3.2.1" />
-    <PackageVersion Include="Microsoft.AspNetCore.Components.Web" Version="11.0.0-rc.1.26425.128" />
-    <PackageVersion Include="Microsoft.Extensions.Localization" Version="11.0.0-rc.1.26425.128" />
-    <PackageVersion Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="11.0.0-rc.1.26451.6" />
-    <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="11.0.0-rc.1.26425.128" />
-    <PackageVersion Include="Microsoft.Maui.Controls" Version="11.0.0-rc.1.26451.6" />
-    <PackageVersion Include="Microsoft.FluentUI.AspNetCore.Components" Version="5.0.0" />
-    <PackageVersion Include="Microsoft.FluentUI.AspNetCore.Components.Icons" Version="5.0.0" />
+    <PackageVersion Include="Microsoft.AspNetCore.Components.Web" Version="11.0.0-rc.3.26522.148" />
+    <PackageVersion Include="Microsoft.Extensions.Localization" Version="11.0.0-rc.3.26522.148" />
+    <PackageVersion Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="11.0.0-rc.2.26505.5" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="11.0.0-rc.3.26522.148" />
+    <PackageVersion Include="Microsoft.Maui.Controls" Version="11.0.0-rc.2.26505.5" />
+    <PackageVersion Include="Microsoft.FluentUI.AspNetCore.Components" Version="5.0.1" />
+    <PackageVersion Include="Microsoft.FluentUI.AspNetCore.Components.Icons" Version="5.0.1" />
   </ItemGroup>
 </Project>

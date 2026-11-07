@@ -234,7 +234,7 @@ tests/
 - 迁移期间允许短暂共存，但每批有明确迁移对象，最终状态不能保留无理由的双框架
 - 不全局给测试项目设置 `PublishAot`；JIT 测试控制器也可以验证真实 AOT 被测进程
 
-版本记录：当前工作区的 `global.json` 固定 `MSTest.Sdk` 4.4.1；微软新文档描述的完整 Windows 应用支持矩阵以 4.5 / MTP 2.5 为目标，作者在博客补充说明实际以 4.5.1 发布。版本选择以实施时包源可还原结果和实际运行验证为准，本文不修改 SDK 配置。不能据此假定现用版本已支持全部打包模型，也不能只为匹配文档而引用不可还原的版本。P0 分别验证非打包控件宿主、打包身份与 CI 启动路径，再决定是否升级；全局 MTP runner 切换与残留套件迁移一并完成。[版本说明](https://devblogs.microsoft.com/dotnet/testing-uwp-and-winui-3-apps-with-mstest/)
+版本记录：计划编写时 `global.json` 固定 `MSTest.Sdk` 4.4.1，2026-11-07 依赖维护升级至 4.5.2；本次仅编译确认，不代表完整 Windows 应用支持矩阵已实测。微软新文档描述的矩阵以 4.5 / MTP 2.5 为目标，作者在博客补充说明实际以 4.5.1 发布。版本选择以包源可还原结果和实际运行验证为准；非打包控件宿主、打包身份与 CI 启动路径仍需分别验证。[版本说明](https://devblogs.microsoft.com/dotnet/testing-uwp-and-winui-3-apps-with-mstest/)
 
 ### 4.2 引用生产实现
 

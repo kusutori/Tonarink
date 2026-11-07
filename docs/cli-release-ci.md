@@ -109,7 +109,7 @@ GitHub Release 托管二进制，winget-pkgs 只存清单。第一次提交可�
 - NuGet 使用 `--skip-duplicate`，同一版本不会覆盖；有缺陷的包应发布新版本
 - winget 提交前检查已合并版本和自己创建的同名未关闭 PR，避免重复提交
 - 若只有 NuGet / winget 发布步骤失败，修复凭据后使用 Actions 的 **Re-run failed jobs**，复用原构建产物；不要全量重新构建同一公开版本
-- 构建 SDK 当前固定为 `11.0.100-rc.1.26425.128`，跟随仓库 `global.json` 升级；Native AOT 工具的运行不需要该 SDK 或其共享运行时，NuGet 安装需要 .NET SDK 10+ 支持 RID 工具
+- 构建 SDK 当前固定为 `11.0.100-rc.3.26522.148`，跟随仓库 `global.json` 升级；Native AOT 工具的运行不需要该 SDK 或其共享运行时，NuGet 安装需要 .NET SDK 10+ 支持 RID 工具
 - WingetCreate 固定为 `1.12.13.0` 并校验官方附件 SHA256；它自身需要 .NET 9，因此仅在提交清单的 CI job 安装此 SDK，与 AOT CLI 用户的运行时要求无关
 
 普通 `ci.yml` 也使用相同的六平台矩阵，构建选择器包与 AOT 子包、实际安装并运行原生 CLI（Windows ARM64 仅格式和架构检查），防止只在发布标签时才发现工具包不能安装。`Verify-CliTool.ps1` 是隔离 profile 下的真实命令检查，没有添加单元测试用例。
