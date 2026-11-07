@@ -1,8 +1,6 @@
 using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Core;
-using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
 using static Microsoft.UI.Reactor.Factories;
 
 namespace Tonarink.Pages.History;
@@ -18,44 +16,54 @@ sealed class HistoryTypeExpandButton : Component<HistoryTypeExpandButtonProps>
     public override Element Render()
     {
         var t = UseIntl();
-        var pressedToken = UseRef<long?>();
+        var playerRef = UseRef<AnimatedVisualPlayer?>();
+        var reduceMotion = UseReducedMotion();
+        var collapseSource = UseMemo(static () => new CollapseTypesIcon());
+        var fallback = UseMemo(static () => new FontIconSource { Glyph = AppIcons.Collapse });
         var label = t.Message(new("App", Props.Collapse
             ? "HistoryFilterCollapseTypes"
             : "HistoryFilterMoreTypes"));
 
-        return Button(Icon(Props.Collapse ? AppIcons.Collapse : AppIcons.More).AccessibilityHidden(), Props.Click)
-            .Size(40, 40)
-            .Padding(0)
+        Element icon = Props.Collapse
+            ? AnimatedIcon(collapseSource, fallback).Size(24, 24)
+            : (AnimatedVisualPlayer() with { AutoPlay = false })
+                .Size(24, 24)
+                .OnMountAdd(element =>
+                {
+                    if (element is not AnimatedVisualPlayer player) return;
+                    var source = new MoreTriangleIcon();
+                    AnimatedPlayerLifecycle.Mount(player, source,
+                        () => AnimatedIconForeground.Apply(player, source),
+                        () => player.SetProgress(0));
+                    playerRef.Current = player;
+                })
+                .OnUnmountAdd(element =>
+                {
+                    if (element is AnimatedVisualPlayer player)
+                        AnimatedPlayerLifecycle.Unmount(player);
+                    playerRef.Current = null;
+                });
+
+        return Button(icon.IsHitTestVisible(false).AccessibilityHidden(), () =>
+            {
+                if (Props.IsAnimating) return;
+                if (!Props.Collapse && !reduceMotion && playerRef.Current is { } player)
+                {
+                    player.Stop();
+                    player.SetProgress(0);
+                    _ = player.PlayAsync(0, 1, looped: false);
+                }
+                Props.Click();
+            })
+            .MinWidth(40)
+            .MinHeight(40)
+            .Padding(8, 6)
             .IsHitTestVisible(!Props.IsAnimating)
             .IsTabStop(!Props.IsAnimating)
             .AutomationName(label)
             .ToolTip(label)
             .AutomationId("History.Filter.MoreTypes")
-            .OnMountAdd(element =>
-            {
-                Props.Reveal.AttachMore(element);
-                if (element is not Button button) return;
-                button.CornerRadius = new CornerRadius(20);
-                // Button handles pointer presses internally. Observe its actual
-                // pressed state to cover mouse, touch, keyboard and cancellation.
-                pressedToken.Current = button.RegisterPropertyChangedCallback(ButtonBase.IsPressedProperty,
-                    static (sender, _) =>
-                    {
-                        if (sender is Button current)
-                            current.CornerRadius = current.IsPressed
-                                ? ThemeResource.CornerRadius("ControlCornerRadius")
-                                : new CornerRadius(20);
-                    });
-            })
-            .OnUnmountAdd(element =>
-            {
-                if (element is Button button && pressedToken.Current is { } token)
-                {
-                    button.UnregisterPropertyChangedCallback(ButtonBase.IsPressedProperty, token);
-                    button.ClearValue(Control.CornerRadiusProperty);
-                    pressedToken.Current = null;
-                }
-                Props.Reveal.DetachMore(element);
-            });
+            .OnMountAdd(Props.Reveal.AttachMore)
+            .OnUnmountAdd(Props.Reveal.DetachMore);
     }
 }

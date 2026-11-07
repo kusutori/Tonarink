@@ -21,7 +21,7 @@ sealed class HistoryFileTypePicker : Component<HistoryFileTypePickerProps>
         var reduceMotion = UseReducedMotion();
         var reveal = UseMemo(static () => new HistoryTypeReveal());
         var (visibleCount, setVisibleCount) = UseState(CommonTypeCount);
-        var (revealing, setRevealing) = UseState(false);
+        var (phase, setPhase) = UseState(RevealPhase.Idle);
         UseEffect(() =>
         {
             if (reduceMotion) reveal.Complete();
@@ -56,15 +56,16 @@ sealed class HistoryFileTypePicker : Component<HistoryFileTypePickerProps>
         if (types.Length > CommonTypeCount)
         {
             buttons.Add(Component<HistoryTypeExpandButton, HistoryTypeExpandButtonProps>(
-                    new(hidden.Length == 0 && !revealing, revealing, Advance, reveal))
+                    new(phase == RevealPhase.Collapsing || hidden.Length == 0 && phase == RevealPhase.Idle,
+                        phase != RevealPhase.Idle, Advance, reveal))
                 .WithKey("more-types"));
         }
 
         return (FlexRow([.. buttons]) with
             {
                 Wrap = FlexWrap.Wrap,
-                ColumnGap = 8,
-                RowGap = 8,
+                ColumnGap = HistoryTypeReveal.ItemGap,
+                RowGap = HistoryTypeReveal.ItemGap,
             })
             .AutomationName(t.Message(new("App", "HistoryFilterFileType")))
             .HelpText(t.Message(new("App", "HistoryFilterTypeAll")))
@@ -74,19 +75,31 @@ sealed class HistoryFileTypePicker : Component<HistoryFileTypePickerProps>
 
         void Advance()
         {
-            if (revealing) return;
+            if (phase != RevealPhase.Idle) return;
             if (hidden.Length == 0)
             {
-                setVisibleCount(CommonTypeCount);
+                var retained = types.Take(CommonTypeCount).Concat(Props.Selected).ToHashSet();
+                if (!reduceMotion && reveal.BeginCollapse(retained, Collapse))
+                    setPhase(RevealPhase.Collapsing);
+                else
+                    Collapse();
                 return;
             }
 
             var nextCount = hidden[Math.Min(RevealBatchSize, hidden.Length) - 1].Index + 1;
-            var animate = !reduceMotion && reveal.Begin(() => setRevealing(false));
-            setRevealing(animate);
+            var animate = !reduceMotion && reveal.Begin(() => setPhase(RevealPhase.Idle));
+            setPhase(animate ? RevealPhase.Revealing : RevealPhase.Idle);
             setVisibleCount(nextCount);
         }
+
+        void Collapse()
+        {
+            setVisibleCount(CommonTypeCount);
+            setPhase(RevealPhase.Idle);
+        }
     }
+
+    private enum RevealPhase { Idle, Revealing, Collapsing }
 
     private static string LabelKey(FileTypeGlyphKind kind) => kind switch
     {
