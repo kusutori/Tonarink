@@ -150,19 +150,16 @@ sealed class HistoryTypeReveal
             item.Visual.Clip = clip;
             using var reveal = compositor.CreateScalarKeyFrameAnimation();
             reveal.InsertKeyFrame(0, clip.RightInset);
+            reveal.InsertKeyFrame((float)(start / elapsed), clip.RightInset, linear);
+            reveal.InsertKeyFrame((float)(end / elapsed), 0, linear);
             reveal.InsertKeyFrame(1, 0, linear);
-            reveal.Duration = TimeSpan.FromMilliseconds(end - start);
-            reveal.DelayTime = TimeSpan.FromMilliseconds(start);
+            // Keep the clips in the batch for the whole sweep, including the
+            // button's final move. The button now remains visible for the next batch.
+            reveal.Duration = duration;
             clip.StartAnimation(nameof(InsetClip.RightInset), reveal);
             item.Visual.Opacity = 1;
         }
         more.StartAnimation(_movement);
-        using var fade = compositor.CreateScalarKeyFrameAnimation();
-        fade.InsertKeyFrame(0, 1);
-        fade.InsertKeyFrame((float)((elapsed - 80) / elapsed), 1);
-        fade.InsertKeyFrame(1, 0, linear);
-        fade.Duration = duration;
-        ElementCompositionPreview.GetElementVisual(more).StartAnimation(nameof(Visual.Opacity), fade);
         _batch.Completed += OnCompleted;
         _batch.End();
     }
@@ -196,9 +193,6 @@ sealed class HistoryTypeReveal
         {
             more.StopAnimation(movement);
             more.Translation = _restingTranslation;
-            var visual = ElementCompositionPreview.GetElementVisual(more);
-            visual.StopAnimation(nameof(Visual.Opacity));
-            visual.Opacity = 1;
         }
         _movement?.Dispose();
         _movement = null;

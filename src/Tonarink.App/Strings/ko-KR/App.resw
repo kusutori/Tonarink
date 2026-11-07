@@ -523,4 +523,5 @@
   <data name="HistoryFilterInvalidRegex" xml:space="preserve"><value>잘못된 정규식</value></data>
   <data name="HistoryFilterRegexTimeout" xml:space="preserve"><value>검색 시간이 초과되었습니다 — 정규식을 간단하게 입력하세요</value></data>
   <data name="HistoryFilterMoreTypes" xml:space="preserve"><value>더 많은 파일 형식</value></data>
+  <data name="HistoryFilterCollapseTypes" xml:space="preserve"><value>파일 형식 접기</value></data>
 </root>

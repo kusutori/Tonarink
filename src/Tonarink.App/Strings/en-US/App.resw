@@ -523,4 +523,5 @@
   <data name="HistoryFilterInvalidRegex" xml:space="preserve"><value>Invalid regular expression</value></data>
   <data name="HistoryFilterRegexTimeout" xml:space="preserve"><value>Search timed out — simplify the regular expression</value></data>
   <data name="HistoryFilterMoreTypes" xml:space="preserve"><value>More file types</value></data>
+  <data name="HistoryFilterCollapseTypes" xml:space="preserve"><value>Show fewer file types</value></data>
 </root>

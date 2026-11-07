@@ -10,6 +10,7 @@ static class AppIcons
     public const string Badge = "\uEC1B";
     public const string Cancel = "\uE711";
     public const string Checksum = "\uF32A";
+    public const string Collapse = "\uE70E";
     public const string Contact = "\uE716";
     public const string ContextMenu = "\uE7AC";
     public const string Contract = "\uE73F";

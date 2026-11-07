@@ -523,4 +523,5 @@
   <data name="HistoryFilterInvalidRegex" xml:space="preserve"><value>無効な正規表現</value></data>
   <data name="HistoryFilterRegexTimeout" xml:space="preserve"><value>検索がタイムアウトしました — 正規表現を簡略化してください</value></data>
   <data name="HistoryFilterMoreTypes" xml:space="preserve"><value>その他の種類</value></data>
+  <data name="HistoryFilterCollapseTypes" xml:space="preserve"><value>種類を折りたたむ</value></data>
 </root>
