@@ -1,5 +1,6 @@
 using Microsoft.UI.Reactor;
 using Microsoft.UI.Reactor.Core;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using static Microsoft.UI.Reactor.Factories;
 
@@ -25,9 +26,9 @@ sealed class HistoryTypeExpandButton : Component<HistoryTypeExpandButtonProps>
             : "HistoryFilterMoreTypes"));
 
         Element icon = Props.Collapse
-            ? AnimatedIcon(collapseSource, fallback).Size(24, 24)
+            ? AnimatedIcon(collapseSource, fallback).Size(16, 16)
             : (AnimatedVisualPlayer() with { AutoPlay = false })
-                .Size(24, 24)
+                .Size(16, 16)
                 .OnMountAdd(element =>
                 {
                     if (element is not AnimatedVisualPlayer player) return;
@@ -55,9 +56,10 @@ sealed class HistoryTypeExpandButton : Component<HistoryTypeExpandButtonProps>
                 }
                 Props.Click();
             })
-            .MinWidth(40)
-            .MinHeight(40)
-            .Padding(8, 6)
+            .MinWidth(32)
+            .MinHeight(32)
+            .Padding(10, 6)
+            .VAlign(VerticalAlignment.Stretch)
             .IsHitTestVisible(!Props.IsAnimating)
             .IsTabStop(!Props.IsAnimating)
             .AutomationName(label)
