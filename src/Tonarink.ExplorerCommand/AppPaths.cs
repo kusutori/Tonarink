@@ -87,51 +87,10 @@ internal static partial class AppPaths
 
     public static string? IconResource()
     {
-        try
-        {
-            Directory.CreateDirectory(SharedDataDirectory);
-            var publicIcon = Path.Combine(SharedDataDirectory, "AppIcon.ico");
-            foreach (var source in IconSources())
-            {
-                if (!File.Exists(source))
-                    continue;
-                if (!File.Exists(publicIcon)
-                    || File.GetLastWriteTimeUtc(source) > File.GetLastWriteTimeUtc(publicIcon)
-                    || new FileInfo(publicIcon).Length == 0)
-                {
-                    File.Copy(source, publicIcon, overwrite: true);
-                }
-
-                break;
-            }
-
-            if (File.Exists(publicIcon) && new FileInfo(publicIcon).Length > 0)
-                return publicIcon + ",0";
-
-            var modulePath = ComServer.GetModuleFilePath();
-            if (modulePath is not null && File.Exists(modulePath))
-                return modulePath + ",0";
-        }
-        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
-        {
-            Report("Could not prepare the Explorer command icon", exception);
-        }
-
-        return null;
-    }
-
-    private static IEnumerable<string> IconSources()
-    {
-        if (TryGetCurrentPackagePath(out var packagePath))
-            yield return Path.Combine(packagePath, "Assets", "AppIcon.ico");
-
+        // AppData copies are virtualized under MSIX and their logical paths are
+        // invisible to Explorer. Use the icon embedded in this native DLL instead.
         var modulePath = ComServer.GetModuleFilePath();
-        if (modulePath is not null)
-        {
-            var directory = Path.GetDirectoryName(modulePath);
-            if (!string.IsNullOrWhiteSpace(directory))
-                yield return Path.Combine(directory, "Assets", "AppIcon.ico");
-        }
+        return modulePath is not null && File.Exists(modulePath) ? modulePath + ",0" : null;
     }
 
     public static void WriteShareRequest(IReadOnlyList<string> paths, string? fingerprint = null)
