@@ -81,6 +81,32 @@ public sealed class SettingsPageBehaviorTests
         finally { combo.DropDownOpened -= handler; }
     }
 
+    [UITestMethod]
+    public async Task BackgroundReceiveToggleRequiresNotificationsAndPreservesItsPreference()
+    {
+        await using var page = new PageFixture();
+        await UntilAsync(() => page.NotificationExpander is not null);
+        page.Replace(page.Settings with { NotificationsEnabled = false, ReceiveInBackground = false });
+        page.NotificationExpander!.IsExpanded = true;
+        await UntilAsync(() => page.BackgroundReceive is { IsEnabled: false });
+        Assert.IsFalse(page.BackgroundReceive!.IsOn);
+
+        page.Replace(page.Settings with { NotificationsEnabled = true });
+        await UntilAsync(() => page.BackgroundReceive!.IsEnabled);
+        page.BackgroundReceive!.IsOn = true;
+        await UntilAsync(() => page.Settings.ReceiveInBackground);
+        Assert.AreEqual(1, page.Updates, "The native toggle event must update the production settings callback.");
+
+        page.Replace(page.Settings with { NotificationsEnabled = false });
+        await UntilAsync(() => !page.BackgroundReceive!.IsEnabled);
+        Assert.IsTrue(page.Settings.ReceiveInBackground, "Disabling notifications should retain the user's preference.");
+        page.Replace(page.Settings with { NotificationsEnabled = true });
+        await UntilAsync(() => page.BackgroundReceive is { IsEnabled: true, IsOn: true });
+        page.BackgroundReceive!.IsOn = false;
+        await UntilAsync(() => !page.Settings.ReceiveInBackground);
+        Assert.AreEqual(2, page.Updates);
+    }
+
     // Actual SettingsPage, native controls and Reactor event wiring. Only the
     // persistence/server boundary is substituted; this is not packaged App E2E.
     private sealed class PageFixture : IAsyncDisposable
@@ -94,6 +120,10 @@ public sealed class SettingsPageBehaviorTests
         public TextBox? NameInput => Descendants<TextBox>(_host).SingleOrDefault(control => AutomationProperties.GetAutomationId(control) == "Settings.DeviceName");
         public Button? Button(string name) => Descendants<Button>(_host).SingleOrDefault(control => AutomationProperties.GetName(control) == name);
         public ComboBox? Combo(string name) => Descendants<ComboBox>(_host).SingleOrDefault(control => AutomationProperties.GetName(control) == name);
+        public CommunityToolkit.WinUI.Controls.SettingsExpander? NotificationExpander => Descendants<CommunityToolkit.WinUI.Controls.SettingsExpander>(_host)
+            .SingleOrDefault(control => AutomationProperties.GetAutomationId(control) == "Settings.Notifications.Expander");
+        public ToggleSwitch? BackgroundReceive => Descendants<ToggleSwitch>(_host)
+            .SingleOrDefault(control => AutomationProperties.GetAutomationId(control) == "Settings.Notifications.ReceiveInBackground");
 
         public PageFixture()
         {

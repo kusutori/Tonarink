@@ -122,10 +122,10 @@ sealed class GeneralSettingsSection : Component<GeneralSettingsSectionProps>
                                     .MinWidth(180)),
                         ])
                     .AutomationId("Settings.Tray.Expander") with
-                {
-                    Header = t.Message(new("App", "SettingsMinimizeToTray")),
-                    Description = t.Message(new("App", "SettingsMinimizeToTrayDescription")),
-                },
+            {
+                Header = t.Message(new("App", "SettingsMinimizeToTray")),
+                Description = t.Message(new("App", "SettingsMinimizeToTrayDescription")),
+            },
             SettingsCard(
                 header: t.Message(new("App", "SettingsStartWithWindows")),
                 description: t.Message(new("App", "SettingsStartWithWindowsDescription")),
@@ -179,6 +179,18 @@ sealed class GeneralSettingsSection : Component<GeneralSettingsSectionProps>
                                     .IsEnabled(Props.Settings.NotificationsEnabled)
                                     .MinWidth(180)),
                             SettingsCard(
+                                header: t.Message(new("App", "SettingsReceiveInBackground")),
+                                description: t.Message(new("App", "SettingsReceiveInBackgroundDescription")),
+                                isClickEnabled: false,
+                                isActionIconVisible: false,
+                                content:
+                                ToggleSwitch(Props.Settings.ReceiveInBackground,
+                                        value => Props.UpdateSettings(settings => settings with { ReceiveInBackground = value }))
+                                    .AutomationName(t.Message(new("App", "SettingsReceiveInBackground")))
+                                    .AutomationId("Settings.Notifications.ReceiveInBackground")
+                                    .HelpText(t.Message(new("App", "SettingsReceiveInBackgroundDescription")))
+                                    .IsEnabled(Props.Settings.NotificationsEnabled)),
+                            SettingsCard(
                                 header: t.Message(new("App", "SettingsNotificationsTest")),
                                 description: t.Message(new("App", "SettingsNotificationsTestDescription")),
                                 isClickEnabled: false,
@@ -199,10 +211,10 @@ sealed class GeneralSettingsSection : Component<GeneralSettingsSectionProps>
                                     .IsEnabled(Props.Settings.NotificationsEnabled)),
                         ])
                     .AutomationId("Settings.Notifications.Expander") with
-                {
-                    Header = t.Message(new("App", "SettingsNotifications")),
-                    Description = t.Message(new("App", "SettingsNotificationsDescription")),
-                },
+            {
+                Header = t.Message(new("App", "SettingsNotifications")),
+                Description = t.Message(new("App", "SettingsNotificationsDescription")),
+            },
             SettingsCard(
                 header: t.Message(new("App", "SettingsJumpList")),
                 description: t.Message(new("App", "SettingsJumpListDescription")),
@@ -243,10 +255,10 @@ sealed class GeneralSettingsSection : Component<GeneralSettingsSectionProps>
                                                Props.Settings.ShowExplorerContextMenu)),
                         ])
                     .AutomationId("Settings.Explorer.Expander") with
-                {
-                    Header = t.Message(new("App", "SettingsExplorerContextMenu")),
-                    Description = t.Message(new("App", "SettingsExplorerContextMenuDescription")),
-                },
+            {
+                Header = t.Message(new("App", "SettingsExplorerContextMenu")),
+                Description = t.Message(new("App", "SettingsExplorerContextMenuDescription")),
+            },
             SettingsCard(
                 header: t.Message(new("App", "SettingsSendTo")),
                 description: t.Message(new("App", "SettingsSendToDescription")),

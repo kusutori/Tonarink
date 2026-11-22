@@ -524,4 +524,6 @@
   <data name="HistoryFilterRegexTimeout" xml:space="preserve"><value>匹配超时，请简化正则表达式</value></data>
   <data name="HistoryFilterMoreTypes" xml:space="preserve"><value>更多类型</value></data>
   <data name="HistoryFilterCollapseTypes" xml:space="preserve"><value>收起类型</value></data>
+  <data name="SettingsReceiveInBackground" xml:space="preserve"><value>后台接收</value></data>
+  <data name="SettingsReceiveInBackgroundDescription" xml:space="preserve"><value>收到请求时通过通知接受或拒绝，不自动弹出主窗口。需要开启通知。</value></data>
 </root>

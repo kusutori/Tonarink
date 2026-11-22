@@ -220,11 +220,12 @@ sealed class LocalizedAppShell : Component<LocalizedAppShellProps>
             nodeSession.StartOrRestart,
             nodeSession.Stop);
 
-        context.UseEffect(() =>
-        {
-            if (runtime.IncomingTransfers.Count > 0 && !AppCliRuntime.HasReceiveClient)
-                windowController.Restore();
-        }, runtime.IncomingTransfers.Count);
+        context.UseIncomingWindowActivation(
+            runtime.IncomingTransfers.Count,
+            settings.NotificationsEnabled,
+            settings.ReceiveInBackground,
+            AppCliRuntime.HasReceiveClient,
+            windowController.Restore);
 
         var paneStatus = Component<NetworkStatusPane, NetworkStatusPaneProps>(new(
             isNavigationPaneOpen,

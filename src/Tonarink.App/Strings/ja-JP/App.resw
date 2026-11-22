@@ -524,4 +524,6 @@
   <data name="HistoryFilterRegexTimeout" xml:space="preserve"><value>検索がタイムアウトしました — 正規表現を簡略化してください</value></data>
   <data name="HistoryFilterMoreTypes" xml:space="preserve"><value>その他の種類</value></data>
   <data name="HistoryFilterCollapseTypes" xml:space="preserve"><value>種類を折りたたむ</value></data>
+  <data name="SettingsReceiveInBackground" xml:space="preserve"><value>バックグラウンドで受信</value></data>
+  <data name="SettingsReceiveInBackgroundDescription" xml:space="preserve"><value>メインウィンドウを自動で開かず、通知からリクエストを承認または拒否します。通知を有効にする必要があります。</value></data>
 </root>

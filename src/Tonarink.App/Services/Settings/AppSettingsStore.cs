@@ -99,6 +99,7 @@ sealed class AppSettingsFile
     public bool? StartWithWindows { get; set; }
     public bool? ShowFavoriteDevicesInWindowsShare { get; set; }
     public bool? NotificationsEnabled { get; set; }
+    public bool? ReceiveInBackground { get; set; }
     public string? NotificationDefaultAction { get; set; }
     public bool? KeepItemsForMultipleReceivers { get; set; }
     public bool? VerifyChecksumsOnSend { get; set; }
@@ -147,6 +148,7 @@ sealed class AppSettingsFile
         StartWithWindows = settings.StartWithWindows,
         ShowFavoriteDevicesInWindowsShare = settings.ShowFavoriteDevicesInWindowsShare,
         NotificationsEnabled = settings.NotificationsEnabled,
+        ReceiveInBackground = settings.ReceiveInBackground,
         NotificationDefaultAction = settings.NotificationDefaultAction.ToString(),
         KeepItemsForMultipleReceivers = settings.KeepItemsForMultipleReceivers,
         VerifyChecksumsOnSend = settings.VerifyChecksumsOnSend,
@@ -203,6 +205,7 @@ sealed class AppSettingsFile
             ShowFavoriteDevicesInWindowsShare = ShowFavoriteDevicesInWindowsShare
                                                 ?? defaults.ShowFavoriteDevicesInWindowsShare,
             NotificationsEnabled = NotificationsEnabled ?? defaults.NotificationsEnabled,
+            ReceiveInBackground = ReceiveInBackground ?? defaults.ReceiveInBackground,
             NotificationDefaultAction = Enum.TryParse<NotificationDefaultAction>(
                 NotificationDefaultAction,
                 ignoreCase: true,

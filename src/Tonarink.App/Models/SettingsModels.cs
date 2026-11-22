@@ -60,6 +60,7 @@ sealed record AppSettings(
     public bool AutoReturnAfterReceive { get; init; }
     public bool ShowReceiveBadge { get; init; } = true;
     public bool UseTopNavigationWhenNarrow { get; init; }
+    public bool ReceiveInBackground { get; init; } = true;
 
     public static readonly AppSettings Default = new(
         Alias: string.IsNullOrWhiteSpace(Environment.UserName) ? Environment.MachineName : Environment.UserName,

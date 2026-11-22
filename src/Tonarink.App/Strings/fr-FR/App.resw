@@ -524,4 +524,6 @@
   <data name="HistoryFilterRegexTimeout" xml:space="preserve"><value>Délai dépassé — simplifiez l’expression régulière</value></data>
   <data name="HistoryFilterMoreTypes" xml:space="preserve"><value>Autres types de fichiers</value></data>
   <data name="HistoryFilterCollapseTypes" xml:space="preserve"><value>Afficher moins de types de fichiers</value></data>
+  <data name="SettingsReceiveInBackground" xml:space="preserve"><value>Recevoir en arrière-plan</value></data>
+  <data name="SettingsReceiveInBackgroundDescription" xml:space="preserve"><value>Accepter ou refuser les demandes via les notifications sans ouvrir automatiquement la fenêtre principale. Les notifications doivent être activées.</value></data>
 </root>

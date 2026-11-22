@@ -190,7 +190,9 @@ tonarink settings set network-allowlist "192.168.1.*,10.0.0.*" --restart
 | `receive-pin` | PIN 文本，最多 32 字符；启用 PIN 时不能为空 |
 | 以下布尔键 | `true` / `false`，也支持 `on` / `off`、`1` / `0` |
 
-布尔键：`minimize-to-tray`、`start-with-windows`、`windows-share-favorites`、`notifications`、`keep-send-items`、`send-checksums`、`receive-checksums`、`app-wide-drop`、`file-preview`、`receive-history`、`pin-enabled`、`encryption`、`explorer-menu`。
+布尔键：`minimize-to-tray`、`start-with-windows`、`windows-share-favorites`、`notifications`、`receive-in-background`、`keep-send-items`、`send-checksums`、`receive-checksums`、`app-wide-drop`、`file-preview`、`receive-history`、`pin-enabled`、`encryption`、`explorer-menu`。
+
+`receive-in-background` 默认开启，仅在 `notifications` 开启时生效：收到请求时通过通知交互，不自动弹出主窗口。
 
 `settings list/get` 默认隐藏 PIN；确实需要读取时显式加 `--show-secrets`。开启 PIN 时，先设置 `receive-pin`，再设置 `pin-enabled true`。
 
