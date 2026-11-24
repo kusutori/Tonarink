@@ -35,12 +35,12 @@ sealed class HistoryFileTypePicker : Component<HistoryFileTypePickerProps>
             .Select(kind =>
             {
                 var label = t.Message(new("App", LabelKey(kind)));
-                return Controls.ContentToggleButtonElement.ToggleButton(
+                return ToggleButton(
                         content: HStack(6,
                             Icon(FontIcon(FileTypeGlyphs.ForKind(kind), fontSize: 16)).AccessibilityHidden(),
                             TextBlock(label)),
                         isChecked: Props.Selected.Contains(kind),
-                        onIsCheckedChanged: selected => Props.Changed(selected == true
+                        onIsCheckedChanged: selected => Props.Changed(selected
                             ? Props.Selected.Add(kind)
                             : Props.Selected.Remove(kind)))
                     .Padding(10, 6)

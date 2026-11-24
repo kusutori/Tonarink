@@ -1,17 +1,22 @@
 # TODO
 
-## 待 Reactor 按钮组合内容支持发版后接入
+## Reactor preview.18 接入记录
 
-2026-11-07：已在本地框架分支 `codex/button-element-content` 补齐按钮家族和
-CheckBox/RadioButton 的 `Element` 内容入口，保留原字符串接口；验证了内容更新、
-状态保留、回调与子组件清理，并通过 Tonarink 筛选器实测。尚未提交 issue/PR。
+接入日期：2026-11-24。`Microsoft.UI.Reactor`、`Microsoft.UI.Reactor.Advanced`、
+`Microsoft.UI.Reactor.Devtools` 同步升级为 NuGet.org 的 **0.1.0-preview.18**。
+发布包标注的源码提交为 `4cd639795f7974af2018c99797d79d6c93edbd56`。
 
-- 本地 App 验证版本保存在 `codex/test-button-element-content`（`e585b3a`）
-- main 继续使用 NuGet.org 的 preview.17，类型筛选暂用生成式
-  `ContentToggleButtonElement`，不依赖本地包源
-- [ ] 后续按贡献流程提交上游 issue/PR，记录链接
-- [ ] 修复正式进入 NuGet 后，升级 Reactor，改用 `ToggleButton(HStack(...), ...)`
-- [ ] 删除 `Controls/ContentToggleButtonElement.cs`，复查筛选按钮的多选、主题和展开动画
+- [x] 按钮组合内容支持已随新版发布，历史类型筛选改用官方 `ToggleButton(HStack(...), ...)`
+- [x] 删除临时的 `Controls/ContentToggleButtonElement.cs`，保留原有多选、布局和展开/收起动画逻辑
+- [x] Debug 编译、x64 Release Native AOT 发布编译通过；产物位于 `artifacts/reactor-preview18/win-x64`
+- [x] `HistoryFileTypePickerTests` 原生控件测试通过：图标和文字、多选/取消回调、重渲染后的实例与状态保留
+- [ ] 实际运行复查浅色/深色选中样式，以及分批展开和收起动画
+
+本轮仅运行上述定向 UI 测试；构建测试宿主时通过本地临时 targets 排除了仍使用旧参数的
+`SendDevicesCardTests.cs`，未修改该文件，也未据此宣称完整测试套件通过。
+
+早期 App 验证版本保存在 `codex/test-button-element-content`（`e585b3a`）；
+主线现已使用正式发布包，无需合入该分支或配置本地包源。
 
 ## Reactor preview.17 接入记录
 
