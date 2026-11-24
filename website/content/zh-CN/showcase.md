@@ -1,11 +1,11 @@
 ---
 title: 功能展示
-description: 通过图片与视频了解 Tonarink
+description: See Tonarink in action
 ---
 
 # 功能展示
 
-<p class="showcase-intro">这里将集中展示 Tonarink 的实际界面与完整传输流程。素材尚在制作中，下面的占位区域已经按用途预留。</p>
+<p class="showcase-intro">This page will present Tonarink's interface and complete transfer flow. The media is still being produced, so each intended placement is reserved below.</p>
 
 ## 产品演示
 
